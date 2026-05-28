@@ -9,6 +9,9 @@ let db: Database | null = null
 let dbPath = ''
 
 function getWasmDirectory(): string {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'sql.js', 'dist')
+  }
   return path.join(app.getAppPath(), 'node_modules', 'sql.js', 'dist')
 }
 

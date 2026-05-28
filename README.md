@@ -75,9 +75,34 @@ npm run preview    # 预览构建结果
 ```
 
 <details>
-<summary><b>其他安装方式</b></summary>
+<summary><b>Windows 安装包（exe）</b></summary>
 
-当前仓库以源码方式运行；`npm run build` 产物位于 `out/main`、`out/preload`、`out/renderer`，可配合 electron-builder 等工具打包分发（尚未内置安装包脚本）。
+```bash
+npm install
+npm run dist:win          # 生成 NSIS 安装程序
+npm run dist:win:dir      # 仅生成便携版目录（不打包安装程序）
+```
+
+产物位于 `release/`：
+
+| 文件 | 说明 |
+|------|------|
+| `PwdBook-0.1.0-Setup.exe` | 安装程序（推荐分发） |
+| `win-unpacked/PwdBook.exe` | 绿色版，可直接运行 |
+
+若 GitHub 下载较慢，可先设置镜像再打包：
+
+```powershell
+$env:ELECTRON_BUILDER_BINARIES_MIRROR='https://npmmirror.com/mirrors/electron-builder-binaries/'
+npm run dist:win
+```
+
+</details>
+
+<details>
+<summary><b>源码构建</b></summary>
+
+`npm run build` 产物位于 `out/main`、`out/preload`、`out/renderer`，供开发预览或自定义打包流程使用。
 
 </details>
 
@@ -158,6 +183,8 @@ src/
 | `npm run build` | 生产构建 |
 | `npm run preview` | 预览构建 |
 | `npm run typecheck` | Vue/TS 类型检查 |
+| `npm run dist:win` | Windows 安装包 → `release/` |
+| `npm run dist:win:dir` | Windows 便携版目录 |
 
 </details>
 

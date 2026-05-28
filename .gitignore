@@ -1,6 +1,9 @@
 node_modules
 out
 dist
+release
+release-out
+release-build
 *.local
 .DS_Store
 tsconfig.web.tsbuildinfo

@@ -2,12 +2,52 @@
   "name": "pwd-book",
   "version": "0.1.0",
   "description": "PwdBook - local password manager desktop app",
+  "author": "PwdBook",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.web.json"
+    "typecheck": "vue-tsc --noEmit -p tsconfig.web.json",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:win:dir": "npm run build && electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.pwdbook.app",
+    "productName": "PwdBook",
+    "copyright": "Copyright © 2026 PwdBook",
+    "directories": {
+      "output": "release"
+    },
+    "electronDist": "node_modules/electron/dist",
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/sql.js/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-Setup.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PwdBook"
+    }
   },
   "dependencies": {
     "lucide-vue-next": "^0.511.0",
@@ -21,6 +61,7 @@
     "@types/sqlite3": "^3.1.11",
     "@vitejs/plugin-vue": "^5.2.3",
     "electron": "^35.1.5",
+    "electron-builder": "^26.8.1",
     "electron-vite": "^3.1.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.4",
