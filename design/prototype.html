@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PwdBook — UI 原型</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="tokens.css" />
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('pwdbook-theme-mode') || 'dark';
+        var accent = localStorage.getItem('pwdbook-theme-accent') || 'brass';
+        var resolved = mode === 'system'
+          ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : (mode === 'light' ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-mode', resolved);
+        document.documentElement.setAttribute('data-accent', accent);
+        document.documentElement.setAttribute('data-mode-pref', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html { transition: background-color 0.25s ease, color 0.25s ease; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-app);
+      color: var(--text-primary);
+      margin: 0;
+      overflow: hidden;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+    .font-display { font-family: var(--font-display); }
+    .font-mono { font-family: var(--font-mono); }
+    .screen { display: none; }
+    .screen.active { display: flex; }
+    .titlebar-drag { -webkit-app-region: drag; }
+    .titlebar-no-drag { -webkit-app-region: no-drag; }
+    .vault-texture {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, var(--texture-glow), transparent 60%),
+        radial-gradient(circle at 20% 80%, rgba(45, 212, 191, 0.04), transparent 40%),
+        var(--bg-app);
+    }
+    .panel-glow {
+      box-shadow: var(--shadow-panel), var(--panel-inset);
+    }
+    .theme-segment-btn { color: var(--text-secondary); }
+    .theme-segment-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
+    .theme-segment-active {
+      background: var(--accent-subtle) !important;
+      color: var(--accent-primary) !important;
+      box-shadow: inset 0 0 0 1px var(--border-accent);
+    }
+    .swatch-btn:hover { border-color: var(--border-strong) !important; }
+    .swatch-active {
+      border-color: var(--accent-primary) !important;
+      background: var(--accent-subtle) !important;
+      box-shadow: 0 0 0 1px var(--border-accent);
+    }
+    .swatch-active .swatch-check { opacity: 1 !important; }
+    .settings-tab-active {
+      background: var(--accent-subtle) !important;
+      color: var(--accent-primary) !important;
+    }
+    .settings-panel { display: none; }
+    .settings-panel.active { display: block; }
+    .list-item-active {
+      background: var(--bg-elevated);
+      border-left: 3px solid var(--accent-primary);
+    }
+    .password-mask { letter-spacing: 0.15em; }
+    input, button { font-family: inherit; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+  </style>
+</head>
+<body class="vault-texture min-h-screen">
+
+  <!-- ═══ Screen: Lock ═══ -->
+  <div id="screen-lock" class="screen active min-h-screen w-full items-center justify-center">
+    <div class="w-full max-w-md px-8">
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style="background: var(--accent-subtle); border: 1px solid var(--border-accent);">
+          <i data-lucide="shield-check" class="w-8 h-8" style="color: var(--accent-primary);"></i>
+        </div>
+        <h1 class="font-display text-3xl tracking-tight mb-2" style="color: var(--text-primary);">PwdBook</h1>
+        <p class="text-sm" style="color: var(--text-secondary);">输入主密码以解锁保险库</p>
+      </div>
+
+      <div class="panel-glow rounded-2xl p-6" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+        <label class="block text-xs font-medium mb-2 tracking-wide uppercase" style="color: var(--text-muted);">主密码</label>
+        <div class="relative">
+          <input id="master-password" type="password" placeholder="••••••••••••"
+            class="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
+            style="background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary);"
+            onfocus="this.style.borderColor='var(--border-accent)'; this.style.boxShadow='0 0 0 3px var(--focus-ring)'"
+            onblur="this.style.borderColor='var(--input-border)'; this.style.boxShadow='none'" />
+          <button class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors hover:opacity-80" style="color: var(--text-secondary);">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <button id="btn-unlock" onclick="unlock()"
+          class="w-full mt-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+          style="background: var(--btn-primary-bg); color: var(--btn-primary-text);">
+          解锁
+        </button>
+        <div class="flex items-center gap-3 my-5">
+          <div class="flex-1 h-px" style="background: var(--border-default);"></div>
+          <span class="text-xs" style="color: var(--text-muted);">或</span>
+          <div class="flex-1 h-px" style="background: var(--border-default);"></div>
+        </div>
+        <button class="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-200"
+          style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-primary);"
+          onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-elevated)'">
+          <i data-lucide="fingerprint" class="w-4 h-4" style="color: var(--status-safe);"></i>
+          Windows Hello
+        </button>
+      </div>
+      <p class="text-center text-xs mt-6" style="color: var(--text-muted);">数据仅存储在本地 · AES-256 加密</p>
+    </div>
+  </div>
+
+  <!-- ═══ Screen: Main Vault ═══ -->
+  <div id="screen-vault" class="screen flex-col min-h-screen w-full">
+    <!-- Title Bar (Electron custom) -->
+    <div class="titlebar-drag flex items-center justify-between px-4 shrink-0" style="height: var(--titlebar-height); background: var(--bg-surface); border-bottom: 1px solid var(--border-default);">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 titlebar-no-drag" style="color: var(--accent-primary);"></i>
+        <span class="text-xs font-medium tracking-tight">PwdBook</span>
+      </div>
+      <div class="titlebar-no-drag flex items-center gap-1">
+        <button class="w-7 h-7 flex items-center justify-center rounded-md transition-colors hover:opacity-80" style="color: var(--text-secondary);"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded-md transition-colors hover:opacity-80" style="color: var(--text-secondary);"><i data-lucide="square" class="w-3 h-3"></i></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded-md transition-colors hover:opacity-80" style="color: var(--text-secondary);"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+      </div>
+    </div>
+
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Sidebar -->
+      <aside class="shrink-0 flex flex-col" style="width: var(--sidebar-width); background: var(--bg-surface); border-right: 1px solid var(--border-default);">
+        <div class="p-4">
+          <button class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+            style="background: var(--btn-primary-bg); color: var(--btn-primary-text);">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            新建条目
+          </button>
+        </div>
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+          <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" style="background: var(--accent-subtle); color: var(--accent-primary);">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            全部
+            <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background: var(--accent-muted);">24</span>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i data-lucide="star" class="w-4 h-4"></i>
+            收藏
+            <span class="ml-auto text-xs" style="color: var(--text-muted);">5</span>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            工作
+            <span class="ml-auto text-xs" style="color: var(--text-muted);">8</span>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            社交
+            <span class="ml-auto text-xs" style="color: var(--text-muted);">6</span>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i data-lucide="landmark" class="w-4 h-4"></i>
+            金融
+            <span class="ml-auto text-xs" style="color: var(--text-muted);">5</span>
+          </a>
+        </nav>
+        <div class="p-3" style="border-top: 1px solid var(--border-default);">
+          <button onclick="showScreen('settings')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            设置
+          </button>
+          <button onclick="lock()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--status-danger)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            锁定
+          </button>
+        </div>
+      </aside>
+
+      <!-- List Panel -->
+      <main class="flex-1 flex flex-col min-w-0" style="background: var(--bg-app);">
+        <div class="px-6 py-4 flex items-center gap-3 shrink-0" style="border-bottom: 1px solid var(--border-default);">
+          <div class="flex-1 relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style="color: var(--text-muted);"></i>
+            <input type="text" placeholder="搜索网站、账号或标签…"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
+              style="background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary);"
+              onfocus="this.style.borderColor='var(--border-accent)'" onblur="this.style.borderColor='var(--input-border)'" />
+          </div>
+          <button class="p-2.5 rounded-xl transition-colors duration-200" style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-secondary);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto">
+          <!-- Active item -->
+          <div class="list-item-active flex items-center gap-4 px-6 py-4 cursor-pointer" style="border-bottom: 1px solid var(--border-default);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-semibold" style="background: rgba(59,130,246,0.15); color: #60A5FA;">G</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium truncate">GitHub</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium" style="background: var(--accent-subtle); color: var(--accent-primary);">工作</span>
+              </div>
+              <p class="text-xs truncate mt-0.5" style="color: var(--text-secondary);">dev@example.com</p>
+            </div>
+            <span class="text-xs shrink-0" style="color: var(--text-muted);">2 小时前</span>
+          </div>
+
+          <div class="flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors duration-200" style="border-bottom: 1px solid var(--border-default);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-semibold" style="background: rgba(239,68,68,0.12); color: #F87171;">N</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium truncate">Netflix</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium" style="background: rgba(45,212,191,0.1); color: var(--status-safe);">社交</span>
+              </div>
+              <p class="text-xs truncate mt-0.5" style="color: var(--text-secondary);">user@gmail.com</p>
+            </div>
+            <span class="text-xs shrink-0" style="color: var(--text-muted);">3 天前</span>
+          </div>
+
+          <div class="flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors duration-200" style="border-bottom: 1px solid var(--border-default);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-semibold" style="background: rgba(201,162,39,0.12); color: var(--accent-primary);">A</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium truncate">AWS Console</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium" style="background: rgba(248,113,113,0.1); color: var(--status-danger);">金融</span>
+              </div>
+              <p class="text-xs truncate mt-0.5" style="color: var(--text-secondary);">admin@company.io</p>
+            </div>
+            <span class="text-xs shrink-0" style="color: var(--text-muted);">1 周前</span>
+          </div>
+
+          <div class="flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors duration-200" style="border-bottom: 1px solid var(--border-default);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-semibold" style="background: rgba(52,211,153,0.12); color: var(--status-success);">N</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium truncate">Notion</span>
+              </div>
+              <p class="text-xs truncate mt-0.5" style="color: var(--text-secondary);">team@startup.dev</p>
+            </div>
+            <span class="text-xs shrink-0" style="color: var(--text-muted);">2 周前</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- Detail Panel -->
+      <aside class="shrink-0 flex flex-col overflow-y-auto" style="width: var(--detail-width); background: var(--bg-surface); border-left: 1px solid var(--border-default);">
+        <div class="p-6 flex items-start justify-between" style="border-bottom: 1px solid var(--border-default);">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold" style="background: rgba(59,130,246,0.15); color: #60A5FA;">G</div>
+            <div>
+              <h2 class="font-display text-lg tracking-tight">GitHub</h2>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">github.com</p>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <button class="p-2 rounded-lg transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--accent-primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+              <i data-lucide="star" class="w-4 h-4"></i>
+            </button>
+            <button class="p-2 rounded-lg transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--status-danger)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-5 flex-1">
+          <div>
+            <label class="block text-xs font-medium mb-2 uppercase tracking-wide" style="color: var(--text-muted);">用户名</label>
+            <div class="flex gap-2">
+              <input readonly value="dev@example.com"
+                class="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
+                style="background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary);" />
+              <button class="p-2.5 rounded-xl transition-colors duration-200" style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-secondary);" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-2 uppercase tracking-wide" style="color: var(--text-muted);">密码</label>
+            <div class="flex gap-2">
+              <input readonly value="••••••••••••••••" id="pwd-field"
+                class="flex-1 px-3 py-2.5 rounded-xl text-sm font-mono password-mask outline-none"
+                style="background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary);" />
+              <button onclick="togglePassword()" class="p-2.5 rounded-xl transition-colors duration-200" style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-secondary);">
+                <i data-lucide="eye" class="w-4 h-4" id="pwd-eye"></i>
+              </button>
+              <button class="p-2.5 rounded-xl transition-colors duration-200" style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-secondary);" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+              <div class="flex-1 h-1 rounded-full overflow-hidden flex gap-0.5">
+                <div class="flex-1 rounded-full" style="background: var(--status-success);"></div>
+                <div class="flex-1 rounded-full" style="background: var(--status-success);"></div>
+                <div class="flex-1 rounded-full" style="background: var(--status-success);"></div>
+                <div class="flex-1 rounded-full" style="background: var(--color-ink-600);"></div>
+              </div>
+              <span class="text-[10px] ml-2 font-medium" style="color: var(--status-success);">强</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-2 uppercase tracking-wide" style="color: var(--text-muted);">备注</label>
+            <textarea rows="3" readonly
+              class="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
+              style="background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-secondary);">Personal access token 于 2026-03 更新</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-2 uppercase tracking-wide" style="color: var(--text-muted);">标签</label>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs px-2.5 py-1 rounded-lg font-medium" style="background: var(--accent-subtle); color: var(--accent-primary);">工作</span>
+              <span class="text-xs px-2.5 py-1 rounded-lg font-medium" style="background: rgba(45,212,191,0.1); color: var(--status-safe);">开发</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border-default);">
+          <button class="flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-200"
+            style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-primary);"
+            onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-elevated)'">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            生成密码
+          </button>
+          <button class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:opacity-90"
+            style="background: var(--btn-primary-bg); color: var(--btn-primary-text);">
+            保存
+          </button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ═══ Screen: Settings ═══ -->
+  <div id="screen-settings" class="screen flex-col min-h-screen w-full">
+    <div class="titlebar-drag flex items-center justify-between px-4 shrink-0" style="height: var(--titlebar-height); background: var(--bg-surface); border-bottom: 1px solid var(--border-default);">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5" style="color: var(--accent-primary);"></i>
+        <span class="text-xs font-medium">PwdBook</span>
+      </div>
+    </div>
+
+    <div class="flex flex-1 overflow-hidden">
+      <aside class="shrink-0 p-4" style="width: var(--sidebar-width); background: var(--bg-surface); border-right: 1px solid var(--border-default);">
+        <button onclick="showScreen('vault')" class="flex items-center gap-2 text-sm mb-6 transition-colors duration-200" style="color: var(--text-secondary);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          返回
+        </button>
+        <h2 class="font-display text-xl tracking-tight px-2 mb-4">设置</h2>
+        <nav class="space-y-0.5" id="settings-nav">
+          <button type="button" onclick="switchSettingsTab('security')" data-settings-tab="security"
+            class="settings-tab settings-tab-active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors duration-200">
+            <i data-lucide="shield" class="w-4 h-4"></i> 安全
+          </button>
+          <button type="button" onclick="switchSettingsTab('appearance')" data-settings-tab="appearance"
+            class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);">
+            <i data-lucide="palette" class="w-4 h-4"></i> 外观
+          </button>
+          <button type="button" onclick="switchSettingsTab('data')" data-settings-tab="data"
+            class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);">
+            <i data-lucide="database" class="w-4 h-4"></i> 数据
+          </button>
+          <button type="button" onclick="switchSettingsTab('about')" data-settings-tab="about"
+            class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-colors duration-200" style="color: var(--text-secondary);">
+            <i data-lucide="info" class="w-4 h-4"></i> 关于
+          </button>
+        </nav>
+      </aside>
+
+      <main class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-xl space-y-8">
+
+          <div id="panel-security" class="settings-panel active space-y-8">
+          <section>
+            <h3 class="text-sm font-semibold mb-4 tracking-tight">安全</h3>
+            <div class="rounded-2xl overflow-hidden" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+              <div class="flex items-center justify-between px-5 py-4" style="border-bottom: 1px solid var(--border-default);">
+                <div>
+                  <p class="text-sm font-medium">自动锁定</p>
+                  <p class="text-xs mt-0.5" style="color: var(--text-muted);">无操作后自动锁定应用</p>
+                </div>
+                <select class="text-sm px-3 py-1.5 rounded-lg outline-none" style="background: var(--bg-elevated); border: 1px solid var(--border-default); color: var(--text-primary);">
+                  <option>5 分钟</option>
+                  <option selected>15 分钟</option>
+                  <option>30 分钟</option>
+                  <option>1 小时</option>
+                </select>
+              </div>
+              <div class="flex items-center justify-between px-5 py-4" style="border-bottom: 1px solid var(--border-default);">
+                <div>
+                  <p class="text-sm font-medium">剪贴板自动清除</p>
+                  <p class="text-xs mt-0.5" style="color: var(--text-muted);">复制密码后 30 秒清除</p>
+                </div>
+                <div class="w-11 h-6 rounded-full relative cursor-pointer" style="background: var(--accent-primary);">
+                  <div class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full" style="background: var(--btn-primary-text);"></div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between px-5 py-4">
+                <div>
+                  <p class="text-sm font-medium">Windows Hello</p>
+                  <p class="text-xs mt-0.5" style="color: var(--text-muted);">使用生物识别快速解锁</p>
+                </div>
+                <div class="w-11 h-6 rounded-full relative cursor-pointer" style="background: var(--toggle-off);">
+                  <div class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full" style="background: var(--toggle-knob);"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+          </div>
+
+          <div id="panel-appearance" class="settings-panel space-y-8">
+            <div id="appearance-panel" class="space-y-8"></div>
+          </div>
+
+          <div id="panel-data" class="settings-panel space-y-8">
+          <section>
+            <h3 class="text-sm font-semibold mb-4 tracking-tight">数据</h3>
+            <div class="rounded-2xl overflow-hidden" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+              <button class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-200" style="border-bottom: 1px solid var(--border-default);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+                <div class="flex items-center gap-3">
+                  <i data-lucide="download" class="w-4 h-4" style="color: var(--text-secondary);"></i>
+                  <span class="text-sm">导出备份</span>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4" style="color: var(--text-muted);"></i>
+              </button>
+              <button class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-200" style="border-bottom: 1px solid var(--border-default);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+                <div class="flex items-center gap-3">
+                  <i data-lucide="upload" class="w-4 h-4" style="color: var(--text-secondary);"></i>
+                  <span class="text-sm">导入数据</span>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4" style="color: var(--text-muted);"></i>
+              </button>
+              <button class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-200" onmouseover="this.style.background='rgba(248,113,113,0.06)'" onmouseout="this.style.background='transparent'">
+                <div class="flex items-center gap-3">
+                  <i data-lucide="alert-triangle" class="w-4 h-4" style="color: var(--status-danger);"></i>
+                  <span class="text-sm" style="color: var(--status-danger);">清除所有数据</span>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4" style="color: var(--text-muted);"></i>
+              </button>
+            </div>
+          </section>
+          </div>
+
+          <div id="panel-about" class="settings-panel space-y-8">
+          <section>
+            <h3 class="text-sm font-semibold mb-4 tracking-tight">关于</h3>
+            <div class="rounded-2xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+              <p class="font-display text-lg tracking-tight mb-1">PwdBook</p>
+              <p class="text-xs mb-4" style="color: var(--text-muted);">版本 0.1.0 · Electron 桌面端</p>
+              <p class="text-sm" style="color: var(--text-secondary);">本地优先的密码管理工具，数据加密存储于本机。</p>
+            </div>
+          </section>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Prototype nav hint -->
+  <div id="proto-hint" class="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs flex items-center gap-3 panel-glow" style="background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-secondary);">
+    <span>UI 原型</span>
+    <span style="color: var(--border-default);">|</span>
+    <button onclick="showScreen('lock')" class="hover:underline" style="color: var(--accent-primary);">解锁页</button>
+    <button onclick="showScreen('vault')" class="hover:underline" style="color: var(--accent-primary);">主界面</button>
+    <button onclick="showScreen('settings'); switchSettingsTab('appearance')" class="hover:underline" style="color: var(--accent-primary);">主题</button>
+  </div>
+
+  <script src="theme.js"></script>
+  <script>
+    lucide.createIcons();
+
+    function switchSettingsTab(tab) {
+      document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + tab)?.classList.add('active');
+      document.querySelectorAll('.settings-tab').forEach(btn => {
+        const active = btn.dataset.settingsTab === tab;
+        btn.classList.toggle('settings-tab-active', active);
+        if (!active) {
+          btn.style.color = 'var(--text-secondary)';
+          btn.style.background = 'transparent';
+        } else {
+          btn.style.color = '';
+          btn.style.background = '';
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + name).classList.add('active');
+      lucide.createIcons();
+    }
+
+    function unlock() {
+      const input = document.getElementById('master-password');
+      if (input.value.length >= 4) {
+        showScreen('vault');
+      } else {
+        input.classList.add('shake');
+        input.style.borderColor = 'var(--status-danger)';
+        setTimeout(() => { input.classList.remove('shake'); input.style.borderColor = 'var(--input-border)'; }, 400);
+      }
+    }
+
+    function lock() {
+      document.getElementById('master-password').value = '';
+      showScreen('lock');
+    }
+
+    let pwdVisible = false;
+    function togglePassword() {
+      pwdVisible = !pwdVisible;
+      const field = document.getElementById('pwd-field');
+      field.value = pwdVisible ? 'GhP@ssw0rd!2026xK' : '••••••••••••••••';
+      field.classList.toggle('password-mask', !pwdVisible);
+    }
+
+    document.getElementById('master-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') unlock();
+    });
+  </script>
+</body>
+</html>

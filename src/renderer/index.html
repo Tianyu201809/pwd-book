@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PwdBook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      ;(function () {
+        try {
+          var mode = localStorage.getItem('pwdbook-theme-mode') || 'dark'
+          var accent = localStorage.getItem('pwdbook-theme-accent') || 'brass'
+          var resolved =
+            mode === 'system'
+              ? matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : mode === 'light'
+                ? 'light'
+                : 'dark'
+          document.documentElement.setAttribute('data-mode', resolved)
+          document.documentElement.setAttribute('data-accent', accent)
+          document.documentElement.setAttribute('data-mode-pref', mode)
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./app.ts"></script>
+  </body>
+</html>

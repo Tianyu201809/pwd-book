@@ -1,0 +1,93 @@
+import { app } from 'electron'
+import fs from 'fs'
+import path from 'path'
+import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
+import { seedAndMigrateCategories } from './categories'
+
+let sqlPromise: Promise<SqlJsStatic> | null = null
+let db: Database | null = null
+let dbPath = ''
+
+function getWasmDirectory(): string {
+  return path.join(app.getAppPath(), 'node_modules', 'sql.js', 'dist')
+}
+
+async function getSql(): Promise<SqlJsStatic> {
+  if (!sqlPromise) {
+    sqlPromise = initSqlJs({
+      locateFile: (file) => path.join(getWasmDirectory(), file),
+    })
+  }
+  return sqlPromise
+}
+
+export function persistDatabase(): void {
+  if (!db) return
+  const data = db.export()
+  fs.writeFileSync(dbPath, Buffer.from(data))
+}
+
+export async function initDatabase(): Promise<Database> {
+  if (db) return db
+
+  const SQL = await getSql()
+  dbPath = path.join(app.getPath('userData'), 'pwdbook.db')
+
+  if (fs.existsSync(dbPath)) {
+    const fileBuffer = fs.readFileSync(dbPath)
+    db = new SQL.Database(fileBuffer)
+  } else {
+    db = new SQL.Database()
+  }
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL
+    )
+  `)
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS password_entries (
+      id TEXT PRIMARY KEY NOT NULL,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL DEFAULT '',
+      username TEXT NOT NULL DEFAULT '',
+      password_encrypted TEXT NOT NULL,
+      note TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT 'cat-work',
+      tags TEXT NOT NULL DEFAULT '[]',
+      is_favorite INTEGER NOT NULL DEFAULT 0,
+      last_used_at INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `)
+
+  seedAndMigrateCategories(db)
+
+  persistDatabase()
+  return db
+}
+
+export function getDatabase(): Database {
+  if (!db) {
+    throw new Error('Database not initialized')
+  }
+  return db
+}
+
+export function closeDatabase(): void {
+  if (db) {
+    persistDatabase()
+    db.close()
+    db = null
+  }
+}
+
+export function resetDatabaseFile(): void {
+  closeDatabase()
+  if (fs.existsSync(dbPath)) {
+    fs.unlinkSync(dbPath)
+  }
+}
