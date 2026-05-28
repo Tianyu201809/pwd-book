@@ -7,6 +7,7 @@ import TitleBar from '@/components/TitleBar.vue'
 import LockScreen from '@/components/LockScreen.vue'
 import VaultView from '@/components/VaultView.vue'
 import SettingsView from '@/components/SettingsView.vue'
+import ToastHost from '@/components/ToastHost.vue'
 
 const { screen, bootstrap } = useAppState()
 
@@ -28,6 +29,7 @@ onUnmounted(unbindSystemThemeListener)
       <VaultView v-else-if="screen === 'vault'" />
       <SettingsView v-else-if="screen === 'settings'" />
     </main>
+    <ToastHost />
   </div>
 </template>
 

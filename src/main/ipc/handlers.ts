@@ -27,8 +27,19 @@ import {
   deleteCategory,
   listCategories,
   updateCategory,
+  reorderCategories,
+  getSidebarCategoryOrder,
+  reorderSidebarCategories,
 } from '../services/categoryService'
-import type { CategoryInput } from '../../shared/types'
+import {
+  createRecoveryKey,
+  clearRecoveryKeyData,
+  getRecoveryStatus,
+  resetMasterPasswordWithRecovery,
+  verifyRecoveryKey,
+  regenerateRecoveryKey,
+} from '../services/recoveryService'
+import type { CategoryInput, RecoveryResetPayload } from '../../shared/types'
 import { getSecuritySettings, updateSecuritySettings } from '../services/settingsService'
 import { isUnlocked } from '../services/sessionService'
 
@@ -97,6 +108,55 @@ export function registerIpcHandlers(): void {
       throw new Error(message)
     }
   })
+
+  ipcMain.handle(IPC.recoveryStatus, () => wrap(() => getRecoveryStatus()))
+
+  ipcMain.handle(IPC.recoveryVerify, (_event, recoveryKey: string) =>
+    wrap(() => {
+      const configured = getRecoveryStatus().configured
+      if (!configured) {
+        return { valid: false, configured: false }
+      }
+      try {
+        return { valid: verifyRecoveryKey(recoveryKey), configured: true }
+      } catch {
+        return { valid: false, configured: true }
+      }
+    }),
+  )
+
+  ipcMain.handle(IPC.recoveryCreate, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return createRecoveryKey()
+    }),
+  )
+
+  ipcMain.handle(IPC.recoveryResetMaster, (_event, payload: RecoveryResetPayload) =>
+    wrap(() => {
+      resetMasterPasswordWithRecovery(
+        payload.recoveryKey,
+        payload.newMasterPassword,
+        payload.confirmPassword,
+      )
+      return getVaultStatus()
+    }),
+  )
+
+  ipcMain.handle(IPC.recoveryClear, () =>
+    wrap(() => {
+      ensureUnlocked()
+      clearRecoveryKeyData()
+      return getVaultStatus()
+    }),
+  )
+
+  ipcMain.handle(IPC.recoveryRegenerate, (_event, masterPassword: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      return regenerateRecoveryKey(masterPassword)
+    }),
+  )
 
   ipcMain.handle(IPC.entriesList, () =>
     wrap(() => {
@@ -173,6 +233,24 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       deleteCategory(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.categoriesReorder, (_event, categoryIds: string[]) =>
+    wrap(() => {
+      ensureUnlocked()
+      return reorderCategories(categoryIds)
+    }),
+  )
+
+  ipcMain.handle(IPC.categoriesSidebarOrder, () =>
+    wrap(() => getSidebarCategoryOrder()),
+  )
+
+  ipcMain.handle(IPC.categoriesReorderSidebar, (_event, order: string[]) =>
+    wrap(() => {
+      ensureUnlocked()
+      return reorderSidebarCategories(order)
     }),
   )
 

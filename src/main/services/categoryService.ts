@@ -8,21 +8,15 @@ import {
   readCategoryRows,
 } from '../db/categories'
 import { isUnlocked } from './sessionService'
+import { getSetting, setSetting } from '../db/helpers'
 import type { CategoryInput, VaultCategory } from '../../shared/types'
 import { RESERVED_CATEGORY_NAMES } from '../../shared/types'
+import { CATEGORY_ICON_VALUES } from '../../shared/categoryIcons'
 
-const ALLOWED_ICONS = new Set([
-  'Briefcase',
-  'Users',
-  'Landmark',
-  'Folder',
-  'Star',
-  'Tag',
-  'Globe',
-  'Shield',
-  'Heart',
-  'Gamepad2',
-])
+const SIDEBAR_ORDER_KEY = 'sidebar_category_order'
+const SYSTEM_CATEGORY_IDS = new Set(['all', 'favorite'])
+
+const ALLOWED_ICONS = new Set(CATEGORY_ICON_VALUES)
 
 function normalizeCategoryName(name: string): string {
   return name.trim()
@@ -125,6 +119,73 @@ export function deleteCategory(id: string): void {
 
   db.run('DELETE FROM categories WHERE id = ?', [id])
   persistDatabase()
+}
+
+export function reorderCategories(categoryIds: string[]): VaultCategory[] {
+  if (!isUnlocked()) throw new Error('请先解锁保险库')
+
+  const db = getDatabase()
+  const existing = readCategoryRows(db)
+  if (categoryIds.length !== existing.length) {
+    throw new Error('分类列表不完整')
+  }
+
+  const existingIds = new Set(existing.map((row) => row.id))
+  for (const id of categoryIds) {
+    if (!existingIds.has(id)) {
+      throw new Error('分类不存在')
+    }
+  }
+
+  categoryIds.forEach((id, index) => {
+    db.run('UPDATE categories SET sort_order = ? WHERE id = ?', [index + 1, id])
+  })
+  persistDatabase()
+
+  return listCategories()
+}
+
+export function getSidebarCategoryOrder(): string[] {
+  const raw = getSetting(SIDEBAR_ORDER_KEY)
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === 'string')
+      : []
+  } catch {
+    return []
+  }
+}
+
+function setSidebarCategoryOrder(order: string[]): void {
+  setSetting(SIDEBAR_ORDER_KEY, JSON.stringify(order))
+}
+
+export function reorderSidebarCategories(order: string[]): VaultCategory[] {
+  if (!isUnlocked()) throw new Error('请先解锁保险库')
+
+  const categories = listCategories()
+  const categoryIds = categories.map((category) => category.id)
+  const expected = new Set(['all', 'favorite', ...categoryIds])
+
+  if (order.length !== expected.size) {
+    throw new Error('分类列表不完整')
+  }
+  if (!order.includes('all') || !order.includes('favorite')) {
+    throw new Error('分类列表不完整')
+  }
+  for (const id of order) {
+    if (!expected.has(id)) {
+      throw new Error('分类不存在')
+    }
+  }
+
+  setSidebarCategoryOrder(order)
+  const dbCategoryOrder = order.filter((id) => !SYSTEM_CATEGORY_IDS.has(id))
+  reorderCategories(dbCategoryOrder)
+
+  return listCategories()
 }
 
 export function resolveCategoryId(categoryId?: string): string {

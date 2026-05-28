@@ -5,6 +5,9 @@ import type {
   ExportPayload,
   PasswordEntry,
   PasswordEntryInput,
+  RecoveryCreateResult,
+  RecoveryResetPayload,
+  RecoveryVerifyResult,
   SecuritySettings,
   VaultCategory,
   VaultSetupPayload,
@@ -19,7 +22,11 @@ async function invoke<T>(channel: string, payload?: unknown): Promise<T> {
     return await ipcRenderer.invoke(channel, payload)
   } catch (error) {
     const message = error instanceof Error ? error.message : '请求失败'
-    throw new Error(message)
+    const nested = message.match(/:\s*Error:\s*(.+)$/)
+    throw new Error(
+      nested?.[1]?.trim() ??
+        (message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim() || '请求失败'),
+    )
   }
 }
 
@@ -35,6 +42,16 @@ export const electronAPI = {
   lockVault: (): Promise<VaultStatus> => invoke(IPC.vaultLock),
   resetVault: (): Promise<VaultStatus> => invoke(IPC.vaultReset),
 
+  getRecoveryStatus: (): Promise<{ configured: boolean }> => invoke(IPC.recoveryStatus),
+  verifyRecoveryKey: (recoveryKey: string): Promise<RecoveryVerifyResult> =>
+    invoke(IPC.recoveryVerify, recoveryKey),
+  createRecoveryKey: (): Promise<RecoveryCreateResult> => invoke(IPC.recoveryCreate),
+  resetMasterPasswordWithRecovery: (payload: RecoveryResetPayload): Promise<VaultStatus> =>
+    invoke(IPC.recoveryResetMaster, payload),
+  clearRecoveryKey: (): Promise<VaultStatus> => invoke(IPC.recoveryClear),
+  regenerateRecoveryKey: (masterPassword: string): Promise<RecoveryCreateResult> =>
+    invoke(IPC.recoveryRegenerate, masterPassword),
+
   listEntries: (): Promise<PasswordEntry[]> => invoke(IPC.entriesList),
   createEntry: (input: PasswordEntryInput): Promise<PasswordEntry> => invoke(IPC.entriesCreate, input),
   updateEntry: (id: string, input: PasswordEntryInput): Promise<PasswordEntry> =>
@@ -49,6 +66,11 @@ export const electronAPI = {
   updateCategory: (id: string, input: CategoryInput): Promise<VaultCategory> =>
     invoke(IPC.categoriesUpdate, { id, input }),
   deleteCategory: (id: string): Promise<void> => invoke(IPC.categoriesDelete, id),
+  reorderCategories: (categoryIds: string[]): Promise<VaultCategory[]> =>
+    invoke(IPC.categoriesReorder, categoryIds),
+  getSidebarCategoryOrder: (): Promise<string[]> => invoke(IPC.categoriesSidebarOrder),
+  reorderSidebarCategories: (order: string[]): Promise<VaultCategory[]> =>
+    invoke(IPC.categoriesReorderSidebar, order),
 
   getSettings: (): Promise<SecuritySettings> => invoke(IPC.settingsGet),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>

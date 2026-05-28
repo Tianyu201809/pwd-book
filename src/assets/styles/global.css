@@ -282,3 +282,8 @@ select {
   color: var(--accent-primary);
   font-weight: 500;
 }
+
+body.category-drag-active,
+body.category-drag-active * {
+  cursor: grabbing !important;
+}

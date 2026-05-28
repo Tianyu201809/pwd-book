@@ -1,5 +1,38 @@
 import type { PasswordEntry } from '@/shared/types'
 
+export function parseErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) return '操作失败'
+  const nested = error.message.match(/:\s*Error:\s*(.+)$/)
+  if (nested?.[1]) return nested[1].trim()
+  return error.message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim() || '操作失败'
+}
+
+export function formatRecoveryKeyInput(input: string): string {
+  const normalized = input.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 20)
+  const parts: string[] = []
+  for (let i = 0; i < normalized.length; i += 4) {
+    parts.push(normalized.slice(i, i + 4))
+  }
+  return parts.join('-')
+}
+
+export function buildRecoveryKeyFileContent(recoveryKey: string): string {
+  const date = new Date().toISOString().slice(0, 10)
+  return [
+    'PwdBook 恢复密钥',
+    '================',
+    '',
+    `恢复密钥：${recoveryKey}`,
+    '',
+    '说明：',
+    '- 忘记主密码时，在锁定页选择「使用恢复密钥」',
+    '- 请将此文件与 PwdBook 应用分开存放',
+    '- 丢失恢复密钥且忘记主密码，将无法恢复数据',
+    '',
+    `生成时间：${date}`,
+  ].join('\n')
+}
+
 export function formatEntryForClipboard(entry: PasswordEntry): string {
   const lines = [
     `标题：${entry.title}`,

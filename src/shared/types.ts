@@ -29,6 +29,7 @@ export interface PasswordEntry {
   categoryId: string
   categoryName: string
   isFavorite: boolean
+  displayIcon: string
   lastUsedAt: number | null
   createdAt: number
   updatedAt: number
@@ -43,6 +44,7 @@ export interface PasswordEntryInput {
   tags?: string[]
   categoryId?: string
   isFavorite?: boolean
+  displayIcon?: string
 }
 
 export interface SecuritySettings {
@@ -54,6 +56,23 @@ export interface SecuritySettings {
 export interface VaultStatus {
   initialized: boolean
   unlocked: boolean
+  recoveryConfigured: boolean
+  entryCount: number
+}
+
+export interface RecoveryResetPayload {
+  recoveryKey: string
+  newMasterPassword: string
+  confirmPassword: string
+}
+
+export interface RecoveryVerifyResult {
+  valid: boolean
+  configured: boolean
+}
+
+export interface RecoveryCreateResult {
+  recoveryKey: string
 }
 
 export interface VaultSetupPayload {
@@ -83,6 +102,12 @@ export const IPC = {
   vaultUnlock: 'vault:unlock',
   vaultLock: 'vault:lock',
   vaultReset: 'vault:reset',
+  recoveryStatus: 'recovery:status',
+  recoveryVerify: 'recovery:verify',
+  recoveryCreate: 'recovery:create',
+  recoveryResetMaster: 'recovery:reset-master',
+  recoveryClear: 'recovery:clear',
+  recoveryRegenerate: 'recovery:regenerate',
   entriesList: 'entries:list',
   entriesCreate: 'entries:create',
   entriesUpdate: 'entries:update',
@@ -93,6 +118,9 @@ export const IPC = {
   categoriesCreate: 'categories:create',
   categoriesUpdate: 'categories:update',
   categoriesDelete: 'categories:delete',
+  categoriesReorder: 'categories:reorder',
+  categoriesSidebarOrder: 'categories:sidebar-order',
+  categoriesReorderSidebar: 'categories:reorder-sidebar',
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
   clipboardCopy: 'clipboard:copy-secret',

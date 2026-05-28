@@ -14,6 +14,7 @@ import type { PasswordEntry, PasswordEntryInput, VaultStatus } from '../../share
 import type { EntryRow } from '../db/helpers'
 import { getDatabase, persistDatabase } from '../db/database'
 import { resolveCategoryId, getCategoryName } from './categoryService'
+import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
@@ -31,6 +32,7 @@ function rowToEntry(row: EntryRow): PasswordEntry {
     categoryName: getCategoryName(row.category),
     tags: JSON.parse(row.tags || '[]') as string[],
     isFavorite: row.is_favorite === 1,
+    displayIcon: row.display_icon,
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -41,6 +43,8 @@ export function getVaultStatus(): VaultStatus {
   return {
     initialized: Boolean(getSetting(MASTER_HASH_KEY)),
     unlocked: isUnlocked(),
+    recoveryConfigured: isRecoveryKeyConfigured(),
+    entryCount: getLockedEntryCount(),
   }
 }
 
@@ -95,8 +99,8 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
 
   db.run(
     `INSERT INTO password_entries
-      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, last_used_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, last_used_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.title.trim(),
@@ -107,6 +111,7 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
       resolveCategoryId(input.categoryId),
       JSON.stringify(input.tags ?? []),
       input.isFavorite ? 1 : 0,
+      input.displayIcon?.trim() ?? '',
       null,
       now,
       now,
@@ -127,7 +132,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
 
   db.run(
     `UPDATE password_entries
-     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, updated_at = ?
+     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, updated_at = ?
      WHERE id = ?`,
     [
       input.title.trim(),
@@ -138,6 +143,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
       resolveCategoryId(input.categoryId ?? existing.category),
       JSON.stringify(input.tags ?? JSON.parse(existing.tags || '[]')),
       input.isFavorite ? 1 : 0,
+      input.displayIcon?.trim() ?? existing.display_icon,
       now,
       id,
     ],

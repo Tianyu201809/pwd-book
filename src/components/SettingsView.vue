@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
+import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
 import { useAppState } from '@/composables/useAppState'
 import type { SettingsTab } from '@/types'
 
@@ -168,6 +169,8 @@ async function handleReset(): Promise<void> {
               <div class="toggle disabled"><span class="knob" /></div>
             </div>
           </div>
+
+          <RecoverySettingsPanel />
         </div>
 
         <AppearancePanel v-else-if="activeTab === 'appearance'" />

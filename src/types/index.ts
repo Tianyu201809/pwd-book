@@ -8,6 +8,8 @@ export type {
   PasswordEntry,
   PasswordEntryInput,
   SecuritySettings,
+  RecoveryResetPayload,
+  RecoveryVerifyResult,
   SettingsTab,
   VaultCategory,
   VaultStatus,

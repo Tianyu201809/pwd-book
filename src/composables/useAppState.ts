@@ -5,7 +5,9 @@ import {
   formatRelativeTime,
   generatePassword,
   getAvatarMeta,
+  parseErrorMessage,
 } from '@/shared/utils'
+import { showToast } from '@/composables/useToast'
 import type {
   AppScreen,
   CategoryInput,
@@ -28,7 +30,12 @@ const LEGACY_CATEGORY_MAP: Record<string, string> = {
 
 const screen = ref<AppScreen>('lock')
 const settingsTab = ref<SettingsTab>('security')
-const vaultStatus = ref<VaultStatus>({ initialized: false, unlocked: false })
+const vaultStatus = ref<VaultStatus>({
+  initialized: false,
+  unlocked: false,
+  recoveryConfigured: false,
+  entryCount: 0,
+})
 const securitySettings = ref<SecuritySettings>({
   autoLockMinutes: 15,
   clipboardClearEnabled: true,
@@ -41,6 +48,7 @@ const searchQuery = ref('')
 const listSortOrder = ref<ListSortOrder>('recent')
 const entries = ref<PasswordEntry[]>([])
 const vaultCategories = ref<VaultCategory[]>([])
+const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
 const isCreating = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
@@ -56,6 +64,13 @@ const systemCategories = computed(() => [
   },
 ])
 
+type SidebarCategoryItem = {
+  id: string
+  label: string
+  icon: string
+  count: number
+}
+
 const customCategories = computed(() =>
   vaultCategories.value.map((category) => ({
     id: category.id,
@@ -65,7 +80,34 @@ const customCategories = computed(() =>
   })),
 )
 
-const categories = computed(() => [...systemCategories.value, ...customCategories.value])
+function buildDefaultSidebarOrder(categoryIds: string[]): string[] {
+  return ['all', 'favorite', ...categoryIds]
+}
+
+function mergeSidebarOrder(stored: string[], categoryIds: string[]): string[] {
+  const valid = new Set(['all', 'favorite', ...categoryIds])
+  const merged: string[] = []
+  for (const id of stored) {
+    if (valid.has(id) && !merged.includes(id)) {
+      merged.push(id)
+    }
+  }
+  for (const id of buildDefaultSidebarOrder(categoryIds)) {
+    if (!merged.includes(id)) {
+      merged.push(id)
+    }
+  }
+  return merged
+}
+
+const categories = computed(() => {
+  const lookup = new Map<string, SidebarCategoryItem>()
+  systemCategories.value.forEach((category) => lookup.set(category.id, category))
+  customCategories.value.forEach((category) => lookup.set(category.id, category))
+  return sidebarCategoryOrder.value
+    .map((id) => lookup.get(id))
+    .filter((category): category is SidebarCategoryItem => Boolean(category))
+})
 
 const filteredEntries = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
@@ -128,7 +170,7 @@ function touchActivity(): void {
 }
 
 function setError(error: unknown): void {
-  errorMessage.value = error instanceof Error ? error.message : '操作失败'
+  errorMessage.value = parseErrorMessage(error)
 }
 
 function clearError(): void {
@@ -150,11 +192,20 @@ function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntryInput 
     tags: Array.isArray(raw.tags) ? (raw.tags as string[]) : [],
     categoryId,
     isFavorite: Boolean(raw.isFavorite),
+    displayIcon: String(raw.displayIcon ?? ''),
   }
 }
 
 async function refreshCategories(): Promise<void> {
-  vaultCategories.value = await vaultApi.listCategories()
+  const [categories, storedOrder] = await Promise.all([
+    vaultApi.listCategories(),
+    vaultApi.getSidebarCategoryOrder(),
+  ])
+  vaultCategories.value = categories
+  sidebarCategoryOrder.value = mergeSidebarOrder(
+    storedOrder,
+    categories.map((category) => category.id),
+  )
 }
 
 async function refreshEntries(): Promise<void> {
@@ -194,8 +245,7 @@ async function setupVault(masterPassword: string, confirmPassword: string): Prom
   clearError()
   try {
     vaultStatus.value = await vaultApi.setupVault({ masterPassword, confirmPassword })
-    await refreshVaultData()
-    screen.value = 'vault'
+    await refreshCategories()
     touchActivity()
     return true
   } catch (error) {
@@ -213,6 +263,105 @@ async function unlock(masterPassword: string): Promise<boolean> {
     vaultStatus.value = await vaultApi.unlockVault({ masterPassword })
     await refreshVaultData()
     screen.value = 'vault'
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function refreshVaultStatus(): Promise<void> {
+  vaultStatus.value = await vaultApi.getVaultStatus()
+}
+
+async function enterVault(): Promise<void> {
+  await refreshVaultData()
+  screen.value = 'vault'
+  touchActivity()
+}
+
+async function createRecoveryKey(): Promise<string | null> {
+  loading.value = true
+  clearError()
+  try {
+    const result = await vaultApi.createRecoveryKey()
+    await refreshVaultStatus()
+    return result.recoveryKey
+  } catch (error) {
+    setError(error)
+    return null
+  } finally {
+    loading.value = false
+  }
+}
+
+async function regenerateRecoveryKey(masterPassword: string): Promise<string | null> {
+  loading.value = true
+  clearError()
+  try {
+    const result = await vaultApi.regenerateRecoveryKey(masterPassword)
+    await refreshVaultStatus()
+    return result.recoveryKey
+  } catch (error) {
+    setError(error)
+    return null
+  } finally {
+    loading.value = false
+  }
+}
+
+async function clearRecoveryKey(): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    vaultStatus.value = await vaultApi.clearRecoveryKey()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function resetMasterPasswordWithRecovery(
+  recoveryKey: string,
+  newMasterPassword: string,
+  confirmPassword: string,
+): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    vaultStatus.value = await vaultApi.resetMasterPasswordWithRecovery({
+      recoveryKey,
+      newMasterPassword,
+      confirmPassword,
+    })
+    await refreshVaultData()
+    screen.value = 'vault'
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function resetVaultFromLock(): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    vaultStatus.value = await vaultApi.resetVault()
+    entries.value = []
+    vaultCategories.value = []
+    selectedEntryId.value = null
+    isCreating.value = false
+    screen.value = 'lock'
     touchActivity()
     return true
   } catch (error) {
@@ -280,9 +429,10 @@ async function saveEntry(id: string | null, input: PasswordEntryInput): Promise<
     selectedEntryId.value = saved.id
     await refreshVaultData()
     touchActivity()
+    showToast(id ? '保存成功' : '创建成功', 'success')
     return true
   } catch (error) {
-    setError(error)
+    showToast(parseErrorMessage(error), 'error')
     return false
   } finally {
     loading.value = false
@@ -355,6 +505,19 @@ async function deleteCategory(id: string): Promise<boolean> {
   }
 }
 
+async function reorderSidebarCategories(order: string[]): Promise<boolean> {
+  clearError()
+  try {
+    vaultCategories.value = await vaultApi.reorderSidebarCategories(order)
+    sidebarCategoryOrder.value = order
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  }
+}
+
 async function copyUsername(text: string): Promise<void> {
   await vaultApi.copySecret(text, 0)
   touchActivity()
@@ -398,7 +561,12 @@ async function importDataFromJson(raw: string): Promise<number> {
 
 async function resetAllData(): Promise<void> {
   await vaultApi.resetVault()
-  vaultStatus.value = { initialized: false, unlocked: false }
+  vaultStatus.value = {
+    initialized: false,
+    unlocked: false,
+    recoveryConfigured: false,
+    entryCount: 0,
+  }
   entries.value = []
   vaultCategories.value = []
   selectedEntryId.value = null
@@ -433,6 +601,7 @@ export function useAppState() {
     errorMessage,
     lastActivityAt,
     categories,
+    systemCategories,
     customCategories,
     filteredEntries,
     displayEntries,
@@ -442,6 +611,13 @@ export function useAppState() {
     setupVault,
     unlock,
     lock,
+    enterVault,
+    refreshVaultStatus,
+    createRecoveryKey,
+    regenerateRecoveryKey,
+    clearRecoveryKey,
+    resetMasterPasswordWithRecovery,
+    resetVaultFromLock,
     navigateTo,
     selectCategory,
     selectEntry,
@@ -453,6 +629,7 @@ export function useAppState() {
     toggleFavorite,
     createCategory,
     deleteCategory,
+    reorderSidebarCategories,
     copyUsername,
     copyPassword,
     copyEntryData,

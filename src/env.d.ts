@@ -4,6 +4,8 @@ import type {
   ExportPayload,
   PasswordEntry,
   PasswordEntryInput,
+  RecoveryResetPayload,
+  RecoveryVerifyResult,
   SecuritySettings,
   VaultCategory,
   VaultSetupPayload,
@@ -23,6 +25,11 @@ declare global {
       unlockVault: (payload: VaultUnlockPayload) => Promise<VaultStatus>
       lockVault: () => Promise<VaultStatus>
       resetVault: () => Promise<VaultStatus>
+      verifyRecoveryKey: (recoveryKey: string) => Promise<RecoveryVerifyResult>
+      createRecoveryKey: () => Promise<{ recoveryKey: string }>
+      resetMasterPasswordWithRecovery: (payload: RecoveryResetPayload) => Promise<VaultStatus>
+      clearRecoveryKey: () => Promise<VaultStatus>
+      regenerateRecoveryKey: (masterPassword: string) => Promise<{ recoveryKey: string }>
       listEntries: () => Promise<PasswordEntry[]>
       createEntry: (input: PasswordEntryInput) => Promise<PasswordEntry>
       updateEntry: (id: string, input: PasswordEntryInput) => Promise<PasswordEntry>
@@ -33,6 +40,9 @@ declare global {
       createCategory: (input: CategoryInput) => Promise<VaultCategory>
       updateCategory: (id: string, input: CategoryInput) => Promise<VaultCategory>
       deleteCategory: (id: string) => Promise<void>
+      reorderCategories: (categoryIds: string[]) => Promise<VaultCategory[]>
+      getSidebarCategoryOrder: () => Promise<string[]>
+      reorderSidebarCategories: (order: string[]) => Promise<VaultCategory[]>
       getSettings: () => Promise<SecuritySettings>
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>

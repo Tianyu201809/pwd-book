@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { Star, Trash2, Copy, Eye, EyeOff, PanelRightClose, PanelRightOpen } from 'lucide-vue-next'
+import CategoryIconView from '@/components/CategoryIconView.vue'
+import IconPickerModal from '@/components/IconPickerModal.vue'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
@@ -11,7 +13,6 @@ const {
   selectedEntry,
   isCreating,
   loading,
-  errorMessage,
   vaultCategories,
   saveEntry,
   removeEntry,
@@ -20,11 +21,11 @@ const {
   copyPassword,
   cancelCreateEntry,
   getCreateDefaultCategoryId,
-  clearError,
 } = useAppState()
 
 const collapsed = ref(localStorage.getItem(STORAGE_KEY) === 'true')
 const showPassword = ref(false)
+const showIconPicker = ref(false)
 const draft = ref<PasswordEntryInput>({
   title: '',
   url: '',
@@ -34,6 +35,7 @@ const draft = ref<PasswordEntryInput>({
   tags: [],
   categoryId: '',
   isFavorite: false,
+  displayIcon: '',
 })
 
 const categoryOptions = computed(() =>
@@ -66,6 +68,7 @@ function resetDraftFromEntry(): void {
       tags: [],
       categoryId: getCreateDefaultCategoryId(),
       isFavorite: false,
+      displayIcon: '',
     }
     tagsInput.value = ''
     return
@@ -80,13 +83,12 @@ function resetDraftFromEntry(): void {
     tags: [...selectedEntry.value.tags],
     categoryId: selectedEntry.value.categoryId,
     isFavorite: selectedEntry.value.isFavorite,
+    displayIcon: selectedEntry.value.displayIcon ?? '',
   }
   tagsInput.value = selectedEntry.value.tags.join(', ')
 }
 
 watch([selectedEntry, isCreating], resetDraftFromEntry, { immediate: true })
-
-watch(draft, () => clearError(), { deep: true })
 
 function buildInput(): PasswordEntryInput {
   return {
@@ -124,6 +126,14 @@ async function handleCopyPassword(): Promise<void> {
   await copyPassword(selectedEntry.value.id, draft.value.password)
 }
 
+function handleIconSelect(icon: string): void {
+  draft.value.displayIcon = icon
+}
+
+function handleIconClear(): void {
+  draft.value.displayIcon = ''
+}
+
 function toggleCollapse(): void {
   collapsed.value = !collapsed.value
   localStorage.setItem(STORAGE_KEY, String(collapsed.value))
@@ -156,7 +166,23 @@ watch(isCreating, (creating) => {
     <template v-else>
     <div class="detail-header">
       <div class="header-main">
-        <div class="avatar" :style="{ background: avatar.color }">{{ avatar.text }}</div>
+        <button
+          type="button"
+          class="avatar avatar-btn"
+          title="选择图标"
+          aria-label="选择图标"
+          @click="showIconPicker = true"
+        >
+          <CategoryIconView
+            v-if="draft.displayIcon"
+            :name="draft.displayIcon"
+            :badge-size="48"
+            :size="22"
+          />
+          <span v-else class="avatar-letter" :style="{ background: avatar.color }">
+            {{ avatar.text }}
+          </span>
+        </button>
         <div>
           <h2 class="font-display">{{ isCreating ? '新建条目' : draft.title || '未命名' }}</h2>
           <p class="url">{{ isCreating ? '填写信息后保存' : draft.url || '未填写网址' }}</p>
@@ -271,8 +297,6 @@ watch(isCreating, (creating) => {
         <input v-model="draft.isFavorite" type="checkbox" />
         <span>加入收藏</span>
       </label>
-
-      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
     </div>
 
     <div class="detail-footer">
@@ -289,6 +313,13 @@ watch(isCreating, (creating) => {
       </button>
     </div>
     </template>
+
+    <IconPickerModal
+      v-model:open="showIconPicker"
+      :selected="draft.displayIcon"
+      @select="handleIconSelect"
+      @clear="handleIconClear"
+    />
   </aside>
 </template>
 
@@ -350,6 +381,34 @@ watch(isCreating, (creating) => {
 }
 
 .avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.avatar-btn {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.avatar-btn:hover {
+  transform: scale(1.04);
+}
+
+.avatar-btn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.avatar-letter {
   width: 48px;
   height: 48px;
   border-radius: 12px;

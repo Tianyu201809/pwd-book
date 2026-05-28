@@ -3,6 +3,8 @@ import type {
   ExportPayload,
   PasswordEntry,
   PasswordEntryInput,
+  RecoveryResetPayload,
+  RecoveryVerifyResult,
   SecuritySettings,
   VaultCategory,
   VaultSetupPayload,
@@ -24,6 +26,15 @@ export const vaultApi = {
   lockVault: (): Promise<VaultStatus> => getApi().lockVault(),
   resetVault: (): Promise<VaultStatus> => getApi().resetVault(),
 
+  verifyRecoveryKey: (recoveryKey: string): Promise<RecoveryVerifyResult> =>
+    getApi().verifyRecoveryKey(recoveryKey),
+  createRecoveryKey: (): Promise<{ recoveryKey: string }> => getApi().createRecoveryKey(),
+  resetMasterPasswordWithRecovery: (payload: RecoveryResetPayload): Promise<VaultStatus> =>
+    getApi().resetMasterPasswordWithRecovery(payload),
+  clearRecoveryKey: (): Promise<VaultStatus> => getApi().clearRecoveryKey(),
+  regenerateRecoveryKey: (masterPassword: string): Promise<{ recoveryKey: string }> =>
+    getApi().regenerateRecoveryKey(masterPassword),
+
   listEntries: (): Promise<PasswordEntry[]> => getApi().listEntries(),
   createEntry: (input: PasswordEntryInput): Promise<PasswordEntry> => getApi().createEntry(input),
   updateEntry: (id: string, input: PasswordEntryInput): Promise<PasswordEntry> =>
@@ -37,6 +48,11 @@ export const vaultApi = {
   updateCategory: (id: string, input: CategoryInput): Promise<VaultCategory> =>
     getApi().updateCategory(id, input),
   deleteCategory: (id: string): Promise<void> => getApi().deleteCategory(id),
+  reorderCategories: (categoryIds: string[]): Promise<VaultCategory[]> =>
+    getApi().reorderCategories(categoryIds),
+  getSidebarCategoryOrder: (): Promise<string[]> => getApi().getSidebarCategoryOrder(),
+  reorderSidebarCategories: (order: string[]): Promise<VaultCategory[]> =>
+    getApi().reorderSidebarCategories(order),
 
   getSettings: (): Promise<SecuritySettings> => getApi().getSettings(),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>

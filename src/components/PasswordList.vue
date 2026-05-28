@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Search, SlidersHorizontal, MoreHorizontal, Check } from 'lucide-vue-next'
+import CategoryIconView from '@/components/CategoryIconView.vue'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { ListSortOrder, PasswordEntry } from '@/types'
@@ -134,7 +135,14 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
         :class="{ 'list-item-active': !isCreating && selectedEntryId === entry.id }"
       >
         <button type="button" class="list-item-main" @click="handleSelect(entry.id)">
+          <CategoryIconView
+            v-if="entry.displayIcon"
+            :name="entry.displayIcon"
+            :badge-size="36"
+            :size="16"
+          />
           <div
+            v-else
             class="avatar"
             :style="{ background: entry.avatar?.color ?? getAvatarMeta(entry.title).color }"
           >

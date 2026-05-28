@@ -29,6 +29,7 @@ export interface EntryRow {
   category: string
   tags: string
   is_favorite: number
+  display_icon: string
   last_used_at: number | null
   created_at: number
   updated_at: number
@@ -38,7 +39,7 @@ export function readEntryRows(): EntryRow[] {
   const db = getDatabase()
   const stmt = db.prepare(`
     SELECT id, title, url, username, password_encrypted, note, category, tags,
-           is_favorite, last_used_at, created_at, updated_at
+           is_favorite, display_icon, last_used_at, created_at, updated_at
     FROM password_entries
     ORDER BY updated_at DESC
   `)
@@ -56,9 +57,10 @@ export function readEntryRows(): EntryRow[] {
       category: String(values[6]),
       tags: String(values[7]),
       is_favorite: Number(values[8]),
-      last_used_at: values[9] == null ? null : Number(values[9]),
-      created_at: Number(values[10]),
-      updated_at: Number(values[11]),
+      display_icon: String(values[9] ?? ''),
+      last_used_at: values[10] == null ? null : Number(values[10]),
+      created_at: Number(values[11]),
+      updated_at: Number(values[12]),
     })
   }
   stmt.free()
