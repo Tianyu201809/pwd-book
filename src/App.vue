@@ -16,6 +16,7 @@ import PasswordGenView from '@/components/PasswordGenView.vue'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import AnimalBackdrop from '@/components/AnimalBackdrop.vue'
+import { initScreenshotBridge } from '@/composables/useScreenshotBridge'
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
@@ -37,6 +38,9 @@ const scheduledMasterModalRef = ref<InstanceType<typeof MasterPasswordConfirmMod
 
 onMounted(async () => {
   bindSystemThemeListener()
+  if (window.electronAPI?.isScreenshotMode?.()) {
+    initScreenshotBridge()
+  }
   removeAlreadyRunningListener = window.electronAPI?.onAlreadyRunning(() => {
     showToast(t('common.alreadyRunning'), 'success')
   })

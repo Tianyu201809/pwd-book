@@ -15,7 +15,8 @@
     "predist:win:dir": "npm run icons",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
-    "dist:win:dir": "npm run build && electron-builder --win --dir"
+    "dist:win:dir": "npm run build && electron-builder --win --dir",
+    "screenshots:animal": "node scripts/capture-animal-screenshots.mjs"
   },
   "build": {
     "appId": "com.pwdbook.app",

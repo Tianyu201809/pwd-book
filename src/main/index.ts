@@ -12,10 +12,20 @@ import {
   setMainWindow,
   showFromTray,
 } from './tray'
+import {
+  isScreenshotMode,
+  prepareScreenshotEnvironment,
+  runAnimalScreenshotCapture,
+  setupScreenshotFixture,
+} from './screenshotMode'
 
 let mainWindow: BrowserWindow | null = null
 
-const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (isScreenshotMode()) {
+  prepareScreenshotEnvironment()
+}
+
+const gotSingleInstanceLock = isScreenshotMode() ? true : app.requestSingleInstanceLock()
 
 if (!gotSingleInstanceLock) {
   app.quit()
@@ -96,6 +106,9 @@ if (gotSingleInstanceLock) {
 
   app.whenReady().then(async () => {
     await initDatabase()
+    if (isScreenshotMode()) {
+      setupScreenshotFixture()
+    }
     registerIpcHandlers()
 
     ipcMain.on('window-minimize', () => hideToTray())
@@ -113,6 +126,16 @@ if (gotSingleInstanceLock) {
     })
 
     createWindow()
+
+    if (isScreenshotMode() && mainWindow) {
+      mainWindow.webContents.once('did-finish-load', () => {
+        void (async () => {
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+          await runAnimalScreenshotCapture(mainWindow!)
+          app.exit(0)
+        })()
+      })
+    }
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {

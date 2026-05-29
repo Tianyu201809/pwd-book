@@ -9,3 +9,4 @@ icon/icon-*.png
 .DS_Store
 tsconfig.web.tsbuildinfo
 .agents/*
+.screenshot-temp

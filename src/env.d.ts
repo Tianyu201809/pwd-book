@@ -19,6 +19,7 @@ import type {
 declare global {
   interface Window {
     electronAPI?: {
+      isScreenshotMode?: () => boolean
       minimize: () => void
       maximize: () => void
       close: () => void
@@ -61,6 +62,7 @@ declare global {
       sendEmailBackup: (payload: EmailBackupSendPayload) => Promise<EmailBackupSettings>
       onScheduledBackupDue: (handler: () => void) => () => void
     }
+    __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }
 }
 

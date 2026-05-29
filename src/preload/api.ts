@@ -38,6 +38,7 @@ async function invoke<T>(channel: string, payload?: unknown): Promise<T> {
 }
 
 export const electronAPI = {
+  isScreenshotMode: (): boolean => process.env.PWD_BOOK_SCREENSHOT === '1',
   minimize: (): void => ipcRenderer.send('window-minimize'),
   maximize: (): void => ipcRenderer.send('window-maximize'),
   close: (): void => ipcRenderer.send('window-close'),
