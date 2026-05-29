@@ -67,7 +67,8 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "PwdBook"
+      "shortcutName": "PwdBook",
+      "include": "build/installer.nsh"
     }
   },
   "dependencies": {

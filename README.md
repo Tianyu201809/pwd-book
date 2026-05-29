@@ -119,7 +119,7 @@ pwd-book/
 ## 常见问题
 
 **数据存在哪里？**  
-Electron `app.getPath('userData')` 下的 `pwdbook.db`。卸载应用不会自动删除该文件，如需彻底清除请手动删除用户数据目录。
+Electron `app.getPath('userData')` 下的 `pwdbook.db`（通常在 `%APPDATA%\PwdBook` 或 `%APPDATA%\pwd-book`）。通过安装程序卸载时会询问是否删除本地密码数据；选择「否」则仅移除程序，数据保留。应用内更新安装不会触发删除。
 
 **能否多端同步？**  
 当前版本不支持。可自行通过「设置 → 数据」导出 JSON，再在其他机器导入。
