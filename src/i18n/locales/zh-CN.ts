@@ -212,6 +212,7 @@ export default {
     entryCount: '{count} 条',
     hasEntriesHint: '该分类下有 {count} 条密码，无法删除',
     deleteCategory: '删除分类',
+    editName: '点击编辑名称',
     empty: '还没有自定义分类',
     createFirst: '创建第一个',
     createHint: '创建后可在侧边栏拖拽调整顺序',

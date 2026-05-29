@@ -214,6 +214,7 @@ export default {
     entryCount: '{count} entries',
     hasEntriesHint: '{count} entries in this category — cannot delete',
     deleteCategory: 'Delete category',
+    editName: 'Click to edit name',
     empty: 'No custom categories yet',
     createFirst: 'Create the first one',
     createHint: 'After creating, drag categories in the sidebar to reorder',

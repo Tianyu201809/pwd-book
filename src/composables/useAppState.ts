@@ -495,6 +495,22 @@ async function createCategory(input: CategoryInput): Promise<boolean> {
   }
 }
 
+async function updateCategory(id: string, input: CategoryInput): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    await vaultApi.updateCategory(id, input)
+    await refreshVaultData()
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
 async function deleteCategory(id: string): Promise<boolean> {
   loading.value = true
   clearError()
@@ -658,6 +674,7 @@ export function useAppState() {
     removeEntry,
     toggleFavorite,
     createCategory,
+    updateCategory,
     deleteCategory,
     reorderSidebarCategories,
     copyUsername,

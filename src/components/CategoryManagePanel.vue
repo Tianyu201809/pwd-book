@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
@@ -13,7 +13,7 @@ import { useAppState } from '@/composables/useAppState'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 
-const { createCategory, deleteCategory, customCategories, loading, errorMessage, clearError } =
+const { createCategory, updateCategory, deleteCategory, customCategories, loading, errorMessage, clearError } =
   useAppState()
 
 const { t } = useI18n()
@@ -25,6 +25,9 @@ const confirmDeleteId = ref<string | null>(null)
 const categoryName = ref('')
 const localError = ref('')
 const selectedIcon = ref('Folder')
+const editingId = ref<string | null>(null)
+const editingName = ref('')
+const nameInputRef = ref<HTMLInputElement | null>(null)
 
 const categoryCount = computed(() => customCategories.value.length)
 
@@ -40,11 +43,53 @@ function closeManageDialog(): void {
   showManageDialog.value = false
   dialogMode.value = 'list'
   confirmDeleteId.value = null
+  editingId.value = null
+  editingName.value = ''
   localError.value = ''
+}
+
+function cancelEdit(): void {
+  editingId.value = null
+  editingName.value = ''
+}
+
+async function startEdit(category: { id: string; label: string }): Promise<void> {
+  if (confirmDeleteId.value || loading.value) return
+  confirmDeleteId.value = null
+  localError.value = ''
+  editingId.value = category.id
+  editingName.value = category.label
+  await nextTick()
+  nameInputRef.value?.focus()
+  nameInputRef.value?.select()
+}
+
+async function saveEdit(category: { id: string; label: string; icon: string }): Promise<void> {
+  if (editingId.value !== category.id) return
+
+  const name = editingName.value.trim()
+  if (!name) {
+    localError.value = t('errors.category_name_empty')
+    return
+  }
+  if (name === category.label) {
+    cancelEdit()
+    return
+  }
+
+  localError.value = ''
+  clearError()
+  const ok = await updateCategory(category.id, { name, icon: category.icon })
+  if (ok) {
+    cancelEdit()
+    return
+  }
+  localError.value = errorMessage.value
 }
 
 function openCreateView(): void {
   dialogMode.value = 'create'
+  cancelEdit()
   categoryName.value = ''
   selectedIcon.value = 'Folder'
   localError.value = ''
@@ -144,7 +189,26 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 
                 <template v-else>
                   <CategoryIconView :name="category.icon" :badge-size="28" :size="15" />
-                  <span class="manage-name" :title="category.label">{{ category.label }}</span>
+                  <input
+                    v-if="editingId === category.id"
+                    ref="nameInputRef"
+                    v-model="editingName"
+                    class="input-field name-input"
+                    maxlength="20"
+                    :disabled="loading"
+                    @keydown.enter="saveEdit(category)"
+                    @keydown.escape="cancelEdit"
+                    @blur="saveEdit(category)"
+                  />
+                  <button
+                    v-else
+                    type="button"
+                    class="manage-name"
+                    :title="t('category.editName')"
+                    @click="startEdit(category)"
+                  >
+                    {{ category.label }}
+                  </button>
                   <span class="entry-count">{{ t('category.entryCount', { count: category.count }) }}</span>
                   <button
                     type="button"
@@ -386,11 +450,30 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 .manage-name {
   flex: 1;
   min-width: 0;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
   font-size: 14px;
   color: var(--text-primary);
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: text;
+  transition: background-color 0.15s;
+}
+
+.manage-name:hover {
+  background: var(--bg-elevated);
+}
+
+.name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 14px;
 }
 
 .entry-count {
