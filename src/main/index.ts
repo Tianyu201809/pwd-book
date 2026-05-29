@@ -10,9 +10,16 @@ import {
   hideToTray,
   requestQuit,
   setMainWindow,
+  showFromTray,
 } from './tray'
 
 let mainWindow: BrowserWindow | null = null
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+
+if (!gotSingleInstanceLock) {
+  app.quit()
+}
 
 function resolveIconPath(): string | undefined {
   const candidates = app.isPackaged
@@ -58,36 +65,46 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(async () => {
-  await initDatabase()
-  registerIpcHandlers()
-
-  ipcMain.on('window-minimize', () => hideToTray())
-  ipcMain.on('window-maximize', () => {
-    if (mainWindow?.isMaximized()) {
-      mainWindow.unmaximize()
-    } else {
-      mainWindow?.maximize()
-    }
-  })
-  ipcMain.on('window-close', () => requestQuit())
-
-  ipcMain.on('theme-set-native', (_event, mode: 'dark' | 'light' | 'system') => {
-    nativeTheme.themeSource = mode
+if (gotSingleInstanceLock) {
+  app.on('second-instance', () => {
+    showFromTray()
   })
 
-  createWindow()
+  app.whenReady().then(async () => {
+    await initDatabase()
+    registerIpcHandlers()
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    ipcMain.on('window-minimize', () => hideToTray())
+    ipcMain.on('window-maximize', () => {
+      if (mainWindow?.isMaximized()) {
+        mainWindow.unmaximize()
+      } else {
+        mainWindow?.maximize()
+      }
+    })
+    ipcMain.on('window-close', () => requestQuit())
+
+    ipcMain.on('theme-set-native', (_event, mode: 'dark' | 'light' | 'system') => {
+      nativeTheme.themeSource = mode
+    })
+
+    createWindow()
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow()
+      } else {
+        showFromTray()
+      }
+    })
   })
-})
 
-app.on('window-all-closed', () => {
-  if (!getIsQuitting()) return
-  if (process.platform !== 'darwin') app.quit()
-})
+  app.on('window-all-closed', () => {
+    if (!getIsQuitting()) return
+    if (process.platform !== 'darwin') app.quit()
+  })
 
-app.on('before-quit', () => {
-  destroyTray()
-})
+  app.on('before-quit', () => {
+    destroyTray()
+  })
+}
