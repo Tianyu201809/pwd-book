@@ -243,7 +243,7 @@ async function handleReset(): Promise<void> {
           <h3>{{ t('settings.about') }}</h3>
           <UiCard class="about-card">
             <p class="font-display about-title">{{ t('common.appName') }}</p>
-            <p class="about-version">{{ t('settings.version', { version: '0.2.0' }) }}</p>
+            <p class="about-version">{{ t('settings.version', { version: '0.5.0' }) }}</p>
             <p class="about-desc">{{ t('settings.aboutDesc') }}</p>
             <p class="about-credit">{{ t('settings.animalIslandCredit') }}</p>
           </UiCard>
