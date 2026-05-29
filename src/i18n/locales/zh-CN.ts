@@ -91,7 +91,6 @@ export default {
     createAndEnter: '创建并进入',
     forgotPassword: '忘记主密码？',
     useRecoveryKey: '使用恢复密钥 →',
-    windowsHello: 'Windows Hello（即将支持）',
     footerNote: '数据仅存储在本地 · AES-256 加密 · SQLite 存储',
     skipRecoveryConfirm:
       '未保存恢复密钥时，忘记主密码将无法恢复条目，只能清除全部数据。仍要跳过吗？',
@@ -157,8 +156,6 @@ export default {
     autoLockDesc: '无操作后自动锁定应用',
     clipboardClear: '剪贴板自动清除',
     clipboardClearDesc: '复制密码后 {seconds} 秒清除',
-    windowsHello: 'Windows Hello',
-    windowsHelloDesc: '使用生物识别快速解锁',
     exportBackup: '导出备份',
     importData: '导入数据',
     clearAllData: '清除所有数据',

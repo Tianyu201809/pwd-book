@@ -54,9 +54,6 @@ recovery-wipe-confirm 清除确认（新增）
 │                                          │
 │  [ 解锁 ]                    btn-primary │
 │                                          │
-│  ─────────── 或 ───────────              │
-│  [ Windows Hello（即将支持）]   disabled  │
-│                                          │
 │  忘记主密码？          使用恢复密钥 →      │  ← 文字链，text-muted / hover accent
 └──────────────────────────────────────────┘
 │  数据仅存储在本地 · AES-256 加密 · SQLite  │

@@ -106,7 +106,6 @@
 
 ### 1. 解锁页（Lock Screen）
 - 居中布局，品牌 logo + 主密码输入
-- 可选：生物识别入口（Windows Hello / Touch ID 占位）
 - 错误状态：输入框红色描边 + 轻微 shake 动画
 
 ### 2. 主界面（Vault）

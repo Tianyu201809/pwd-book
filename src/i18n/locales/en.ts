@@ -92,7 +92,6 @@ export default {
     createAndEnter: 'Create & enter',
     forgotPassword: 'Forgot master password?',
     useRecoveryKey: 'Use recovery key →',
-    windowsHello: 'Windows Hello (coming soon)',
     footerNote: 'Data stored locally · AES-256 · SQLite',
     skipRecoveryConfirm:
       'Without a recovery key, forgetting your master password means losing all entries. Skip anyway?',
@@ -158,8 +157,6 @@ export default {
     autoLockDesc: 'Lock the app after inactivity',
     clipboardClear: 'Clear clipboard',
     clipboardClearDesc: 'Clear copied password after {seconds}s',
-    windowsHello: 'Windows Hello',
-    windowsHelloDesc: 'Unlock quickly with biometrics',
     exportBackup: 'Export backup',
     importData: 'Import data',
     clearAllData: 'Clear all data',

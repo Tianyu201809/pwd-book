@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Eye, EyeOff, Fingerprint } from 'lucide-vue-next'
+import { ShieldCheck, Eye, EyeOff } from 'lucide-vue-next'
 import RecoveryMenu from '@/components/recovery/RecoveryMenu.vue'
 import RecoveryKeyInput from '@/components/recovery/RecoveryKeyInput.vue'
 import RecoveryResetPassword from '@/components/recovery/RecoveryResetPassword.vue'
@@ -269,15 +269,6 @@ async function handleCopyRecoveryKey(): Promise<void> {
           </button>
 
           <template v-if="!isSetupMode">
-            <div class="divider-row">
-              <span class="line" />
-              <span class="or">{{ t('common.or') }}</span>
-              <span class="line" />
-            </div>
-            <button type="button" class="btn-ghost hello-btn" disabled>
-              <Fingerprint :size="16" :stroke-width="1.5" class="safe-icon" />
-              {{ t('lock.windowsHello') }}
-            </button>
             <div class="recovery-links">
               <button type="button" class="text-link" @click="openRecoveryMenu">{{ t('lock.forgotPassword') }}</button>
               <button type="button" class="text-link accent" @click="openRecoveryMenu">
@@ -456,43 +447,6 @@ h1 {
   margin: 12px 0 0;
   font-size: 12px;
   color: var(--text-secondary);
-}
-
-.divider-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0;
-}
-
-.line {
-  flex: 1;
-  height: 1px;
-  background: var(--border-default);
-}
-
-.or {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.hello-btn {
-  width: 100%;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.hello-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.safe-icon {
-  color: var(--status-safe);
 }
 
 .recovery-links {

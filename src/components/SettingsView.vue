@@ -148,7 +148,7 @@ async function handleReset(): Promise<void> {
                 </option>
               </select>
             </div>
-            <div class="row">
+            <div class="row last">
               <div>
                 <p class="row-title">{{ t('settings.clipboardClear') }}</p>
                 <p class="row-desc">
@@ -163,13 +163,6 @@ async function handleReset(): Promise<void> {
               >
                 <span class="knob" />
               </button>
-            </div>
-            <div class="row last">
-              <div>
-                <p class="row-title">{{ t('settings.windowsHello') }}</p>
-                <p class="row-desc">{{ t('settings.windowsHelloDesc') }}</p>
-              </div>
-              <div class="toggle disabled"><span class="knob" /></div>
             </div>
           </div>
 
