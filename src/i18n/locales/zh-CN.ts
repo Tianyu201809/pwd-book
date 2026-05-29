@@ -29,6 +29,7 @@ export default {
     all: '全部',
     uncategorized: '未分类',
     entries: '{n} 条',
+    alreadyRunning: 'PwdBook 已在运行中',
     operationFailed: '操作失败',
   },
   errors: {

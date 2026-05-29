@@ -43,6 +43,11 @@ export const electronAPI = {
     ipcRenderer.on('window:prompt-close', listener)
     return () => ipcRenderer.removeListener('window:prompt-close', listener)
   },
+  onAlreadyRunning: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on('app:already-running', listener)
+    return () => ipcRenderer.removeListener('app:already-running', listener)
+  },
   setNativeTheme: (mode: ThemeNativeMode): void => ipcRenderer.send('theme-set-native', mode),
 
   getVaultStatus: (): Promise<VaultStatus> => invoke(IPC.vaultStatus),

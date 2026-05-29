@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { initDatabase } from './db/database'
@@ -65,9 +65,26 @@ function createWindow(): void {
   }
 }
 
+function notifyAlreadyRunning(): void {
+  showFromTray()
+  const parent =
+    mainWindow && !mainWindow.isDestroyed() ? mainWindow : BrowserWindow.getFocusedWindow() ?? undefined
+  void dialog.showMessageBox(parent, {
+    type: 'info',
+    title: 'PwdBook',
+    message: 'PwdBook 已在运行中',
+    detail: '程序已在运行，已为您打开现有窗口。请勿重复启动。',
+    buttons: ['确定'],
+    noLink: true,
+  })
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('app:already-running')
+  }
+}
+
 if (gotSingleInstanceLock) {
   app.on('second-instance', () => {
-    showFromTray()
+    notifyAlreadyRunning()
   })
 
   app.whenReady().then(async () => {

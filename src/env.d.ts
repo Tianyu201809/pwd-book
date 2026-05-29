@@ -20,6 +20,7 @@ declare global {
       maximize: () => void
       close: () => void
       onClosePrompt: (handler: () => void) => () => void
+      onAlreadyRunning: (handler: () => void) => () => void
       setNativeTheme: (mode: ThemeNativeMode) => void
       getVaultStatus: () => Promise<VaultStatus>
       setupVault: (payload: VaultSetupPayload) => Promise<VaultStatus>

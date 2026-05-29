@@ -29,6 +29,7 @@ export default {
     all: 'All',
     uncategorized: 'Uncategorized',
     entries: '{n} entries',
+    alreadyRunning: 'PwdBook is already running',
     operationFailed: 'Operation failed',
   },
   errors: {
