@@ -8,13 +8,18 @@
 
 > 本地优先的密码管理桌面应用 — 数据仅存本机，不上传云端。
 
-[概览](#概览) · [功能](#功能) · [快速开始](#快速开始) · [安全模型](#安全模型) · [项目结构](#项目结构) · [文档](#文档) · [常见问题](#常见问题)
+[概览](#概览) · [产品截图](#产品截图) · [功能](#功能) · [快速开始](#快速开始) · [安全模型](#安全模型) · [项目结构](#项目结构) · [文档](#文档) · [常见问题](#常见问题)
 
 ## 概览
 
 **PwdBook** 是一款基于 **Electron + Vue 3 + TypeScript** 的桌面密码库。所有条目保存在本机 SQLite 数据库中，通过主密码解锁；解锁后的会话密钥用于加密存储各条目的密码字段。锁定或退出后，内存中的会话密钥会被清除。
 
-应用采用「数字保险库」视觉风格（深色界面、黄铜色强调色），默认窗口 1200×760，支持自定义标题栏、主题与中英文界面。
+应用采用「数字保险库」视觉风格，支持浅色 / 深色主题与多种强调色，默认窗口 1200×760，自定义标题栏与中英文界面。
+
+<p align="center">
+  <img src="./docs/images/main.png" alt="PwdBook 主界面：侧栏分类、搜索与条目列表" width="720" />
+</p>
+<p align="center"><em>主界面 — 分类导航、搜索与密码条目管理</em></p>
 
 | 维度 | 说明 |
 |------|------|
@@ -22,6 +27,41 @@
 | 加密 | 主密码 scrypt 校验；条目密码 AES-256-GCM |
 | 进程模型 | 主进程（业务与加密）+ Preload 桥 + Vue 渲染进程 |
 | 当前平台 | 主要面向 **Windows** 打包（NSIS 安装包） |
+
+## 产品截图
+
+### 锁定与恢复
+
+<p align="center">
+  <img src="./docs/images/lock.png" alt="锁定页：输入主密码解锁保险库" width="480" />
+</p>
+<p align="center"><em>锁定页 — 主密码解锁；支持恢复密钥入口</em></p>
+
+<p align="center">
+  <img src="./docs/images/reset.png" alt="恢复访问：恢复密钥、JSON 备份或清除数据" width="480" />
+</p>
+<p align="center"><em>恢复访问 — 恢复密钥重置主密码、从 JSON 备份恢复，或清除后重建</em></p>
+
+### 设置
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="./docs/images/setting-safe.png" alt="设置 - 安全：自动锁定、剪贴板、关闭窗口、恢复密钥" width="100%" />
+      <br /><sub>安全 — 自动锁定、剪贴板清除、关闭窗口行为、恢复密钥</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="./docs/images/lang-theme.png" alt="设置 - 外观：语言、深浅色、主题色" width="100%" />
+      <br /><sub>外观 — 中英文、浅色/深色/跟随系统、八种强调色</sub>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./docs/images/data.png" alt="设置 - 数据：导出备份、导入数据、清除所有数据" width="480" />
+      <br /><sub>数据 — JSON 导出备份、导入恢复、清除全部数据</sub>
+    </td>
+  </tr>
+</table>
 
 ## 功能
 
@@ -129,6 +169,7 @@ pwd-book/
 │   ├── i18n/           # 中英文文案
 │   └── shared/         # 类型、IPC 常量、工具函数（含 URL 参数拼接）
 ├── deps/               # 打包依赖脚本（NSIS 卸载时可选删除用户数据）
+├── docs/images/        # README 等产品截图
 ├── design/             # 设计系统、原型与恢复流程规范
 ├── docs/code-map/      # 架构与代码导航（贡献者 / AI 助手）
 └── electron.vite.config.ts
