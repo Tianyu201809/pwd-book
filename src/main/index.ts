@@ -68,15 +68,22 @@ function createWindow(): void {
 function notifyAlreadyRunning(): void {
   showFromTray()
   const parent =
-    mainWindow && !mainWindow.isDestroyed() ? mainWindow : BrowserWindow.getFocusedWindow() ?? undefined
-  void dialog.showMessageBox(parent, {
+    mainWindow && !mainWindow.isDestroyed()
+      ? mainWindow
+      : BrowserWindow.getFocusedWindow() ?? undefined
+  const dialogOptions: Electron.MessageBoxOptions = {
     type: 'info',
     title: 'PwdBook',
     message: 'PwdBook 已在运行中',
     detail: '程序已在运行，已为您打开现有窗口。请勿重复启动。',
     buttons: ['确定'],
     noLink: true,
-  })
+  }
+  if (parent) {
+    void dialog.showMessageBox(parent, dialogOptions)
+  } else {
+    void dialog.showMessageBox(dialogOptions)
+  }
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('app:already-running')
   }

@@ -449,6 +449,48 @@ async function saveEntry(id: string | null, input: PasswordEntryInput): Promise<
   }
 }
 
+function entryToInput(entry: PasswordEntry): PasswordEntryInput {
+  return {
+    title: entry.title,
+    url: entry.url,
+    username: entry.username,
+    password: entry.password,
+    note: entry.note,
+    tags: [...entry.tags],
+    categoryId: entry.categoryId,
+    isFavorite: entry.isFavorite,
+    displayIcon: entry.displayIcon ?? '',
+  }
+}
+
+async function moveEntryToCategory(entryId: string, categoryId: string): Promise<boolean> {
+  const entry = entries.value.find((item) => item.id === entryId)
+  if (!entry || entry.categoryId === categoryId) return false
+
+  const categoryName =
+    vaultCategories.value.find((category) => category.id === categoryId)?.name ?? ''
+
+  loading.value = true
+  clearError()
+  try {
+    await vaultApi.updateEntry(entryId, { ...entryToInput(entry), categoryId })
+    await refreshVaultData()
+    touchActivity()
+    showToast(
+      categoryName
+        ? i18n.global.t('vault.movedToCategory', { name: categoryName })
+        : i18n.global.t('vault.saved'),
+      'success',
+    )
+    return true
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
 async function removeEntry(id: string): Promise<boolean> {
   loading.value = true
   clearError()
@@ -672,6 +714,7 @@ export function useAppState() {
     cancelCreateEntry,
     getCreateDefaultCategoryId,
     saveEntry,
+    moveEntryToCategory,
     removeEntry,
     toggleFavorite,
     createCategory,

@@ -52,9 +52,9 @@ const localMessage = ref('')
 const isSetupMode = computed(() => !vaultStatus.value.initialized)
 const title = computed(() => {
   if (lockMode.value === 'setup-recovery') return t('lock.saveRecoveryKey')
-  if (lockMode.value === 'setup') return t('lock.createMasterPassword')
+  if (lockMode.value === 'setup' && !vaultStatus.value.initialized) return t('lock.createMasterPassword')
   if (lockMode.value.startsWith('recovery-')) return t('lock.recoverAccess')
-  return isSetupMode.value ? t('lock.createMasterPassword') : t('lock.unlockVault')
+  return t('lock.unlockVault')
 })
 const submitLabel = computed(() =>
   isSetupMode.value ? t('lock.createAndEnter') : t('lock.unlock'),
@@ -65,8 +65,8 @@ const showDefaultForm = computed(
 
 onMounted(async () => {
   clearError()
-  lockMode.value = isSetupMode.value ? 'setup' : 'unlock'
   await refreshVaultStatus()
+  lockMode.value = vaultStatus.value.initialized ? 'unlock' : 'setup'
 })
 
 watch(
@@ -74,6 +74,10 @@ watch(
   (initialized) => {
     if (!initialized && lockMode.value === 'unlock') {
       lockMode.value = 'setup'
+      return
+    }
+    if (initialized && lockMode.value === 'setup') {
+      lockMode.value = 'unlock'
     }
   },
 )

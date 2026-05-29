@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal, MoreHorizontal, Check } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import EntryListMenu from '@/components/EntryListMenu.vue'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { ListSortOrder, PasswordEntry } from '@/types'
@@ -14,9 +15,6 @@ const {
   listSortOrder,
   selectEntry,
   isCreating,
-  removeEntry,
-  copyEntryData,
-  openEntryInBrowser,
   setListSortOrder,
   touchActivity,
 } = useAppState()
@@ -92,29 +90,6 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
     x: event.clientX,
     y: event.clientY,
   }
-}
-
-async function handleOpenInBrowser(entry: PasswordEntry, event: MouseEvent): Promise<void> {
-  event.stopPropagation()
-  closeMenus()
-  await openEntryInBrowser(entry)
-}
-
-async function handleCopy(entry: PasswordEntry, event: MouseEvent): Promise<void> {
-  event.stopPropagation()
-  closeMenus()
-  await copyEntryData(entry)
-}
-
-async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<void> {
-  event.stopPropagation()
-  closeMenus()
-  if (!window.confirm(t('vault.deleteConfirm', { title: entry.title }))) return
-  await removeEntry(entry.id)
-}
-
-function canOpenInBrowser(entry: PasswordEntry): boolean {
-  return Boolean(entry.url.trim())
 }
 </script>
 
@@ -207,24 +182,7 @@ function canOpenInBrowser(entry: PasswordEntry): boolean {
               <MoreHorizontal :size="16" :stroke-width="1.5" />
             </button>
             <div v-if="openMenuId === entry.id" class="action-menu surface-card" @click.stop>
-              <button
-                type="button"
-                class="action-menu-item"
-                :disabled="!canOpenInBrowser(entry)"
-                @click="handleOpenInBrowser(entry, $event)"
-              >
-                {{ t('vault.openWithCredentials') }}
-              </button>
-              <button type="button" class="action-menu-item" @click="handleCopy(entry, $event)">
-                {{ t('vault.copyData') }}
-              </button>
-              <button
-                type="button"
-                class="action-menu-item danger"
-                @click="handleDelete(entry, $event)"
-              >
-                {{ t('common.delete') }}
-              </button>
+              <EntryListMenu :entry="entry" @action="closeMenus" />
             </div>
           </div>
         </div>
@@ -238,28 +196,7 @@ function canOpenInBrowser(entry: PasswordEntry): boolean {
         :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
         @click.stop
       >
-        <button
-          type="button"
-          class="action-menu-item"
-          :disabled="!canOpenInBrowser(contextMenu.entry)"
-          @click="handleOpenInBrowser(contextMenu.entry, $event)"
-        >
-          {{ t('vault.openWithCredentials') }}
-        </button>
-        <button
-          type="button"
-          class="action-menu-item"
-          @click="handleCopy(contextMenu.entry, $event)"
-        >
-          {{ t('vault.copyData') }}
-        </button>
-        <button
-          type="button"
-          class="action-menu-item danger"
-          @click="handleDelete(contextMenu.entry, $event)"
-        >
-          {{ t('common.delete') }}
-        </button>
+        <EntryListMenu :entry="contextMenu.entry" @action="closeMenus" />
       </div>
     </Teleport>
   </main>
@@ -503,7 +440,7 @@ function canOpenInBrowser(entry: PasswordEntry): boolean {
   z-index: 20;
   min-width: 200px;
   padding: 4px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .context-menu {
@@ -511,37 +448,6 @@ function canOpenInBrowser(entry: PasswordEntry): boolean {
   z-index: 100;
   min-width: 200px;
   padding: 4px;
-  overflow: hidden;
-}
-
-.action-menu-item {
-  width: 100%;
-  display: block;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 13px;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.action-menu-item:hover:not(:disabled) {
-  background: var(--bg-hover);
-}
-
-.action-menu-item:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.action-menu-item.danger {
-  color: var(--status-danger);
-}
-
-.action-menu-item.danger:hover:not(:disabled) {
-  background: rgba(248, 113, 113, 0.08);
+  overflow: visible;
 }
 </style>

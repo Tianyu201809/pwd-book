@@ -20,6 +20,8 @@ const { t } = useI18n()
 
 const showManageDialog = ref(false)
 const showCreateIconPicker = ref(false)
+const showEditIconPicker = ref(false)
+const editIconCategoryId = ref<string | null>(null)
 const dialogMode = ref<'list' | 'create'>('list')
 const confirmDeleteId = ref<string | null>(null)
 const categoryName = ref('')
@@ -30,6 +32,11 @@ const editingName = ref('')
 const nameInputRef = ref<HTMLInputElement | null>(null)
 
 const categoryCount = computed(() => customCategories.value.length)
+
+const editIconPickerSelected = computed(() => {
+  if (!editIconCategoryId.value) return 'Folder'
+  return customCategories.value.find((category) => category.id === editIconCategoryId.value)?.icon ?? 'Folder'
+})
 
 function openManageDialog(): void {
   showManageDialog.value = true
@@ -45,7 +52,36 @@ function closeManageDialog(): void {
   confirmDeleteId.value = null
   editingId.value = null
   editingName.value = ''
+  showEditIconPicker.value = false
+  editIconCategoryId.value = null
   localError.value = ''
+}
+
+function openIconPicker(category: { id: string }): void {
+  if (loading.value || confirmDeleteId.value) return
+  editIconCategoryId.value = category.id
+  showEditIconPicker.value = true
+}
+
+async function handleEditIconSelect(icon: string): Promise<void> {
+  const categoryId = editIconCategoryId.value
+  if (!categoryId) return
+
+  const category = customCategories.value.find((item) => item.id === categoryId)
+  if (!category || category.icon === icon) {
+    showEditIconPicker.value = false
+    editIconCategoryId.value = null
+    return
+  }
+
+  localError.value = ''
+  clearError()
+  const ok = await updateCategory(categoryId, { name: category.label, icon })
+  showEditIconPicker.value = false
+  editIconCategoryId.value = null
+  if (!ok) {
+    localError.value = errorMessage.value
+  }
 }
 
 function cancelEdit(): void {
@@ -188,7 +224,15 @@ async function confirmDelete(id: string, name: string): Promise<void> {
                 </template>
 
                 <template v-else>
-                  <CategoryIconView :name="category.icon" :badge-size="28" :size="15" />
+                  <button
+                    type="button"
+                    class="category-icon-btn"
+                    :title="t('category.editIcon')"
+                    :aria-label="t('category.editIcon')"
+                    @click.stop="openIconPicker(category)"
+                  >
+                    <CategoryIconView :name="category.icon" :badge-size="28" :size="15" />
+                  </button>
                   <input
                     v-if="editingId === category.id"
                     ref="nameInputRef"
@@ -291,6 +335,13 @@ async function confirmDelete(id: string, name: string): Promise<void> {
     :allow-clear="false"
     :title="t('category.pickIcon')"
     @select="selectedIcon = $event"
+  />
+  <IconPickerModal
+    v-model:open="showEditIconPicker"
+    :selected="editIconPickerSelected"
+    :allow-clear="false"
+    :title="t('category.pickIcon')"
+    @select="handleEditIconSelect"
   />
 </template>
 
@@ -437,14 +488,23 @@ async function confirmDelete(id: string, name: string): Promise<void> {
   background: rgba(239, 68, 68, 0.06);
 }
 
-.item-icon {
-  color: var(--text-muted);
+.category-icon-btn {
   flex-shrink: 0;
+  border: none;
+  padding: 0;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.item-icon {
-  color: var(--text-muted);
-  flex-shrink: 0;
+.category-icon-btn:hover {
+  transform: scale(1.06);
+}
+
+.category-icon-btn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
 .manage-name {
