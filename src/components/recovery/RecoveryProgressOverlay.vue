@@ -1,11 +1,17 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+</script>
+
 <template>
   <div class="progress-overlay">
     <div class="progress-card surface-card">
-      <p class="progress-title">正在重新加密您的数据…</p>
+      <p class="progress-title">{{ t('recovery.progressTitle') }}</p>
       <div class="progress-bar">
         <span class="progress-fill" />
       </div>
-      <p class="progress-hint">请勿关闭应用</p>
+      <p class="progress-hint">{{ t('recovery.progressHint') }}</p>
     </div>
   </div>
 </template>

@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { Sun, Moon, Monitor, ShieldCheck, Check } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
+import { useLocale } from '@/composables/useLocale'
 import type { ThemeAccent, ThemeModePref } from '@/types'
+import type { AppLocale } from '@/i18n'
 
+const { t } = useI18n()
+const { locale, localeOptions, setLocale } = useLocale()
 const {
   modePref,
   accent,
@@ -24,8 +29,25 @@ const modeIcons = {
 <template>
   <div class="appearance">
     <section>
-      <h3>外观模式</h3>
-      <p class="desc">切换浅色、深色，或跟随系统设置自动切换</p>
+      <h3>{{ t('appearance.languageTitle') }}</h3>
+      <p class="desc">{{ t('appearance.languageDesc') }}</p>
+      <div class="theme-segment">
+        <button
+          v-for="item in localeOptions"
+          :key="item.id"
+          type="button"
+          class="theme-segment-btn"
+          :class="{ active: locale === item.id }"
+          @click="setLocale(item.id as AppLocale)"
+        >
+          {{ t(item.labelKey) }}
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <h3>{{ t('appearance.modeTitle') }}</h3>
+      <p class="desc">{{ t('appearance.modeDesc') }}</p>
       <div class="theme-segment">
         <button
           v-for="mode in modeOptions"
@@ -42,8 +64,8 @@ const modeIcons = {
     </section>
 
     <section>
-      <h3>主题色</h3>
-      <p class="desc">选择强调色，按钮、选中态、标签等将同步更新</p>
+      <h3>{{ t('appearance.accentTitle') }}</h3>
+      <p class="desc">{{ t('appearance.accentDesc') }}</p>
       <div class="swatch-grid">
         <button
           v-for="item in accentOptions"
@@ -63,27 +85,27 @@ const modeIcons = {
     </section>
 
     <section>
-      <h3>预览</h3>
+      <h3>{{ t('appearance.previewTitle') }}</h3>
       <div class="surface-card preview-card">
         <div class="preview-header">
           <div class="preview-icon">
             <ShieldCheck :size="16" :stroke-width="1.5" />
           </div>
           <div>
-            <p class="preview-title">PwdBook</p>
+            <p class="preview-title">{{ t('common.appName') }}</p>
             <p class="preview-meta">
-              {{ currentModeLabel }} · 主题色
+              {{ currentModeLabel }} · {{ t('appearance.themeAccent') }}
               <span :style="{ color: currentAccent.color }">{{ currentAccent.label }}</span>
             </p>
           </div>
         </div>
         <div class="preview-body">
-          <button type="button" class="btn-primary preview-primary">主要按钮</button>
+          <button type="button" class="btn-primary preview-primary">{{ t('appearance.primaryButton') }}</button>
           <div class="preview-tags">
-            <span class="preview-tag">标签</span>
-            <span class="preview-tag muted">次要</span>
+            <span class="preview-tag">{{ t('appearance.tag') }}</span>
+            <span class="preview-tag muted">{{ t('appearance.tagMuted') }}</span>
           </div>
-          <div class="preview-input">输入框预览</div>
+          <div class="preview-input">{{ t('appearance.inputPreview') }}</div>
         </div>
       </div>
     </section>

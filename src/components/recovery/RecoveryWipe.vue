@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getWipeConfirmPhrase } from '@/i18n'
 
-const props = defineProps<{
+defineProps<{
   entryCount: number
   loading: boolean
   errorMessage: string
@@ -14,11 +16,13 @@ const emit = defineEmits<{
   confirm: []
 }>()
 
+const { t } = useI18n()
+
 const confirmText = ref('')
-const CONFIRM_PHRASE = '删除我的数据'
+const confirmPhrase = computed(() => getWipeConfirmPhrase())
 
 function submitConfirm(): void {
-  if (confirmText.value.trim() === CONFIRM_PHRASE) {
+  if (confirmText.value.trim() === confirmPhrase.value) {
     emit('confirm')
   }
 }
@@ -26,31 +30,29 @@ function submitConfirm(): void {
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">← 返回</button>
+    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.back') }}</button>
 
     <template v-if="mode === 'info'">
-      <h2 class="panel-title">清除保险库</h2>
+      <h2 class="panel-title">{{ t('recovery.wipeTitle') }}</h2>
       <div class="danger-box">
-        <p class="danger-title">危险操作</p>
-        <p class="danger-desc">
-          此操作将永久删除本机所有密码条目（共 {{ entryCount }} 条）及主密码设置。此操作不可撤销。
-        </p>
-        <p class="danger-hint">若您曾导出 JSON 备份，可先尝试从备份恢复。</p>
+        <p class="danger-title">{{ t('recovery.wipeDanger') }}</p>
+        <p class="danger-desc">{{ t('recovery.wipeDesc', { count: entryCount }) }}</p>
+        <p class="danger-hint">{{ t('recovery.wipeHint') }}</p>
       </div>
       <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
       <button type="button" class="btn-ghost danger-btn" @click="emit('continue')">
-        我已了解，继续
+        {{ t('recovery.wipeContinue') }}
       </button>
     </template>
 
     <template v-else>
-      <h2 class="panel-title">最终确认</h2>
-      <p class="panel-desc">请输入以下文字以确认：</p>
-      <p class="confirm-phrase">{{ CONFIRM_PHRASE }}</p>
+      <h2 class="panel-title">{{ t('recovery.wipeFinalTitle') }}</h2>
+      <p class="panel-desc">{{ t('recovery.wipeFinalDesc') }}</p>
+      <p class="confirm-phrase">{{ confirmPhrase }}</p>
       <input
         v-model="confirmText"
         class="input-field"
-        placeholder="输入确认文字"
+        :placeholder="t('recovery.wipeConfirmPlaceholder')"
         :disabled="loading"
         @keydown.enter="submitConfirm"
       />
@@ -58,10 +60,10 @@ function submitConfirm(): void {
       <button
         type="button"
         class="btn-primary danger-submit"
-        :disabled="loading || confirmText.trim() !== CONFIRM_PHRASE"
+        :disabled="loading || confirmText.trim() !== confirmPhrase"
         @click="submitConfirm"
       >
-        {{ loading ? '清除中…' : '清除并重置保险库' }}
+        {{ loading ? t('recovery.wiping') : t('recovery.wipeSubmit') }}
       </button>
     </template>
   </div>

@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import type {
   CategoryInput,
   ExportPayload,
@@ -14,7 +15,7 @@ import type {
 
 function getApi() {
   if (!window.electronAPI) {
-    throw new Error('Electron API 不可用')
+    throw new Error(i18n.global.t('errors.electron_api_unavailable'))
   }
   return window.electronAPI
 }

@@ -1,5 +1,6 @@
 import type { Database } from 'sql.js'
 import { persistDatabase } from './database'
+import { appError, ErrorCode } from '../../shared/errors'
 
 export interface CategoryRow {
   id: string
@@ -123,6 +124,6 @@ export function getDefaultCategoryId(db: Database): string {
   const other = readCategoryRow(db, 'cat-other')
   if (other) return other.id
   const rows = readCategoryRows(db)
-  if (rows.length === 0) throw new Error('未找到默认分类')
+  if (rows.length === 0) throw appError(ErrorCode.DEFAULT_CATEGORY_NOT_FOUND)
   return rows[0].id
 }

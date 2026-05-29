@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Eye, EyeOff } from 'lucide-vue-next'
 
 defineProps<{
@@ -12,16 +13,18 @@ const emit = defineEmits<{
   submit: [newPassword: string, confirmPassword: string]
 }>()
 
+const { t } = useI18n()
+
 const newPassword = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
 
 const strengthLevel = computed(() => {
   const len = newPassword.value.length
-  if (len >= 16) return { label: '强', bars: 3 }
-  if (len >= 10) return { label: '中', bars: 2 }
-  if (len >= 1) return { label: '弱', bars: 1 }
-  return { label: '无', bars: 0 }
+  if (len >= 16) return { label: t('detail.strengthStrong'), bars: 3 }
+  if (len >= 10) return { label: t('detail.strengthMedium'), bars: 2 }
+  if (len >= 1) return { label: t('detail.strengthWeak'), bars: 1 }
+  return { label: t('detail.strengthNone'), bars: 0 }
 })
 
 function submit(): void {
@@ -31,11 +34,11 @@ function submit(): void {
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">← 返回</button>
-    <h2 class="panel-title">设置新主密码</h2>
-    <p class="panel-desc">验证通过后，请为保险库设置新的主密码</p>
+    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.back') }}</button>
+    <h2 class="panel-title">{{ t('recovery.setNewPassword') }}</h2>
+    <p class="panel-desc">{{ t('recovery.saveKeySubtitle') }}</p>
 
-    <label class="label">新主密码</label>
+    <label class="label">{{ t('lock.masterPassword') }}</label>
     <div class="input-wrap">
       <input
         v-model="newPassword"
@@ -50,7 +53,7 @@ function submit(): void {
       </button>
     </div>
 
-    <label class="label confirm-label">确认新主密码</label>
+    <label class="label confirm-label">{{ t('lock.confirmMasterPassword') }}</label>
     <input
       v-model="confirmPassword"
       :type="showPassword ? 'text' : 'password'"
@@ -69,7 +72,7 @@ function submit(): void {
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
     <button type="button" class="btn-primary submit-btn" :disabled="loading" @click="submit">
-      {{ loading ? '正在重新加密…' : '重置主密码' }}
+      {{ loading ? t('recovery.reEncrypting') : t('recovery.setNewPassword') }}
     </button>
   </div>
 </template>

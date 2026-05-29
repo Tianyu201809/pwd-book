@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, X } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import { translateIconLabel } from '@/i18n'
 import { CATEGORY_ICON_OPTIONS } from '@/shared/categoryIcons'
 
 const props = withDefaults(
@@ -22,6 +24,8 @@ const emit = defineEmits<{
   clear: []
 }>()
 
+const { t } = useI18n()
+
 const query = ref('')
 
 watch(
@@ -36,7 +40,7 @@ const filteredIcons = computed(() => {
   if (!keyword) return CATEGORY_ICON_OPTIONS
   return CATEGORY_ICON_OPTIONS.filter(
     (icon) =>
-      icon.label.toLowerCase().includes(keyword) ||
+      translateIconLabel(icon.value).toLowerCase().includes(keyword) ||
       icon.value.toLowerCase().includes(keyword),
   )
 })
@@ -62,10 +66,10 @@ function useLetterAvatar(): void {
       <div v-if="open" class="picker-overlay" @click.self="close">
         <div class="picker-panel surface-card">
           <header class="picker-header">
-            <button type="button" class="header-btn" aria-label="关闭" @click="close">
+            <button type="button" class="header-btn" :aria-label="t('common.close')" @click="close">
               <X :size="18" :stroke-width="1.5" />
             </button>
-            <h3 class="picker-title">{{ title ?? '选择图标' }}</h3>
+            <h3 class="picker-title">{{ title ?? t('icons.pickIcon') }}</h3>
             <span class="header-spacer" />
           </header>
 
@@ -74,13 +78,13 @@ function useLetterAvatar(): void {
             <input
               v-model="query"
               class="search-input"
-              placeholder="搜索"
+              :placeholder="t('common.search')"
               autofocus
             />
           </div>
 
           <div class="picker-body">
-            <p v-if="filteredIcons.length === 0" class="empty-text">没有匹配的图标</p>
+            <p v-if="filteredIcons.length === 0" class="empty-text">{{ t('icons.noMatch') }}</p>
             <div v-else class="icon-grid">
               <button
                 v-for="icon in filteredIcons"
@@ -88,7 +92,7 @@ function useLetterAvatar(): void {
                 type="button"
                 class="icon-cell"
                 :class="{ selected: selected === icon.value }"
-                :title="icon.label"
+                :title="translateIconLabel(icon.value)"
                 :style="
                   selected === icon.value
                     ? { borderColor: icon.color, background: icon.bg }
@@ -103,7 +107,7 @@ function useLetterAvatar(): void {
 
           <footer v-if="allowClear" class="picker-footer">
             <button type="button" class="reset-btn" @click="useLetterAvatar">
-              使用标题首字母
+              {{ t('icons.useInitial') }}
             </button>
           </footer>
         </div>

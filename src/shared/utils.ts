@@ -1,10 +1,33 @@
+import { ERR_PREFIX } from '@/shared/errors'
+import { i18n } from '@/i18n'
 import type { PasswordEntry } from '@/shared/types'
 
+function translateErrorCode(raw: string): string | null {
+  if (!raw.startsWith(ERR_PREFIX)) return null
+  const payload = raw.slice(ERR_PREFIX.length)
+  const colonIndex = payload.indexOf(':')
+  const code = (colonIndex >= 0 ? payload.slice(0, colonIndex) : payload).toLowerCase()
+  let params: Record<string, string | number> = {}
+  if (colonIndex >= 0) {
+    try {
+      params = JSON.parse(payload.slice(colonIndex + 1)) as Record<string, string | number>
+    } catch {
+      /* ignore malformed params */
+    }
+  }
+  const key = `errors.${code}`
+  if (!i18n.global.te(key)) return null
+  return i18n.global.t(key, params)
+}
+
 export function parseErrorMessage(error: unknown): string {
-  if (!(error instanceof Error)) return '操作失败'
+  if (!(error instanceof Error)) return i18n.global.t('common.operationFailed')
   const nested = error.message.match(/:\s*Error:\s*(.+)$/)
-  if (nested?.[1]) return nested[1].trim()
-  return error.message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim() || '操作失败'
+  const message = nested?.[1]?.trim() ?? error.message
+  const stripped = message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim()
+  const translated = translateErrorCode(stripped)
+  if (translated) return translated
+  return stripped || i18n.global.t('common.operationFailed')
 }
 
 export function formatRecoveryKeyInput(input: string): string {
@@ -18,32 +41,38 @@ export function formatRecoveryKeyInput(input: string): string {
 
 export function buildRecoveryKeyFileContent(recoveryKey: string): string {
   const date = new Date().toISOString().slice(0, 10)
+  const t = i18n.global.t
   return [
-    'PwdBook 恢复密钥',
+    t('recovery.recoveryKeyFileTitle'),
     '================',
     '',
-    `恢复密钥：${recoveryKey}`,
+    t('recovery.recoveryKeyFileKey', { key: recoveryKey }),
     '',
-    '说明：',
-    '- 忘记主密码时，在锁定页选择「使用恢复密钥」',
-    '- 请将此文件与 PwdBook 应用分开存放',
-    '- 丢失恢复密钥且忘记主密码，将无法恢复数据',
+    t('recovery.recoveryKeyFileInstructions'),
+    t('recovery.recoveryKeyFileStep1'),
+    t('recovery.recoveryKeyFileStep2'),
+    t('recovery.recoveryKeyFileStep3'),
     '',
-    `生成时间：${date}`,
+    t('recovery.recoveryKeyFileGenerated', { date }),
   ].join('\n')
 }
 
 export function formatEntryForClipboard(entry: PasswordEntry): string {
+  const t = i18n.global.t
   const lines = [
-    `标题：${entry.title}`,
-    `网址：${entry.url || ''}`,
-    `分类：${entry.categoryName}`,
-    `用户名：${entry.username || ''}`,
-    `密码：${entry.password}`,
+    t('clipboard.title', { value: entry.title }),
+    t('clipboard.url', { value: entry.url || '' }),
+    t('clipboard.category', { value: entry.categoryName }),
+    t('clipboard.username', { value: entry.username || '' }),
+    t('clipboard.password', { value: entry.password }),
   ]
-  if (entry.note) lines.push(`备注：${entry.note}`)
-  if (entry.tags.length) lines.push(`标签：${entry.tags.join('、')}`)
-  lines.push(`收藏：${entry.isFavorite ? '是' : '否'}`)
+  if (entry.note) lines.push(t('clipboard.note', { value: entry.note }))
+  if (entry.tags.length) lines.push(t('clipboard.tags', { value: entry.tags.join('、') }))
+  lines.push(
+    t('clipboard.favorite', {
+      value: entry.isFavorite ? t('common.yes') : t('common.no'),
+    }),
+  )
   return lines.join('\n')
 }
 
@@ -65,16 +94,24 @@ export function generatePassword(length = 16): string {
 }
 
 export function formatRelativeTime(timestamp: number | null): string {
-  if (!timestamp) return '从未使用'
+  if (!timestamp) return i18n.global.t('common.neverUsed')
   const diff = Date.now() - timestamp
   const minute = 60 * 1000
   const hour = 60 * minute
   const day = 24 * hour
   const week = 7 * day
-  if (diff < hour) return `${Math.max(1, Math.floor(diff / minute))} 分钟前`
-  if (diff < day) return `${Math.floor(diff / hour)} 小时前`
-  if (diff < week) return `${Math.floor(diff / day)} 天前`
-  return `${Math.floor(diff / week)} 周前`
+  if (diff < hour) {
+    return i18n.global.t('common.minutesAgo', {
+      n: Math.max(1, Math.floor(diff / minute)),
+    })
+  }
+  if (diff < day) {
+    return i18n.global.t('common.hoursAgo', { n: Math.floor(diff / hour) })
+  }
+  if (diff < week) {
+    return i18n.global.t('common.daysAgo', { n: Math.floor(diff / day) })
+  }
+  return i18n.global.t('common.weeksAgo', { n: Math.floor(diff / week) })
 }
 
 export function getAvatarMeta(title: string): { text: string; color: string } {

@@ -1,6 +1,12 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+</script>
+
 <template>
   <p class="trust-notice">
-    <slot>恢复密钥仅保存在本机。PwdBook 不会上传任何数据。</slot>
+    <slot>{{ t('recovery.trustNotice') }}</slot>
   </p>
 </template>
 

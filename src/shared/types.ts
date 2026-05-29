@@ -128,4 +128,11 @@ export const IPC = {
   dataImport: 'data:import',
 } as const
 
-export const RESERVED_CATEGORY_NAMES = ['全部', '收藏', 'all', 'favorite'] as const
+export const RESERVED_CATEGORY_NAMES = [
+  '全部',
+  '收藏',
+  'all',
+  'favorite',
+  'All',
+  'Favorite',
+] as const

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ShieldCheck, Minus, Square, X } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const showCloseDialog = ref(false)
 
 function minimize(): void {
@@ -35,16 +37,16 @@ function quitApp(): void {
   <header class="titlebar titlebar-drag">
     <div class="titlebar-left">
       <ShieldCheck class="icon-accent titlebar-no-drag" :size="14" :stroke-width="1.5" />
-      <span class="title">PwdBook</span>
+      <span class="title">{{ t('common.appName') }}</span>
     </div>
     <div class="titlebar-actions titlebar-no-drag">
-      <button type="button" class="win-btn" aria-label="最小化" @click="minimize">
+      <button type="button" class="win-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
         <Minus :size="14" :stroke-width="1.5" />
       </button>
-      <button type="button" class="win-btn" aria-label="最大化" @click="maximize">
+      <button type="button" class="win-btn" :aria-label="t('titlebar.maximize')" @click="maximize">
         <Square :size="12" :stroke-width="1.5" />
       </button>
-      <button type="button" class="win-btn close-btn" aria-label="关闭" @click="openCloseDialog">
+      <button type="button" class="win-btn close-btn" :aria-label="t('common.close')" @click="openCloseDialog">
         <X :size="14" :stroke-width="1.5" />
       </button>
     </div>
@@ -53,16 +55,16 @@ function quitApp(): void {
   <Teleport to="body">
     <div v-if="showCloseDialog" class="close-dialog-overlay" @click.self="dismissCloseDialog">
       <div class="close-dialog surface-card">
-        <h3 class="dialog-title">关闭 PwdBook</h3>
-        <p class="dialog-desc">请选择要执行的操作</p>
+        <h3 class="dialog-title">{{ t('titlebar.closeApp') }}</h3>
+        <p class="dialog-desc">{{ t('titlebar.closePrompt') }}</p>
         <div class="dialog-actions">
           <button type="button" class="btn-ghost dialog-btn" @click="dismissCloseDialog">
-            取消
+            {{ t('common.cancel') }}
           </button>
           <button type="button" class="btn-ghost dialog-btn" @click="minimizeFromDialog">
-            最小化
+            {{ t('titlebar.minimize') }}
           </button>
-          <button type="button" class="btn-primary dialog-btn" @click="quitApp">退出程序</button>
+          <button type="button" class="btn-primary dialog-btn" @click="quitApp">{{ t('titlebar.quit') }}</button>
         </div>
       </div>
     </div>

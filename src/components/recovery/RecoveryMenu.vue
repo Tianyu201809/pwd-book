@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { KeyRound, FileJson, AlertTriangle } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 defineProps<{
   entryCount: number
@@ -15,31 +18,31 @@ const emit = defineEmits<{
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">← 返回解锁</button>
-    <h2 class="panel-title">无法解锁？</h2>
-    <p class="panel-desc">请选择适合你的情况</p>
+    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.backToUnlock') }}</button>
+    <h2 class="panel-title">{{ t('recovery.cannotUnlock') }}</h2>
+    <p class="panel-desc">{{ t('recovery.chooseOption') }}</p>
 
     <button type="button" class="option-card" @click="emit('recoveryKey')">
       <KeyRound :size="20" :stroke-width="1.5" class="option-icon" />
       <div>
-        <p class="option-title">我记得恢复密钥</p>
-        <p class="option-desc">输入恢复密钥，设置新的主密码</p>
+        <p class="option-title">{{ t('recovery.haveRecoveryKey') }}</p>
+        <p class="option-desc">{{ t('recovery.haveRecoveryKeyDesc') }}</p>
       </div>
     </button>
 
     <button type="button" class="option-card" @click="emit('backup')">
       <FileJson :size="20" :stroke-width="1.5" class="option-icon" />
       <div>
-        <p class="option-title">我有 JSON 备份</p>
-        <p class="option-desc">从备份文件恢复（需知道备份时的主密码）</p>
+        <p class="option-title">{{ t('recovery.haveBackup') }}</p>
+        <p class="option-desc">{{ t('recovery.haveBackupDesc') }}</p>
       </div>
     </button>
 
     <button type="button" class="option-card danger" @click="emit('wipe')">
       <AlertTriangle :size="20" :stroke-width="1.5" class="option-icon danger-icon" />
       <div>
-        <p class="option-title">我什么都没有</p>
-        <p class="option-desc">清除全部数据并重新开始（共 {{ entryCount }} 条）</p>
+        <p class="option-title">{{ t('recovery.haveNothing') }}</p>
+        <p class="option-desc">{{ t('recovery.haveNothingDesc', { count: entryCount }) }}</p>
       </div>
     </button>
   </div>

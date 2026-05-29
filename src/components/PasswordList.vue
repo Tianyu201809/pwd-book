@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal, MoreHorizontal, Check } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { useAppState } from '@/composables/useAppState'
@@ -19,11 +20,13 @@ const {
   touchActivity,
 } = useAppState()
 
-const sortOptions: { id: ListSortOrder; label: string }[] = [
-  { id: 'recent', label: '最近使用' },
-  { id: 'title', label: '标题 A-Z' },
-  { id: 'created', label: '创建时间' },
-]
+const { t } = useI18n()
+
+const sortOptions = computed(() => [
+  { id: 'recent' as ListSortOrder, label: t('vault.sortRecent') },
+  { id: 'title' as ListSortOrder, label: t('vault.sortTitle') },
+  { id: 'created' as ListSortOrder, label: t('vault.sortCreated') },
+])
 
 const openMenuId = ref<string | null>(null)
 const showSortMenu = ref(false)
@@ -77,7 +80,7 @@ async function handleCopy(entry: PasswordEntry, event: MouseEvent): Promise<void
 async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<void> {
   event.stopPropagation()
   closeMenus()
-  if (!window.confirm(`确定删除「${entry.title}」吗？此操作不可恢复。`)) return
+  if (!window.confirm(t('vault.deleteConfirm', { title: entry.title }))) return
   await removeEntry(entry.id)
 }
 </script>
@@ -91,7 +94,7 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
           v-model="searchQuery"
           type="text"
           class="input-field search-input"
-          placeholder="搜索网站、账号或标签…"
+          :placeholder="t('vault.searchPlaceholder')"
           @input="touchActivity"
         />
       </div>
@@ -100,14 +103,14 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
           type="button"
           class="filter-btn btn-ghost"
           :class="{ active: showSortMenu }"
-          title="排序"
-          aria-label="排序"
+          :title="t('vault.sortBy')"
+          :aria-label="t('vault.sortBy')"
           @click="toggleSortMenu"
         >
           <SlidersHorizontal :size="16" :stroke-width="1.5" />
         </button>
         <div v-if="showSortMenu" class="sort-menu surface-card" @click.stop>
-          <p class="sort-menu-title">排序方式</p>
+          <p class="sort-menu-title">{{ t('vault.sortBy') }}</p>
           <button
             v-for="option in sortOptions"
             :key="option.id"
@@ -125,7 +128,7 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
 
     <div class="list-scroll">
       <div v-if="displayEntries.length === 0" class="empty-state">
-        <p>{{ isCreating ? '填写右侧表单创建第一条密码' : '暂无匹配的密码条目' }}</p>
+        <p>{{ isCreating ? t('vault.emptyCreating') : t('vault.emptyNoMatch') }}</p>
       </div>
 
       <div
@@ -151,11 +154,11 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
           <div class="meta">
             <div class="title-row">
               <span class="entry-title">{{ entry.title }}</span>
-              <span v-if="entry.isFavorite" class="tag favorite">收藏</span>
+              <span v-if="entry.isFavorite" class="tag favorite">{{ t('common.favorite') }}</span>
               <span v-else-if="entry.tags[0]" class="tag">{{ entry.tags[0] }}</span>
               <span v-else-if="entry.categoryName" class="tag category">{{ entry.categoryName }}</span>
             </div>
-            <p class="username">{{ entry.username || entry.url || '未填写账号' }}</p>
+            <p class="username">{{ entry.username || entry.url || t('vault.noAccount') }}</p>
           </div>
         </button>
 
@@ -165,22 +168,20 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
             <button
               type="button"
               class="action-trigger"
-              title="更多操作"
-              aria-label="更多操作"
               @click="toggleMenu(entry.id, $event)"
             >
               <MoreHorizontal :size="16" :stroke-width="1.5" />
             </button>
             <div v-if="openMenuId === entry.id" class="action-menu surface-card" @click.stop>
               <button type="button" class="action-menu-item" @click="handleCopy(entry, $event)">
-                复制数据
+                {{ t('vault.copyData') }}
               </button>
               <button
                 type="button"
                 class="action-menu-item danger"
                 @click="handleDelete(entry, $event)"
               >
-                删除
+                {{ t('common.delete') }}
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
 import { seedAndMigrateCategories } from './categories'
+import { appError, ErrorCode } from '../../shared/errors'
 
 let sqlPromise: Promise<SqlJsStatic> | null = null
 let db: Database | null = null
@@ -77,7 +78,7 @@ export async function initDatabase(): Promise<Database> {
 
 export function getDatabase(): Database {
   if (!db) {
-    throw new Error('Database not initialized')
+    throw appError(ErrorCode.DATABASE_NOT_INITIALIZED)
   }
   return db
 }

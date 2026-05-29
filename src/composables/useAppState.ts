@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import {
   formatEntryForClipboard,
@@ -55,10 +56,15 @@ const errorMessage = ref('')
 const lastActivityAt = ref(Date.now())
 
 const systemCategories = computed(() => [
-  { id: 'all' as const, label: '全部', icon: 'LayoutGrid', count: entries.value.length },
+  {
+    id: 'all' as const,
+    label: i18n.global.t('common.all'),
+    icon: 'LayoutGrid',
+    count: entries.value.length,
+  },
   {
     id: 'favorite' as const,
-    label: '收藏',
+    label: i18n.global.t('common.favorite'),
     icon: 'Star',
     count: entries.value.filter((entry) => entry.isFavorite).length,
   },
@@ -140,7 +146,9 @@ const selectedEntry = computed(() => {
 function sortEntries(list: PasswordEntry[]): PasswordEntry[] {
   const sorted = [...list]
   if (listSortOrder.value === 'title') {
-    return sorted.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
+    return sorted.sort((a, b) =>
+      a.title.localeCompare(b.title, i18n.global.locale.value),
+    )
   }
   if (listSortOrder.value === 'created') {
     return sorted.sort((a, b) => b.createdAt - a.createdAt)
@@ -429,7 +437,7 @@ async function saveEntry(id: string | null, input: PasswordEntryInput): Promise<
     selectedEntryId.value = saved.id
     await refreshVaultData()
     touchActivity()
-    showToast(id ? '保存成功' : '创建成功', 'success')
+    showToast(id ? i18n.global.t('vault.saved') : i18n.global.t('vault.created'), 'success')
     return true
   } catch (error) {
     showToast(parseErrorMessage(error), 'error')

@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron'
+import { ERR_PREFIX } from '../shared/errors'
 import { IPC } from '../shared/types'
 import type {
   CategoryInput,
@@ -21,12 +22,15 @@ async function invoke<T>(channel: string, payload?: unknown): Promise<T> {
   try {
     return await ipcRenderer.invoke(channel, payload)
   } catch (error) {
-    const message = error instanceof Error ? error.message : '请求失败'
+    const message = error instanceof Error ? error.message : `${ERR_PREFIX}REQUEST_FAILED`
     const nested = message.match(/:\s*Error:\s*(.+)$/)
-    throw new Error(
+    const stripped =
       nested?.[1]?.trim() ??
-        (message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim() || '请求失败'),
-    )
+      message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim()
+    if (stripped.startsWith(ERR_PREFIX)) {
+      throw new Error(stripped)
+    }
+    throw new Error(`${ERR_PREFIX}REQUEST_FAILED`)
   }
 }
 

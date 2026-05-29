@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   Shield,
@@ -29,14 +30,16 @@ const {
   clearError,
 } = useAppState()
 
+const { t } = useI18n()
+
 const statusMessage = ref('')
 
-const tabs: { id: SettingsTab; label: string; icon: typeof Shield }[] = [
-  { id: 'security', label: '安全', icon: Shield },
-  { id: 'appearance', label: '外观', icon: Palette },
-  { id: 'data', label: '数据', icon: Database },
-  { id: 'about', label: '关于', icon: Info },
-]
+const tabs = computed(() => [
+  { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield },
+  { id: 'appearance' as SettingsTab, label: t('settings.appearance'), icon: Palette },
+  { id: 'data' as SettingsTab, label: t('settings.data'), icon: Database },
+  { id: 'about' as SettingsTab, label: t('settings.about'), icon: Info },
+])
 
 const activeTab = computed(() => settingsTab.value)
 
@@ -65,9 +68,9 @@ async function handleExport(): Promise<void> {
     anchor.download = `pwdbook-backup-${Date.now()}.json`
     anchor.click()
     URL.revokeObjectURL(url)
-    statusMessage.value = '备份已导出'
+    statusMessage.value = t('settings.backupExported')
   } catch (error) {
-    statusMessage.value = error instanceof Error ? error.message : '导出失败'
+    statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
   }
 }
 
@@ -83,9 +86,9 @@ async function handleImport(): Promise<void> {
     try {
       const text = await file.text()
       const count = await importDataFromJson(text)
-      statusMessage.value = `成功导入 ${count} 条记录`
+      statusMessage.value = t('settings.importSuccess', { count })
     } catch (error) {
-      statusMessage.value = error instanceof Error ? error.message : '导入失败'
+      statusMessage.value = error instanceof Error ? error.message : t('errors.import_failed')
     }
   }
   input.click()
@@ -93,12 +96,12 @@ async function handleImport(): Promise<void> {
 
 async function handleReset(): Promise<void> {
   if (
-    !window.confirm('这将清除所有本地密码数据和主密码设置，且不可恢复。确定继续吗？')
+    !window.confirm(t('settings.clearAllConfirm'))
   ) {
     return
   }
   await resetAllData()
-  statusMessage.value = '所有数据已清除，请重新创建主密码'
+  statusMessage.value = t('settings.dataCleared')
 }
 </script>
 
@@ -108,9 +111,9 @@ async function handleReset(): Promise<void> {
       <aside class="settings-sidebar">
         <button type="button" class="back-btn" @click="navigateTo('vault')">
           <ArrowLeft :size="16" :stroke-width="1.5" />
-          返回
+          {{ t('common.back') }}
         </button>
-        <h2 class="font-display sidebar-title">设置</h2>
+        <h2 class="font-display sidebar-title">{{ t('settings.title') }}</h2>
         <nav class="settings-nav">
           <button
             v-for="tab in tabs"
@@ -128,12 +131,12 @@ async function handleReset(): Promise<void> {
 
       <main class="settings-main">
         <div v-if="activeTab === 'security'" class="panel">
-          <h3>安全</h3>
+          <h3>{{ t('settings.security') }}</h3>
           <div class="surface-card settings-card">
             <div class="row">
               <div>
-                <p class="row-title">自动锁定</p>
-                <p class="row-desc">无操作后自动锁定应用</p>
+                <p class="row-title">{{ t('settings.autoLock') }}</p>
+                <p class="row-desc">{{ t('settings.autoLockDesc') }}</p>
               </div>
               <select
                 class="select"
@@ -141,15 +144,15 @@ async function handleReset(): Promise<void> {
                 @change="onAutoLockChange"
               >
                 <option v-for="minutes in autoLockOptions" :key="minutes" :value="minutes">
-                  {{ minutes }} 分钟
+                  {{ t('common.minutes', { n: minutes }) }}
                 </option>
               </select>
             </div>
             <div class="row">
               <div>
-                <p class="row-title">剪贴板自动清除</p>
+                <p class="row-title">{{ t('settings.clipboardClear') }}</p>
                 <p class="row-desc">
-                  复制密码后 {{ securitySettings.clipboardClearSeconds }} 秒清除
+                  {{ t('settings.clipboardClearDesc', { seconds: securitySettings.clipboardClearSeconds }) }}
                 </p>
               </div>
               <button
@@ -163,8 +166,8 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row last">
               <div>
-                <p class="row-title">Windows Hello</p>
-                <p class="row-desc">使用生物识别快速解锁</p>
+                <p class="row-title">{{ t('settings.windowsHello') }}</p>
+                <p class="row-desc">{{ t('settings.windowsHelloDesc') }}</p>
               </div>
               <div class="toggle disabled"><span class="knob" /></div>
             </div>
@@ -176,33 +179,31 @@ async function handleReset(): Promise<void> {
         <AppearancePanel v-else-if="activeTab === 'appearance'" />
 
         <div v-else-if="activeTab === 'data'" class="panel">
-          <h3>数据</h3>
+          <h3>{{ t('settings.data') }}</h3>
           <p v-if="statusMessage" class="status-message">{{ statusMessage }}</p>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           <div class="surface-card settings-card">
             <button type="button" class="link-row" @click="handleExport">
-              <span><Download :size="16" :stroke-width="1.5" /> 导出备份</span>
+              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportBackup') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
             <button type="button" class="link-row" @click="handleImport">
-              <span><Upload :size="16" :stroke-width="1.5" /> 导入数据</span>
+              <span><Upload :size="16" :stroke-width="1.5" /> {{ t('settings.importData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
             <button type="button" class="link-row danger-row" @click="handleReset">
-              <span><AlertTriangle :size="16" :stroke-width="1.5" /> 清除所有数据</span>
+              <span><AlertTriangle :size="16" :stroke-width="1.5" /> {{ t('settings.clearAllData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
           </div>
         </div>
 
         <div v-else-if="activeTab === 'about'" class="panel">
-          <h3>关于</h3>
+          <h3>{{ t('settings.about') }}</h3>
           <div class="surface-card about-card">
-            <p class="font-display about-title">PwdBook</p>
-            <p class="about-version">版本 0.1.0 · Electron + Vue 3 + SQLite</p>
-            <p class="about-desc">
-              本地优先的密码管理工具。密码字段 AES-256 加密存储，元数据保存在本地 SQLite 数据库中。
-            </p>
+            <p class="font-display about-title">{{ t('common.appName') }}</p>
+            <p class="about-version">{{ t('settings.version', { version: '0.1.0' }) }}</p>
+            <p class="about-desc">{{ t('settings.aboutDesc') }}</p>
           </div>
         </div>
       </main>

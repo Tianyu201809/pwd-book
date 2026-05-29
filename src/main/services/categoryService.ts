@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { appError, ErrorCode } from '../../shared/errors'
 import { getDatabase, persistDatabase } from '../db/database'
 import {
   countEntriesInCategory,
@@ -25,27 +26,27 @@ function normalizeCategoryName(name: string): string {
 function assertValidCategoryName(name: string, excludeId?: string): string {
   const normalized = normalizeCategoryName(name)
   if (!normalized) {
-    throw new Error('分类名称不能为空')
+    throw appError(ErrorCode.CATEGORY_NAME_EMPTY)
   }
   if (normalized.length > 20) {
-    throw new Error('分类名称不能超过 20 个字符')
+    throw appError(ErrorCode.CATEGORY_NAME_TOO_LONG)
   }
   const lower = normalized.toLowerCase()
   if (RESERVED_CATEGORY_NAMES.some((reserved) => reserved.toLowerCase() === lower)) {
-    throw new Error(`「${normalized}」是系统保留名称，请换一个名称`)
+    throw appError(ErrorCode.CATEGORY_NAME_RESERVED, { name: normalized })
   }
 
   const db = getDatabase()
   const duplicate = findCategoryByName(db, normalized, excludeId)
   if (duplicate) {
-    throw new Error(`分类名称「${normalized}」已存在`)
+    throw appError(ErrorCode.CATEGORY_NAME_EXISTS, { name: normalized })
   }
 
   return normalized
 }
 
 function rowToCategory(row: ReturnType<typeof readCategoryRow>, entryCount = 0): VaultCategory {
-  if (!row) throw new Error('分类不存在')
+  if (!row) throw appError(ErrorCode.CATEGORY_NOT_FOUND)
   return {
     id: row.id,
     name: row.name,
@@ -64,7 +65,7 @@ export function listCategories(): VaultCategory[] {
 }
 
 export function createCategory(input: CategoryInput): VaultCategory {
-  if (!isUnlocked()) throw new Error('请先解锁保险库')
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
 
   const name = assertValidCategoryName(input.name)
   const icon = ALLOWED_ICONS.has(input.icon ?? '') ? input.icon! : 'Folder'
@@ -84,11 +85,11 @@ export function createCategory(input: CategoryInput): VaultCategory {
 }
 
 export function updateCategory(id: string, input: CategoryInput): VaultCategory {
-  if (!isUnlocked()) throw new Error('请先解锁保险库')
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
 
   const db = getDatabase()
   const existing = readCategoryRow(db, id)
-  if (!existing) throw new Error('分类不存在')
+  if (!existing) throw appError(ErrorCode.CATEGORY_NOT_FOUND)
 
   const name = assertValidCategoryName(input.name, id)
   const icon = ALLOWED_ICONS.has(input.icon ?? '') ? input.icon! : existing.icon
@@ -101,20 +102,20 @@ export function updateCategory(id: string, input: CategoryInput): VaultCategory 
 }
 
 export function deleteCategory(id: string): void {
-  if (!isUnlocked()) throw new Error('请先解锁保险库')
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
 
   const db = getDatabase()
   const existing = readCategoryRow(db, id)
-  if (!existing) throw new Error('分类不存在')
+  if (!existing) throw appError(ErrorCode.CATEGORY_NOT_FOUND)
 
   const entryCount = countEntriesInCategory(db, id)
   if (entryCount > 0) {
-    throw new Error(`该分类下还有 ${entryCount} 条密码，请先移动或删除后再试`)
+    throw appError(ErrorCode.CATEGORY_HAS_ENTRIES, { count: entryCount })
   }
 
   const categories = readCategoryRows(db)
   if (categories.length <= 1) {
-    throw new Error('至少需要保留一个分类')
+    throw appError(ErrorCode.CATEGORY_MIN_ONE)
   }
 
   db.run('DELETE FROM categories WHERE id = ?', [id])
@@ -122,18 +123,18 @@ export function deleteCategory(id: string): void {
 }
 
 export function reorderCategories(categoryIds: string[]): VaultCategory[] {
-  if (!isUnlocked()) throw new Error('请先解锁保险库')
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
 
   const db = getDatabase()
   const existing = readCategoryRows(db)
   if (categoryIds.length !== existing.length) {
-    throw new Error('分类列表不完整')
+    throw appError(ErrorCode.CATEGORY_LIST_INCOMPLETE)
   }
 
   const existingIds = new Set(existing.map((row) => row.id))
   for (const id of categoryIds) {
     if (!existingIds.has(id)) {
-      throw new Error('分类不存在')
+      throw appError(ErrorCode.CATEGORY_NOT_FOUND)
     }
   }
 
@@ -163,21 +164,21 @@ function setSidebarCategoryOrder(order: string[]): void {
 }
 
 export function reorderSidebarCategories(order: string[]): VaultCategory[] {
-  if (!isUnlocked()) throw new Error('请先解锁保险库')
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
 
   const categories = listCategories()
   const categoryIds = categories.map((category) => category.id)
   const expected = new Set(['all', 'favorite', ...categoryIds])
 
   if (order.length !== expected.size) {
-    throw new Error('分类列表不完整')
+    throw appError(ErrorCode.CATEGORY_LIST_INCOMPLETE)
   }
   if (!order.includes('all') || !order.includes('favorite')) {
-    throw new Error('分类列表不完整')
+    throw appError(ErrorCode.CATEGORY_LIST_INCOMPLETE)
   }
   for (const id of order) {
     if (!expected.has(id)) {
-      throw new Error('分类不存在')
+      throw appError(ErrorCode.CATEGORY_NOT_FOUND)
     }
   }
 

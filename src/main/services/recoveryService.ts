@@ -10,6 +10,7 @@ import {
 import { getDatabase, persistDatabase } from '../db/database'
 import { getSetting, readEntryRows, setSetting } from '../db/helpers'
 import { getSessionKey, isUnlocked, unlockSession } from './sessionService'
+import { appError, ErrorCode } from '../../shared/errors'
 
 const RECOVERY_SALT_KEY = 'recovery_salt'
 const RECOVERY_HASH_KEY = 'recovery_hash'
@@ -49,7 +50,7 @@ export function getRecoveryStatus(): { configured: boolean } {
 
 function assertRecoveryKeyFormat(normalized: string): void {
   if (!/^[A-Z2-9]{20}$/.test(normalized)) {
-    throw new Error('恢复密钥格式不正确')
+    throw appError(ErrorCode.RECOVERY_KEY_INVALID_FORMAT)
   }
 }
 
@@ -77,7 +78,7 @@ function unwrapSessionKey(recoveryKey: string): Buffer {
   const wrapSalt = getSetting(RECOVERY_WRAP_SALT_KEY)
   const wrapped = getSetting(RECOVERY_WRAP_KEY)
   if (!wrapSalt || !wrapped) {
-    throw new Error('尚未设置恢复密钥')
+    throw appError(ErrorCode.RECOVERY_KEY_NOT_SET)
   }
   const wrapKey = deriveSessionKey(normalized, wrapSalt)
   const sessionHex = decryptSecret(wrapped, wrapKey)
@@ -94,7 +95,7 @@ function storeRecoveryKeyHash(recoveryKey: string): void {
 
 export function createRecoveryKey(): { recoveryKey: string } {
   if (!isUnlocked()) {
-    throw new Error('请先解锁保险库')
+    throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
   }
   const recoveryKey = generateRecoveryKeyValue()
   const normalized = normalizeRecoveryKey(recoveryKey)
@@ -105,15 +106,15 @@ export function createRecoveryKey(): { recoveryKey: string } {
 
 export function regenerateRecoveryKey(masterPassword: string): { recoveryKey: string } {
   if (!isUnlocked()) {
-    throw new Error('请先解锁保险库')
+    throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
   }
   const salt = getSetting('master_salt')
   const hash = getSetting('master_hash')
   if (!salt || !hash) {
-    throw new Error('主密码未设置')
+    throw appError(ErrorCode.MASTER_PASSWORD_NOT_SET)
   }
   if (!verifyMasterPassword(masterPassword, salt, hash)) {
-    throw new Error('主密码不正确')
+    throw appError(ErrorCode.MASTER_PASSWORD_INCORRECT)
   }
   return createRecoveryKey()
 }
@@ -124,19 +125,19 @@ export function resetMasterPasswordWithRecovery(
   confirmPassword: string,
 ): void {
   if (isUnlocked()) {
-    throw new Error('请先锁定保险库后再重置主密码')
+    throw appError(ErrorCode.RESET_REQUIRES_LOCKED)
   }
   if (!isRecoveryKeyConfigured()) {
-    throw new Error('尚未设置恢复密钥，无法通过此方式恢复')
+    throw appError(ErrorCode.RECOVERY_NOT_CONFIGURED)
   }
   if (newMasterPassword.length < 4) {
-    throw new Error('主密码至少需要 4 位')
+    throw appError(ErrorCode.MASTER_PASSWORD_TOO_SHORT)
   }
   if (newMasterPassword !== confirmPassword) {
-    throw new Error('两次输入的主密码不一致')
+    throw appError(ErrorCode.MASTER_PASSWORD_MISMATCH)
   }
   if (!verifyRecoveryKey(recoveryKey)) {
-    throw new Error('恢复密钥无效，请检查后重试')
+    throw appError(ErrorCode.RECOVERY_KEY_INVALID)
   }
 
   const oldKey = unwrapSessionKey(recoveryKey)

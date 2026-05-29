@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import RecoveryTrustNotice from '@/components/recovery/RecoveryTrustNotice.vue'
 import { formatRecoveryKeyInput } from '@/shared/utils'
@@ -14,6 +15,8 @@ const emit = defineEmits<{
   back: []
   submit: [recoveryKey: string]
 }>()
+
+const { t } = useI18n()
 
 const recoveryKey = ref('')
 const showKey = ref(false)
@@ -30,11 +33,11 @@ function submit(): void {
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">← 返回</button>
-    <h2 class="panel-title">输入恢复密钥</h2>
+    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.back') }}</button>
+    <h2 class="panel-title">{{ t('recovery.enterRecoveryKey') }}</h2>
     <RecoveryTrustNotice />
 
-    <label class="label">恢复密钥</label>
+    <label class="label">{{ t('recovery.recoveryKey') }}</label>
     <div class="input-wrap">
       <input
         :value="recoveryKey"
@@ -51,7 +54,7 @@ function submit(): void {
       </button>
     </div>
 
-    <p v-if="!recoveryConfigured" class="warn-text">尚未设置恢复密钥，无法通过此方式恢复。</p>
+    <p v-if="!recoveryConfigured" class="warn-text">{{ t('recovery.recoveryKeyNotConfigured') }}</p>
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
     <button
@@ -60,7 +63,7 @@ function submit(): void {
       :disabled="loading || !recoveryKey"
       @click="submit"
     >
-      {{ loading ? '验证中…' : '验证并继续' }}
+      {{ loading ? t('common.verifying') : t('common.continue') }}
     </button>
   </div>
 </template>

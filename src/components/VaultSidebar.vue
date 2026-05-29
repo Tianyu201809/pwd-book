@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Plus, Settings, Lock, GripVertical } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -15,6 +16,8 @@ const {
   startCreateEntry,
   reorderSidebarCategories,
 } = useAppState()
+
+const { t } = useI18n()
 
 const sidebarNavRef = ref<HTMLElement | null>(null)
 const dragFromIndex = ref<number | null>(null)
@@ -157,7 +160,7 @@ onBeforeUnmount(() => {
     <div class="sidebar-top">
       <button type="button" class="btn-primary new-btn" @click="startCreateEntry">
         <Plus :size="16" :stroke-width="1.5" />
-        新建条目
+        {{ t('vault.newEntry') }}
       </button>
     </div>
 
@@ -179,7 +182,7 @@ onBeforeUnmount(() => {
         >
           <span
             class="drag-handle"
-            title="拖拽排序"
+            :title="t('vault.dragSort')"
             @pointerdown="onHandlePointerDown(cat.id, $event)"
           >
             <GripVertical :size="14" :stroke-width="1.5" />
@@ -195,11 +198,11 @@ onBeforeUnmount(() => {
       <CategoryManagePanel />
       <button type="button" class="nav-item" @click="navigateTo('settings')">
         <Settings :size="16" :stroke-width="1.5" />
-        设置
+        {{ t('vault.settings') }}
       </button>
       <button type="button" class="nav-item lock-btn" @click="lock">
         <Lock :size="16" :stroke-width="1.5" />
-        锁定
+        {{ t('vault.lock') }}
       </button>
     </div>
   </aside>

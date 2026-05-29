@@ -12,6 +12,7 @@ import { getSetting, readEntryRow, readEntryRows, setSetting } from '../db/helpe
 import { getSessionKey, isUnlocked, lockSession, unlockSession } from './sessionService'
 import type { PasswordEntry, PasswordEntryInput, VaultStatus } from '../../shared/types'
 import type { EntryRow } from '../db/helpers'
+import { appError, ErrorCode } from '../../shared/errors'
 import { getDatabase, persistDatabase } from '../db/database'
 import { resolveCategoryId, getCategoryName } from './categoryService'
 import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
@@ -50,13 +51,13 @@ export function getVaultStatus(): VaultStatus {
 
 export function setupVault(masterPassword: string, confirmPassword: string): void {
   if (masterPassword.length < 4) {
-    throw new Error('主密码至少需要 4 位')
+    throw appError(ErrorCode.MASTER_PASSWORD_TOO_SHORT)
   }
   if (masterPassword !== confirmPassword) {
-    throw new Error('两次输入的主密码不一致')
+    throw appError(ErrorCode.MASTER_PASSWORD_MISMATCH)
   }
   if (getSetting(MASTER_HASH_KEY)) {
-    throw new Error('保险库已初始化')
+    throw appError(ErrorCode.VAULT_ALREADY_INITIALIZED)
   }
 
   const salt = createMasterSalt()
@@ -70,10 +71,10 @@ export function unlockVault(masterPassword: string): void {
   const salt = getSetting(MASTER_SALT_KEY)
   const hash = getSetting(MASTER_HASH_KEY)
   if (!salt || !hash) {
-    throw new Error('请先创建主密码')
+    throw appError(ErrorCode.MASTER_PASSWORD_NOT_CREATED)
   }
   if (!verifyMasterPassword(masterPassword, salt, hash)) {
-    throw new Error('主密码错误')
+    throw appError(ErrorCode.WRONG_MASTER_PASSWORD)
   }
   unlockSession(deriveSessionKey(masterPassword, salt))
 }
@@ -119,7 +120,7 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
   )
   persistDatabase()
   const row = readEntryRow(id)
-  if (!row) throw new Error('创建条目失败')
+  if (!row) throw appError(ErrorCode.ENTRY_CREATE_FAILED)
   return rowToEntry(row)
 }
 
@@ -128,7 +129,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
   const db = getDatabase()
   const now = Date.now()
   const existing = readEntryRow(id)
-  if (!existing) throw new Error('条目不存在')
+  if (!existing) throw appError(ErrorCode.ENTRY_NOT_FOUND)
 
   db.run(
     `UPDATE password_entries
@@ -150,7 +151,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
   )
   persistDatabase()
   const row = readEntryRow(id)
-  if (!row) throw new Error('更新条目失败')
+  if (!row) throw appError(ErrorCode.ENTRY_UPDATE_FAILED)
   return rowToEntry(row)
 }
 
@@ -163,7 +164,7 @@ export function deleteEntry(id: string): void {
 export function toggleFavorite(id: string): PasswordEntry {
   const db = getDatabase()
   const row = readEntryRow(id)
-  if (!row) throw new Error('条目不存在')
+  if (!row) throw appError(ErrorCode.ENTRY_NOT_FOUND)
   const next = row.is_favorite === 1 ? 0 : 1
   db.run('UPDATE password_entries SET is_favorite = ?, updated_at = ? WHERE id = ?', [
     next,
@@ -172,7 +173,7 @@ export function toggleFavorite(id: string): PasswordEntry {
   ])
   persistDatabase()
   const updated = readEntryRow(id)
-  if (!updated) throw new Error('更新收藏状态失败')
+  if (!updated) throw appError(ErrorCode.FAVORITE_UPDATE_FAILED)
   return rowToEntry(updated)
 }
 

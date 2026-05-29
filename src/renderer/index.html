@@ -15,6 +15,11 @@
         try {
           var mode = localStorage.getItem('pwdbook-theme-mode') || 'dark'
           var accent = localStorage.getItem('pwdbook-theme-accent') || 'brass'
+          var locale = localStorage.getItem('pwdbook-locale')
+          if (!locale) {
+            locale = navigator.language.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en'
+          }
+          document.documentElement.lang = locale
           var resolved =
             mode === 'system'
               ? matchMedia('(prefers-color-scheme: dark)').matches

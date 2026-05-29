@@ -7,6 +7,7 @@ import type {
   VaultSetupPayload,
   VaultUnlockPayload,
 } from '../../shared/types'
+import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
 import {
   createEntry,
@@ -47,7 +48,7 @@ let clipboardTimer: NodeJS.Timeout | null = null
 
 function ensureUnlocked(): void {
   if (!isUnlocked()) {
-    throw new Error('请先解锁保险库')
+    throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
   }
 }
 
@@ -55,7 +56,7 @@ function wrap<T>(handler: () => T): T {
   try {
     return handler()
   } catch (error) {
-    const message = error instanceof Error ? error.message : '操作失败'
+    const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
     throw new Error(message)
   }
 }
@@ -104,7 +105,7 @@ export function registerIpcHandlers(): void {
       await initDatabase()
       return getVaultStatus()
     } catch (error) {
-      const message = error instanceof Error ? error.message : '操作失败'
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
       throw new Error(message)
     }
   })
@@ -168,8 +169,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.entriesCreate, (_event, input: PasswordEntryInput) =>
     wrap(() => {
       ensureUnlocked()
-      if (!input.title?.trim()) throw new Error('标题不能为空')
-      if (!input.password) throw new Error('密码不能为空')
+      if (!input.title?.trim()) throw appError(ErrorCode.TITLE_REQUIRED)
+      if (!input.password) throw appError(ErrorCode.PASSWORD_REQUIRED)
       return createEntry(input)
     }),
   )
@@ -179,8 +180,8 @@ export function registerIpcHandlers(): void {
     (_event, payload: { id: string; input: PasswordEntryInput }) =>
       wrap(() => {
         ensureUnlocked()
-        if (!payload.input.title?.trim()) throw new Error('标题不能为空')
-        if (!payload.input.password) throw new Error('密码不能为空')
+        if (!payload.input.title?.trim()) throw appError(ErrorCode.TITLE_REQUIRED)
+        if (!payload.input.password) throw appError(ErrorCode.PASSWORD_REQUIRED)
         return updateEntry(payload.id, payload.input)
       }),
   )

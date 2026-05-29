@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ShieldCheck, Eye, EyeOff, Fingerprint } from 'lucide-vue-next'
 import RecoveryMenu from '@/components/recovery/RecoveryMenu.vue'
 import RecoveryKeyInput from '@/components/recovery/RecoveryKeyInput.vue'
@@ -36,6 +37,8 @@ const {
   copyUsername,
 } = useAppState()
 
+const { t } = useI18n()
+
 const lockMode = ref<LockMode>('unlock')
 const password = ref('')
 const confirmPassword = ref('')
@@ -48,12 +51,14 @@ const localMessage = ref('')
 
 const isSetupMode = computed(() => !vaultStatus.value.initialized)
 const title = computed(() => {
-  if (lockMode.value === 'setup-recovery') return '保存你的恢复密钥'
-  if (lockMode.value === 'setup') return '创建主密码'
-  if (lockMode.value.startsWith('recovery-')) return '恢复访问'
-  return isSetupMode.value ? '创建主密码' : '输入主密码以解锁保险库'
+  if (lockMode.value === 'setup-recovery') return t('lock.saveRecoveryKey')
+  if (lockMode.value === 'setup') return t('lock.createMasterPassword')
+  if (lockMode.value.startsWith('recovery-')) return t('lock.recoverAccess')
+  return isSetupMode.value ? t('lock.createMasterPassword') : t('lock.unlockVault')
 })
-const submitLabel = computed(() => (isSetupMode.value ? '创建并进入' : '解锁'))
+const submitLabel = computed(() =>
+  isSetupMode.value ? t('lock.createAndEnter') : t('lock.unlock'),
+)
 const showDefaultForm = computed(
   () => lockMode.value === 'unlock' || lockMode.value === 'setup',
 )
@@ -140,7 +145,7 @@ function openRecoveryMenu(): void {
 }
 
 async function handleBackupOption(): Promise<void> {
-  localMessage.value = '请先解锁后，在「设置 → 数据」中导入 JSON 备份'
+  localMessage.value = t('lock.backupHint')
 }
 
 async function handleRecoveryKeySubmit(recoveryKey: string): Promise<void> {
@@ -149,23 +154,23 @@ async function handleRecoveryKeySubmit(recoveryKey: string): Promise<void> {
   try {
     const result = await vaultApi.verifyRecoveryKey(recoveryKey)
     if (!result.valid) {
-      localMessage.value = '恢复密钥无效，请检查后重试'
+      localMessage.value = t('errors.recovery_key_invalid')
       return
     }
     verifiedRecoveryKey.value = recoveryKey
     lockMode.value = 'recovery-reset'
   } catch (error) {
-    localMessage.value = error instanceof Error ? error.message : '验证失败'
+    localMessage.value = error instanceof Error ? error.message : t('errors.verify_failed')
   }
 }
 
 async function handleRecoveryReset(newPassword: string, confirmPasswordValue: string): Promise<void> {
   if (newPassword.length < 4) {
-    localMessage.value = '主密码至少需要 4 位'
+    localMessage.value = t('errors.master_password_too_short')
     return
   }
   if (newPassword !== confirmPasswordValue) {
-    localMessage.value = '两次输入的主密码不一致'
+    localMessage.value = t('errors.master_password_mismatch')
     return
   }
 
@@ -198,7 +203,7 @@ async function handleSetupRecoveryComplete(): Promise<void> {
 }
 
 async function handleSetupRecoverySkip(): Promise<void> {
-  if (!window.confirm('未保存恢复密钥时，忘记主密码将无法恢复条目，只能清除全部数据。仍要跳过吗？')) {
+  if (!window.confirm(t('lock.skipRecoveryConfirm'))) {
     return
   }
   await clearRecoveryKey()
@@ -221,13 +226,13 @@ async function handleCopyRecoveryKey(): Promise<void> {
         <div class="brand-icon">
           <ShieldCheck :size="32" :stroke-width="1.5" />
         </div>
-        <h1 class="font-display">PwdBook</h1>
+        <h1 class="font-display">{{ t('common.appName') }}</h1>
         <p class="subtitle">{{ title }}</p>
       </div>
 
       <div class="panel-glow lock-panel surface-card">
         <template v-if="showDefaultForm">
-          <label class="label">主密码</label>
+          <label class="label">{{ t('lock.masterPassword') }}</label>
           <div class="input-wrap">
             <input
               v-model="password"
@@ -245,12 +250,12 @@ async function handleCopyRecoveryKey(): Promise<void> {
           </div>
 
           <template v-if="isSetupMode">
-            <label class="label confirm-label">确认主密码</label>
+            <label class="label confirm-label">{{ t('lock.confirmMasterPassword') }}</label>
             <input
               v-model="confirmPassword"
               :type="showPassword ? 'text' : 'password'"
               class="input-field"
-              placeholder="再次输入主密码"
+              :placeholder="t('lock.confirmPlaceholder')"
               :disabled="loading"
               @keydown="onKeydown"
             />
@@ -260,23 +265,23 @@ async function handleCopyRecoveryKey(): Promise<void> {
           <p v-if="localMessage" class="info-text">{{ localMessage }}</p>
 
           <button type="button" class="btn-primary unlock-btn" :disabled="loading" @click="submitUnlockOrSetup">
-            {{ loading ? '处理中…' : isSetupMode ? '下一步' : submitLabel }}
+            {{ loading ? t('common.processing') : isSetupMode ? t('common.next') : submitLabel }}
           </button>
 
           <template v-if="!isSetupMode">
             <div class="divider-row">
               <span class="line" />
-              <span class="or">或</span>
+              <span class="or">{{ t('common.or') }}</span>
               <span class="line" />
             </div>
             <button type="button" class="btn-ghost hello-btn" disabled>
               <Fingerprint :size="16" :stroke-width="1.5" class="safe-icon" />
-              Windows Hello（即将支持）
+              {{ t('lock.windowsHello') }}
             </button>
             <div class="recovery-links">
-              <button type="button" class="text-link" @click="openRecoveryMenu">忘记主密码？</button>
+              <button type="button" class="text-link" @click="openRecoveryMenu">{{ t('lock.forgotPassword') }}</button>
               <button type="button" class="text-link accent" @click="openRecoveryMenu">
-                使用恢复密钥 →
+                {{ t('lock.useRecoveryKey') }}
               </button>
             </div>
           </template>
@@ -339,7 +344,7 @@ async function handleCopyRecoveryKey(): Promise<void> {
         />
       </div>
 
-      <p class="footer-note">数据仅存储在本地 · AES-256 加密 · SQLite 存储</p>
+      <p class="footer-note">{{ t('lock.footerNote') }}</p>
     </div>
   </div>
 </template>

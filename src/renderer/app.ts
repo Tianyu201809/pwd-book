@@ -2,7 +2,12 @@ import { createApp } from 'vue'
 import App from '@/App.vue'
 import '@/assets/styles/global.css'
 import { initTheme } from '@/composables/useTheme'
+import { initLocale } from '@/composables/useLocale'
+import { i18n } from '@/i18n'
 
 initTheme()
+initLocale()
 
-createApp(App).mount('#app')
+const app = createApp(App)
+app.use(i18n)
+app.mount('#app')

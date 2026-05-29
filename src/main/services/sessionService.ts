@@ -1,4 +1,5 @@
 import type { SecuritySettings } from '../../shared/types'
+import { appError, ErrorCode } from '../../shared/errors'
 
 const DEFAULT_SETTINGS: SecuritySettings = {
   autoLockMinutes: 15,
@@ -14,7 +15,7 @@ export function isUnlocked(): boolean {
 
 export function getSessionKey(): Buffer {
   if (!sessionKey) {
-    throw new Error('Vault is locked')
+    throw appError(ErrorCode.VAULT_LOCKED)
   }
   return sessionKey
 }

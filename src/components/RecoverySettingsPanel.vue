@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronRight, Download, KeyRound, RefreshCw, X } from 'lucide-vue-next'
 import RecoveryKeySetup from '@/components/recovery/RecoveryKeySetup.vue'
 import { useAppState } from '@/composables/useAppState'
@@ -15,6 +16,8 @@ const {
   exportData,
 } = useAppState()
 
+const { t } = useI18n()
+
 const showPasswordDialog = ref(false)
 const showKeySetup = ref(false)
 const masterPassword = ref('')
@@ -25,21 +28,19 @@ const statusMessage = ref('')
 
 const recoveryConfigured = computed(() => vaultStatus.value.recoveryConfigured)
 const recoveryStatusLabel = computed(() =>
-  recoveryConfigured.value ? '已设置' : '未设置',
+  recoveryConfigured.value ? t('recovery.configured') : t('recovery.notConfigured'),
 )
 const recoveryStatusClass = computed(() =>
   recoveryConfigured.value ? 'status-ok' : 'status-warn',
 )
 const setupTitle = computed(() =>
-  recoveryConfigured.value ? '新的恢复密钥' : '保存你的恢复密钥',
+  recoveryConfigured.value ? t('recovery.newKeyTitle') : t('recovery.saveKeyTitle'),
 )
 const setupSubtitle = computed(() =>
-  recoveryConfigured.value
-    ? '旧恢复密钥已失效，请保存新密钥'
-    : '忘记主密码时，可用它重置主密码并保留数据',
+  recoveryConfigured.value ? t('recovery.newKeySubtitle') : t('recovery.saveKeySubtitle'),
 )
 const actionLabel = computed(() =>
-  recoveryConfigured.value ? '重新生成恢复密钥' : '设置恢复密钥',
+  recoveryConfigured.value ? t('recovery.regenerateKey') : t('recovery.setupKey'),
 )
 
 function openRecoveryAction(): void {
@@ -66,12 +67,12 @@ async function startCreateRecoveryKey(): Promise<void> {
 async function confirmRegenerate(): Promise<void> {
   passwordError.value = ''
   if (masterPassword.value.length < 4) {
-    passwordError.value = '请输入当前主密码'
+    passwordError.value = t('lock.enterCurrentPassword')
     return
   }
   const key = await regenerateRecoveryKey(masterPassword.value)
   if (!key) {
-    passwordError.value = errorMessage.value || '主密码不正确'
+    passwordError.value = errorMessage.value || t('errors.master_password_incorrect')
     return
   }
   masterPassword.value = ''
@@ -94,7 +95,7 @@ function closeKeySetup(): void {
 
 async function handleKeySetupComplete(): Promise<void> {
   closeKeySetup()
-  statusMessage.value = '恢复密钥已保存'
+  statusMessage.value = t('recovery.keySaved')
 }
 
 async function handleCopyRecoveryKey(): Promise<void> {
@@ -115,22 +116,22 @@ async function handleExportBackup(): Promise<void> {
     anchor.download = `pwdbook-backup-${Date.now()}.json`
     anchor.click()
     URL.revokeObjectURL(url)
-    statusMessage.value = 'JSON 备份已导出'
+    statusMessage.value = t('recovery.jsonExported')
   } catch (error) {
-    statusMessage.value = error instanceof Error ? error.message : '导出失败'
+    statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
   }
 }
 </script>
 
 <template>
   <div class="recovery-settings">
-    <h4 class="section-title">恢复与应急</h4>
+    <h4 class="section-title">{{ t('recovery.sectionTitle') }}</h4>
     <p v-if="statusMessage" class="status-message">{{ statusMessage }}</p>
     <div class="surface-card settings-card">
       <div class="row">
         <div>
-          <p class="row-title">恢复密钥</p>
-          <p class="row-desc">仅创建时可查看明文，关闭后无法再次查看</p>
+          <p class="row-title">{{ t('recovery.recoveryKey') }}</p>
+          <p class="row-desc">{{ t('recovery.recoveryKeyDesc') }}</p>
         </div>
         <span class="status-badge" :class="recoveryStatusClass">{{ recoveryStatusLabel }}</span>
       </div>
@@ -146,7 +147,7 @@ async function handleExportBackup(): Promise<void> {
         <ChevronRight :size="16" :stroke-width="1.5" />
       </button>
       <button type="button" class="link-row last" @click="handleExportBackup">
-        <span><Download :size="16" :stroke-width="1.5" /> 导出 JSON 备份</span>
+        <span><Download :size="16" :stroke-width="1.5" /> {{ t('recovery.exportJson') }}</span>
         <ChevronRight :size="16" :stroke-width="1.5" />
       </button>
     </div>
@@ -155,13 +156,13 @@ async function handleExportBackup(): Promise<void> {
       <div v-if="showPasswordDialog" class="dialog-overlay" @click.self="closePasswordDialog">
         <div class="dialog surface-card">
           <div class="dialog-header">
-            <h4>验证主密码</h4>
+            <h4>{{ t('recovery.verifyPassword') }}</h4>
             <button type="button" class="close-btn" @click="closePasswordDialog">
               <X :size="16" :stroke-width="1.5" />
             </button>
           </div>
-          <p class="dialog-desc">重新生成恢复密钥前，需验证当前主密码。旧密钥将立即失效。</p>
-          <label class="field-label">当前主密码</label>
+          <p class="dialog-desc">{{ t('recovery.verifyPasswordDesc') }}</p>
+          <label class="field-label">{{ t('recovery.currentPassword') }}</label>
           <div class="input-wrap">
             <input
               v-model="masterPassword"
@@ -176,7 +177,7 @@ async function handleExportBackup(): Promise<void> {
               class="eye-btn"
               @click="showMasterPassword = !showMasterPassword"
             >
-              {{ showMasterPassword ? '隐藏' : '显示' }}
+              {{ showMasterPassword ? t('common.hide') : t('common.show') }}
             </button>
           </div>
           <p v-if="passwordError" class="error-text">{{ passwordError }}</p>
@@ -186,7 +187,7 @@ async function handleExportBackup(): Promise<void> {
             :disabled="loading"
             @click="confirmRegenerate"
           >
-            {{ loading ? '验证中…' : '继续' }}
+            {{ loading ? t('common.verifying') : t('common.continue') }}
           </button>
         </div>
       </div>

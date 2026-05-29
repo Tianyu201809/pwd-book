@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Copy, Download } from 'lucide-vue-next'
 import RecoveryTrustNotice from '@/components/recovery/RecoveryTrustNotice.vue'
 import { buildRecoveryKeyFileContent } from '@/shared/utils'
@@ -18,8 +19,13 @@ const emit = defineEmits<{
   copy: []
 }>()
 
+const { t } = useI18n()
+
 const confirmed = ref(false)
 const copyMessage = ref('')
+
+const displayTitle = computed(() => props.title ?? t('recovery.saveKeyTitle'))
+const displaySubtitle = computed(() => props.subtitle ?? t('recovery.saveKeySubtitle'))
 
 watch(
   () => props.recoveryKey,
@@ -37,34 +43,34 @@ function saveToFile(): void {
   const anchor = document.createElement('a')
   const date = new Date().toISOString().slice(0, 10)
   anchor.href = url
-  anchor.download = `PwdBook-恢复密钥-${date}.txt`
+  anchor.download = t('recovery.keyFileName', { date })
   anchor.click()
   URL.revokeObjectURL(url)
 }
 
 function handleCopy(): void {
   emit('copy')
-  copyMessage.value = '已复制到剪贴板'
+  copyMessage.value = t('recovery.keySaved')
 }
 </script>
 
 <template>
   <div class="recovery-panel">
-    <h2 class="panel-title">{{ title ?? '保存你的恢复密钥' }}</h2>
-    <p class="panel-desc">{{ subtitle ?? '忘记主密码时，可用它重置主密码并保留数据' }}</p>
+    <h2 class="panel-title">{{ displayTitle }}</h2>
+    <p class="panel-desc">{{ displaySubtitle }}</p>
     <RecoveryTrustNotice />
 
-    <label class="label">你的恢复密钥（仅显示一次）</label>
+    <label class="label">{{ t('recovery.recoveryKey') }}</label>
     <div class="key-box font-mono">{{ recoveryKey }}</div>
 
     <div class="action-row">
       <button type="button" class="btn-ghost action-btn" @click="handleCopy">
         <Copy :size="14" :stroke-width="1.5" />
-        复制密钥
+        {{ t('recovery.copyKey') }}
       </button>
       <button type="button" class="btn-ghost action-btn" @click="saveToFile">
         <Download :size="14" :stroke-width="1.5" />
-        保存为文件
+        {{ t('recovery.downloadKey') }}
       </button>
     </div>
 
@@ -72,7 +78,7 @@ function handleCopy(): void {
 
     <label class="confirm-row">
       <input v-model="confirmed" type="checkbox" />
-      <span>我已将恢复密钥保存在安全位置（纸质备份、密码管理器或加密 U 盘）</span>
+      <span>{{ t('recovery.savedKey') }}</span>
     </label>
 
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
@@ -83,10 +89,10 @@ function handleCopy(): void {
       :disabled="loading || !confirmed"
       @click="emit('complete')"
     >
-      {{ loading ? '处理中…' : '完成并进入保险库' }}
+      {{ loading ? t('common.processing') : t('lock.createAndEnter') }}
     </button>
 
-    <button type="button" class="skip-link" @click="emit('skip')">稍后再说（不推荐）</button>
+    <button type="button" class="skip-link" @click="emit('skip')">{{ t('recovery.skipLater') }}</button>
   </div>
 </template>
 

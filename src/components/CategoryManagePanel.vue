@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   FolderPlus,
@@ -14,6 +15,8 @@ import IconPickerModal from '@/components/IconPickerModal.vue'
 
 const { createCategory, deleteCategory, customCategories, loading, errorMessage, clearError } =
   useAppState()
+
+const { t } = useI18n()
 
 const showManageDialog = ref(false)
 const showCreateIconPicker = ref(false)
@@ -81,7 +84,7 @@ async function confirmDelete(id: string, name: string): Promise<void> {
   const ok = await deleteCategory(id)
   confirmDeleteId.value = null
   if (!ok) {
-    localError.value = errorMessage.value || `无法删除「${name}」`
+    localError.value = errorMessage.value || t('errors.cannot_delete_category', { name })
   }
 }
 </script>
@@ -89,7 +92,7 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 <template>
   <button type="button" class="nav-item manage-trigger" @click="openManageDialog">
     <Layers :size="16" :stroke-width="1.5" />
-    分类管理
+    {{ t('category.manage') }}
     <span v-if="categoryCount" class="trigger-count">{{ categoryCount }}</span>
   </button>
 
@@ -100,10 +103,10 @@ async function confirmDelete(id: string, name: string): Promise<void> {
           <template v-if="dialogMode === 'list'">
             <div class="dialog-header">
               <div>
-                <h4 class="dialog-title">分类管理</h4>
-                <p class="dialog-desc">共 {{ categoryCount }} 个分类 · 排序请在侧边栏拖拽</p>
+                <h4 class="dialog-title">{{ t('category.manage') }}</h4>
+                <p class="dialog-desc">{{ t('category.manageDesc', { count: categoryCount }) }}</p>
               </div>
-              <button type="button" class="icon-btn" aria-label="关闭" @click="closeManageDialog">
+              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
                 <X :size="16" :stroke-width="1.5" />
               </button>
             </div>
@@ -111,7 +114,7 @@ async function confirmDelete(id: string, name: string): Promise<void> {
             <div class="dialog-toolbar">
               <button type="button" class="create-btn" @click="openCreateView">
                 <Plus :size="14" :stroke-width="1.5" />
-                新建分类
+                {{ t('category.newCategory') }}
               </button>
             </div>
 
@@ -125,16 +128,16 @@ async function confirmDelete(id: string, name: string): Promise<void> {
                 :class="{ confirming: confirmDeleteId === category.id }"
               >
                 <template v-if="confirmDeleteId === category.id">
-                  <span class="confirm-text">删除「{{ category.label }}」？</span>
+                  <span class="confirm-text">{{ t('category.deleteConfirm', { name: category.label }) }}</span>
                   <div class="confirm-actions">
-                    <button type="button" class="ghost-btn" @click="cancelDelete">取消</button>
+                    <button type="button" class="ghost-btn" @click="cancelDelete">{{ t('common.cancel') }}</button>
                     <button
                       type="button"
                       class="danger-btn"
                       :disabled="loading"
                       @click="confirmDelete(category.id, category.label)"
                     >
-                      删除
+                      {{ t('common.delete') }}
                     </button>
                   </div>
                 </template>
@@ -142,18 +145,18 @@ async function confirmDelete(id: string, name: string): Promise<void> {
                 <template v-else>
                   <CategoryIconView :name="category.icon" :badge-size="28" :size="15" />
                   <span class="manage-name" :title="category.label">{{ category.label }}</span>
-                  <span class="entry-count">{{ category.count }} 条</span>
+                  <span class="entry-count">{{ t('category.entryCount', { count: category.count }) }}</span>
                   <button
                     type="button"
                     class="delete-btn"
                     :class="{ disabled: category.count > 0 }"
                     :title="
                       category.count > 0
-                        ? `该分类下有 ${category.count} 条密码，无法删除`
-                        : '删除分类'
+                        ? t('category.hasEntriesHint', { count: category.count })
+                        : t('category.deleteCategory')
                     "
                     :disabled="category.count > 0"
-                    aria-label="删除分类"
+                    :aria-label="t('category.deleteCategory')"
                     @click="startDelete(category.id)"
                   >
                     <Trash2 :size="14" :stroke-width="1.5" />
@@ -164,52 +167,52 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 
             <div v-else class="empty-state">
               <FolderPlus :size="22" :stroke-width="1.5" />
-              <p>还没有自定义分类</p>
-              <button type="button" class="empty-action" @click="openCreateView">创建第一个</button>
+              <p>{{ t('category.empty') }}</p>
+              <button type="button" class="empty-action" @click="openCreateView">{{ t('category.createFirst') }}</button>
             </div>
           </template>
 
           <template v-else>
             <div class="dialog-header">
-              <button type="button" class="icon-btn back-btn" aria-label="返回" @click="backToList">
+              <button type="button" class="icon-btn back-btn" :aria-label="t('common.back')" @click="backToList">
                 <ArrowLeft :size="16" :stroke-width="1.5" />
               </button>
               <div class="header-main">
-                <h4 class="dialog-title">新建分类</h4>
-                <p class="dialog-desc">创建后可在侧边栏拖拽调整顺序</p>
+                <h4 class="dialog-title">{{ t('category.newCategory') }}</h4>
+                <p class="dialog-desc">{{ t('category.createHint') }}</p>
               </div>
-              <button type="button" class="icon-btn" aria-label="关闭" @click="closeManageDialog">
+              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
                 <X :size="16" :stroke-width="1.5" />
               </button>
             </div>
 
-            <label class="field-label">分类名称</label>
+            <label class="field-label">{{ t('category.categoryName') }}</label>
             <input
               v-model="categoryName"
               class="input-field"
               maxlength="20"
-              placeholder="例如：学习、购物"
+              :placeholder="t('category.namePlaceholder')"
               autofocus
               @keydown.enter="submitCategory"
             />
 
-            <label class="field-label">图标</label>
+            <label class="field-label">{{ t('category.icon') }}</label>
             <button type="button" class="icon-picker-trigger" @click="showCreateIconPicker = true">
               <CategoryIconView :name="selectedIcon" :badge-size="36" :size="18" />
-              <span>选择图标</span>
+              <span>{{ t('category.pickIcon') }}</span>
             </button>
 
             <p v-if="localError" class="error-text">{{ localError }}</p>
 
             <div class="dialog-actions">
-              <button type="button" class="btn-ghost action-btn" @click="backToList">取消</button>
+              <button type="button" class="btn-ghost action-btn" @click="backToList">{{ t('common.cancel') }}</button>
               <button
                 type="button"
                 class="btn-primary action-btn"
                 :disabled="loading || !categoryName.trim()"
                 @click="submitCategory"
               >
-                {{ loading ? '创建中…' : '创建分类' }}
+                {{ loading ? t('common.creating') : t('category.createCategory') }}
               </button>
             </div>
           </template>
@@ -222,7 +225,7 @@ async function confirmDelete(id: string, name: string): Promise<void> {
     v-model:open="showCreateIconPicker"
     :selected="selectedIcon"
     :allow-clear="false"
-    title="选择图标"
+    :title="t('category.pickIcon')"
     @select="selectedIcon = $event"
   />
 </template>

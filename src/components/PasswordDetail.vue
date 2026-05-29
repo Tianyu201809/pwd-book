@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Star, Trash2, Copy, Eye, EyeOff, PanelRightClose, PanelRightOpen } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
@@ -22,6 +23,8 @@ const {
   cancelCreateEntry,
   getCreateDefaultCategoryId,
 } = useAppState()
+
+const { t } = useI18n()
 
 const collapsed = ref(localStorage.getItem(STORAGE_KEY) === 'true')
 const showPassword = ref(false)
@@ -47,14 +50,14 @@ const categoryOptions = computed(() =>
 
 const tagsInput = ref('')
 
-const avatar = computed(() => getAvatarMeta(draft.value.title || '新条目'))
+const avatar = computed(() => getAvatarMeta(draft.value.title || t('detail.newEntry')))
 
 const strengthLevel = computed(() => {
   const len = draft.value.password.length
-  if (len >= 16) return { label: '强', bars: 3 }
-  if (len >= 10) return { label: '中', bars: 2 }
-  if (len >= 1) return { label: '弱', bars: 1 }
-  return { label: '无', bars: 0 }
+  if (len >= 16) return { label: t('detail.strengthStrong'), bars: 3 }
+  if (len >= 10) return { label: t('detail.strengthMedium'), bars: 2 }
+  if (len >= 1) return { label: t('detail.strengthWeak'), bars: 1 }
+  return { label: t('detail.strengthNone'), bars: 0 }
 })
 
 function resetDraftFromEntry(): void {
@@ -107,7 +110,7 @@ async function handleSave(): Promise<void> {
 
 async function handleDelete(): Promise<void> {
   if (!selectedEntry.value) return
-  if (!window.confirm(`确定删除「${selectedEntry.value.title}」吗？`)) return
+  if (!window.confirm(t('vault.deleteConfirmSimple', { title: selectedEntry.value.title }))) return
   await removeEntry(selectedEntry.value.id)
 }
 
@@ -155,8 +158,8 @@ watch(isCreating, (creating) => {
       <button
         type="button"
         class="panel-toggle"
-        title="展开详情"
-        aria-label="展开详情"
+        :title="t('detail.expand')"
+        :aria-label="t('detail.expand')"
         @click="toggleCollapse"
       >
         <PanelRightOpen :size="18" :stroke-width="1.5" />
@@ -169,8 +172,8 @@ watch(isCreating, (creating) => {
         <button
           type="button"
           class="avatar avatar-btn"
-          title="选择图标"
-          aria-label="选择图标"
+          :title="t('detail.pickIcon')"
+          :aria-label="t('detail.pickIcon')"
           @click="showIconPicker = true"
         >
           <CategoryIconView
@@ -184,8 +187,8 @@ watch(isCreating, (creating) => {
           </span>
         </button>
         <div>
-          <h2 class="font-display">{{ isCreating ? '新建条目' : draft.title || '未命名' }}</h2>
-          <p class="url">{{ isCreating ? '填写信息后保存' : draft.url || '未填写网址' }}</p>
+          <h2 class="font-display">{{ isCreating ? t('detail.newEntry') : draft.title || t('detail.untitled') }}</h2>
+          <p class="url">{{ isCreating ? t('detail.fillAndSave') : draft.url || t('detail.noUrl') }}</p>
         </div>
       </div>
       <div class="header-actions">
@@ -194,7 +197,7 @@ watch(isCreating, (creating) => {
           type="button"
           class="icon-btn favorite-btn"
           :class="{ active: selectedEntry.isFavorite }"
-          :title="selectedEntry.isFavorite ? '取消收藏' : '加入收藏'"
+          :title="selectedEntry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite')"
           @click="handleToggleFavorite"
         >
           <Star
@@ -214,8 +217,8 @@ watch(isCreating, (creating) => {
         <button
           type="button"
           class="icon-btn"
-          title="收起详情"
-          aria-label="收起详情"
+          :title="t('detail.collapse')"
+          :aria-label="t('detail.collapse')"
           @click="toggleCollapse"
         >
           <PanelRightClose :size="16" :stroke-width="1.5" />
@@ -225,17 +228,17 @@ watch(isCreating, (creating) => {
 
     <div class="detail-body">
       <div class="field">
-        <label>标题</label>
-        <input v-model="draft.title" class="input-field" placeholder="例如 GitHub" />
+        <label>{{ t('detail.title') }}</label>
+        <input v-model="draft.title" class="input-field" :placeholder="t('detail.titlePlaceholder')" />
       </div>
 
       <div class="field">
-        <label>网址</label>
-        <input v-model="draft.url" class="input-field" placeholder="github.com" />
+        <label>{{ t('detail.url') }}</label>
+        <input v-model="draft.url" class="input-field" :placeholder="t('detail.urlPlaceholder')" />
       </div>
 
       <div class="field">
-        <label>分类</label>
+        <label>{{ t('detail.category') }}</label>
         <select v-model="draft.categoryId" class="input-field select">
           <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -244,9 +247,9 @@ watch(isCreating, (creating) => {
       </div>
 
       <div class="field">
-        <label>用户名</label>
+        <label>{{ t('detail.username') }}</label>
         <div class="field-row">
-          <input v-model="draft.username" class="input-field" placeholder="账号或邮箱" />
+          <input v-model="draft.username" class="input-field" :placeholder="t('detail.usernamePlaceholder')" />
           <button type="button" class="icon-btn square" @click="handleCopyUsername">
             <Copy :size="16" :stroke-width="1.5" />
           </button>
@@ -254,7 +257,7 @@ watch(isCreating, (creating) => {
       </div>
 
       <div class="field">
-        <label>密码</label>
+        <label>{{ t('detail.password') }}</label>
         <div class="field-row">
           <input
             v-model="draft.password"
@@ -284,18 +287,18 @@ watch(isCreating, (creating) => {
       </div>
 
       <div class="field">
-        <label>备注</label>
-        <textarea v-model="draft.note" class="input-field note" rows="3" placeholder="可选备注" />
+        <label>{{ t('detail.note') }}</label>
+        <textarea v-model="draft.note" class="input-field note" rows="3" :placeholder="t('detail.notePlaceholder')" />
       </div>
 
       <div class="field">
-        <label>标签</label>
-        <input v-model="tagsInput" class="input-field" placeholder="用逗号分隔，例如 工作, 开发" />
+        <label>{{ t('detail.tags') }}</label>
+        <input v-model="tagsInput" class="input-field" :placeholder="t('detail.tagsPlaceholder')" />
       </div>
 
       <label class="favorite-row">
         <input v-model="draft.isFavorite" type="checkbox" />
-        <span>加入收藏</span>
+        <span>{{ t('detail.addFavorite') }}</span>
       </label>
     </div>
 
@@ -306,10 +309,10 @@ watch(isCreating, (creating) => {
         class="btn-ghost footer-btn"
         @click="cancelCreateEntry"
       >
-        取消
+        {{ t('common.cancel') }}
       </button>
       <button type="button" class="btn-primary footer-btn save" :disabled="loading" @click="handleSave">
-        {{ loading ? '保存中…' : '保存' }}
+        {{ loading ? t('common.saving') : t('common.save') }}
       </button>
     </div>
     </template>
