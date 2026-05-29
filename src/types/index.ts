@@ -2,11 +2,15 @@ export type ListSortOrder = 'recent' | 'title' | 'created'
 
 export type {
   AppScreen,
+  BackupFrequency,
   CategoryInput,
+  EmailBackupSettings,
+  EmailBackupSettingsUpdate,
   ExportPayload,
   FilterCategory,
   PasswordEntry,
   PasswordEntryInput,
+  PasswordGenOptions,
   SecuritySettings,
   RecoveryResetPayload,
   RecoveryVerifyResult,

@@ -72,14 +72,19 @@
     }
   },
   "dependencies": {
+    "archiver": "7.0.1",
+    "archiver-zip-encrypted": "^2.0.0",
     "lucide-vue-next": "^0.511.0",
+    "nodemailer": "^8.0.10",
     "sql.js": "^1.14.1",
     "vue": "^3.5.13",
     "vue-i18n": "^10.0.7"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.14.1",
+    "@types/nodemailer": "^8.0.0",
     "@types/sql.js": "^1.4.11",
     "@types/sqlite3": "^3.1.11",
     "@vitejs/plugin-vue": "^5.2.3",

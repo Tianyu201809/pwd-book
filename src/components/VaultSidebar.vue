@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Settings, Lock, GripVertical } from 'lucide-vue-next'
+import { Plus, Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { useAppState } from '@/composables/useAppState'
@@ -12,6 +12,8 @@ const {
   selectedCategory,
   selectCategory,
   navigateTo,
+  openEmailBackup,
+  openPasswordGen,
   lock,
   startCreateEntry,
   reorderSidebarCategories,
@@ -194,6 +196,32 @@ onBeforeUnmount(() => {
       </TransitionGroup>
     </nav>
 
+    <div class="tool-section">
+      <p class="tool-section-label">{{ t('tools.sectionLabel') }}</p>
+      <div class="tool-list">
+        <button type="button" class="tool-entry tool-entry--mail" @click="openEmailBackup">
+          <span class="tool-entry-icon">
+            <MailCheck :size="16" :stroke-width="1.5" />
+          </span>
+          <span class="tool-entry-body">
+            <span class="tool-entry-title">{{ t('tools.emailBackupTitle') }}</span>
+            <span class="tool-entry-desc">{{ t('tools.emailBackupDesc') }}</span>
+          </span>
+          <ChevronRight class="tool-entry-arrow" :size="14" :stroke-width="1.5" />
+        </button>
+        <button type="button" class="tool-entry tool-entry--gen" @click="openPasswordGen()">
+          <span class="tool-entry-icon">
+            <Sparkles :size="16" :stroke-width="1.5" />
+          </span>
+          <span class="tool-entry-body">
+            <span class="tool-entry-title">{{ t('tools.passwordGenTitle') }}</span>
+            <span class="tool-entry-desc">{{ t('tools.passwordGenDesc') }}</span>
+          </span>
+          <ChevronRight class="tool-entry-arrow" :size="14" :stroke-width="1.5" />
+        </button>
+      </div>
+    </div>
+
     <div class="sidebar-bottom">
       <CategoryManagePanel />
       <button type="button" class="nav-item" @click="navigateTo('settings')">
@@ -335,6 +363,16 @@ onBeforeUnmount(() => {
 .sidebar-bottom {
   padding: 12px;
   border-top: 1px solid var(--border-default);
+}
+
+.tool-section {
+  padding: 0 12px 8px;
+}
+
+.tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .lock-btn:hover {

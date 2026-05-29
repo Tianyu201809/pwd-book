@@ -11,6 +11,9 @@ import type {
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
+  EmailBackupSettings,
+  EmailBackupSettingsUpdate,
+  EmailBackupSendPayload,
 } from '@/shared/types'
 
 declare global {
@@ -51,6 +54,11 @@ declare global {
       openExternal: (url: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
       importData: (entries: PasswordEntryInput[]) => Promise<number>
+      getEmailBackupSettings: () => Promise<EmailBackupSettings>
+      updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate) => Promise<EmailBackupSettings>
+      testEmailBackupConnection: () => Promise<void>
+      sendEmailBackup: (payload: EmailBackupSendPayload) => Promise<EmailBackupSettings>
+      onScheduledBackupDue: (handler: () => void) => () => void
     }
   }
 }

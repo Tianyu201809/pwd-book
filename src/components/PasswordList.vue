@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, SlidersHorizontal, MoreHorizontal, Check } from 'lucide-vue-next'
+import { Search, SlidersHorizontal, MoreHorizontal, Check, MailCheck, Sparkles } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
 import { useAppState } from '@/composables/useAppState'
@@ -17,6 +17,8 @@ const {
   isCreating,
   setListSortOrder,
   touchActivity,
+  openEmailBackup,
+  openPasswordGen,
 } = useAppState()
 
 const { t } = useI18n()
@@ -106,6 +108,22 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           @input="touchActivity"
         />
       </div>
+      <button
+        type="button"
+        class="tool-quick-btn tool-quick-btn--mail"
+        :title="t('tools.emailBackupTitle')"
+        @click="openEmailBackup"
+      >
+        <MailCheck :size="16" :stroke-width="1.5" />
+      </button>
+      <button
+        type="button"
+        class="tool-quick-btn tool-quick-btn--gen"
+        :title="t('tools.passwordGenTitle')"
+        @click="openPasswordGen()"
+      >
+        <Sparkles :size="16" :stroke-width="1.5" />
+      </button>
       <div class="sort-menu-wrap">
         <button
           type="button"

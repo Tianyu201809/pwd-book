@@ -11,6 +11,9 @@ import type {
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
+  EmailBackupSettings,
+  EmailBackupSettingsUpdate,
+  EmailBackupSendPayload,
 } from '@/shared/types'
 
 function getApi() {
@@ -66,4 +69,12 @@ export const vaultApi = {
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
   importData: (entries: PasswordEntryInput[]): Promise<number> => getApi().importData(entries),
+
+  getEmailBackupSettings: (): Promise<EmailBackupSettings> => getApi().getEmailBackupSettings(),
+  updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>
+    getApi().updateEmailBackupSettings(partial),
+  testEmailBackupConnection: (): Promise<void> => getApi().testEmailBackupConnection(),
+  sendEmailBackup: (payload: EmailBackupSendPayload): Promise<EmailBackupSettings> =>
+    getApi().sendEmailBackup(payload),
+  onScheduledBackupDue: (handler: () => void): (() => void) => getApi().onScheduledBackupDue(handler),
 }

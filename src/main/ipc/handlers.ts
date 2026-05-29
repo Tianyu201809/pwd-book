@@ -6,6 +6,8 @@ import type {
   SecuritySettings,
   VaultSetupPayload,
   VaultUnlockPayload,
+  EmailBackupSettingsUpdate,
+  EmailBackupSendPayload,
 } from '../../shared/types'
 import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
@@ -42,6 +44,17 @@ import {
 } from '../services/recoveryService'
 import type { CategoryInput, RecoveryResetPayload } from '../../shared/types'
 import { getSecuritySettings, updateSecuritySettings } from '../services/settingsService'
+import {
+  getEmailBackupSettings,
+  sendBackupNow,
+  testEmailConnection,
+  updateEmailBackupSettings,
+} from '../services/emailBackupService'
+import {
+  checkScheduledBackupDue,
+  resetScheduledBackupNotification,
+  startBackupScheduler,
+} from '../services/backupScheduler'
 import { isUnlocked } from '../services/sessionService'
 
 let clipboardTimer: NodeJS.Timeout | null = null
@@ -88,6 +101,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultUnlock, (_event, payload: VaultUnlockPayload) =>
     wrap(() => {
       unlockVault(payload.masterPassword)
+      resetScheduledBackupNotification()
+      checkScheduledBackupDue(true)
       return getVaultStatus()
     }),
   )
@@ -95,6 +110,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultLock, () =>
     wrap(() => {
       lockVault()
+      resetScheduledBackupNotification()
       return getVaultStatus()
     }),
   )
@@ -302,4 +318,40 @@ export function registerIpcHandlers(): void {
       return importEntries(entries)
     }),
   )
+
+  ipcMain.handle(IPC.emailBackupGet, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return getEmailBackupSettings()
+    }),
+  )
+
+  ipcMain.handle(IPC.emailBackupUpdate, (_event, partial: EmailBackupSettingsUpdate) =>
+    wrap(() => {
+      ensureUnlocked()
+      return updateEmailBackupSettings(partial)
+    }),
+  )
+
+  ipcMain.handle(IPC.emailBackupTest, async () => {
+    try {
+      ensureUnlocked()
+      await testEmailConnection()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
+  })
+
+  ipcMain.handle(IPC.emailBackupSend, async (_event, payload: EmailBackupSendPayload) => {
+    try {
+      ensureUnlocked()
+      return await sendBackupNow(payload.masterPassword)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
+  })
+
+  startBackupScheduler()
 }

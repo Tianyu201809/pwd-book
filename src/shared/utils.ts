@@ -94,21 +94,18 @@ export function formatEntryForClipboard(entry: PasswordEntry): string {
   return lines.join('\n')
 }
 
-export function generatePassword(length = 16): string {
-  const lowers = 'abcdefghijkmnopqrstuvwxyz'
-  const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
-  const digits = '23456789'
-  const symbols = '!@#$%^&*-_=+'
-  const all = lowers + uppers + digits + symbols
-  const pick = (source: string) => source[Math.floor(Math.random() * source.length)]
-  const required = [pick(lowers), pick(uppers), pick(digits), pick(symbols)]
-  const rest = Array.from({ length: Math.max(length - required.length, 0) }, () => pick(all))
-  const chars = [...required, ...rest]
-  for (let i = chars.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[chars[i], chars[j]] = [chars[j], chars[i]]
-  }
-  return chars.join('')
+import type { PasswordGenOptions } from '@/shared/types'
+import {
+  DEFAULT_PASSWORD_GEN_OPTIONS,
+  generatePasswordWithOptions,
+} from '@/shared/passwordGenerator'
+
+export function generatePassword(length = 16, options?: Partial<PasswordGenOptions>): string {
+  return generatePasswordWithOptions({
+    ...DEFAULT_PASSWORD_GEN_OPTIONS,
+    length,
+    ...options,
+  })
 }
 
 export function formatRelativeTime(timestamp: number | null): string {

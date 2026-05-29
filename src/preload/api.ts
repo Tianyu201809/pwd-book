@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { ERR_PREFIX } from '../shared/errors'
-import { IPC } from '../shared/types'
+import { IPC, IPC_EVENTS } from '../shared/types'
 import type {
   CategoryInput,
   ExportPayload,
@@ -14,6 +14,9 @@ import type {
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
+  EmailBackupSettings,
+  EmailBackupSettingsUpdate,
+  EmailBackupSendPayload,
 } from '../shared/types'
 
 export type ThemeNativeMode = 'dark' | 'light' | 'system'
@@ -97,4 +100,16 @@ export const electronAPI = {
 
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
   importData: (entries: PasswordEntryInput[]): Promise<number> => invoke(IPC.dataImport, entries),
+
+  getEmailBackupSettings: (): Promise<EmailBackupSettings> => invoke(IPC.emailBackupGet),
+  updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>
+    invoke(IPC.emailBackupUpdate, partial),
+  testEmailBackupConnection: (): Promise<void> => invoke(IPC.emailBackupTest),
+  sendEmailBackup: (payload: EmailBackupSendPayload): Promise<EmailBackupSettings> =>
+    invoke(IPC.emailBackupSend, payload),
+  onScheduledBackupDue: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.scheduledBackupDue, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.scheduledBackupDue, listener)
+  },
 }

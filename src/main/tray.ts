@@ -11,6 +11,10 @@ export function setMainWindow(win: BrowserWindow): void {
   mainWindow = win
 }
 
+export function getMainWindow(): BrowserWindow | null {
+  return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null
+}
+
 export function getIsQuitting(): boolean {
   return isQuitting
 }

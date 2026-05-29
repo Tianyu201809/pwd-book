@@ -5,18 +5,24 @@ import {
   buildUrlWithCredentialParams,
   formatEntryForClipboard,
   formatRelativeTime,
-  generatePassword,
   getAvatarMeta,
   parseErrorMessage,
 } from '@/shared/utils'
+import {
+  DEFAULT_PASSWORD_GEN_OPTIONS,
+  generatePasswordWithOptions,
+} from '@/shared/passwordGenerator'
 import { showToast } from '@/composables/useToast'
 import type {
   AppScreen,
   CategoryInput,
+  EmailBackupSettings,
+  EmailBackupSettingsUpdate,
   FilterCategory,
   ListSortOrder,
   PasswordEntry,
   PasswordEntryInput,
+  PasswordGenOptions,
   SecuritySettings,
   SettingsTab,
   VaultCategory,
@@ -49,6 +55,26 @@ const selectedCategory = ref<FilterCategory>('all')
 const selectedEntryId = ref<string | null>(null)
 const searchQuery = ref('')
 const listSortOrder = ref<ListSortOrder>('recent')
+const passwordGenApplyMode = ref(false)
+const pendingApplyPassword = ref<string | null>(null)
+const emailBackupSettings = ref<EmailBackupSettings>({
+  recipientEmail: '',
+  frequency: 'manual',
+  smtp: {
+    host: '',
+    port: 465,
+    secure: true,
+    username: '',
+    hasPassword: false,
+  },
+  lastBackup: {
+    at: null,
+    entryCount: 0,
+    sizeBytes: 0,
+    status: 'never',
+  },
+})
+const scheduledBackupPromptOpen = ref(false)
 const entries = ref<PasswordEntry[]>([])
 const vaultCategories = ref<VaultCategory[]>([])
 const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
@@ -239,6 +265,7 @@ async function bootstrap(): Promise<void> {
     securitySettings.value = await vaultApi.getSettings()
     if (vaultStatus.value.unlocked) {
       await refreshVaultData()
+      await loadEmailBackupSettings()
       screen.value = 'vault'
     } else {
       screen.value = 'lock'
@@ -272,6 +299,7 @@ async function unlock(masterPassword: string): Promise<boolean> {
   try {
     vaultStatus.value = await vaultApi.unlockVault({ masterPassword })
     await refreshVaultData()
+    await loadEmailBackupSettings()
     screen.value = 'vault'
     touchActivity()
     return true
@@ -392,9 +420,44 @@ async function lock(): Promise<void> {
 }
 
 function navigateTo(next: AppScreen, tab: SettingsTab = 'security'): void {
+  if (next !== 'password-gen') {
+    passwordGenApplyMode.value = false
+  }
   screen.value = next
   if (next === 'settings') settingsTab.value = tab
   touchActivity()
+}
+
+function openEmailBackup(): void {
+  navigateTo('email-backup')
+  void loadEmailBackupSettings()
+}
+
+function openPasswordGen(apply = false): void {
+  passwordGenApplyMode.value = apply
+  screen.value = 'password-gen'
+  touchActivity()
+}
+
+function applyGeneratedPassword(password: string): void {
+  pendingApplyPassword.value = password
+  passwordGenApplyMode.value = false
+  screen.value = 'vault'
+  touchActivity()
+}
+
+function consumePendingApplyPassword(): string | null {
+  const password = pendingApplyPassword.value
+  pendingApplyPassword.value = null
+  return password
+}
+
+function openScheduledBackupPrompt(): void {
+  scheduledBackupPromptOpen.value = true
+}
+
+function closeScheduledBackupPrompt(): void {
+  scheduledBackupPromptOpen.value = false
 }
 
 function selectCategory(id: FilterCategory): void {
@@ -624,8 +687,39 @@ async function openEntryInBrowser(entry: PasswordEntry): Promise<void> {
   }
 }
 
-function createGeneratedPassword(length = 16): string {
-  return generatePassword(length)
+function createGeneratedPassword(options: Partial<PasswordGenOptions> = {}): string {
+  return generatePasswordWithOptions({
+    ...DEFAULT_PASSWORD_GEN_OPTIONS,
+    ...options,
+  })
+}
+
+async function loadEmailBackupSettings(): Promise<void> {
+  try {
+    emailBackupSettings.value = await vaultApi.getEmailBackupSettings()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
+async function updateEmailBackupSettings(partial: EmailBackupSettingsUpdate): Promise<void> {
+  try {
+    emailBackupSettings.value = await vaultApi.updateEmailBackupSettings(partial)
+    touchActivity()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    throw error
+  }
+}
+
+async function testEmailBackupConnection(): Promise<void> {
+  await vaultApi.testEmailBackupConnection()
+  touchActivity()
+}
+
+async function sendEmailBackup(masterPassword: string): Promise<void> {
+  emailBackupSettings.value = await vaultApi.sendEmailBackup({ masterPassword })
+  touchActivity()
 }
 
 async function updateSecuritySettings(partial: Partial<SecuritySettings>): Promise<void> {
@@ -726,6 +820,20 @@ export function useAppState() {
     copyEntryData,
     openEntryInBrowser,
     createGeneratedPassword,
+    passwordGenApplyMode,
+    pendingApplyPassword,
+    openPasswordGen,
+    openEmailBackup,
+    applyGeneratedPassword,
+    consumePendingApplyPassword,
+    emailBackupSettings,
+    loadEmailBackupSettings,
+    updateEmailBackupSettings,
+    testEmailBackupConnection,
+    sendEmailBackup,
+    scheduledBackupPromptOpen,
+    openScheduledBackupPrompt,
+    closeScheduledBackupPrompt,
     updateSecuritySettings,
     exportData,
     importDataFromJson,

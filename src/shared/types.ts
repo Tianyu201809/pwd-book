@@ -1,6 +1,63 @@
 export type FilterCategory = 'all' | 'favorite' | string
 
-export type AppScreen = 'lock' | 'vault' | 'settings'
+export type AppScreen = 'lock' | 'vault' | 'settings' | 'email-backup' | 'password-gen'
+
+export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
+
+export type BackupStatus = 'success' | 'failed' | 'never'
+
+export interface SmtpSettingsInput {
+  host: string
+  port: number
+  secure: boolean
+  username: string
+  password?: string
+}
+
+export interface SmtpSettingsPublic {
+  host: string
+  port: number
+  secure: boolean
+  username: string
+  hasPassword: boolean
+}
+
+export interface LastBackupInfo {
+  at: number | null
+  entryCount: number
+  sizeBytes: number
+  status: BackupStatus
+}
+
+export interface EmailBackupSettings {
+  recipientEmail: string
+  frequency: BackupFrequency
+  smtp: SmtpSettingsPublic
+  lastBackup: LastBackupInfo
+}
+
+export interface EmailBackupSettingsUpdate {
+  recipientEmail?: string
+  frequency?: BackupFrequency
+  smtp?: SmtpSettingsInput
+}
+
+export interface EmailBackupSendPayload {
+  masterPassword: string
+}
+
+export interface PasswordGenOptions {
+  length: number
+  upper: boolean
+  lower: boolean
+  numbers: boolean
+  symbols: boolean
+}
+
+export interface PasswordStrengthResult {
+  level: 0 | 1 | 2 | 3
+  bars: number
+}
 
 export type SettingsTab = 'security' | 'appearance' | 'data' | 'about'
 
@@ -130,6 +187,14 @@ export const IPC = {
   shellOpenExternal: 'shell:open-external',
   dataExport: 'data:export',
   dataImport: 'data:import',
+  emailBackupGet: 'email-backup:get',
+  emailBackupUpdate: 'email-backup:update',
+  emailBackupTest: 'email-backup:test',
+  emailBackupSend: 'email-backup:send',
+} as const
+
+export const IPC_EVENTS = {
+  scheduledBackupDue: 'email-backup:scheduled-due',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { useAppState } from '@/composables/useAppState'
@@ -27,6 +27,9 @@ const {
   copyPassword,
   cancelCreateEntry,
   getCreateDefaultCategoryId,
+  openPasswordGen,
+  pendingApplyPassword,
+  consumePendingApplyPassword,
 } = useAppState()
 
 const { t } = useI18n()
@@ -109,6 +112,13 @@ function resetDraftFromEntry(): void {
 }
 
 watch([selectedEntry, isCreating], resetDraftFromEntry, { immediate: true })
+
+watch(pendingApplyPassword, (password) => {
+  if (password) {
+    draft.value.password = password
+    consumePendingApplyPassword()
+  }
+}, { immediate: true })
 
 function buildInput(): PasswordEntryInput {
   return {
@@ -374,6 +384,10 @@ watch(isCreating, (creating) => {
           @click="cancelCreateEntry"
         >
           {{ t('common.cancel') }}
+        </button>
+        <button type="button" class="btn-ghost footer-btn gen-btn" @click="openPasswordGen(true)">
+          <Sparkles :size="14" :stroke-width="1.5" />
+          {{ t('detail.generatePassword') }}
         </button>
         <button type="button" class="btn-primary footer-btn save" :disabled="loading" @click="handleSave">
           {{ loading ? t('common.saving') : t('common.save') }}
