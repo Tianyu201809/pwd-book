@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, PanelRightClose, PanelRightOpen } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
 
-const STORAGE_KEY = 'pwdbook-detail-collapsed'
+const COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
+const WIDTH_STORAGE_KEY = 'pwdbook-detail-width'
+const DETAIL_MIN_WIDTH = 280
+const DETAIL_MAX_WIDTH = 560
+const DETAIL_DEFAULT_WIDTH = 360
+const DETAIL_COLLAPSED_WIDTH = 40
 
 const {
   selectedEntry,
@@ -26,7 +31,15 @@ const {
 
 const { t } = useI18n()
 
-const collapsed = ref(localStorage.getItem(STORAGE_KEY) === 'true')
+function loadPanelWidth(): number {
+  const stored = Number(localStorage.getItem(WIDTH_STORAGE_KEY))
+  if (!Number.isFinite(stored)) return DETAIL_DEFAULT_WIDTH
+  return Math.min(DETAIL_MAX_WIDTH, Math.max(DETAIL_MIN_WIDTH, stored))
+}
+
+const collapsed = ref(localStorage.getItem(COLLAPSED_STORAGE_KEY) === 'true')
+const panelWidth = ref(loadPanelWidth())
+const isResizing = ref(false)
 const showPassword = ref(false)
 const showIconPicker = ref(false)
 const draft = ref<PasswordEntryInput>({
@@ -59,6 +72,10 @@ const strengthLevel = computed(() => {
   if (len >= 1) return { label: t('detail.strengthWeak'), bars: 1 }
   return { label: t('detail.strengthNone'), bars: 0 }
 })
+
+const shellWidth = computed(() =>
+  collapsed.value ? `${DETAIL_COLLAPSED_WIDTH}px` : `${panelWidth.value}px`,
+)
 
 function resetDraftFromEntry(): void {
   if (isCreating.value || !selectedEntry.value) {
@@ -145,188 +162,224 @@ function handleIconClear(): void {
 
 function toggleCollapse(): void {
   collapsed.value = !collapsed.value
-  localStorage.setItem(STORAGE_KEY, String(collapsed.value))
+  localStorage.setItem(COLLAPSED_STORAGE_KEY, String(collapsed.value))
 }
+
+function stopResize(): void {
+  isResizing.value = false
+  localStorage.setItem(WIDTH_STORAGE_KEY, String(panelWidth.value))
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+  window.removeEventListener('mousemove', onResizeMove)
+  window.removeEventListener('mouseup', stopResize)
+}
+
+function onResizeMove(event: MouseEvent): void {
+  const shell = document.querySelector('.detail-shell') as HTMLElement | null
+  if (!shell) return
+  const rect = shell.getBoundingClientRect()
+  const next = Math.round(rect.right - event.clientX)
+  panelWidth.value = Math.min(DETAIL_MAX_WIDTH, Math.max(DETAIL_MIN_WIDTH, next))
+}
+
+function onResizeStart(event: MouseEvent): void {
+  if (collapsed.value || event.button !== 0) return
+  isResizing.value = true
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  window.addEventListener('mousemove', onResizeMove)
+  window.addEventListener('mouseup', stopResize)
+}
+
+onUnmounted(() => {
+  stopResize()
+})
 
 const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value))
 
 watch(isCreating, (creating) => {
   if (creating) {
     collapsed.value = false
-    localStorage.setItem(STORAGE_KEY, 'false')
+    localStorage.setItem(COLLAPSED_STORAGE_KEY, 'false')
   }
 })
 </script>
 
 <template>
-  <aside v-if="showPanel" class="detail-panel" :class="{ collapsed }">
-    <div v-if="collapsed" class="collapsed-rail">
+  <aside
+    v-if="showPanel"
+    class="detail-shell"
+    :class="{ collapsed, resizing: isResizing }"
+    :style="{ width: shellWidth }"
+  >
+    <div
+      class="panel-edge"
+      :class="{ collapsed }"
+      @mousedown="onResizeStart"
+    >
       <button
         type="button"
-        class="panel-toggle"
-        :title="t('detail.expand')"
-        :aria-label="t('detail.expand')"
-        @click="toggleCollapse"
+        class="edge-toggle"
+        :title="collapsed ? t('detail.expand') : t('detail.collapse')"
+        :aria-label="collapsed ? t('detail.expand') : t('detail.collapse')"
+        @mousedown.stop
+        @click.stop="toggleCollapse"
       >
-        <PanelRightOpen :size="18" :stroke-width="1.5" />
+        <ChevronRight v-if="!collapsed" :size="16" :stroke-width="2" />
+        <ChevronLeft v-else :size="16" :stroke-width="2" />
       </button>
     </div>
 
-    <template v-else>
-    <div class="detail-header">
-      <div class="header-main">
-        <button
-          type="button"
-          class="avatar avatar-btn"
-          :title="t('detail.pickIcon')"
-          :aria-label="t('detail.pickIcon')"
-          @click="showIconPicker = true"
-        >
-          <CategoryIconView
-            v-if="draft.displayIcon"
-            :name="draft.displayIcon"
-            :badge-size="48"
-            :size="22"
-          />
-          <span v-else class="avatar-letter" :style="{ background: avatar.color }">
-            {{ avatar.text }}
-          </span>
-        </button>
-        <div>
-          <h2 class="font-display">{{ isCreating ? t('detail.newEntry') : draft.title || t('detail.untitled') }}</h2>
-          <p class="url">{{ isCreating ? t('detail.fillAndSave') : draft.url || t('detail.noUrl') }}</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button
-          v-if="!isCreating && selectedEntry"
-          type="button"
-          class="icon-btn favorite-btn"
-          :class="{ active: selectedEntry.isFavorite }"
-          :title="selectedEntry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite')"
-          @click="handleToggleFavorite"
-        >
-          <Star
-            :size="16"
-            :stroke-width="1.5"
-            :fill="selectedEntry.isFavorite ? 'currentColor' : 'none'"
-          />
-        </button>
-        <button
-          v-if="!isCreating && selectedEntry"
-          type="button"
-          class="icon-btn danger"
-          @click="handleDelete"
-        >
-          <Trash2 :size="16" :stroke-width="1.5" />
-        </button>
-        <button
-          type="button"
-          class="icon-btn"
-          :title="t('detail.collapse')"
-          :aria-label="t('detail.collapse')"
-          @click="toggleCollapse"
-        >
-          <PanelRightClose :size="16" :stroke-width="1.5" />
-        </button>
-      </div>
-    </div>
-
-    <div class="detail-body">
-      <div class="field">
-        <label>{{ t('detail.title') }}</label>
-        <input v-model="draft.title" class="input-field" :placeholder="t('detail.titlePlaceholder')" />
-      </div>
-
-      <div class="field">
-        <label>{{ t('detail.url') }}</label>
-        <div class="field-row">
-          <input v-model="draft.url" class="input-field" :placeholder="t('detail.urlPlaceholder')" />
-          <button type="button" class="icon-btn square" @click="handleCopyUrl">
-            <Copy :size="16" :stroke-width="1.5" />
+    <div v-if="!collapsed" class="detail-main">
+      <div class="detail-header">
+        <div class="header-main">
+          <button
+            type="button"
+            class="avatar avatar-btn"
+            :title="t('detail.pickIcon')"
+            :aria-label="t('detail.pickIcon')"
+            @click="showIconPicker = true"
+          >
+            <CategoryIconView
+              v-if="draft.displayIcon"
+              :name="draft.displayIcon"
+              :badge-size="48"
+              :size="22"
+            />
+            <span v-else class="avatar-letter" :style="{ background: avatar.color }">
+              {{ avatar.text }}
+            </span>
           </button>
+          <div class="header-text">
+            <h2 class="font-display header-title">
+              {{ isCreating ? t('detail.newEntry') : draft.title || t('detail.untitled') }}
+            </h2>
+            <p class="url header-subtitle">
+              {{ isCreating ? t('detail.fillAndSave') : draft.url || t('detail.noUrl') }}
+            </p>
+          </div>
         </div>
-      </div>
-
-      <div class="field">
-        <label>{{ t('detail.category') }}</label>
-        <select v-model="draft.categoryId" class="input-field select">
-          <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>{{ t('detail.username') }}</label>
-        <div class="field-row">
-          <input v-model="draft.username" class="input-field" :placeholder="t('detail.usernamePlaceholder')" />
-          <button type="button" class="icon-btn square" @click="handleCopyUsername">
-            <Copy :size="16" :stroke-width="1.5" />
-          </button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>{{ t('detail.password') }}</label>
-        <div class="field-row">
-          <input
-            v-model="draft.password"
-            :type="showPassword ? 'text' : 'password'"
-            class="input-field font-mono"
-            :class="{ 'password-mask': !showPassword }"
-          />
-          <button type="button" class="icon-btn square" @click="showPassword = !showPassword">
-            <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
-            <Eye v-else :size="16" :stroke-width="1.5" />
+        <div class="header-actions">
+          <button
+            v-if="!isCreating && selectedEntry"
+            type="button"
+            class="icon-btn favorite-btn"
+            :class="{ active: selectedEntry.isFavorite }"
+            :title="selectedEntry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite')"
+            @click="handleToggleFavorite"
+          >
+            <Star
+              :size="16"
+              :stroke-width="1.5"
+              :fill="selectedEntry.isFavorite ? 'currentColor' : 'none'"
+            />
           </button>
           <button
             v-if="!isCreating && selectedEntry"
             type="button"
-            class="icon-btn square"
-            @click="handleCopyPassword"
+            class="icon-btn danger"
+            @click="handleDelete"
           >
-            <Copy :size="16" :stroke-width="1.5" />
+            <Trash2 :size="16" :stroke-width="1.5" />
           </button>
         </div>
-        <div class="strength">
-          <div class="bars">
-            <span v-for="i in 4" :key="i" class="bar" :class="{ filled: i <= strengthLevel.bars }" />
-          </div>
-          <span class="strength-label">{{ strengthLevel.label }}</span>
+      </div>
+
+      <div class="detail-body">
+        <div class="field">
+          <label>{{ t('detail.title') }}</label>
+          <input v-model="draft.title" class="input-field" :placeholder="t('detail.titlePlaceholder')" />
         </div>
+
+        <div class="field">
+          <label>{{ t('detail.url') }}</label>
+          <div class="field-row">
+            <input v-model="draft.url" class="input-field" :placeholder="t('detail.urlPlaceholder')" />
+            <button type="button" class="icon-btn square" @click="handleCopyUrl">
+              <Copy :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.category') }}</label>
+          <select v-model="draft.categoryId" class="input-field select">
+            <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.username') }}</label>
+          <div class="field-row">
+            <input v-model="draft.username" class="input-field" :placeholder="t('detail.usernamePlaceholder')" />
+            <button type="button" class="icon-btn square" @click="handleCopyUsername">
+              <Copy :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.password') }}</label>
+          <div class="field-row">
+            <input
+              v-model="draft.password"
+              :type="showPassword ? 'text' : 'password'"
+              class="input-field font-mono"
+              :class="{ 'password-mask': !showPassword }"
+            />
+            <button type="button" class="icon-btn square" @click="showPassword = !showPassword">
+              <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
+              <Eye v-else :size="16" :stroke-width="1.5" />
+            </button>
+            <button
+              v-if="!isCreating && selectedEntry"
+              type="button"
+              class="icon-btn square"
+              @click="handleCopyPassword"
+            >
+              <Copy :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
+          <div class="strength">
+            <div class="bars">
+              <span v-for="i in 4" :key="i" class="bar" :class="{ filled: i <= strengthLevel.bars }" />
+            </div>
+            <span class="strength-label">{{ strengthLevel.label }}</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.note') }}</label>
+          <textarea v-model="draft.note" class="input-field note" rows="3" :placeholder="t('detail.notePlaceholder')" />
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.tags') }}</label>
+          <input v-model="tagsInput" class="input-field" :placeholder="t('detail.tagsPlaceholder')" />
+        </div>
+
+        <label class="favorite-row">
+          <input v-model="draft.isFavorite" type="checkbox" />
+          <span>{{ t('detail.addFavorite') }}</span>
+        </label>
       </div>
 
-      <div class="field">
-        <label>{{ t('detail.note') }}</label>
-        <textarea v-model="draft.note" class="input-field note" rows="3" :placeholder="t('detail.notePlaceholder')" />
+      <div class="detail-footer">
+        <button
+          v-if="isCreating"
+          type="button"
+          class="btn-ghost footer-btn"
+          @click="cancelCreateEntry"
+        >
+          {{ t('common.cancel') }}
+        </button>
+        <button type="button" class="btn-primary footer-btn save" :disabled="loading" @click="handleSave">
+          {{ loading ? t('common.saving') : t('common.save') }}
+        </button>
       </div>
-
-      <div class="field">
-        <label>{{ t('detail.tags') }}</label>
-        <input v-model="tagsInput" class="input-field" :placeholder="t('detail.tagsPlaceholder')" />
-      </div>
-
-      <label class="favorite-row">
-        <input v-model="draft.isFavorite" type="checkbox" />
-        <span>{{ t('detail.addFavorite') }}</span>
-      </label>
     </div>
-
-    <div class="detail-footer">
-      <button
-        v-if="isCreating"
-        type="button"
-        class="btn-ghost footer-btn"
-        @click="cancelCreateEntry"
-      >
-        {{ t('common.cancel') }}
-      </button>
-      <button type="button" class="btn-primary footer-btn save" :disabled="loading" @click="handleSave">
-        {{ loading ? t('common.saving') : t('common.save') }}
-      </button>
-    </div>
-    </template>
 
     <IconPickerModal
       v-model:open="showIconPicker"
@@ -338,60 +391,111 @@ watch(isCreating, (creating) => {
 </template>
 
 <style scoped>
-.detail-panel {
-  width: var(--detail-width);
+.detail-shell {
   flex-shrink: 0;
+  align-self: stretch;
+  height: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  min-width: 0;
   background: var(--bg-surface);
   border-left: 1px solid var(--border-default);
   overflow: hidden;
   transition: width 0.2s ease;
 }
 
-.detail-panel.collapsed {
-  width: var(--detail-width-collapsed);
+.detail-shell.resizing {
+  transition: none;
 }
 
-.collapsed-rail {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 16px;
-}
-
-.panel-toggle {
+.panel-edge {
+  position: relative;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  border-right: 1px solid var(--border-default);
+  background: var(--bg-app);
+  cursor: col-resize;
+  touch-action: none;
 }
 
-.panel-toggle:hover {
+.panel-edge.collapsed {
+  width: 100%;
+  border-right: none;
+  cursor: default;
+}
+
+.edge-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.edge-toggle:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.detail-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .detail-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 24px;
+  gap: 12px;
+  padding: 24px 24px 24px 16px;
   border-bottom: 1px solid var(--border-default);
 }
 
 .header-main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .avatar {
@@ -403,6 +507,7 @@ watch(isCreating, (creating) => {
   justify-content: center;
   font-size: 18px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .avatar-btn {
@@ -433,21 +538,10 @@ watch(isCreating, (creating) => {
   font-weight: 600;
 }
 
-h2 {
-  margin: 0;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-}
-
-.url {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
 .header-actions {
   display: flex;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .icon-btn {
@@ -485,12 +579,8 @@ h2 {
   border: 1px solid var(--border-default);
 }
 
-.detail-panel:not(.collapsed) {
-  overflow: hidden;
-}
-
 .detail-body {
-  padding: 24px;
+  padding: 24px 24px 24px 16px;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -568,16 +658,10 @@ h2 {
   color: var(--status-success);
 }
 
-.error-text {
-  margin: 0;
-  font-size: 12px;
-  color: var(--status-danger);
-}
-
 .detail-footer {
   display: flex;
   gap: 8px;
-  padding: 16px;
+  padding: 16px 16px 16px 12px;
   border-top: 1px solid var(--border-default);
 }
 
