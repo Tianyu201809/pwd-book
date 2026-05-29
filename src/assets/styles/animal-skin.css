@@ -76,6 +76,15 @@
   z-index: var(--z-overlay-stacked) !important;
 }
 
+[data-skin="animalIsland"] .close-dialog-actions {
+  align-items: stretch;
+}
+
+[data-skin="animalIsland"] .close-dialog-actions .animal-btn {
+  width: 100%;
+  justify-content: center;
+}
+
 [data-skin="animalIsland"] .ui-classic-only {
   display: none !important;
 }

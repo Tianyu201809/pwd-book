@@ -93,13 +93,24 @@ onUnmounted(() => {
     </div>
   </header>
 
-  <UiModal v-model:open="showCloseDialog" :title="t('titlebar.closeApp')" :width="400" :show-footer="false" @close="dismissCloseDialog">
+  <UiModal
+    v-model:open="showCloseDialog"
+    class="close-app-modal"
+    :title="t('titlebar.closeApp')"
+    :width="400"
+    :show-footer="false"
+    :glow="false"
+    @close="dismissCloseDialog"
+  >
     <p class="dialog-desc">{{ t('titlebar.closePrompt') }}</p>
     <UiCheckbox v-model="rememberChoice" :label="t('titlebar.rememberChoice')" class="remember-row" />
-    <div class="dialog-actions">
-      <UiButton variant="ghost" class="dialog-btn" @click="dismissCloseDialog">{{ t('common.cancel') }}</UiButton>
-      <UiButton variant="ghost" class="dialog-btn" @click="minimizeFromDialog">{{ t('titlebar.minimize') }}</UiButton>
-      <UiButton variant="primary" class="dialog-btn" @click="quitApp">{{ t('titlebar.quit') }}</UiButton>
+    <div class="close-dialog-actions">
+      <UiButton variant="ghost" block class="close-dialog-btn" @click="minimizeFromDialog">
+        {{ t('titlebar.minimize') }}
+      </UiButton>
+      <UiButton variant="primary" block class="close-dialog-btn" @click="quitApp">
+        {{ t('titlebar.quit') }}
+      </UiButton>
     </div>
   </UiModal>
 </template>
@@ -172,15 +183,14 @@ onUnmounted(() => {
   margin: 0 0 20px;
 }
 
-.dialog-actions {
+.close-dialog-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
-.dialog-btn {
-  padding: 8px 16px;
-  font-size: 13px;
+.close-dialog-btn {
+  min-width: 0;
 }
 </style>

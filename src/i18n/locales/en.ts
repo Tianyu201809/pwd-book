@@ -242,7 +242,7 @@ export default {
     closeWindowQuit: 'Quit application',
     exportJson: 'Export JSON backup',
     exportExcel: 'Export Excel spreadsheet',
-    importData: 'Import data',
+    importData: 'Import JSON data',
     clearAllData: 'Clear all data',
     clearAllConfirm:
       'This will erase all local passwords and master password settings. Continue?',

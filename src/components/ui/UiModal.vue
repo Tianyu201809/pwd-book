@@ -12,11 +12,13 @@ const props = withDefaults(
     maskClosable?: boolean
     showFooter?: boolean
     loading?: boolean
+    glow?: boolean
   }>(),
   {
     maskClosable: true,
     showFooter: true,
     loading: false,
+    glow: true,
     width: 520,
   },
 )
@@ -65,7 +67,11 @@ function handleOk(): void {
   </Modal>
   <Teleport v-else to="body">
     <div v-if="open" class="modal-overlay" @click.self="maskClosable ? handleClose() : undefined">
-      <div class="modal-card panel-glow surface-card" :style="{ maxWidth: typeof width === 'number' ? `${width}px` : width }">
+      <div
+        class="modal-card surface-card"
+        :class="{ 'panel-glow': glow }"
+        :style="{ maxWidth: typeof width === 'number' ? `${width}px` : width }"
+      >
         <div v-if="title || $slots.title" class="modal-header">
           <slot name="title">
             <h3>{{ title }}</h3>

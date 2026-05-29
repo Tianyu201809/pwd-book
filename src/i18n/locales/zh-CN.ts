@@ -241,7 +241,7 @@ export default {
     closeWindowQuit: '退出程序',
     exportJson: '导出 JSON 备份',
     exportExcel: '导出 Excel 表格',
-    importData: '导入数据',
+    importData: '导入 JSON 数据',
     clearAllData: '清除所有数据',
     clearAllConfirm: '这将清除所有本地密码数据和主密码设置，且不可恢复。确定继续吗？',
     backupExported: 'JSON 备份已导出',

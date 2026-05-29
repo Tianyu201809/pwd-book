@@ -41,6 +41,12 @@ const classicClass = computed(() => {
   if (props.variant === 'primary' || props.variant === 'danger') return 'btn-primary'
   return 'btn-ghost'
 })
+
+const classicBtnClass = computed(() => [
+  'ui-classic-btn',
+  classicClass.value,
+  props.block ? 'ui-classic-btn--block' : null,
+])
 </script>
 
 <template>
@@ -63,7 +69,7 @@ const classicClass = computed(() => {
   <button
     v-else
     :type="htmlType"
-    :class="[classicClass, $attrs.class]"
+    :class="[classicBtnClass, $attrs.class]"
     :disabled="disabled || loading"
     @click="emit('click', $event)"
   >
