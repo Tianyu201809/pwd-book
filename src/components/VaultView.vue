@@ -14,7 +14,9 @@ const { isAnimalIsland } = useTheme()
       <VaultSidebar />
       <div class="vault-list-column">
         <PasswordList class="vault-password-list" />
-        <Footer v-if="isAnimalIsland" type="tree" class="vault-footer-tree" />
+        <div v-if="isAnimalIsland" class="vault-footer-tree-wrap">
+          <Footer type="tree" class="vault-footer-tree" />
+        </div>
       </div>
       <PasswordDetail />
     </div>
@@ -51,8 +53,15 @@ const { isAnimalIsland } = useTheme()
   min-height: 0;
 }
 
-.vault-footer-tree {
+.vault-footer-tree-wrap {
   flex-shrink: 0;
+  padding: 8px 16px 12px;
+  pointer-events: none;
+}
+
+.vault-footer-tree {
+  width: 100%;
+  height: 44px;
   pointer-events: none;
 }
 </style>

@@ -209,10 +209,20 @@
   margin-bottom: 6px;
 }
 
+[data-skin="animalIsland"] .vault-footer-tree-wrap {
+  padding: 6px 14px 10px;
+}
+
 [data-skin="animalIsland"] .vault-footer-tree {
   position: relative;
   z-index: 2;
-  opacity: 0.95;
+  height: 44px !important;
+  min-height: 44px;
+  max-height: none;
+  background-size: contain !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  opacity: 0.9;
 }
 
 [data-skin="animalIsland"] .sidebar {
