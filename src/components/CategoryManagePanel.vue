@@ -369,7 +369,7 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 .dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9998;
+  z-index: var(--z-overlay-app);
   display: flex;
   align-items: center;
   justify-content: center;

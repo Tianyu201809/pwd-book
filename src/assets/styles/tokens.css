@@ -1,5 +1,10 @@
 /* ── 结构 Token（不随主题变化） ── */
 :root {
+  --z-overlay-app: 9000;
+  --z-overlay-modal: 10000;
+  --z-overlay-stacked: 10050;
+  --z-toast: 10100;
+
   --sidebar-width: 240px;
   --detail-width: 360px;
   --detail-width-collapsed: 40px;

@@ -52,8 +52,9 @@
   border-bottom: 2px solid var(--border-default);
 }
 
-[data-skin="animalIsland"] .modal-overlay {
-  z-index: 9000;
+/* animal-island Modal mask defaults to z-index: 1000 — below app overlays */
+[data-skin="animalIsland"] .animal-modal__mask {
+  z-index: var(--z-overlay-stacked) !important;
 }
 
 [data-skin="animalIsland"] .ui-classic-only {
@@ -102,4 +103,22 @@
 
 [data-skin="animalIsland"] .detail-field {
   width: 100%;
+}
+
+/* Allow Select dropdown to extend outside rounded cards */
+[data-skin="animalIsland"] .settings-card {
+  overflow: visible;
+}
+
+[data-skin="animalIsland"] .settings-card .row {
+  overflow: visible;
+}
+
+[data-skin="animalIsland"] .field .ui-animal-select {
+  width: 100%;
+}
+
+[data-skin="animalIsland"] .settings-select {
+  flex-shrink: 0;
+  min-width: 140px;
 }

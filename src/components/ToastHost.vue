@@ -39,7 +39,7 @@ const { isAnimalIsland } = useTheme()
   top: 48px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10001;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   align-items: center;

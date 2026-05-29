@@ -94,7 +94,7 @@ function handleOk(): void {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 8000;
+  z-index: var(--z-overlay-stacked);
   display: flex;
   align-items: center;
   justify-content: center;
