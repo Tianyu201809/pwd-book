@@ -68,7 +68,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "PwdBook",
-      "include": "build/installer.nsh"
+      "include": "deps/installer.nsh"
     }
   },
   "dependencies": {
