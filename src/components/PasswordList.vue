@@ -16,6 +16,7 @@ const {
   isCreating,
   removeEntry,
   copyEntryData,
+  openEntryInBrowser,
   setListSortOrder,
   touchActivity,
 } = useAppState()
@@ -30,34 +31,44 @@ const sortOptions = computed(() => [
 
 const openMenuId = ref<string | null>(null)
 const showSortMenu = ref(false)
+const contextMenu = ref<{ entry: PasswordEntry; x: number; y: number } | null>(null)
 
 function toggleMenu(id: string, event: MouseEvent): void {
   event.stopPropagation()
   showSortMenu.value = false
+  contextMenu.value = null
   openMenuId.value = openMenuId.value === id ? null : id
 }
 
 function toggleSortMenu(event: MouseEvent): void {
   event.stopPropagation()
   openMenuId.value = null
+  contextMenu.value = null
   showSortMenu.value = !showSortMenu.value
 }
 
 function closeMenus(): void {
   openMenuId.value = null
   showSortMenu.value = false
+  contextMenu.value = null
 }
 
 function onDocumentClick(): void {
   closeMenus()
 }
 
+function onKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') closeMenus()
+}
+
 onMounted(() => {
   document.addEventListener('click', onDocumentClick)
+  document.addEventListener('keydown', onKeydown)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('keydown', onKeydown)
 })
 
 function handleSelect(id: string): void {
@@ -71,6 +82,24 @@ function handleSort(order: ListSortOrder, event: MouseEvent): void {
   closeMenus()
 }
 
+function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
+  event.preventDefault()
+  event.stopPropagation()
+  openMenuId.value = null
+  showSortMenu.value = false
+  contextMenu.value = {
+    entry,
+    x: event.clientX,
+    y: event.clientY,
+  }
+}
+
+async function handleOpenInBrowser(entry: PasswordEntry, event: MouseEvent): Promise<void> {
+  event.stopPropagation()
+  closeMenus()
+  await openEntryInBrowser(entry)
+}
+
 async function handleCopy(entry: PasswordEntry, event: MouseEvent): Promise<void> {
   event.stopPropagation()
   closeMenus()
@@ -82,6 +111,10 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
   closeMenus()
   if (!window.confirm(t('vault.deleteConfirm', { title: entry.title }))) return
   await removeEntry(entry.id)
+}
+
+function canOpenInBrowser(entry: PasswordEntry): boolean {
+  return Boolean(entry.url.trim())
 }
 </script>
 
@@ -136,6 +169,7 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
         :key="entry.id"
         class="list-item"
         :class="{ 'list-item-active': !isCreating && selectedEntryId === entry.id }"
+        @contextmenu="handleContextMenu(entry, $event)"
       >
         <button type="button" class="list-item-main" @click="handleSelect(entry.id)">
           <CategoryIconView
@@ -173,6 +207,14 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
               <MoreHorizontal :size="16" :stroke-width="1.5" />
             </button>
             <div v-if="openMenuId === entry.id" class="action-menu surface-card" @click.stop>
+              <button
+                type="button"
+                class="action-menu-item"
+                :disabled="!canOpenInBrowser(entry)"
+                @click="handleOpenInBrowser(entry, $event)"
+              >
+                {{ t('vault.openWithCredentials') }}
+              </button>
               <button type="button" class="action-menu-item" @click="handleCopy(entry, $event)">
                 {{ t('vault.copyData') }}
               </button>
@@ -188,6 +230,38 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="contextMenu"
+        class="context-menu surface-card"
+        :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
+        @click.stop
+      >
+        <button
+          type="button"
+          class="action-menu-item"
+          :disabled="!canOpenInBrowser(contextMenu.entry)"
+          @click="handleOpenInBrowser(contextMenu.entry, $event)"
+        >
+          {{ t('vault.openWithCredentials') }}
+        </button>
+        <button
+          type="button"
+          class="action-menu-item"
+          @click="handleCopy(contextMenu.entry, $event)"
+        >
+          {{ t('vault.copyData') }}
+        </button>
+        <button
+          type="button"
+          class="action-menu-item danger"
+          @click="handleDelete(contextMenu.entry, $event)"
+        >
+          {{ t('common.delete') }}
+        </button>
+      </div>
+    </Teleport>
   </main>
 </template>
 
@@ -427,7 +501,15 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
   top: calc(100% + 4px);
   right: 0;
   z-index: 20;
-  min-width: 120px;
+  min-width: 200px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 200px;
   padding: 4px;
   overflow: hidden;
 }
@@ -446,15 +528,20 @@ async function handleDelete(entry: PasswordEntry, event: MouseEvent): Promise<vo
   transition: background-color 0.15s;
 }
 
-.action-menu-item:hover {
+.action-menu-item:hover:not(:disabled) {
   background: var(--bg-hover);
+}
+
+.action-menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .action-menu-item.danger {
   color: var(--status-danger);
 }
 
-.action-menu-item.danger:hover {
+.action-menu-item.danger:hover:not(:disabled) {
   background: rgba(248, 113, 113, 0.08);
 }
 </style>

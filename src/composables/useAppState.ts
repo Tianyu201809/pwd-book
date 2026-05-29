@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import {
+  buildUrlWithCredentialParams,
   formatEntryForClipboard,
   formatRelativeTime,
   generatePassword,
@@ -543,6 +544,27 @@ async function copyPassword(id: string, text: string): Promise<void> {
   touchActivity()
 }
 
+async function openEntryInBrowser(entry: PasswordEntry): Promise<void> {
+  if (!entry.url.trim()) {
+    showToast(i18n.global.t('vault.noUrlToOpen'), 'error')
+    return
+  }
+  clearError()
+  try {
+    const target = buildUrlWithCredentialParams(
+      entry.url,
+      entry.username ?? '',
+      entry.password ?? '',
+    )
+    await vaultApi.openExternal(target)
+    await vaultApi.touchEntry(entry.id)
+    await refreshEntries()
+    touchActivity()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
 function createGeneratedPassword(length = 16): string {
   return generatePassword(length)
 }
@@ -641,6 +663,7 @@ export function useAppState() {
     copyUsername,
     copyPassword,
     copyEntryData,
+    openEntryInBrowser,
     createGeneratedPassword,
     updateSecuritySettings,
     exportData,

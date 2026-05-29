@@ -57,6 +57,24 @@ export function buildRecoveryKeyFileContent(recoveryKey: string): string {
   ].join('\n')
 }
 
+/** Append `user` and `pwd` query params for sites that read credentials from the URL. */
+export function buildUrlWithCredentialParams(
+  rawUrl: string,
+  username: string,
+  password: string,
+): string {
+  const trimmed = rawUrl.trim()
+  if (!trimmed) {
+    throw new Error(`${ERR_PREFIX}URL_REQUIRED`)
+  }
+
+  const href = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  const url = new URL(href)
+  url.searchParams.set('user', username)
+  url.searchParams.set('pwd', password)
+  return url.toString()
+}
+
 export function formatEntryForClipboard(entry: PasswordEntry): string {
   const t = i18n.global.t
   const lines = [

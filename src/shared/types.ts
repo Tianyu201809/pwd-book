@@ -124,6 +124,7 @@ export const IPC = {
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
   clipboardCopy: 'clipboard:copy-secret',
+  shellOpenExternal: 'shell:open-external',
   dataExport: 'data:export',
   dataImport: 'data:import',
 } as const

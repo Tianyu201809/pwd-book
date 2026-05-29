@@ -1,4 +1,4 @@
-import { clipboard, ipcMain } from 'electron'
+import { clipboard, ipcMain, shell } from 'electron'
 import { IPC } from '../../shared/types'
 import type {
   ExportPayload,
@@ -270,6 +270,19 @@ export function registerIpcHandlers(): void {
       copySecret(payload.text, clearAfterMs)
     }),
   )
+
+  ipcMain.handle(IPC.shellOpenExternal, async (_event, url: string) => {
+    let parsed: URL
+    try {
+      parsed = new URL(url)
+    } catch {
+      throw appError(ErrorCode.INVALID_EXTERNAL_URL)
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw appError(ErrorCode.INVALID_EXTERNAL_URL)
+    }
+    await shell.openExternal(url)
+  })
 
   ipcMain.handle(IPC.dataExport, () =>
     wrap(() => {

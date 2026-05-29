@@ -83,6 +83,8 @@ export const electronAPI = {
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     invoke(IPC.clipboardCopy, { text, clearAfterMs }),
 
+  openExternal: (url: string): Promise<void> => invoke(IPC.shellOpenExternal, url),
+
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
   importData: (entries: PasswordEntryInput[]): Promise<number> => invoke(IPC.dataImport, entries),
 }

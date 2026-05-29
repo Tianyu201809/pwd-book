@@ -119,6 +119,12 @@ async function handleToggleFavorite(): Promise<void> {
   await toggleFavorite(selectedEntry.value.id)
 }
 
+async function handleCopyUrl(): Promise<void> {
+  const url = (draft.value.url ?? '').trim()
+  if (!url) return
+  await copyUsername(url)
+}
+
 async function handleCopyUsername(): Promise<void> {
   if (!draft.value.username) return
   await copyUsername(draft.value.username)
@@ -234,7 +240,12 @@ watch(isCreating, (creating) => {
 
       <div class="field">
         <label>{{ t('detail.url') }}</label>
-        <input v-model="draft.url" class="input-field" :placeholder="t('detail.urlPlaceholder')" />
+        <div class="field-row">
+          <input v-model="draft.url" class="input-field" :placeholder="t('detail.urlPlaceholder')" />
+          <button type="button" class="icon-btn square" @click="handleCopyUrl">
+            <Copy :size="16" :stroke-width="1.5" />
+          </button>
+        </div>
       </div>
 
       <div class="field">

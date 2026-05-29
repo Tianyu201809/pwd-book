@@ -46,6 +46,7 @@ declare global {
       getSettings: () => Promise<SecuritySettings>
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
+      openExternal: (url: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
       importData: (entries: PasswordEntryInput[]) => Promise<number>
     }
