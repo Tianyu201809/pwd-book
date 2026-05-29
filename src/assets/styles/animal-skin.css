@@ -38,9 +38,27 @@
 
 [data-skin="animalIsland"] .vault-texture {
   background:
-    radial-gradient(ellipse 90% 50% at 50% 0%, rgba(130, 213, 187, 0.12), transparent 55%),
-    radial-gradient(circle at 80% 90%, rgba(247, 205, 103, 0.1), transparent 40%),
-    var(--bg-app);
+    radial-gradient(ellipse 100% 60% at 12% 8%, rgba(130, 213, 187, 0.18), transparent 52%),
+    radial-gradient(ellipse 80% 50% at 88% 18%, rgba(247, 205, 103, 0.14), transparent 48%),
+    radial-gradient(circle at 72% 92%, rgba(111, 186, 44, 0.1), transparent 42%),
+    linear-gradient(165deg, #f5edd8 0%, var(--bg-app) 45%, #ebe3c8 100%);
+}
+
+[data-skin="animalIsland"] .app-root--animal {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+[data-skin="animalIsland"] .settings-main,
+[data-skin="animalIsland"] .password-detail {
+  background: rgba(247, 243, 223, 0.88);
+  backdrop-filter: blur(6px);
+}
+
+[data-skin="animalIsland"] .sidebar {
+  background: rgba(247, 243, 223, 0.92);
+  backdrop-filter: blur(4px);
 }
 
 [data-skin="animalIsland"] .font-display {
@@ -48,7 +66,8 @@
 }
 
 [data-skin="animalIsland"] .titlebar {
-  background: var(--bg-surface);
+  background: rgba(247, 243, 223, 0.94);
+  backdrop-filter: blur(8px);
   border-bottom: 2px solid var(--border-default);
 }
 
@@ -191,6 +210,8 @@
 }
 
 [data-skin="animalIsland"] .vault-footer-tree {
+  position: relative;
+  z-index: 2;
   opacity: 0.95;
 }
 
@@ -199,15 +220,16 @@
 }
 
 [data-skin="animalIsland"] .list-panel {
-  background: var(--bg-surface);
+  background: rgba(247, 243, 223, 0.8);
+  backdrop-filter: blur(4px);
 }
 
 [data-skin="animalIsland"] .list-toolbar {
-  background: var(--bg-surface);
+  background: rgba(247, 243, 223, 0.95);
 }
 
 [data-skin="animalIsland"] .vault-list-column {
-  background: var(--bg-surface);
+  background: transparent;
 }
 
 [data-skin="animalIsland"] .animal-cursor {
@@ -216,12 +238,6 @@
   height: 100vh;
   min-height: 0;
   overflow: hidden;
-}
-
-[data-skin="animalIsland"] .app-root--animal {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
 }
 
 /* Menu background plate (animal-island-vue menu_bg) — vault list only */

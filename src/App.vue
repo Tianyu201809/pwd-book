@@ -15,6 +15,7 @@ import EmailBackupView from '@/components/EmailBackupView.vue'
 import PasswordGenView from '@/components/PasswordGenView.vue'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import ToastHost from '@/components/ToastHost.vue'
+import AnimalBackdrop from '@/components/AnimalBackdrop.vue'
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
@@ -68,9 +69,10 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
 
 <template>
   <Cursor v-if="isAnimalIsland">
-    <div class="app-root app-root--animal">
-      <TitleBar />
-      <main class="app-main">
+    <div class="app-root app-root--animal vault-texture">
+      <AnimalBackdrop />
+      <TitleBar class="app-chrome" />
+      <main class="app-main app-chrome">
         <LockScreen v-if="screen === 'lock'" />
         <VaultView v-else-if="screen === 'vault'" />
         <SettingsView v-else-if="screen === 'settings'" />
@@ -115,11 +117,17 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
 
 <style scoped>
 .app-root {
+  position: relative;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.app-chrome {
+  position: relative;
+  z-index: 1;
 }
 
 .app-main {
