@@ -240,23 +240,22 @@
   overflow: hidden;
 }
 
-/* Menu background plate (animal-island-vue menu_bg) — vault list only */
-[data-skin="animalIsland"] .list-scroll--animal {
-  background-color: #f8f4e8;
-  background-image: url('../images/animal/menu_bg-BjaGz8mm.svg');
-  background-repeat: no-repeat;
-  background-position: bottom center;
-  background-size: 100% auto;
-}
-
+/* List background (animal-island-vue content_bg_pc) — vault list only */
 [data-skin="animalIsland"] .list-scroll--animal {
   flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  background-color: var(--bg-surface);
+  background-image:
+    linear-gradient(rgba(247, 243, 223, 0.72), rgba(247, 243, 223, 0.72)),
+    url('../images/animal/content_bg_pc-CRf0ymIA.jpg');
+  background-repeat: repeat, repeat;
+  background-position: top left, top left;
+  background-size: auto, auto;
 }
 
-/* List rows: translucent so menu_bg waves stay visible when scrolled */
+/* List rows: translucent so grass texture stays visible when scrolled */
 [data-skin="animalIsland"] .list-scroll--animal .list-item {
   background: rgba(255, 254, 248, 0.52);
   border-bottom-color: rgba(114, 93, 66, 0.1);
