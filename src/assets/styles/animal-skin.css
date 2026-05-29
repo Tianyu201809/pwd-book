@@ -220,6 +220,7 @@
 
 [data-skin="animalIsland"] .vault-footer-tree-wrap {
   padding: 6px 14px 10px;
+  background: var(--bg-surface);
 }
 
 [data-skin="animalIsland"] .vault-footer-tree {
@@ -228,27 +229,21 @@
   height: 44px !important;
   min-height: 44px;
   max-height: none;
+  background-color: transparent !important;
   background-size: contain !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 [data-skin="animalIsland"] .sidebar {
   overflow: hidden;
 }
 
-[data-skin="animalIsland"] .list-panel {
-  background: rgba(247, 243, 223, 0.8);
-  backdrop-filter: blur(4px);
-}
-
-[data-skin="animalIsland"] .list-toolbar {
-  background: rgba(247, 243, 223, 0.95);
-}
-
+[data-skin="animalIsland"] .list-panel,
+[data-skin="animalIsland"] .list-toolbar,
 [data-skin="animalIsland"] .vault-list-column {
-  background: transparent;
+  background: var(--bg-surface);
 }
 
 [data-skin="animalIsland"] .animal-cursor {
@@ -259,56 +254,18 @@
   overflow: hidden;
 }
 
-/* List background (animal-island-vue content_bg_pc) — vault list only */
 [data-skin="animalIsland"] .list-scroll--animal {
   flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  background-color: var(--bg-surface);
-  background-image:
-    linear-gradient(rgba(247, 243, 223, 0.72), rgba(247, 243, 223, 0.72)),
-    url('../images/animal/content_bg_pc-CRf0ymIA.jpg');
-  background-repeat: repeat, repeat;
-  background-position: top left, top left;
-  background-size: auto, auto;
-}
-
-/* List rows: translucent so grass texture stays visible when scrolled */
-[data-skin="animalIsland"] .list-scroll--animal .list-item {
-  background: rgba(255, 254, 248, 0.52);
-  border-bottom-color: rgba(114, 93, 66, 0.1);
-}
-
-[data-skin="animalIsland"] .list-scroll--animal .list-item:nth-child(even) {
-  background: rgba(247, 243, 223, 0.42);
-}
-
-[data-skin="animalIsland"] .list-scroll--animal .list-item:hover {
-  background: rgba(235, 227, 200, 0.78);
+  background: var(--bg-surface);
 }
 
 [data-skin="animalIsland"] .list-scroll--animal .list-item.list-item-active {
-  background: rgba(230, 249, 246, 0.82);
   border-left: 3px solid var(--accent-primary);
-}
-
-[data-skin="animalIsland"] .list-scroll--animal .entry-title,
-[data-skin="animalIsland"] .list-scroll--animal .username,
-[data-skin="animalIsland"] .list-scroll--animal .time,
-[data-skin="animalIsland"] .list-scroll--animal .tag {
-  opacity: 1;
 }
 
 [data-skin="animalIsland"] .list-scroll--animal .entry-title {
   font-weight: 600;
-  color: var(--text-primary);
-}
-
-[data-skin="animalIsland"] .list-scroll--animal .username {
-  color: var(--text-secondary);
-}
-
-[data-skin="animalIsland"] .list-scroll--animal .tag {
-  background: rgba(255, 254, 248, 0.92);
 }
