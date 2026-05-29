@@ -1,11 +1,24 @@
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { initDatabase } from './db/database'
 import { registerIpcHandlers } from './ipc/handlers'
 
 let mainWindow: BrowserWindow | null = null
 
+function resolveIconPath(): string | undefined {
+  const candidates = app.isPackaged
+    ? [join(process.resourcesPath, 'icon.png')]
+    : [
+        join(__dirname, '../../icon/icon.png'),
+        join(process.cwd(), 'icon/icon.png'),
+      ]
+  return candidates.find((candidate) => existsSync(candidate))
+}
+
 function createWindow(): void {
+  const iconPath = resolveIconPath()
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 760,
@@ -14,6 +27,7 @@ function createWindow(): void {
     show: false,
     frame: false,
     backgroundColor: '#0a0c10',
+    ...(iconPath ? { icon: iconPath } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,

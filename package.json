@@ -9,6 +9,10 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "vue-tsc --noEmit -p tsconfig.web.json",
+    "icons": "node scripts/generate-icons.mjs",
+    "predist": "npm run icons",
+    "predist:win": "npm run icons",
+    "predist:win:dir": "npm run icons",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
     "dist:win:dir": "npm run build && electron-builder --win --dir"
@@ -18,8 +22,11 @@
     "productName": "PwdBook",
     "copyright": "Copyright © 2026 PwdBook",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "icon"
     },
+    "icon": "icon.png",
+    "afterPack": "scripts/after-pack.mjs",
     "electronDist": "node_modules/electron/dist",
     "files": [
       "out/**/*",
@@ -28,7 +35,14 @@
     "asarUnpack": [
       "node_modules/sql.js/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "icon/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "win": {
+      "icon": "icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -41,6 +55,9 @@
       "signAndEditExecutable": false
     },
     "nsis": {
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "allowElevation": true,
@@ -64,6 +81,9 @@
     "electron": "^35.1.5",
     "electron-builder": "^26.8.1",
     "electron-vite": "^3.1.0",
+    "png-to-ico": "^3.0.1",
+    "rcedit": "^5.0.1",
+    "sharp": "^0.34.5",
     "typescript": "^5.8.3",
     "vite": "^6.3.4",
     "vue-tsc": "^2.2.8"

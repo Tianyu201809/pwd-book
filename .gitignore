@@ -4,6 +4,7 @@ dist
 release
 release-out
 release-build
+icon/icon-*.png
 *.local
 .DS_Store
 tsconfig.web.tsbuildinfo
