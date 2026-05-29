@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
+import { getSecuritySettings } from './services/settingsService'
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -86,8 +87,24 @@ export function destroyTray(): void {
   tray = null
 }
 
+function promptCloseDialog(): void {
+  if (!mainWindow) return
+  showFromTray()
+  mainWindow.webContents.send('window:prompt-close')
+}
+
 export function handleWindowClose(event: Electron.Event): void {
   if (isQuitting) return
   event.preventDefault()
-  hideToTray()
+
+  const { closeWindowAction } = getSecuritySettings()
+  if (closeWindowAction === 'quit') {
+    requestQuit()
+    return
+  }
+  if (closeWindowAction === 'tray') {
+    hideToTray()
+    return
+  }
+  promptCloseDialog()
 }

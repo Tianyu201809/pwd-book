@@ -1,12 +1,18 @@
 import { getDefaultSettings } from './sessionService'
 import { getSetting, setSetting } from '../db/helpers'
-import type { SecuritySettings } from '../../shared/types'
+import type { CloseWindowAction, SecuritySettings } from '../../shared/types'
 
 const SETTINGS_KEYS = {
   autoLockMinutes: 'auto_lock_minutes',
   clipboardClearEnabled: 'clipboard_clear_enabled',
   clipboardClearSeconds: 'clipboard_clear_seconds',
+  closeWindowAction: 'close_window_action',
 } as const
+
+function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
+  if (raw === 'tray' || raw === 'quit') return raw
+  return 'ask'
+}
 
 export function getSecuritySettings(): SecuritySettings {
   const defaults = getDefaultSettings()
@@ -18,6 +24,9 @@ export function getSecuritySettings(): SecuritySettings {
     clipboardClearSeconds: Number(
       getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
     ),
+    closeWindowAction: parseCloseWindowAction(
+      getSetting(SETTINGS_KEYS.closeWindowAction) ?? defaults.closeWindowAction,
+    ),
   }
 }
 
@@ -28,6 +37,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.autoLockMinutes, String(next.autoLockMinutes))
   setSetting(SETTINGS_KEYS.clipboardClearEnabled, String(next.clipboardClearEnabled))
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
+  setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
 
   return next
 }

@@ -4,6 +4,8 @@ export type AppScreen = 'lock' | 'vault' | 'settings'
 
 export type SettingsTab = 'security' | 'appearance' | 'data' | 'about'
 
+export type CloseWindowAction = 'ask' | 'tray' | 'quit'
+
 export interface VaultCategory {
   id: string
   name: string
@@ -51,6 +53,7 @@ export interface SecuritySettings {
   autoLockMinutes: number
   clipboardClearEnabled: boolean
   clipboardClearSeconds: number
+  closeWindowAction: CloseWindowAction
 }
 
 export interface VaultStatus {

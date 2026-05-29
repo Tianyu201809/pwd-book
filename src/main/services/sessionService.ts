@@ -5,6 +5,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   autoLockMinutes: 15,
   clipboardClearEnabled: true,
   clipboardClearSeconds: 30,
+  closeWindowAction: 'ask',
 }
 
 let sessionKey: Buffer | null = null

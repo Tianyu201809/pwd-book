@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ShieldCheck, Minus, Square, X } from 'lucide-vue-next'
+import { useAppState } from '@/composables/useAppState'
+import type { CloseWindowAction } from '@/shared/types'
 
 const { t } = useI18n()
+const { securitySettings, updateSecuritySettings } = useAppState()
+
 const showCloseDialog = ref(false)
+const rememberChoice = ref(false)
+
+let removeClosePromptListener: (() => void) | undefined
 
 function minimize(): void {
   window.electronAPI?.minimize()
@@ -14,23 +21,56 @@ function maximize(): void {
   window.electronAPI?.maximize()
 }
 
+function applyCloseAction(action: CloseWindowAction): void {
+  if (action === 'tray') {
+    minimize()
+    return
+  }
+  if (action === 'quit') {
+    window.electronAPI?.close()
+  }
+}
+
 function openCloseDialog(): void {
+  const saved = securitySettings.value.closeWindowAction
+  if (saved !== 'ask') {
+    applyCloseAction(saved)
+    return
+  }
+  rememberChoice.value = false
   showCloseDialog.value = true
 }
 
 function dismissCloseDialog(): void {
   showCloseDialog.value = false
+  rememberChoice.value = false
 }
 
-function minimizeFromDialog(): void {
+async function minimizeFromDialog(): Promise<void> {
   showCloseDialog.value = false
+  if (rememberChoice.value) {
+    await updateSecuritySettings({ closeWindowAction: 'tray' })
+  }
+  rememberChoice.value = false
   minimize()
 }
 
-function quitApp(): void {
+async function quitApp(): Promise<void> {
   showCloseDialog.value = false
+  if (rememberChoice.value) {
+    await updateSecuritySettings({ closeWindowAction: 'quit' })
+  }
+  rememberChoice.value = false
   window.electronAPI?.close()
 }
+
+onMounted(() => {
+  removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
+})
+
+onUnmounted(() => {
+  removeClosePromptListener?.()
+})
 </script>
 
 <template>
@@ -57,6 +97,10 @@ function quitApp(): void {
       <div class="close-dialog surface-card">
         <h3 class="dialog-title">{{ t('titlebar.closeApp') }}</h3>
         <p class="dialog-desc">{{ t('titlebar.closePrompt') }}</p>
+        <label class="remember-row">
+          <input v-model="rememberChoice" type="checkbox" />
+          <span>{{ t('titlebar.rememberChoice') }}</span>
+        </label>
         <div class="dialog-actions">
           <button type="button" class="btn-ghost dialog-btn" @click="dismissCloseDialog">
             {{ t('common.cancel') }}
@@ -140,7 +184,7 @@ function quitApp(): void {
 }
 
 .close-dialog {
-  width: min(360px, calc(100vw - 48px));
+  width: min(400px, calc(100vw - 48px));
   padding: 24px;
 }
 
@@ -151,15 +195,28 @@ function quitApp(): void {
 }
 
 .dialog-desc {
-  margin: 0 0 20px;
+  margin: 0 0 12px;
   font-size: 14px;
   color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dialog-btn {

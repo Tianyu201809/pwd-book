@@ -42,6 +42,7 @@ const securitySettings = ref<SecuritySettings>({
   autoLockMinutes: 15,
   clipboardClearEnabled: true,
   clipboardClearSeconds: 30,
+  closeWindowAction: 'ask',
 })
 
 const selectedCategory = ref<FilterCategory>('all')

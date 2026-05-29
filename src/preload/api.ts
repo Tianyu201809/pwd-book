@@ -38,6 +38,11 @@ export const electronAPI = {
   minimize: (): void => ipcRenderer.send('window-minimize'),
   maximize: (): void => ipcRenderer.send('window-maximize'),
   close: (): void => ipcRenderer.send('window-close'),
+  onClosePrompt: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on('window:prompt-close', listener)
+    return () => ipcRenderer.removeListener('window:prompt-close', listener)
+  },
   setNativeTheme: (mode: ThemeNativeMode): void => ipcRenderer.send('theme-set-native', mode),
 
   getVaultStatus: (): Promise<VaultStatus> => invoke(IPC.vaultStatus),

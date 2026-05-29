@@ -56,6 +56,11 @@ async function toggleClipboardClear(): Promise<void> {
   })
 }
 
+async function onCloseWindowChange(event: Event): Promise<void> {
+  const value = (event.target as HTMLSelectElement).value as 'ask' | 'tray' | 'quit'
+  await updateSecuritySettings({ closeWindowAction: value })
+}
+
 async function handleExport(): Promise<void> {
   clearError()
   statusMessage.value = ''
@@ -148,7 +153,7 @@ async function handleReset(): Promise<void> {
                 </option>
               </select>
             </div>
-            <div class="row last">
+            <div class="row">
               <div>
                 <p class="row-title">{{ t('settings.clipboardClear') }}</p>
                 <p class="row-desc">
@@ -163,6 +168,21 @@ async function handleReset(): Promise<void> {
               >
                 <span class="knob" />
               </button>
+            </div>
+            <div class="row last">
+              <div>
+                <p class="row-title">{{ t('settings.closeWindow') }}</p>
+                <p class="row-desc">{{ t('settings.closeWindowDesc') }}</p>
+              </div>
+              <select
+                class="select"
+                :value="securitySettings.closeWindowAction"
+                @change="onCloseWindowChange"
+              >
+                <option value="ask">{{ t('settings.closeWindowAsk') }}</option>
+                <option value="tray">{{ t('settings.closeWindowTray') }}</option>
+                <option value="quit">{{ t('settings.closeWindowQuit') }}</option>
+              </select>
             </div>
           </div>
 
