@@ -1,6 +1,21 @@
 @import './tokens.css';
 @import './animal-skin.css';
 
+/* 保险库列表滚动：经典 / 动森共用 flex 高度链 */
+.vault-view,
+.vault-body,
+.vault-list-column,
+.vault-password-list,
+.vault-password-list.list-panel,
+.vault-password-list .list-scroll {
+  min-height: 0;
+}
+
+.vault-password-list .list-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 *,
 *::before,
 *::after {

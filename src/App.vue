@@ -123,8 +123,18 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
 }
 
 .app-main {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 各主屏（保险库/设置等）占满剩余高度，内部才能滚动 */
+.app-main > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   overflow: hidden;
 }
 </style>

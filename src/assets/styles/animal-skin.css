@@ -122,3 +122,159 @@
   flex-shrink: 0;
   min-width: 140px;
 }
+
+/* Vault clock — library Time defaults (48px / 36px padding) are phone-sized */
+[data-skin="animalIsland"] .vault-clock {
+  display: flex;
+  justify-content: center;
+}
+
+[data-skin="animalIsland"] .vault-clock--animal {
+  width: 100%;
+}
+
+[data-skin="animalIsland"] .vault-clock--animal .animal-time {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  gap: 8px;
+  align-self: stretch;
+  padding: 6px 10px;
+  border-width: 2px;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+[data-skin="animalIsland"] .vault-clock--animal .animal-time__date {
+  padding-right: 10px;
+  border-right-width: 2px;
+}
+
+[data-skin="animalIsland"] .vault-clock--animal .animal-time__weekday {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+[data-skin="animalIsland"] .vault-clock--animal .animal-time__month-day {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+[data-skin="animalIsland"] .vault-clock--animal .animal-time__clock,
+[data-skin="animalIsland"] .vault-clock--animal .animal-time__colon {
+  font-size: 24px;
+  letter-spacing: 0.5px;
+}
+
+/* Sidebar / list decorations */
+[data-skin="animalIsland"] .sidebar-divider {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+[data-skin="animalIsland"] .tool-entry {
+  padding: 8px 10px;
+  gap: 10px;
+}
+
+[data-skin="animalIsland"] .tool-entry-icon {
+  width: 28px;
+  height: 28px;
+}
+
+[data-skin="animalIsland"] .tool-entry-desc {
+  display: none;
+}
+
+[data-skin="animalIsland"] .tool-section-label {
+  margin-bottom: 6px;
+}
+
+[data-skin="animalIsland"] .vault-footer-tree {
+  opacity: 0.95;
+}
+
+[data-skin="animalIsland"] .sidebar {
+  overflow: hidden;
+}
+
+[data-skin="animalIsland"] .list-panel {
+  background: var(--bg-surface);
+}
+
+[data-skin="animalIsland"] .list-toolbar {
+  background: var(--bg-surface);
+}
+
+[data-skin="animalIsland"] .vault-list-column {
+  background: var(--bg-surface);
+}
+
+[data-skin="animalIsland"] .animal-cursor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-skin="animalIsland"] .app-root--animal {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Menu background plate (animal-island-vue menu_bg) — vault list only */
+[data-skin="animalIsland"] .list-scroll--animal {
+  background-color: #f8f4e8;
+  background-image: url('../images/animal/menu_bg-BjaGz8mm.svg');
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% auto;
+}
+
+[data-skin="animalIsland"] .list-scroll--animal {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* List rows: translucent so menu_bg waves stay visible when scrolled */
+[data-skin="animalIsland"] .list-scroll--animal .list-item {
+  background: rgba(255, 254, 248, 0.52);
+  border-bottom-color: rgba(114, 93, 66, 0.1);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .list-item:nth-child(even) {
+  background: rgba(247, 243, 223, 0.42);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .list-item:hover {
+  background: rgba(235, 227, 200, 0.78);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .list-item.list-item-active {
+  background: rgba(230, 249, 246, 0.82);
+  border-left: 3px solid var(--accent-primary);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .entry-title,
+[data-skin="animalIsland"] .list-scroll--animal .username,
+[data-skin="animalIsland"] .list-scroll--animal .time,
+[data-skin="animalIsland"] .list-scroll--animal .tag {
+  opacity: 1;
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .entry-title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .username {
+  color: var(--text-secondary);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .tag {
+  background: rgba(255, 254, 248, 0.92);
+}

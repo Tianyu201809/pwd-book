@@ -4,7 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { Plus, Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import { Divider } from 'animal-island-vue'
+import VaultClock from '@/components/VaultClock.vue'
 import { UiButton } from '@/components/ui'
+import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import type { FilterCategory } from '@/types'
 
@@ -21,6 +24,7 @@ const {
 } = useAppState()
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 
 const sidebarNavRef = ref<HTMLElement | null>(null)
 const dragFromIndex = ref<number | null>(null)
@@ -159,8 +163,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'is-sorting': isDragging }">
+  <aside
+    class="sidebar"
+    :class="{ 'is-sorting': isDragging, 'sidebar--animal': isAnimalIsland }"
+  >
     <div class="sidebar-top">
+      <VaultClock />
       <UiButton variant="primary" class="new-btn" block @click="startCreateEntry">
         <template #icon><Plus :size="16" :stroke-width="1.5" /></template>
         {{ t('vault.newEntry') }}
@@ -196,6 +204,8 @@ onBeforeUnmount(() => {
         </div>
       </TransitionGroup>
     </nav>
+
+    <Divider v-if="isAnimalIsland" type="wave-yellow" class="sidebar-divider" />
 
     <div class="tool-section">
       <p class="tool-section-label">{{ t('tools.sectionLabel') }}</p>
@@ -260,6 +270,10 @@ onBeforeUnmount(() => {
   transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.sidebar-divider {
+  flex-shrink: 0;
+}
+
 .sidebar-top {
   padding: 16px;
 }
@@ -275,11 +289,31 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-nav {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 0 12px;
   overflow-y: auto;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.sidebar-top,
+.tool-section,
+.sidebar-bottom,
+.sidebar-divider {
+  flex-shrink: 0;
+}
+
+.sidebar--animal .sidebar-top {
+  padding: 10px 12px 8px;
+}
+
+.sidebar--animal .tool-section {
+  padding: 0 12px 6px;
+}
+
+.sidebar--animal .sidebar-divider {
+  margin: 4px 12px 6px;
 }
 
 .sort-list {

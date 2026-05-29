@@ -379,7 +379,12 @@ watch(isCreating, (creating) => {
         <UiButton v-if="isCreating" variant="ghost" class="footer-btn" @click="cancelCreateEntry">
           {{ t('common.cancel') }}
         </UiButton>
-        <UiButton variant="ghost" class="footer-btn gen-btn" @click="openPasswordGen(true)">
+        <UiButton
+          v-if="!isCreating"
+          variant="ghost"
+          class="footer-btn gen-btn"
+          @click="openPasswordGen(true)"
+        >
           <template #icon><Sparkles :size="14" :stroke-width="1.5" /></template>
           {{ t('detail.generatePassword') }}
         </UiButton>

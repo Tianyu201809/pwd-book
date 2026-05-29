@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, MoreHorizontal, Check, MailCheck, Sparkles }
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
 import { UiInput, UiButton } from '@/components/ui'
+import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { ListSortOrder, PasswordEntry } from '@/types'
@@ -23,6 +24,7 @@ const {
 } = useAppState()
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 
 const sortOptions = computed(() => [
   { id: 'recent' as ListSortOrder, label: t('vault.sortRecent') },
@@ -100,14 +102,19 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   <main class="list-panel">
     <div class="list-toolbar">
       <div class="search-wrap">
-        <Search class="search-icon" :size="16" :stroke-width="1.5" />
+        <Search v-if="!isAnimalIsland" class="search-icon" :size="16" :stroke-width="1.5" />
         <UiInput
           v-model="searchQuery"
           class="search-input"
+          :class="{ 'search-input--animal': isAnimalIsland }"
           :placeholder="t('vault.searchPlaceholder')"
           allow-clear
           @update:model-value="touchActivity"
-        />
+        >
+          <template v-if="isAnimalIsland" #prefix>
+            <Search :size="16" :stroke-width="1.5" />
+          </template>
+        </UiInput>
       </div>
       <button
         type="button"
@@ -153,7 +160,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       </div>
     </div>
 
-    <div class="list-scroll">
+    <div class="list-scroll" :class="{ 'list-scroll--animal': isAnimalIsland }">
       <div v-if="displayEntries.length === 0" class="empty-state">
         <p>{{ isCreating ? t('vault.emptyCreating') : t('vault.emptyNoMatch') }}</p>
       </div>
@@ -223,14 +230,17 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 
 <style scoped>
 .list-panel {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   background: var(--bg-app);
 }
 
 .list-toolbar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -253,6 +263,12 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 
 .search-input {
   padding: 10px 16px 10px 40px;
+  font-size: 14px;
+}
+
+.search-input--animal {
+  width: 100%;
+  padding: 0;
   font-size: 14px;
 }
 
@@ -319,8 +335,11 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 }
 
 .list-scroll {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .empty-state {
