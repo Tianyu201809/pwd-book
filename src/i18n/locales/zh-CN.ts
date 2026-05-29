@@ -73,10 +73,10 @@ export default {
     cannot_delete_category: '无法删除「{name}」',
   },
   titlebar: {
-    minimize: '最小化',
+    minimize: '最小化到托盘',
     maximize: '最大化',
     closeApp: '关闭 PwdBook',
-    closePrompt: '请选择要执行的操作',
+    closePrompt: '最小化将隐藏到系统托盘，程序继续在后台运行',
     quit: '退出程序',
   },
   lock: {

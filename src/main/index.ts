@@ -3,6 +3,14 @@ import { existsSync } from 'fs'
 import { join } from 'path'
 import { initDatabase } from './db/database'
 import { registerIpcHandlers } from './ipc/handlers'
+import {
+  destroyTray,
+  getIsQuitting,
+  handleWindowClose,
+  hideToTray,
+  requestQuit,
+  setMainWindow,
+} from './tray'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -39,6 +47,10 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
+  mainWindow.on('close', (event) => handleWindowClose(event))
+
+  setMainWindow(mainWindow)
+
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
@@ -50,7 +62,7 @@ app.whenReady().then(async () => {
   await initDatabase()
   registerIpcHandlers()
 
-  ipcMain.on('window-minimize', () => mainWindow?.minimize())
+  ipcMain.on('window-minimize', () => hideToTray())
   ipcMain.on('window-maximize', () => {
     if (mainWindow?.isMaximized()) {
       mainWindow.unmaximize()
@@ -58,7 +70,7 @@ app.whenReady().then(async () => {
       mainWindow?.maximize()
     }
   })
-  ipcMain.on('window-close', () => mainWindow?.close())
+  ipcMain.on('window-close', () => requestQuit())
 
   ipcMain.on('theme-set-native', (_event, mode: 'dark' | 'light' | 'system') => {
     nativeTheme.themeSource = mode
@@ -72,5 +84,10 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
+  if (!getIsQuitting()) return
   if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', () => {
+  destroyTray()
 })

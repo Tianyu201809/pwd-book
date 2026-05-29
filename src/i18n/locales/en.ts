@@ -74,10 +74,10 @@ export default {
     cannot_delete_category: 'Cannot delete 「{name}」',
   },
   titlebar: {
-    minimize: 'Minimize',
+    minimize: 'Minimize to tray',
     maximize: 'Maximize',
     closeApp: 'Close PwdBook',
-    closePrompt: 'Choose an action',
+    closePrompt: 'Minimize hides the app to the system tray; it keeps running in the background',
     quit: 'Quit',
   },
   lock: {
