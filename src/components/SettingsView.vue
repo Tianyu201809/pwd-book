@@ -27,6 +27,7 @@ const {
   securitySettings,
   updateSecuritySettings,
   exportData,
+  exportDataAsExcel,
   importDataFromJson,
   resetAllData,
   errorMessage,
@@ -74,7 +75,7 @@ async function onCloseWindowChange(value: string): Promise<void> {
   await updateSecuritySettings({ closeWindowAction: value as 'ask' | 'tray' | 'quit' })
 }
 
-async function handleExport(): Promise<void> {
+async function handleExportJson(): Promise<void> {
   clearError()
   statusMessage.value = ''
   try {
@@ -87,6 +88,26 @@ async function handleExport(): Promise<void> {
     anchor.click()
     URL.revokeObjectURL(url)
     statusMessage.value = t('settings.backupExported')
+  } catch (error) {
+    statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
+  }
+}
+
+async function handleExportExcel(): Promise<void> {
+  clearError()
+  statusMessage.value = ''
+  try {
+    const bytes = await exportDataAsExcel()
+    const blob = new Blob([new Uint8Array(bytes)], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `pwdbook-backup-${Date.now()}.xlsx`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    statusMessage.value = t('settings.excelExported')
   } catch (error) {
     statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
   }
@@ -199,8 +220,12 @@ async function handleReset(): Promise<void> {
           <p v-if="statusMessage" class="status-message">{{ statusMessage }}</p>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           <div class="surface-card settings-card">
-            <button type="button" class="link-row" @click="handleExport">
-              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportBackup') }}</span>
+            <button type="button" class="link-row" @click="handleExportJson">
+              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportJson') }}</span>
+              <ChevronRight :size="16" :stroke-width="1.5" />
+            </button>
+            <button type="button" class="link-row" @click="handleExportExcel">
+              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportExcel') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
             <button type="button" class="link-row" @click="handleImport">

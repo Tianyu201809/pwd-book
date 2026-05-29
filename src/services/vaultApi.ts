@@ -68,6 +68,7 @@ export const vaultApi = {
   openExternal: (url: string): Promise<void> => getApi().openExternal(url),
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
+  exportDataAsExcel: (): Promise<Uint8Array> => getApi().exportDataAsExcel(),
   importData: (entries: PasswordEntryInput[]): Promise<number> => getApi().importData(entries),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => getApi().getEmailBackupSettings(),

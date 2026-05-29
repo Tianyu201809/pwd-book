@@ -186,6 +186,7 @@ export const IPC = {
   clipboardCopy: 'clipboard:copy-secret',
   shellOpenExternal: 'shell:open-external',
   dataExport: 'data:export',
+  dataExportExcel: 'data:export-excel',
   dataImport: 'data:import',
   emailBackupGet: 'email-backup:get',
   emailBackupUpdate: 'email-backup:update',

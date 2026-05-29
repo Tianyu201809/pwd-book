@@ -72,3 +72,15 @@
 ```
 
 导出需在**已解锁**状态；文件含敏感信息，应离线妥善保管。
+
+### Excel 导出（`data:export-excel`）
+
+- 工作簿含 **密码条目**、**分类** 两个工作表，字段与 `ExportPayload` 对应。
+- 仅用于人工查看；**导入仍只支持 JSON**。
+
+### 邮件备份 ZIP
+
+AES-256 密码 ZIP（主密码解压）内包含同日期前缀的文件：
+
+- `pwdbook-backup-YYYY-MM-DD.json` — 可导入
+- `pwdbook-backup-YYYY-MM-DD.xlsx` — 只读副本

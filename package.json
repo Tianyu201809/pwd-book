@@ -79,7 +79,8 @@
     "nodemailer": "^8.0.10",
     "sql.js": "^1.14.1",
     "vue": "^3.5.13",
-    "vue-i18n": "^10.0.7"
+    "vue-i18n": "^10.0.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",

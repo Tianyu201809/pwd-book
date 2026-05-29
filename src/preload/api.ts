@@ -99,6 +99,7 @@ export const electronAPI = {
   openExternal: (url: string): Promise<void> => invoke(IPC.shellOpenExternal, url),
 
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
+  exportDataAsExcel: (): Promise<Uint8Array> => invoke(IPC.dataExportExcel),
   importData: (entries: PasswordEntryInput[]): Promise<number> => invoke(IPC.dataImport, entries),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => invoke(IPC.emailBackupGet),

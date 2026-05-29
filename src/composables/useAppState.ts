@@ -733,6 +733,12 @@ async function exportData(): Promise<string> {
   return JSON.stringify(payload, null, 2)
 }
 
+async function exportDataAsExcel(): Promise<Uint8Array> {
+  const bytes = await vaultApi.exportDataAsExcel()
+  touchActivity()
+  return bytes
+}
+
 async function importDataFromJson(raw: string): Promise<number> {
   const parsed = JSON.parse(raw) as { entries?: Record<string, unknown>[] }
   const entriesToImport = (parsed.entries ?? []).map(normalizeImportEntry)
@@ -836,6 +842,7 @@ export function useAppState() {
     closeScheduledBackupPrompt,
     updateSecuritySettings,
     exportData,
+    exportDataAsExcel,
     importDataFromJson,
     resetAllData,
     switchSettingsTab,

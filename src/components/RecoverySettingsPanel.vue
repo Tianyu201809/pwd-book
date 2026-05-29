@@ -15,6 +15,7 @@ const {
   regenerateRecoveryKey,
   copyUsername,
   exportData,
+  exportDataAsExcel,
 } = useAppState()
 
 const { t } = useI18n()
@@ -105,7 +106,7 @@ async function handleCopyRecoveryKey(): Promise<void> {
   }
 }
 
-async function handleExportBackup(): Promise<void> {
+async function handleExportJson(): Promise<void> {
   clearError()
   statusMessage.value = ''
   try {
@@ -118,6 +119,26 @@ async function handleExportBackup(): Promise<void> {
     anchor.click()
     URL.revokeObjectURL(url)
     statusMessage.value = t('recovery.jsonExported')
+  } catch (error) {
+    statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
+  }
+}
+
+async function handleExportExcel(): Promise<void> {
+  clearError()
+  statusMessage.value = ''
+  try {
+    const bytes = await exportDataAsExcel()
+    const blob = new Blob([new Uint8Array(bytes)], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `pwdbook-backup-${Date.now()}.xlsx`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    statusMessage.value = t('recovery.excelExported')
   } catch (error) {
     statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
   }
@@ -147,8 +168,12 @@ async function handleExportBackup(): Promise<void> {
         </span>
         <ChevronRight :size="16" :stroke-width="1.5" />
       </button>
-      <button type="button" class="link-row last" @click="handleExportBackup">
+      <button type="button" class="link-row" @click="handleExportJson">
         <span><Download :size="16" :stroke-width="1.5" /> {{ t('recovery.exportJson') }}</span>
+        <ChevronRight :size="16" :stroke-width="1.5" />
+      </button>
+      <button type="button" class="link-row last" @click="handleExportExcel">
+        <span><Download :size="16" :stroke-width="1.5" /> {{ t('recovery.exportExcel') }}</span>
         <ChevronRight :size="16" :stroke-width="1.5" />
       </button>
     </div>

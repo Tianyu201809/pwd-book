@@ -3,15 +3,13 @@ import type { Transporter } from 'nodemailer'
 import { encryptSecret, decryptSecret, verifyMasterPassword } from '../crypto/vaultCrypto'
 import { getSetting, setSetting } from '../db/helpers'
 import { createPasswordProtectedBackupZip } from './backupCrypto'
-import { listCategories } from './categoryService'
+import { buildExportPayload } from './exportPayloadService'
 import { getSessionKey, isUnlocked } from './sessionService'
-import { listEntries } from './vaultService'
 import type {
   BackupFrequency,
   BackupStatus,
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
-  ExportPayload,
   LastBackupInfo,
   SmtpSettingsInput,
 } from '../../shared/types'
@@ -160,14 +158,6 @@ function verifyMasterPasswordForBackup(masterPassword: string): void {
   }
 }
 
-function buildExportPayload(): ExportPayload {
-  return {
-    exportedAt: new Date().toISOString(),
-    categories: listCategories(),
-    entries: listEntries(),
-  }
-}
-
 function updateLastBackup(
   stored: StoredEmailBackupSettings,
   patch: Partial<LastBackupInfo>,
@@ -257,7 +247,7 @@ export async function sendBackupNow(masterPassword: string): Promise<EmailBackup
       subject: 'PwdBook Vault Backup',
       text:
         'Your PwdBook vault backup is attached as a password-protected ZIP (AES-256). ' +
-        'Use your master password to extract the JSON file inside.',
+        'Use your master password to extract the JSON (for import) and Excel (for viewing) files inside.',
       attachments: [
         {
           filename,

@@ -1,7 +1,6 @@
 import { clipboard, ipcMain, shell } from 'electron'
 import { IPC } from '../../shared/types'
 import type {
-  ExportPayload,
   PasswordEntryInput,
   SecuritySettings,
   VaultSetupPayload,
@@ -56,6 +55,8 @@ import {
   startBackupScheduler,
 } from '../services/backupScheduler'
 import { isUnlocked } from '../services/sessionService'
+import { buildExportPayload } from '../services/exportPayloadService'
+import { buildExcelBuffer } from '../services/exportExcelService'
 
 let clipboardTimer: NodeJS.Timeout | null = null
 
@@ -303,12 +304,15 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.dataExport, () =>
     wrap(() => {
       ensureUnlocked()
-      const payload: ExportPayload = {
-        exportedAt: new Date().toISOString(),
-        categories: listCategories(),
-        entries: listEntries(),
-      }
-      return payload
+      return buildExportPayload()
+    }),
+  )
+
+  ipcMain.handle(IPC.dataExportExcel, () =>
+    wrap(() => {
+      ensureUnlocked()
+      const payload = buildExportPayload()
+      return buildExcelBuffer(payload)
     }),
   )
 

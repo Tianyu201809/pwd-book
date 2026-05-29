@@ -53,6 +53,7 @@ declare global {
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
       openExternal: (url: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
+      exportDataAsExcel: () => Promise<Uint8Array>
       importData: (entries: PasswordEntryInput[]) => Promise<number>
       getEmailBackupSettings: () => Promise<EmailBackupSettings>
       updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate) => Promise<EmailBackupSettings>

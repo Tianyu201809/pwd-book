@@ -1,5 +1,6 @@
 import archiverImport from 'archiver'
 import archiverZipEncrypted from 'archiver-zip-encrypted'
+import { buildExcelBuffer } from './exportExcelService'
 import type { ExportPayload } from '../../shared/types'
 
 type ArchiverVending = typeof archiverImport & {
@@ -8,7 +9,7 @@ type ArchiverVending = typeof archiverImport & {
     format: string,
     options: Record<string, unknown>,
   ) => NodeJS.ReadWriteStream & {
-    append: (source: string, data: { name: string }) => void
+    append: (source: string | Buffer, data: { name: string }) => void
     finalize: () => void
     on: (event: string, handler: (...args: unknown[]) => void) => void
   }
@@ -31,7 +32,10 @@ export function createPasswordProtectedBackupZip(
   ensureZipEncryptedFormat()
 
   const json = JSON.stringify(payload, null, 2)
-  const innerName = `pwdbook-backup-${payload.exportedAt.slice(0, 10)}.json`
+  const excelBuffer = buildExcelBuffer(payload)
+  const date = payload.exportedAt.slice(0, 10)
+  const jsonName = `pwdbook-backup-${date}.json`
+  const excelName = `pwdbook-backup-${date}.xlsx`
 
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
@@ -50,7 +54,8 @@ export function createPasswordProtectedBackupZip(
       resolve({ buffer, sizeBytes: buffer.length })
     })
 
-    archive.append(json, { name: innerName })
+    archive.append(json, { name: jsonName })
+    archive.append(excelBuffer, { name: excelName })
     void archive.finalize()
   })
 }
