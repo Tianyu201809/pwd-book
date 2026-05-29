@@ -1,24 +1,33 @@
 <script setup lang="ts">
 import { CheckCircle2, XCircle } from 'lucide-vue-next'
+import { Card } from 'animal-island-vue'
 import { useToast } from '@/composables/useToast'
+import { useTheme } from '@/composables/useTheme'
 
 const { toasts } = useToast()
+const { isAnimalIsland } = useTheme()
 </script>
 
 <template>
   <Teleport to="body">
     <div class="toast-host" aria-live="polite" aria-atomic="true">
       <TransitionGroup name="toast">
-        <div
-          v-for="toast in toasts"
-          :key="toast.id"
-          class="toast-item"
-          :class="toast.type"
-        >
-          <CheckCircle2 v-if="toast.type === 'success'" :size="18" :stroke-width="1.5" />
-          <XCircle v-else :size="18" :stroke-width="1.5" />
-          <span>{{ toast.message }}</span>
-        </div>
+        <template v-for="toast in toasts" :key="toast.id">
+          <Card
+            v-if="isAnimalIsland"
+            :color="toast.type === 'success' ? 'app-green' : 'app-red'"
+            class="toast-item toast-item--animal"
+          >
+            <CheckCircle2 v-if="toast.type === 'success'" :size="18" :stroke-width="1.5" />
+            <XCircle v-else :size="18" :stroke-width="1.5" />
+            <span>{{ toast.message }}</span>
+          </Card>
+          <div v-else class="toast-item" :class="toast.type">
+            <CheckCircle2 v-if="toast.type === 'success'" :size="18" :stroke-width="1.5" />
+            <XCircle v-else :size="18" :stroke-width="1.5" />
+            <span>{{ toast.message }}</span>
+          </div>
+        </template>
       </TransitionGroup>
     </div>
   </Teleport>
@@ -53,6 +62,11 @@ const { toasts } = useToast()
     0 12px 32px rgba(15, 23, 42, 0.16),
     0 0 0 1px rgba(15, 23, 42, 0.06);
   backdrop-filter: blur(8px);
+}
+
+.toast-item--animal {
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .toast-item.success {

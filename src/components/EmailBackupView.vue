@@ -12,6 +12,7 @@ import {
   ChevronUp,
 } from 'lucide-vue-next'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
+import { UiInput, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { parseErrorMessage } from '@/shared/utils'
@@ -175,10 +176,9 @@ function goBack(): void {
           <section class="panel-glow surface-card backup-panel">
             <div class="field">
               <label>{{ t('tools.emailBackup.recipientEmail') }}</label>
-              <input
+              <UiInput
                 v-model="recipientEmail"
                 type="email"
-                class="input-field"
                 :placeholder="t('tools.emailBackup.recipientPlaceholder')"
               />
             </div>
@@ -208,28 +208,28 @@ function goBack(): void {
               <div v-show="smtpExpanded" class="smtp-fields">
                 <div class="field">
                   <label>{{ t('tools.emailBackup.smtpHost') }}</label>
-                  <input v-model="smtpHost" type="text" class="input-field" placeholder="smtp.example.com" />
+                  <UiInput v-model="smtpHost" placeholder="smtp.example.com" />
                 </div>
                 <div class="field-row">
                   <div class="field flex-1">
                     <label>{{ t('tools.emailBackup.smtpPort') }}</label>
-                    <input v-model.number="smtpPort" type="number" class="input-field" />
+                    <UiInput
+                      :model-value="String(smtpPort)"
+                      type="text"
+                      @update:model-value="(v) => (smtpPort = Number(v) || 465)"
+                    />
                   </div>
-                  <label class="secure-toggle">
-                    <input v-model="smtpSecure" type="checkbox" />
-                    <span>{{ t('tools.emailBackup.smtpSecure') }}</span>
-                  </label>
+                  <UiCheckbox v-model="smtpSecure" :label="t('tools.emailBackup.smtpSecure')" class="secure-toggle" />
                 </div>
                 <div class="field">
                   <label>{{ t('tools.emailBackup.smtpUsername') }}</label>
-                  <input v-model="smtpUsername" type="email" class="input-field" />
+                  <UiInput v-model="smtpUsername" type="email" />
                 </div>
                 <div class="field">
                   <label>{{ t('tools.emailBackup.smtpPassword') }}</label>
-                  <input
+                  <UiInput
                     v-model="smtpPassword"
                     type="password"
-                    class="input-field"
                     :placeholder="t('tools.emailBackup.smtpPasswordPlaceholder')"
                   />
                   <p class="field-hint">{{ t('tools.emailBackup.smtpPasswordHint') }}</p>
@@ -238,9 +238,9 @@ function goBack(): void {
               </div>
             </div>
 
-            <button type="button" class="btn-ghost save-btn" :disabled="saving" @click="saveSettings">
+            <UiButton variant="ghost" class="save-btn" :disabled="saving" :loading="saving" @click="saveSettings">
               {{ t('tools.emailBackup.saveSettings') }}
-            </button>
+            </UiButton>
 
             <div class="info-card">
               <Shield :size="16" :stroke-width="1.5" />
@@ -272,15 +272,12 @@ function goBack(): void {
           </section>
 
           <div class="action-row">
-            <button
-              type="button"
-              class="btn-primary action-btn"
-              :disabled="backingUp"
-              @click="handleBackupNow"
-            >
-              <Loader2 v-if="backingUp" :size="16" :stroke-width="1.5" class="spin" />
-              <Check v-else-if="backupSuccess" :size="16" :stroke-width="1.5" />
-              <Send v-else :size="16" :stroke-width="1.5" />
+            <UiButton variant="primary" class="action-btn" :disabled="backingUp" :loading="backingUp" @click="handleBackupNow">
+              <template #icon>
+                <Loader2 v-if="backingUp" :size="16" :stroke-width="1.5" class="spin" />
+                <Check v-else-if="backupSuccess" :size="16" :stroke-width="1.5" />
+                <Send v-else :size="16" :stroke-width="1.5" />
+              </template>
               {{
                 backingUp
                   ? t('tools.emailBackup.sending')
@@ -288,11 +285,10 @@ function goBack(): void {
                     ? t('tools.emailBackup.sent')
                     : t('tools.emailBackup.backupNow')
               }}
-            </button>
-            <button type="button" class="btn-ghost action-btn" :disabled="testing" @click="handleTestConnection">
-              <Loader2 v-if="testing" :size="16" :stroke-width="1.5" class="spin" />
+            </UiButton>
+            <UiButton variant="ghost" class="action-btn" :disabled="testing" :loading="testing" @click="handleTestConnection">
               {{ t('tools.emailBackup.testConnection') }}
-            </button>
+            </UiButton>
           </div>
         </div>
       </main>
@@ -300,7 +296,7 @@ function goBack(): void {
 
     <MasterPasswordConfirmModal
       ref="masterModalRef"
-      :open="showMasterModal"
+      v-model:open="showMasterModal"
       :title="t('tools.emailBackup.masterPasswordTitle')"
       :description="t('tools.emailBackup.masterPasswordDesc')"
       :confirm-label="t('tools.emailBackup.confirmBackup')"

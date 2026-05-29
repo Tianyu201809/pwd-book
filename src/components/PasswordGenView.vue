@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Copy,
 } from 'lucide-vue-next'
+import { UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { evaluatePasswordStrength } from '@/shared/passwordGenerator'
@@ -147,22 +148,17 @@ function goBack(): void {
           </section>
 
           <div class="action-row">
-            <button type="button" class="btn-primary action-btn" @click="regenerate">
-              <Sparkles :size="16" :stroke-width="1.5" />
+            <UiButton variant="primary" class="action-btn" @click="regenerate">
+              <template #icon><Sparkles :size="16" :stroke-width="1.5" /></template>
               {{ t('tools.passwordGen.regenerate') }}
-            </button>
-            <button type="button" class="btn-ghost action-btn" @click="copyPassword">
-              <Copy :size="16" :stroke-width="1.5" />
+            </UiButton>
+            <UiButton variant="ghost" class="action-btn" @click="copyPassword">
+              <template #icon><Copy :size="16" :stroke-width="1.5" /></template>
               {{ t('tools.passwordGen.copy') }}
-            </button>
-            <button
-              v-if="passwordGenApplyMode"
-              type="button"
-              class="btn-ghost action-btn apply-btn"
-              @click="handleApply"
-            >
+            </UiButton>
+            <UiButton v-if="passwordGenApplyMode" variant="ghost" class="action-btn apply-btn" @click="handleApply">
               {{ t('tools.passwordGen.applyToEntry') }}
-            </button>
+            </UiButton>
           </div>
         </div>
       </main>

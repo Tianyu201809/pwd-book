@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from '@/App.vue'
 import '@/assets/styles/global.css'
+import 'animal-island-vue/style'
 import { initTheme } from '@/composables/useTheme'
 import { initLocale } from '@/composables/useLocale'
 import { i18n } from '@/i18n'

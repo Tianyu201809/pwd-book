@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ShieldCheck, Minus, Square, X } from 'lucide-vue-next'
+import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import type { CloseWindowAction } from '@/shared/types'
 
@@ -92,27 +93,15 @@ onUnmounted(() => {
     </div>
   </header>
 
-  <Teleport to="body">
-    <div v-if="showCloseDialog" class="close-dialog-overlay" @click.self="dismissCloseDialog">
-      <div class="close-dialog surface-card">
-        <h3 class="dialog-title">{{ t('titlebar.closeApp') }}</h3>
-        <p class="dialog-desc">{{ t('titlebar.closePrompt') }}</p>
-        <label class="remember-row">
-          <input v-model="rememberChoice" type="checkbox" />
-          <span>{{ t('titlebar.rememberChoice') }}</span>
-        </label>
-        <div class="dialog-actions">
-          <button type="button" class="btn-ghost dialog-btn" @click="dismissCloseDialog">
-            {{ t('common.cancel') }}
-          </button>
-          <button type="button" class="btn-ghost dialog-btn" @click="minimizeFromDialog">
-            {{ t('titlebar.minimize') }}
-          </button>
-          <button type="button" class="btn-primary dialog-btn" @click="quitApp">{{ t('titlebar.quit') }}</button>
-        </div>
-      </div>
+  <UiModal v-model:open="showCloseDialog" :title="t('titlebar.closeApp')" :width="400" :show-footer="false" @close="dismissCloseDialog">
+    <p class="dialog-desc">{{ t('titlebar.closePrompt') }}</p>
+    <UiCheckbox v-model="rememberChoice" :label="t('titlebar.rememberChoice')" class="remember-row" />
+    <div class="dialog-actions">
+      <UiButton variant="ghost" class="dialog-btn" @click="dismissCloseDialog">{{ t('common.cancel') }}</UiButton>
+      <UiButton variant="ghost" class="dialog-btn" @click="minimizeFromDialog">{{ t('titlebar.minimize') }}</UiButton>
+      <UiButton variant="primary" class="dialog-btn" @click="quitApp">{{ t('titlebar.quit') }}</UiButton>
     </div>
-  </Teleport>
+  </UiModal>
 </template>
 
 <style scoped>
@@ -172,28 +161,6 @@ onUnmounted(() => {
   color: #fff;
 }
 
-.close-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-}
-
-.close-dialog {
-  width: min(400px, calc(100vw - 48px));
-  padding: 24px;
-}
-
-.dialog-title {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
 .dialog-desc {
   margin: 0 0 12px;
   font-size: 14px;
@@ -202,14 +169,7 @@ onUnmounted(() => {
 }
 
 .remember-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin: 0 0 20px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  user-select: none;
 }
 
 .dialog-actions {

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight, Download, KeyRound, RefreshCw, X } from 'lucide-vue-next'
 import RecoveryKeySetup from '@/components/recovery/RecoveryKeySetup.vue'
+import { UiModal, UiInput, UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 
 const {
@@ -152,61 +153,39 @@ async function handleExportBackup(): Promise<void> {
       </button>
     </div>
 
-    <Teleport to="body">
-      <div v-if="showPasswordDialog" class="dialog-overlay" @click.self="closePasswordDialog">
-        <div class="dialog surface-card">
-          <div class="dialog-header">
-            <h4>{{ t('recovery.verifyPassword') }}</h4>
-            <button type="button" class="close-btn" @click="closePasswordDialog">
-              <X :size="16" :stroke-width="1.5" />
-            </button>
-          </div>
-          <p class="dialog-desc">{{ t('recovery.verifyPasswordDesc') }}</p>
-          <label class="field-label">{{ t('recovery.currentPassword') }}</label>
-          <div class="input-wrap">
-            <input
-              v-model="masterPassword"
-              :type="showMasterPassword ? 'text' : 'password'"
-              class="input-field"
-              placeholder="••••••••••••"
-              :disabled="loading"
-              @keydown.enter="confirmRegenerate"
-            />
-            <button
-              type="button"
-              class="eye-btn"
-              @click="showMasterPassword = !showMasterPassword"
-            >
-              {{ showMasterPassword ? t('common.hide') : t('common.show') }}
-            </button>
-          </div>
-          <p v-if="passwordError" class="error-text">{{ passwordError }}</p>
-          <button
-            type="button"
-            class="btn-primary submit-btn"
-            :disabled="loading"
-            @click="confirmRegenerate"
-          >
-            {{ loading ? t('common.verifying') : t('common.continue') }}
-          </button>
-        </div>
+    <UiModal v-model:open="showPasswordDialog" :title="t('recovery.verifyPassword')" :width="420" :show-footer="false" @close="closePasswordDialog">
+      <p class="dialog-desc">{{ t('recovery.verifyPasswordDesc') }}</p>
+      <label class="field-label">{{ t('recovery.currentPassword') }}</label>
+      <div class="input-wrap">
+        <UiInput
+          v-model="masterPassword"
+          :type="showMasterPassword ? 'text' : 'password'"
+          placeholder="••••••••••••"
+          :disabled="loading"
+          @keydown.enter="confirmRegenerate"
+        />
+        <button type="button" class="eye-btn" @click="showMasterPassword = !showMasterPassword">
+          {{ showMasterPassword ? t('common.hide') : t('common.show') }}
+        </button>
       </div>
+      <p v-if="passwordError" class="error-text">{{ passwordError }}</p>
+      <UiButton variant="primary" class="submit-btn" block :disabled="loading" :loading="loading" @click="confirmRegenerate">
+        {{ loading ? t('common.verifying') : t('common.continue') }}
+      </UiButton>
+    </UiModal>
 
-      <div v-if="showKeySetup" class="dialog-overlay" @click.self="closeKeySetup">
-        <div class="dialog dialog-wide surface-card">
-          <RecoveryKeySetup
-            :recovery-key="generatedRecoveryKey"
-            :loading="loading"
-            :error-message="errorMessage"
-            :title="setupTitle"
-            :subtitle="setupSubtitle"
-            @complete="handleKeySetupComplete"
-            @skip="closeKeySetup"
-            @copy="handleCopyRecoveryKey"
-          />
-        </div>
-      </div>
-    </Teleport>
+    <UiModal v-model:open="showKeySetup" :show-footer="false" :width="480" :mask-closable="true" @close="closeKeySetup">
+      <RecoveryKeySetup
+        :recovery-key="generatedRecoveryKey"
+        :loading="loading"
+        :error-message="errorMessage"
+        :title="setupTitle"
+        :subtitle="setupSubtitle"
+        @complete="handleKeySetupComplete"
+        @skip="closeKeySetup"
+        @copy="handleCopyRecoveryKey"
+      />
+    </UiModal>
   </div>
 </template>
 

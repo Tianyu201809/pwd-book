@@ -12,6 +12,7 @@ import {
 import { useAppState } from '@/composables/useAppState'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
+import { UiInput, UiButton } from '@/components/ui'
 
 const { createCategory, updateCategory, deleteCategory, customCategories, loading, errorMessage, clearError } =
   useAppState()
@@ -233,12 +234,12 @@ async function confirmDelete(id: string, name: string): Promise<void> {
                   >
                     <CategoryIconView :name="category.icon" :badge-size="28" :size="15" />
                   </button>
-                  <input
+                  <UiInput
                     v-if="editingId === category.id"
                     ref="nameInputRef"
                     v-model="editingName"
-                    class="input-field name-input"
-                    maxlength="20"
+                    class="name-input"
+                    :maxlength="20"
                     :disabled="loading"
                     @keydown.enter="saveEdit(category)"
                     @keydown.escape="cancelEdit"
@@ -295,12 +296,10 @@ async function confirmDelete(id: string, name: string): Promise<void> {
             </div>
 
             <label class="field-label">{{ t('category.categoryName') }}</label>
-            <input
+            <UiInput
               v-model="categoryName"
-              class="input-field"
-              maxlength="20"
+              :maxlength="20"
               :placeholder="t('category.namePlaceholder')"
-              autofocus
               @keydown.enter="submitCategory"
             />
 
@@ -313,15 +312,16 @@ async function confirmDelete(id: string, name: string): Promise<void> {
             <p v-if="localError" class="error-text">{{ localError }}</p>
 
             <div class="dialog-actions">
-              <button type="button" class="btn-ghost action-btn" @click="backToList">{{ t('common.cancel') }}</button>
-              <button
-                type="button"
-                class="btn-primary action-btn"
+              <UiButton variant="ghost" class="action-btn" @click="backToList">{{ t('common.cancel') }}</UiButton>
+              <UiButton
+                variant="primary"
+                class="action-btn"
                 :disabled="loading || !categoryName.trim()"
+                :loading="loading"
                 @click="submitCategory"
               >
                 {{ loading ? t('common.creating') : t('category.createCategory') }}
-              </button>
+              </UiButton>
             </div>
           </template>
         </div>

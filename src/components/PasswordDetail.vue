@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
+import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
@@ -298,13 +299,13 @@ watch(isCreating, (creating) => {
       <div class="detail-body">
         <div class="field">
           <label>{{ t('detail.title') }}</label>
-          <input v-model="draft.title" class="input-field" :placeholder="t('detail.titlePlaceholder')" />
+          <UiInput v-model="draft.title" class="detail-field" :placeholder="t('detail.titlePlaceholder')" />
         </div>
 
         <div class="field">
           <label>{{ t('detail.url') }}</label>
           <div class="field-row">
-            <input v-model="draft.url" class="input-field" :placeholder="t('detail.urlPlaceholder')" />
+            <UiInput v-model="draft.url" class="detail-field" :placeholder="t('detail.urlPlaceholder')" />
             <button type="button" class="icon-btn square" @click="handleCopyUrl">
               <Copy :size="16" :stroke-width="1.5" />
             </button>
@@ -313,17 +314,18 @@ watch(isCreating, (creating) => {
 
         <div class="field">
           <label>{{ t('detail.category') }}</label>
-          <select v-model="draft.categoryId" class="input-field select">
-            <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+          <UiSelect
+            :model-value="draft.categoryId ?? ''"
+            class="detail-field"
+            :options="categoryOptions"
+            @update:model-value="(v) => (draft.categoryId = v)"
+          />
         </div>
 
         <div class="field">
           <label>{{ t('detail.username') }}</label>
           <div class="field-row">
-            <input v-model="draft.username" class="input-field" :placeholder="t('detail.usernamePlaceholder')" />
+            <UiInput v-model="draft.username" class="detail-field" :placeholder="t('detail.usernamePlaceholder')" />
             <button type="button" class="icon-btn square" @click="handleCopyUsername">
               <Copy :size="16" :stroke-width="1.5" />
             </button>
@@ -333,10 +335,10 @@ watch(isCreating, (creating) => {
         <div class="field">
           <label>{{ t('detail.password') }}</label>
           <div class="field-row">
-            <input
+            <UiInput
               v-model="draft.password"
               :type="showPassword ? 'text' : 'password'"
-              class="input-field font-mono"
+              class="detail-field font-mono"
               :class="{ 'password-mask': !showPassword }"
             />
             <button type="button" class="icon-btn square" @click="showPassword = !showPassword">
@@ -367,31 +369,23 @@ watch(isCreating, (creating) => {
 
         <div class="field">
           <label>{{ t('detail.tags') }}</label>
-          <input v-model="tagsInput" class="input-field" :placeholder="t('detail.tagsPlaceholder')" />
+          <UiInput v-model="tagsInput" class="detail-field" :placeholder="t('detail.tagsPlaceholder')" />
         </div>
 
-        <label class="favorite-row">
-          <input v-model="draft.isFavorite" type="checkbox" />
-          <span>{{ t('detail.addFavorite') }}</span>
-        </label>
+        <UiCheckbox v-model="draft.isFavorite" :label="t('detail.addFavorite')" class="favorite-row" />
       </div>
 
       <div class="detail-footer">
-        <button
-          v-if="isCreating"
-          type="button"
-          class="btn-ghost footer-btn"
-          @click="cancelCreateEntry"
-        >
+        <UiButton v-if="isCreating" variant="ghost" class="footer-btn" @click="cancelCreateEntry">
           {{ t('common.cancel') }}
-        </button>
-        <button type="button" class="btn-ghost footer-btn gen-btn" @click="openPasswordGen(true)">
-          <Sparkles :size="14" :stroke-width="1.5" />
+        </UiButton>
+        <UiButton variant="ghost" class="footer-btn gen-btn" @click="openPasswordGen(true)">
+          <template #icon><Sparkles :size="14" :stroke-width="1.5" /></template>
           {{ t('detail.generatePassword') }}
-        </button>
-        <button type="button" class="btn-primary footer-btn save" :disabled="loading" @click="handleSave">
+        </UiButton>
+        <UiButton variant="primary" class="footer-btn save" :disabled="loading" :loading="loading" @click="handleSave">
           {{ loading ? t('common.saving') : t('common.save') }}
-        </button>
+        </UiButton>
       </div>
     </div>
 

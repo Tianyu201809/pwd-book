@@ -8,6 +8,7 @@ import RecoveryResetPassword from '@/components/recovery/RecoveryResetPassword.v
 import RecoveryWipe from '@/components/recovery/RecoveryWipe.vue'
 import RecoveryKeySetup from '@/components/recovery/RecoveryKeySetup.vue'
 import RecoveryProgressOverlay from '@/components/recovery/RecoveryProgressOverlay.vue'
+import { UiCard, UiInput, UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { vaultApi } from '@/services/vaultApi'
 
@@ -234,20 +235,20 @@ async function handleCopyRecoveryKey(): Promise<void> {
         <p class="subtitle">{{ title }}</p>
       </div>
 
-      <div class="panel-glow lock-panel surface-card">
+      <UiCard class="panel-glow lock-panel">
         <template v-if="showDefaultForm">
           <label class="label">{{ t('lock.masterPassword') }}</label>
           <div class="input-wrap">
-            <input
+            <UiInput
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
-              class="input-field"
+              class="lock-input"
               :class="{ shake: hasError }"
               placeholder="••••••••••••"
               :disabled="loading"
               @keydown="onKeydown"
             />
-            <button type="button" class="eye-btn" @click="showPassword = !showPassword">
+            <button type="button" class="eye-btn titlebar-no-drag" @click="showPassword = !showPassword">
               <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
               <Eye v-else :size="16" :stroke-width="1.5" />
             </button>
@@ -255,10 +256,10 @@ async function handleCopyRecoveryKey(): Promise<void> {
 
           <template v-if="isSetupMode">
             <label class="label confirm-label">{{ t('lock.confirmMasterPassword') }}</label>
-            <input
+            <UiInput
               v-model="confirmPassword"
               :type="showPassword ? 'text' : 'password'"
-              class="input-field"
+              class="lock-input"
               :placeholder="t('lock.confirmPlaceholder')"
               :disabled="loading"
               @keydown="onKeydown"
@@ -268,9 +269,9 @@ async function handleCopyRecoveryKey(): Promise<void> {
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
           <p v-if="localMessage" class="info-text">{{ localMessage }}</p>
 
-          <button type="button" class="btn-primary unlock-btn" :disabled="loading" @click="submitUnlockOrSetup">
+          <UiButton variant="primary" class="unlock-btn" :disabled="loading" block @click="submitUnlockOrSetup">
             {{ loading ? t('common.processing') : isSetupMode ? t('common.next') : submitLabel }}
-          </button>
+          </UiButton>
 
           <template v-if="!isSetupMode">
             <div class="recovery-links">
@@ -337,7 +338,7 @@ async function handleCopyRecoveryKey(): Promise<void> {
           @back="lockMode = 'recovery-wipe'"
           @confirm="handleWipeConfirm"
         />
-      </div>
+      </UiCard>
 
       <p class="footer-note">{{ t('lock.footerNote') }}</p>
     </div>
@@ -410,10 +411,14 @@ h1 {
   position: relative;
 }
 
-.input-field {
-  padding: 12px 40px 12px 16px;
-  font-size: 14px;
+.lock-input {
   width: 100%;
+}
+
+.lock-input :deep(input),
+.lock-input {
+  padding-right: 40px;
+  font-size: 14px;
 }
 
 .eye-btn {

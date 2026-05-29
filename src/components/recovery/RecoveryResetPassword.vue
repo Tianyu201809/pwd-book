@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Eye, EyeOff } from 'lucide-vue-next'
+import { UiInput, UiButton } from '@/components/ui'
 
 defineProps<{
   loading: boolean
@@ -40,10 +41,10 @@ function submit(): void {
 
     <label class="label">{{ t('lock.masterPassword') }}</label>
     <div class="input-wrap">
-      <input
+      <UiInput
         v-model="newPassword"
         :type="showPassword ? 'text' : 'password'"
-        class="input-field"
+        class="recovery-field"
         :disabled="loading"
         @keydown.enter="submit"
       />
@@ -54,10 +55,10 @@ function submit(): void {
     </div>
 
     <label class="label confirm-label">{{ t('lock.confirmMasterPassword') }}</label>
-    <input
+    <UiInput
       v-model="confirmPassword"
       :type="showPassword ? 'text' : 'password'"
-      class="input-field"
+      class="recovery-field"
       :disabled="loading"
       @keydown.enter="submit"
     />
@@ -71,9 +72,9 @@ function submit(): void {
 
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
-    <button type="button" class="btn-primary submit-btn" :disabled="loading" @click="submit">
+    <UiButton variant="primary" class="submit-btn" block :disabled="loading" :loading="loading" @click="submit">
       {{ loading ? t('recovery.reEncrypting') : t('recovery.setNewPassword') }}
-    </button>
+    </UiButton>
   </div>
 </template>
 
@@ -122,9 +123,7 @@ function submit(): void {
   position: relative;
 }
 
-.input-field {
-  padding: 12px 40px 12px 16px;
-  font-size: 14px;
+.recovery-field {
   width: 100%;
 }
 

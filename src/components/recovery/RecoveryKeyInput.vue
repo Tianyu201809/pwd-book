@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import RecoveryTrustNotice from '@/components/recovery/RecoveryTrustNotice.vue'
+import { UiInput, UiButton } from '@/components/ui'
 import { formatRecoveryKeyInput } from '@/shared/utils'
 
 defineProps<{
@@ -21,10 +22,12 @@ const { t } = useI18n()
 const recoveryKey = ref('')
 const showKey = ref(false)
 
-function onInput(event: Event): void {
-  const value = (event.target as HTMLInputElement).value
-  recoveryKey.value = formatRecoveryKeyInput(value)
-}
+watch(recoveryKey, (value) => {
+  const formatted = formatRecoveryKeyInput(value)
+  if (formatted !== value) {
+    recoveryKey.value = formatted
+  }
+})
 
 function submit(): void {
   emit('submit', recoveryKey.value)
@@ -39,13 +42,12 @@ function submit(): void {
 
     <label class="label">{{ t('recovery.recoveryKey') }}</label>
     <div class="input-wrap">
-      <input
-        :value="recoveryKey"
+      <UiInput
+        v-model="recoveryKey"
         :type="showKey ? 'text' : 'password'"
-        class="input-field font-mono"
+        class="font-mono recovery-input"
         placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
         :disabled="loading"
-        @input="onInput"
         @keydown.enter="submit"
       />
       <button type="button" class="eye-btn" @click="showKey = !showKey">
@@ -57,14 +59,9 @@ function submit(): void {
     <p v-if="!recoveryConfigured" class="warn-text">{{ t('recovery.recoveryKeyNotConfigured') }}</p>
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
-    <button
-      type="button"
-      class="btn-primary submit-btn"
-      :disabled="loading || !recoveryKey"
-      @click="submit"
-    >
+    <UiButton variant="primary" class="submit-btn" block :disabled="loading || !recoveryKey" :loading="loading" @click="submit">
       {{ loading ? t('common.verifying') : t('common.continue') }}
-    </button>
+    </UiButton>
   </div>
 </template>
 
@@ -103,9 +100,7 @@ function submit(): void {
   position: relative;
 }
 
-.input-field {
-  padding: 12px 40px 12px 16px;
-  font-size: 14px;
+.recovery-input {
   width: 100%;
 }
 
@@ -119,14 +114,10 @@ function submit(): void {
   color: var(--text-secondary);
   cursor: pointer;
   padding: 4px;
+  z-index: 2;
 }
 
-.warn-text {
-  margin: 12px 0 0;
-  font-size: 12px;
-  color: var(--status-danger);
-}
-
+.warn-text,
 .error-text {
   margin: 12px 0 0;
   font-size: 12px;
@@ -134,8 +125,6 @@ function submit(): void {
 }
 
 .submit-btn {
-  width: 100%;
   margin-top: 16px;
-  padding: 12px;
 }
 </style>

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal, MoreHorizontal, Check, MailCheck, Sparkles } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
+import { UiInput, UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { ListSortOrder, PasswordEntry } from '@/types'
@@ -100,12 +101,12 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
     <div class="list-toolbar">
       <div class="search-wrap">
         <Search class="search-icon" :size="16" :stroke-width="1.5" />
-        <input
+        <UiInput
           v-model="searchQuery"
-          type="text"
-          class="input-field search-input"
+          class="search-input"
           :placeholder="t('vault.searchPlaceholder')"
-          @input="touchActivity"
+          allow-clear
+          @update:model-value="touchActivity"
         />
       </div>
       <button
@@ -125,16 +126,16 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         <Sparkles :size="16" :stroke-width="1.5" />
       </button>
       <div class="sort-menu-wrap">
-        <button
-          type="button"
-          class="filter-btn btn-ghost"
+        <UiButton
+          variant="ghost"
+          class="filter-btn"
           :class="{ active: showSortMenu }"
           :title="t('vault.sortBy')"
           :aria-label="t('vault.sortBy')"
           @click="toggleSortMenu"
         >
-          <SlidersHorizontal :size="16" :stroke-width="1.5" />
-        </button>
+          <template #icon><SlidersHorizontal :size="16" :stroke-width="1.5" /></template>
+        </UiButton>
         <div v-if="showSortMenu" class="sort-menu surface-card" @click.stop>
           <p class="sort-menu-title">{{ t('vault.sortBy') }}</p>
           <button

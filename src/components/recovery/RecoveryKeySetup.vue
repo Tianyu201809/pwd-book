@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Copy, Download } from 'lucide-vue-next'
 import RecoveryTrustNotice from '@/components/recovery/RecoveryTrustNotice.vue'
+import { UiButton, UiCheckbox } from '@/components/ui'
 import { buildRecoveryKeyFileContent } from '@/shared/utils'
 
 const props = defineProps<{
@@ -64,33 +65,25 @@ function handleCopy(): void {
     <div class="key-box font-mono">{{ recoveryKey }}</div>
 
     <div class="action-row">
-      <button type="button" class="btn-ghost action-btn" @click="handleCopy">
-        <Copy :size="14" :stroke-width="1.5" />
+      <UiButton variant="ghost" class="action-btn" @click="handleCopy">
+        <template #icon><Copy :size="14" :stroke-width="1.5" /></template>
         {{ t('recovery.copyKey') }}
-      </button>
-      <button type="button" class="btn-ghost action-btn" @click="saveToFile">
-        <Download :size="14" :stroke-width="1.5" />
+      </UiButton>
+      <UiButton variant="ghost" class="action-btn" @click="saveToFile">
+        <template #icon><Download :size="14" :stroke-width="1.5" /></template>
         {{ t('recovery.downloadKey') }}
-      </button>
+      </UiButton>
     </div>
 
     <p v-if="copyMessage" class="success-text">{{ copyMessage }}</p>
 
-    <label class="confirm-row">
-      <input v-model="confirmed" type="checkbox" />
-      <span>{{ t('recovery.savedKey') }}</span>
-    </label>
+    <UiCheckbox v-model="confirmed" :label="t('recovery.savedKey')" class="confirm-row" />
 
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
-    <button
-      type="button"
-      class="btn-primary submit-btn"
-      :disabled="loading || !confirmed"
-      @click="emit('complete')"
-    >
+    <UiButton variant="primary" class="submit-btn" block :disabled="loading || !confirmed" :loading="loading" @click="emit('complete')">
       {{ loading ? t('common.processing') : t('lock.createAndEnter') }}
-    </button>
+    </UiButton>
 
     <button type="button" class="skip-link" @click="emit('skip')">{{ t('recovery.skipLater') }}</button>
   </div>

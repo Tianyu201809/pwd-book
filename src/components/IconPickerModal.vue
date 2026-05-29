@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, X } from 'lucide-vue-next'
+import { Search } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { translateIconLabel } from '@/i18n'
 import { CATEGORY_ICON_OPTIONS } from '@/shared/categoryIcons'
+import { UiModal, UiInput, UiButton } from '@/components/ui'
+
+const open = defineModel<boolean>('open', { default: false })
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
     selected?: string
     title?: string
     allowClear?: boolean
@@ -19,7 +21,6 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  'update:open': [value: boolean]
   select: [icon: string]
   clear: []
 }>()
@@ -28,12 +29,9 @@ const { t } = useI18n()
 
 const query = ref('')
 
-watch(
-  () => props.open,
-  (open) => {
-    if (open) query.value = ''
-  },
-)
+watch(open, (isOpen) => {
+  if (isOpen) query.value = ''
+})
 
 const filteredIcons = computed(() => {
   const keyword = query.value.trim().toLowerCase()
@@ -46,7 +44,7 @@ const filteredIcons = computed(() => {
 })
 
 function close(): void {
-  emit('update:open', false)
+  open.value = false
 }
 
 function choose(icon: string): void {
@@ -61,27 +59,12 @@ function useLetterAvatar(): void {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="picker-fade">
-      <div v-if="open" class="picker-overlay" @click.self="close">
-        <div class="picker-panel surface-card">
-          <header class="picker-header">
-            <button type="button" class="header-btn" :aria-label="t('common.close')" @click="close">
-              <X :size="18" :stroke-width="1.5" />
-            </button>
-            <h3 class="picker-title">{{ title ?? t('icons.pickIcon') }}</h3>
-            <span class="header-spacer" />
-          </header>
-
-          <div class="search-wrap">
-            <Search :size="16" :stroke-width="1.5" class="search-icon" />
-            <input
-              v-model="query"
-              class="search-input"
-              :placeholder="t('common.search')"
-              autofocus
-            />
-          </div>
+  <UiModal v-model:open="open" :title="title ?? t('icons.pickIcon')" :width="480" :show-footer="false" @close="close">
+    <div class="picker-inner">
+      <div class="search-wrap">
+        <Search :size="16" :stroke-width="1.5" class="search-icon" />
+        <UiInput v-model="query" class="search-input" :placeholder="t('common.search')" allow-clear />
+      </div>
 
           <div class="picker-body">
             <p v-if="filteredIcons.length === 0" class="empty-text">{{ t('icons.noMatch') }}</p>
@@ -105,15 +88,11 @@ function useLetterAvatar(): void {
             </div>
           </div>
 
-          <footer v-if="allowClear" class="picker-footer">
-            <button type="button" class="reset-btn" @click="useLetterAvatar">
-              {{ t('icons.useInitial') }}
-            </button>
-          </footer>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+      <footer v-if="allowClear" class="picker-footer">
+        <UiButton variant="text" @click="useLetterAvatar">{{ t('icons.useInitial') }}</UiButton>
+      </footer>
+    </div>
+  </UiModal>
 </template>
 
 <style scoped>

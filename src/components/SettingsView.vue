@@ -13,6 +13,9 @@ import {
   ChevronRight,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
+import { UiSelect, UiSwitch, UiCard } from '@/components/ui'
+import { Footer } from 'animal-island-vue'
+import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
 import { useAppState } from '@/composables/useAppState'
 import type { SettingsTab } from '@/types'
@@ -31,6 +34,7 @@ const {
 } = useAppState()
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 
 const statusMessage = ref('')
 
@@ -45,20 +49,29 @@ const activeTab = computed(() => settingsTab.value)
 
 const autoLockOptions = [5, 15, 30, 60]
 
-async function onAutoLockChange(event: Event): Promise<void> {
-  const value = Number((event.target as HTMLSelectElement).value)
-  await updateSecuritySettings({ autoLockMinutes: value })
+const autoLockSelectOptions = computed(() =>
+  autoLockOptions.map((minutes) => ({
+    value: String(minutes),
+    label: t('common.minutes', { n: minutes }),
+  })),
+)
+
+const closeWindowOptions = computed(() => [
+  { value: 'ask', label: t('settings.closeWindowAsk') },
+  { value: 'tray', label: t('settings.closeWindowTray') },
+  { value: 'quit', label: t('settings.closeWindowQuit') },
+])
+
+async function onAutoLockChange(value: string): Promise<void> {
+  await updateSecuritySettings({ autoLockMinutes: Number(value) })
 }
 
-async function toggleClipboardClear(): Promise<void> {
-  await updateSecuritySettings({
-    clipboardClearEnabled: !securitySettings.value.clipboardClearEnabled,
-  })
+async function onClipboardClearChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ clipboardClearEnabled: enabled })
 }
 
-async function onCloseWindowChange(event: Event): Promise<void> {
-  const value = (event.target as HTMLSelectElement).value as 'ask' | 'tray' | 'quit'
-  await updateSecuritySettings({ closeWindowAction: value })
+async function onCloseWindowChange(value: string): Promise<void> {
+  await updateSecuritySettings({ closeWindowAction: value as 'ask' | 'tray' | 'quit' })
 }
 
 async function handleExport(): Promise<void> {
@@ -137,21 +150,18 @@ async function handleReset(): Promise<void> {
       <main class="settings-main">
         <div v-if="activeTab === 'security'" class="panel">
           <h3>{{ t('settings.security') }}</h3>
-          <div class="surface-card settings-card">
+          <UiCard class="settings-card">
             <div class="row">
               <div>
                 <p class="row-title">{{ t('settings.autoLock') }}</p>
                 <p class="row-desc">{{ t('settings.autoLockDesc') }}</p>
               </div>
-              <select
-                class="select"
-                :value="securitySettings.autoLockMinutes"
-                @change="onAutoLockChange"
-              >
-                <option v-for="minutes in autoLockOptions" :key="minutes" :value="minutes">
-                  {{ t('common.minutes', { n: minutes }) }}
-                </option>
-              </select>
+              <UiSelect
+                :model-value="String(securitySettings.autoLockMinutes)"
+                class="settings-select"
+                :options="autoLockSelectOptions"
+                @update:model-value="onAutoLockChange"
+              />
             </div>
             <div class="row">
               <div>
@@ -160,31 +170,24 @@ async function handleReset(): Promise<void> {
                   {{ t('settings.clipboardClearDesc', { seconds: securitySettings.clipboardClearSeconds }) }}
                 </p>
               </div>
-              <button
-                type="button"
-                class="toggle"
-                :class="{ on: securitySettings.clipboardClearEnabled }"
-                @click="toggleClipboardClear"
-              >
-                <span class="knob" />
-              </button>
+              <UiSwitch
+                :model-value="securitySettings.clipboardClearEnabled"
+                @update:model-value="onClipboardClearChange"
+              />
             </div>
             <div class="row last">
               <div>
                 <p class="row-title">{{ t('settings.closeWindow') }}</p>
                 <p class="row-desc">{{ t('settings.closeWindowDesc') }}</p>
               </div>
-              <select
-                class="select"
-                :value="securitySettings.closeWindowAction"
-                @change="onCloseWindowChange"
-              >
-                <option value="ask">{{ t('settings.closeWindowAsk') }}</option>
-                <option value="tray">{{ t('settings.closeWindowTray') }}</option>
-                <option value="quit">{{ t('settings.closeWindowQuit') }}</option>
-              </select>
+              <UiSelect
+                :model-value="securitySettings.closeWindowAction"
+                class="settings-select"
+                :options="closeWindowOptions"
+                @update:model-value="onCloseWindowChange"
+              />
             </div>
-          </div>
+          </UiCard>
 
           <RecoverySettingsPanel />
         </div>
@@ -211,13 +214,15 @@ async function handleReset(): Promise<void> {
           </div>
         </div>
 
-        <div v-else-if="activeTab === 'about'" class="panel">
+        <div v-else-if="activeTab === 'about'" class="panel about-panel">
           <h3>{{ t('settings.about') }}</h3>
-          <div class="surface-card about-card">
+          <UiCard class="about-card">
             <p class="font-display about-title">{{ t('common.appName') }}</p>
-            <p class="about-version">{{ t('settings.version', { version: '0.1.0' }) }}</p>
+            <p class="about-version">{{ t('settings.version', { version: '0.2.0' }) }}</p>
             <p class="about-desc">{{ t('settings.aboutDesc') }}</p>
-          </div>
+            <p class="about-credit">{{ t('settings.animalIslandCredit') }}</p>
+          </UiCard>
+          <Footer v-if="isAnimalIsland" type="tree" class="about-footer" />
         </div>
       </main>
     </div>
@@ -427,6 +432,17 @@ h3 {
   margin: 0 0 16px;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.about-credit {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.about-footer {
+  margin-top: 24px;
 }
 
 .about-desc {

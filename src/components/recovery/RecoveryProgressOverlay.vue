@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { UiLoading, UiCard } from '@/components/ui'
 
 const { t } = useI18n()
 </script>
 
 <template>
+  <UiLoading :active="true" />
   <div class="progress-overlay">
-    <div class="progress-card surface-card">
+    <UiCard class="progress-card">
       <p class="progress-title">{{ t('recovery.progressTitle') }}</p>
       <div class="progress-bar">
         <span class="progress-fill" />
       </div>
       <p class="progress-hint">{{ t('recovery.progressHint') }}</p>
-    </div>
+    </UiCard>
   </div>
 </template>
 

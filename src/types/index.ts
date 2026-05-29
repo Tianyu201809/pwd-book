@@ -19,6 +19,13 @@ export type {
   VaultStatus,
 } from '@/shared/types'
 
+export type ThemeSkin = 'classic' | 'animalIsland'
+
+export interface ThemeSkinOption {
+  id: ThemeSkin
+  label: string
+}
+
 export type ThemeAccent =
   | 'brass'
   | 'teal'

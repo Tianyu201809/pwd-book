@@ -247,9 +247,17 @@ export default {
     dataCleared: '所有数据已清除，请重新创建主密码',
     aboutDesc:
       '本地优先的密码管理工具。密码字段 AES-256 加密存储，元数据保存在本地 SQLite 数据库中。',
+    animalIslandCredit:
+      '「动物森友会」高级皮肤 UI 组件来自 animal-island-vue（MIT，仅限个人学习与非商业展示）。',
     version: '版本 {version} · Electron + Vue 3 + SQLite',
   },
   appearance: {
+    skinTitle: '界面皮肤',
+    skinDesc: '经典主题为纯色强调色；动物森友会为高级暖色动森风格皮肤',
+    skinClassic: '经典',
+    skinAnimalIsland: '动物森友会',
+    skinAnimalIslandMode: '动森暖色（浅色）',
+    skinAnimalIslandPreview: '欢迎来到无人岛',
     modeTitle: '外观模式',
     modeDesc: '切换浅色、深色，或跟随系统设置自动切换',
     accentTitle: '主题色',

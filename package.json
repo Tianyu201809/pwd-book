@@ -72,6 +72,7 @@
     }
   },
   "dependencies": {
+    "animal-island-vue": "^0.1.3",
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "^2.0.0",
     "lucide-vue-next": "^0.511.0",

@@ -249,9 +249,17 @@ export default {
     dataCleared: 'All data cleared. Create a new master password',
     aboutDesc:
       'Local-first password manager. Passwords are encrypted with AES-256; metadata lives in a local SQLite database.',
+    animalIslandCredit:
+      'Animal Crossing premium skin UI uses animal-island-vue (MIT, personal learning and non-commercial use only).',
     version: 'Version {version} · Electron + Vue 3 + SQLite',
   },
   appearance: {
+    skinTitle: 'Interface skin',
+    skinDesc: 'Classic uses accent colors; Animal Crossing is a premium warm island-style skin',
+    skinClassic: 'Classic',
+    skinAnimalIsland: 'Animal Crossing',
+    skinAnimalIslandMode: 'Island warm (light)',
+    skinAnimalIslandPreview: 'Welcome to the island',
     modeTitle: 'Appearance',
     modeDesc: 'Light, dark, or follow system preference',
     accentTitle: 'Accent color',

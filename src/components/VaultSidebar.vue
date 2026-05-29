@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import { UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import type { FilterCategory } from '@/types'
 
@@ -160,10 +161,10 @@ onBeforeUnmount(() => {
 <template>
   <aside class="sidebar" :class="{ 'is-sorting': isDragging }">
     <div class="sidebar-top">
-      <button type="button" class="btn-primary new-btn" @click="startCreateEntry">
-        <Plus :size="16" :stroke-width="1.5" />
+      <UiButton variant="primary" class="new-btn" block @click="startCreateEntry">
+        <template #icon><Plus :size="16" :stroke-width="1.5" /></template>
         {{ t('vault.newEntry') }}
-      </button>
+      </UiButton>
     </div>
 
     <nav ref="sidebarNavRef" class="sidebar-nav">

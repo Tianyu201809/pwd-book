@@ -6,10 +6,14 @@ import type {
   ThemeModeOption,
   ThemeModePref,
   ResolvedThemeMode,
+  ThemeSkin,
+  ThemeSkinOption,
 } from '@/types'
 
 const STORAGE_MODE = 'pwdbook-theme-mode'
 const STORAGE_ACCENT = 'pwdbook-theme-accent'
+const STORAGE_SKIN = 'pwdbook-theme-skin'
+const STORAGE_CLASSIC_MODE = 'pwdbook-classic-mode-backup'
 
 const ACCENT_IDS: ThemeAccent[] = [
   'brass',
@@ -34,6 +38,7 @@ const ACCENT_COLORS: Record<ThemeAccent, string> = {
 }
 
 const MODE_IDS: ThemeModePref[] = ['light', 'dark', 'system']
+const SKIN_IDS: ThemeSkin[] = ['classic', 'animalIsland']
 
 export const ACCENT_OPTIONS: ThemeAccentOption[] = ACCENT_IDS.map((id) => ({
   id,
@@ -61,19 +66,37 @@ function resolveMode(mode: ThemeModePref): ResolvedThemeMode {
   return mode === 'light' ? 'light' : 'dark'
 }
 
-function applyTheme(modePref: ThemeModePref, nextAccent: ThemeAccent): ResolvedThemeMode {
-  const resolved = resolveMode(modePref)
+function applyTheme(
+  modePref: ThemeModePref,
+  nextAccent: ThemeAccent,
+  nextSkin: ThemeSkin,
+): ResolvedThemeMode {
+  const resolved =
+    nextSkin === 'animalIsland' ? 'light' : resolveMode(modePref)
   const root = document.documentElement
   root.setAttribute('data-mode', resolved)
   root.setAttribute('data-accent', nextAccent)
   root.setAttribute('data-mode-pref', modePref)
-  window.electronAPI?.setNativeTheme(modePref)
+  root.setAttribute('data-skin', nextSkin)
+  if (nextSkin === 'classic') {
+    window.electronAPI?.setNativeTheme(modePref)
+  } else {
+    window.electronAPI?.setNativeTheme('light')
+  }
   return resolved
 }
 
 const modePref = ref<ThemeModePref>(readStorage(STORAGE_MODE, 'dark') as ThemeModePref)
 const accent = ref<ThemeAccent>(readStorage(STORAGE_ACCENT, 'brass') as ThemeAccent)
+const skin = ref<ThemeSkin>(
+  (readStorage(STORAGE_SKIN, 'classic') as ThemeSkin) === 'animalIsland'
+    ? 'animalIsland'
+    : 'classic',
+)
 const resolvedMode = ref<ResolvedThemeMode>(resolveMode(modePref.value))
+
+const isAnimalIsland = computed(() => skin.value === 'animalIsland')
+const isClassic = computed(() => skin.value === 'classic')
 
 const accentOptions = computed<ThemeAccentOption[]>(() =>
   ACCENT_IDS.map((id) => ({
@@ -90,13 +113,30 @@ const modeOptions = computed<ThemeModeOption[]>(() =>
   })),
 )
 
+import { i18n } from '@/i18n'
+
+const skinOptions = computed<ThemeSkinOption[]>(() =>
+  SKIN_IDS.map((id) => ({
+    id,
+    label:
+      id === 'classic'
+        ? i18n.global.t('appearance.skinClassic')
+        : i18n.global.t('appearance.skinAnimalIsland'),
+  })),
+)
+
 const currentAccent = computed(
   () => accentOptions.value.find((item) => item.id === accent.value) ?? accentOptions.value[0],
 )
 
-import { i18n } from '@/i18n'
+const currentSkin = computed(
+  () => skinOptions.value.find((item) => item.id === skin.value) ?? skinOptions.value[0],
+)
 
 const currentModeLabel = computed(() => {
+  if (isAnimalIsland.value) {
+    return i18n.global.t('appearance.skinAnimalIslandMode')
+  }
   const meta = modeOptions.value.find((item) => item.id === modePref.value)
   if (!meta) return modePref.value
   if (modePref.value === 'system') {
@@ -113,26 +153,47 @@ const currentModeLabel = computed(() => {
 })
 
 function setMode(mode: ThemeModePref): void {
+  if (skin.value === 'animalIsland') return
   modePref.value = mode
   localStorage.setItem(STORAGE_MODE, mode)
-  resolvedMode.value = applyTheme(mode, accent.value)
+  resolvedMode.value = applyTheme(mode, accent.value, skin.value)
 }
 
 function setAccent(next: ThemeAccent): void {
+  if (skin.value === 'animalIsland') return
   accent.value = next
   localStorage.setItem(STORAGE_ACCENT, next)
-  resolvedMode.value = applyTheme(modePref.value, next)
+  resolvedMode.value = applyTheme(modePref.value, next, skin.value)
+}
+
+function setSkin(next: ThemeSkin): void {
+  if (next === skin.value) return
+  if (next === 'animalIsland') {
+    localStorage.setItem(STORAGE_CLASSIC_MODE, modePref.value)
+    skin.value = next
+    localStorage.setItem(STORAGE_SKIN, next)
+    resolvedMode.value = applyTheme(modePref.value, accent.value, next)
+    return
+  }
+  skin.value = next
+  localStorage.setItem(STORAGE_SKIN, next)
+  const restored = readStorage(STORAGE_CLASSIC_MODE, modePref.value) as ThemeModePref
+  if (MODE_IDS.includes(restored)) {
+    modePref.value = restored
+    localStorage.setItem(STORAGE_MODE, restored)
+  }
+  resolvedMode.value = applyTheme(modePref.value, accent.value, next)
 }
 
 export function initTheme(): void {
-  resolvedMode.value = applyTheme(modePref.value, accent.value)
+  resolvedMode.value = applyTheme(modePref.value, accent.value, skin.value)
 }
 
 let mediaQuery: MediaQueryList | null = null
 
 function onSystemThemeChange(): void {
-  if (modePref.value === 'system') {
-    resolvedMode.value = applyTheme('system', accent.value)
+  if (modePref.value === 'system' && skin.value === 'classic') {
+    resolvedMode.value = applyTheme('system', accent.value, skin.value)
   }
 }
 
@@ -149,12 +210,18 @@ export function useTheme() {
   return {
     modePref,
     accent,
+    skin,
     resolvedMode,
+    isAnimalIsland,
+    isClassic,
     currentAccent,
+    currentSkin,
     currentModeLabel,
     accentOptions,
     modeOptions,
+    skinOptions,
     setMode,
     setAccent,
+    setSkin,
   }
 }

@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getWipeConfirmPhrase } from '@/i18n'
+import { UiInput, UiButton } from '@/components/ui'
 
 defineProps<{
   entryCount: number
@@ -40,31 +41,33 @@ function submitConfirm(): void {
         <p class="danger-hint">{{ t('recovery.wipeHint') }}</p>
       </div>
       <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-      <button type="button" class="btn-ghost danger-btn" @click="emit('continue')">
+      <UiButton variant="ghost" class="danger-btn" block @click="emit('continue')">
         {{ t('recovery.wipeContinue') }}
-      </button>
+      </UiButton>
     </template>
 
     <template v-else>
       <h2 class="panel-title">{{ t('recovery.wipeFinalTitle') }}</h2>
       <p class="panel-desc">{{ t('recovery.wipeFinalDesc') }}</p>
       <p class="confirm-phrase">{{ confirmPhrase }}</p>
-      <input
+      <UiInput
         v-model="confirmText"
-        class="input-field"
+        class="wipe-input"
         :placeholder="t('recovery.wipeConfirmPlaceholder')"
         :disabled="loading"
         @keydown.enter="submitConfirm"
       />
       <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-      <button
-        type="button"
-        class="btn-primary danger-submit"
+      <UiButton
+        variant="danger"
+        class="danger-submit"
+        block
         :disabled="loading || confirmText.trim() !== confirmPhrase"
+        :loading="loading"
         @click="submitConfirm"
       >
         {{ loading ? t('recovery.wiping') : t('recovery.wipeSubmit') }}
-      </button>
+      </UiButton>
     </template>
   </div>
 </template>
@@ -136,10 +139,8 @@ function submitConfirm(): void {
   color: var(--accent-primary);
 }
 
-.input-field {
+.wipe-input {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
 }
 
 .error-text {

@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { Sun, Moon, Monitor, ShieldCheck, Check } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { Sun, Moon, Monitor, ShieldCheck, Check, TreePalm } from 'lucide-vue-next'
+import { Card, Button, Input } from 'animal-island-vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
-import type { ThemeAccent, ThemeModePref } from '@/types'
+import { UiButton, UiInput, UiCard } from '@/components/ui'
+import type { ThemeAccent, ThemeModePref, ThemeSkin } from '@/types'
 import type { AppLocale } from '@/i18n'
 
 const { t } = useI18n()
@@ -11,13 +14,21 @@ const { locale, localeOptions, setLocale } = useLocale()
 const {
   modePref,
   accent,
+  skin,
+  isClassic,
+  isAnimalIsland,
   currentAccent,
+  currentSkin,
   currentModeLabel,
   accentOptions,
   modeOptions,
+  skinOptions,
   setMode,
   setAccent,
+  setSkin,
 } = useTheme()
+
+const previewInput = ref('')
 
 const modeIcons = {
   light: Sun,
@@ -28,6 +39,24 @@ const modeIcons = {
 
 <template>
   <div class="appearance">
+    <section>
+      <h3>{{ t('appearance.skinTitle') }}</h3>
+      <p class="desc">{{ t('appearance.skinDesc') }}</p>
+      <div class="theme-segment skin-segment">
+        <button
+          v-for="item in skinOptions"
+          :key="item.id"
+          type="button"
+          class="theme-segment-btn skin-btn"
+          :class="{ active: skin === item.id }"
+          @click="setSkin(item.id as ThemeSkin)"
+        >
+          <TreePalm v-if="item.id === 'animalIsland'" :size="16" :stroke-width="1.5" />
+          {{ item.label }}
+        </button>
+      </div>
+    </section>
+
     <section>
       <h3>{{ t('appearance.languageTitle') }}</h3>
       <p class="desc">{{ t('appearance.languageDesc') }}</p>
@@ -45,7 +74,7 @@ const modeIcons = {
       </div>
     </section>
 
-    <section>
+    <section v-if="isClassic">
       <h3>{{ t('appearance.modeTitle') }}</h3>
       <p class="desc">{{ t('appearance.modeDesc') }}</p>
       <div class="theme-segment">
@@ -63,7 +92,7 @@ const modeIcons = {
       </div>
     </section>
 
-    <section>
+    <section v-if="isClassic">
       <h3>{{ t('appearance.accentTitle') }}</h3>
       <p class="desc">{{ t('appearance.accentDesc') }}</p>
       <div class="swatch-grid">
@@ -86,7 +115,21 @@ const modeIcons = {
 
     <section>
       <h3>{{ t('appearance.previewTitle') }}</h3>
-      <div class="surface-card preview-card">
+      <template v-if="isAnimalIsland">
+        <Card type="title" color="app-teal" class="preview-animal-card">
+          {{ t('appearance.skinAnimalIslandPreview') }}
+        </Card>
+        <Card class="preview-animal-body">
+          <p class="preview-meta-animal">
+            {{ currentSkin?.label }} · {{ currentModeLabel }}
+          </p>
+          <Input v-model="previewInput" :placeholder="t('appearance.inputPreview')" allow-clear />
+          <Button type="primary" block style="margin-top: 12px">
+            {{ t('appearance.primaryButton') }}
+          </Button>
+        </Card>
+      </template>
+      <UiCard v-else class="preview-card">
         <div class="preview-header">
           <div class="preview-icon">
             <ShieldCheck :size="16" :stroke-width="1.5" />
@@ -100,14 +143,14 @@ const modeIcons = {
           </div>
         </div>
         <div class="preview-body">
-          <button type="button" class="btn-primary preview-primary">{{ t('appearance.primaryButton') }}</button>
+          <UiButton variant="primary" class="preview-primary">{{ t('appearance.primaryButton') }}</UiButton>
           <div class="preview-tags">
             <span class="preview-tag">{{ t('appearance.tag') }}</span>
             <span class="preview-tag muted">{{ t('appearance.tagMuted') }}</span>
           </div>
-          <div class="preview-input">{{ t('appearance.inputPreview') }}</div>
+          <UiInput v-model="previewInput" :placeholder="t('appearance.inputPreview')" />
         </div>
-      </div>
+      </UiCard>
     </section>
   </div>
 </template>
@@ -133,6 +176,15 @@ h3 {
   color: var(--text-muted);
 }
 
+.skin-segment {
+  grid-template-columns: 1fr 1fr;
+}
+
+.skin-btn {
+  justify-content: center;
+  gap: 6px;
+}
+
 .swatch-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -146,6 +198,23 @@ h3 {
 
 .preview-card {
   overflow: hidden;
+  padding: 0 !important;
+}
+
+.preview-animal-card {
+  margin-bottom: 12px;
+}
+
+.preview-animal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-meta-animal {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .preview-header {
@@ -212,14 +281,5 @@ h3 {
   background: var(--bg-hover);
   color: var(--text-secondary);
   font-weight: 400;
-}
-
-.preview-input {
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--text-muted);
 }
 </style>

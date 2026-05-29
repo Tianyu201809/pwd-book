@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { bindSystemThemeListener, unbindSystemThemeListener } from '@/composables/useTheme'
+import { Cursor } from 'animal-island-vue'
+import { bindSystemThemeListener, unbindSystemThemeListener, useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { useAutoLock } from '@/composables/useAutoLock'
 import { showToast } from '@/composables/useToast'
@@ -16,6 +17,7 @@ import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.
 import ToastHost from '@/components/ToastHost.vue'
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 const {
   screen,
   bootstrap,
@@ -62,11 +64,33 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
     scheduledBackupLoading.value = false
   }
 }
-
 </script>
 
 <template>
-  <div class="app-root vault-texture">
+  <Cursor v-if="isAnimalIsland">
+    <div class="app-root app-root--animal">
+      <TitleBar />
+      <main class="app-main">
+        <LockScreen v-if="screen === 'lock'" />
+        <VaultView v-else-if="screen === 'vault'" />
+        <SettingsView v-else-if="screen === 'settings'" />
+        <EmailBackupView v-else-if="screen === 'email-backup'" />
+        <PasswordGenView v-else-if="screen === 'password-gen'" />
+      </main>
+      <MasterPasswordConfirmModal
+        ref="scheduledMasterModalRef"
+        v-model:open="scheduledBackupPromptOpen"
+        :title="t('tools.emailBackup.scheduledPromptTitle')"
+        :description="t('tools.emailBackup.scheduledPromptDesc')"
+        :confirm-label="t('tools.emailBackup.confirmBackup')"
+        :loading="scheduledBackupLoading"
+        @close="closeScheduledBackupPrompt"
+        @confirm="confirmScheduledBackup"
+      />
+      <ToastHost />
+    </div>
+  </Cursor>
+  <div v-else class="app-root vault-texture">
     <TitleBar />
     <main class="app-main">
       <LockScreen v-if="screen === 'lock'" />
@@ -77,7 +101,7 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
     </main>
     <MasterPasswordConfirmModal
       ref="scheduledMasterModalRef"
-      :open="scheduledBackupPromptOpen"
+      v-model:open="scheduledBackupPromptOpen"
       :title="t('tools.emailBackup.scheduledPromptTitle')"
       :description="t('tools.emailBackup.scheduledPromptDesc')"
       :confirm-label="t('tools.emailBackup.confirmBackup')"

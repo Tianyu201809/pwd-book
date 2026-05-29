@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
+import { UiModal, UiInput, UiButton, UiCheckbox } from '@/components/ui'
+
+const open = defineModel<boolean>('open', { default: false })
 
 defineProps<{
-  open: boolean
   title: string
   description: string
   confirmLabel: string
@@ -22,6 +24,7 @@ const showPassword = ref(false)
 
 function handleClose(): void {
   password.value = ''
+  open.value = false
   emit('close')
 }
 
@@ -37,71 +40,47 @@ defineExpose({ resetPassword })
 </script>
 
 <template>
-  <Teleport to="body">
-    <div v-if="open" class="modal-overlay" @click.self="handleClose">
-      <div class="modal-card panel-glow surface-card">
-        <div class="modal-header">
-          <h3>{{ title }}</h3>
-          <button type="button" class="close-btn" @click="handleClose">
-            <X :size="16" :stroke-width="1.5" />
-          </button>
-        </div>
-        <p class="modal-desc">{{ description }}</p>
-        <input
-          v-model="password"
-          :type="showPassword ? 'text' : 'password'"
-          class="input-field"
-          :placeholder="t('tools.emailBackup.masterPasswordPlaceholder')"
-          @keydown.enter="handleConfirm"
-        />
-        <label class="show-row">
-          <input v-model="showPassword" type="checkbox" />
-          <span>{{ t('tools.emailBackup.showPassword') }}</span>
-        </label>
-        <div class="modal-actions">
-          <button type="button" class="btn-ghost modal-btn" @click="handleClose">
-            {{ t('common.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="btn-primary modal-btn"
-            :disabled="loading || !password.trim()"
-            @click="handleConfirm"
-          >
-            {{ confirmLabel }}
-          </button>
-        </div>
+  <UiModal v-model:open="open" :title="title" :width="400" :show-footer="false" @close="handleClose">
+    <template #title>
+      <div class="modal-header-row">
+        <h3>{{ title }}</h3>
+        <button type="button" class="close-btn titlebar-no-drag" @click="handleClose">
+          <X :size="16" :stroke-width="1.5" />
+        </button>
       </div>
+    </template>
+    <p class="modal-desc">{{ description }}</p>
+    <UiInput
+      v-model="password"
+      :type="showPassword ? 'text' : 'password'"
+      :placeholder="t('tools.emailBackup.masterPasswordPlaceholder')"
+      @keydown.enter="handleConfirm"
+    />
+    <UiCheckbox v-model="showPassword" :label="t('tools.emailBackup.showPassword')" class="show-row" />
+    <div class="modal-actions">
+      <UiButton variant="ghost" class="modal-btn" @click="handleClose">{{ t('common.cancel') }}</UiButton>
+      <UiButton
+        variant="primary"
+        class="modal-btn"
+        :disabled="loading || !password.trim()"
+        :loading="loading"
+        @click="handleConfirm"
+      >
+        {{ confirmLabel }}
+      </UiButton>
     </div>
-  </Teleport>
+  </UiModal>
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  padding: 24px;
-}
-
-.modal-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 24px;
-}
-
-.modal-header {
+.modal-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  width: 100%;
 }
 
-.modal-header h3 {
+.modal-header-row h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
@@ -129,12 +108,7 @@ defineExpose({ resetPassword })
 }
 
 .show-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin: 12px 0 20px;
-  font-size: 13px;
-  color: var(--text-secondary);
 }
 
 .modal-actions {
@@ -144,7 +118,5 @@ defineExpose({ resetPassword })
 
 .modal-btn {
   flex: 1;
-  padding: 10px 16px;
-  font-size: 14px;
 }
 </style>
