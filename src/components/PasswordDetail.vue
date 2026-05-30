@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
@@ -30,6 +30,7 @@ const {
   getCreateDefaultCategoryId,
   detailCollapsed,
   setDetailCollapsed,
+  createGeneratedPassword,
 } = useAppState()
 
 const { t } = useI18n()
@@ -153,6 +154,10 @@ async function handleCopyUsername(): Promise<void> {
 async function handleCopyPassword(): Promise<void> {
   if (!selectedEntry.value || !draft.value.password) return
   await copyPassword(selectedEntry.value.id, draft.value.password)
+}
+
+function handleGeneratePassword(): void {
+  draft.value.password = createGeneratedPassword()
 }
 
 function handleIconSelect(icon: string): void {
@@ -325,6 +330,15 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
               class="detail-field font-mono"
               :class="{ 'password-mask': !showPassword }"
             />
+            <button
+              type="button"
+              class="icon-btn square"
+              :title="t('detail.generatePassword')"
+              :aria-label="t('detail.generatePassword')"
+              @click="handleGeneratePassword"
+            >
+              <Sparkles :size="16" :stroke-width="1.5" />
+            </button>
             <button type="button" class="icon-btn square" @click="showPassword = !showPassword">
               <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
               <Eye v-else :size="16" :stroke-width="1.5" />
