@@ -5,6 +5,7 @@ import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft } from 'luci
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
+import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
@@ -32,6 +33,7 @@ const {
 } = useAppState()
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 
 function loadPanelWidth(): number {
   const stored = Number(localStorage.getItem(WIDTH_STORAGE_KEY))
@@ -358,10 +360,25 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
       </div>
 
       <div class="detail-footer">
-        <UiButton v-if="isCreating" variant="ghost" class="footer-btn" @click="cancelCreateEntry">
+        <UiButton
+          v-if="isCreating"
+          :variant="isAnimalIsland ? 'primary' : 'ghost'"
+          class="vault-footer-btn"
+          :class="{ 'footer-btn': !isAnimalIsland }"
+          :block="isAnimalIsland"
+          @click="cancelCreateEntry"
+        >
           {{ t('common.cancel') }}
         </UiButton>
-        <UiButton variant="primary" class="footer-btn save" :disabled="loading" :loading="loading" @click="handleSave">
+        <UiButton
+          variant="primary"
+          class="vault-footer-btn"
+          :class="{ 'footer-btn save': !isAnimalIsland }"
+          :block="isAnimalIsland"
+          :disabled="loading"
+          :loading="loading"
+          @click="handleSave"
+        >
           {{ loading ? t('common.saving') : t('common.save') }}
         </UiButton>
       </div>

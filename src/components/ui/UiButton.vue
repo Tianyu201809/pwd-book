@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { Button } from 'animal-island-vue'
 import type { ButtonHTMLType } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 
+defineOptions({ inheritAttrs: false })
+
+const attrs = useAttrs()
+
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'ghost' | 'text' | 'dashed' | 'danger'
+    variant?: 'primary' | 'default' | 'ghost' | 'text' | 'dashed' | 'danger'
     block?: boolean
     loading?: boolean
     disabled?: boolean
@@ -31,11 +35,12 @@ const { isAnimalIsland } = useTheme()
 
 const animalType = computed(() => {
   if (props.variant === 'primary' || props.variant === 'danger') return 'primary'
-  if (props.variant === 'ghost') return 'default'
   if (props.variant === 'dashed') return 'dashed'
   if (props.variant === 'text') return 'text'
   return 'default'
 })
+
+const animalGhost = computed(() => props.variant === 'ghost')
 
 const classicClass = computed(() => {
   if (props.variant === 'primary' || props.variant === 'danger') return 'btn-primary'
@@ -52,8 +57,11 @@ const classicBtnClass = computed(() => [
 <template>
   <Button
     v-if="isAnimalIsland"
+    :class="attrs.class"
+    :style="attrs.style"
     :type="animalType"
     :size="size"
+    :ghost="animalGhost"
     :danger="variant === 'danger'"
     :block="block"
     :loading="loading"

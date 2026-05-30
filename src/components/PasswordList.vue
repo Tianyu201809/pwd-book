@@ -115,15 +115,24 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           </template>
         </UiInput>
       </div>
-      <UiButton variant="primary" class="new-entry-btn" @click="startCreateEntry">
+      <UiButton
+        variant="primary"
+        class="vault-new-btn"
+        :class="{ 'new-entry-btn': !isAnimalIsland }"
+        @click="startCreateEntry"
+      >
         <template #icon><Plus :size="16" :stroke-width="1.5" /></template>
         {{ t('vault.newEntry') }}
       </UiButton>
       <div class="sort-menu-wrap">
         <UiButton
           variant="ghost"
-          class="filter-btn"
-          :class="{ active: showSortMenu }"
+          class="vault-filter-btn"
+          :class="{
+            'filter-btn': !isAnimalIsland,
+            active: showSortMenu && !isAnimalIsland,
+            'vault-filter-btn--active': showSortMenu && isAnimalIsland,
+          }"
           :title="t('vault.sortBy')"
           :aria-label="t('vault.sortBy')"
           @click="toggleSortMenu"

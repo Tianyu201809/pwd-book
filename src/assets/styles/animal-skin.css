@@ -85,6 +85,40 @@
   justify-content: center;
 }
 
+/* Vault toolbar & detail — use library button chrome only */
+[data-skin="animalIsland"] .list-toolbar .animal-btn,
+[data-skin="animalIsland"] .detail-footer .animal-btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-skin="animalIsland"] .vault-new-btn.animal-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+[data-skin="animalIsland"] .vault-filter-btn.animal-btn {
+  flex-shrink: 0;
+}
+
+[data-skin="animalIsland"] .vault-filter-btn.vault-filter-btn--active.animal-btn {
+  color: var(--accent-primary);
+  box-shadow: inset 0 0 0 2px var(--accent-primary);
+}
+
+[data-skin="animalIsland"] .detail-footer .vault-footer-btn.animal-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+[data-skin="animalIsland"] .detail-footer .vault-footer-btn.animal-btn--primary {
+  color: #794f27;
+  background: #f8f8f0;
+  border-color: #f8f8f0;
+  box-shadow: 0 5px #bdaea0;
+}
+
 [data-skin="animalIsland"] .ui-classic-only {
   display: none !important;
 }
