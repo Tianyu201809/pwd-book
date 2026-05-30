@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-1.1.1-blue?style=flat-square)](package.json)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -124,9 +124,10 @@ npm run dev
 ### 保险库与条目
 
 - **分类** — 自定义分类名称与图标；侧栏支持拖拽排序；分类管理中支持名称内联编辑、点击图标更换
-- **浏览** — 全部 / 收藏筛选、标题搜索、条目列表与详情侧栏
+- **标签** — 侧栏「标签管理」：新建、重命名、删除（同步更新所有关联条目）；详情页从已有标签中选用，支持搜索与条目数统计
+- **浏览** — 全部 / 收藏筛选、标题搜索、**最近使用 / 标题 A–Z / 创建时间** 排序、条目列表与详情侧栏
 - **条目字段** — 标题、网址、用户名、密码、备注、标签、显示图标、所属分类
-- **详情侧栏** — 左缘可收起；拖拽左缘调整宽度（280–560px，偏好写入 `localStorage`）；网址旁一键复制
+- **详情侧栏** — 选中条目或点击「新建条目」时自动展开；左缘可收起（偏好写入 `localStorage`）；拖拽左缘调整宽度（280–560px）；网址旁一键复制；新建时可一键生成密码，取消创建会收起侧栏
 - **列表操作** — 右键或「⋯」菜单：复制条目信息、删除、**移动到其他分类**、**在浏览器中打开网址**（向 URL 追加 `user` / `pwd` 查询参数，便于部分站点自动填表）
 
 ### 主密码、锁定与恢复
@@ -143,7 +144,7 @@ npm run dev
 
 ### 数据导入导出
 
-- **JSON** — 完整备份与恢复（含明文密码，请离线妥善保管）
+- **JSON** — 完整备份与恢复（含明文密码，请离线妥善保管）；导入时自动创建备份中缺失的分类
 - **Excel** — 导出 `.xlsx`，含「密码条目」与「分类」两个工作表，便于查阅与归档
 
 ### 外观
@@ -230,10 +231,10 @@ npm run dev
 ```
 pwd-book/
 ├── src/
-│   ├── main/           # Electron 主进程：IPC、加密、SQLite、托盘、单实例、邮箱备份
+│   ├── main/           # Electron 主进程：IPC、加密、SQLite、标签/分类服务、托盘、单实例、邮箱备份
 │   ├── preload/        # contextBridge API（window.electronAPI）
 │   ├── renderer/       # Vue 入口
-│   ├── components/     # UI（LockScreen、VaultView、EmailBackupView、PasswordGenView 等）
+│   ├── components/     # UI（LockScreen、VaultView、TagManagePanel、EmailBackupView、PasswordGenView 等）
 │   ├── composables/    # useAppState、useTheme、useAutoLock、useLocale 等
 │   ├── i18n/           # 中英文文案
 │   └── shared/         # 类型、IPC 常量、工具函数（含 URL 参数拼接、密码生成）
@@ -280,7 +281,7 @@ Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%
 该功能会把用户名、密码写入 URL 查询参数，仅适合你自己信任、且确实从 URL 读取凭据的页面；对普通 HTTPS 登录页无帮助，且 URL 可能留在浏览器历史记录中，请谨慎使用。
 
 **如何参与开发？**  
-从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，托盘与关闭逻辑见 `src/main/tray.ts`，邮箱备份见 `src/main/services/emailBackupService.ts`。
+从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，标签逻辑见 `src/main/services/tagService.ts` 与 `TagManagePanel.vue`，托盘与关闭逻辑见 `src/main/tray.ts`，邮箱备份见 `src/main/services/emailBackupService.ts`。
 
 ---
 
