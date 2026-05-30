@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Tags, X } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
@@ -31,6 +31,7 @@ const {
   detailCollapsed,
   setDetailCollapsed,
   createGeneratedPassword,
+  vaultTags,
 } = useAppState()
 
 const { t } = useI18n()
@@ -65,7 +66,28 @@ const categoryOptions = computed(() =>
   })),
 )
 
-const tagsInput = ref('')
+const showTagPicker = ref(false)
+const tagPickerTriggerRef = ref<HTMLButtonElement | null>(null)
+const tagPickerMenuStyle = ref<Record<string, string>>({})
+const detailBodyRef = ref<HTMLElement | null>(null)
+
+let tagPickerOutsideHandler: ((event: MouseEvent) => void) | null = null
+
+const draftTags = computed({
+  get: () => draft.value.tags ?? [],
+  set: (tags: string[]) => {
+    draft.value.tags = tags
+  },
+})
+
+function tagKey(name: string): string {
+  return name.trim().toLowerCase()
+}
+
+const availableVaultTags = computed(() => {
+  const selected = new Set(draftTags.value.map(tagKey))
+  return vaultTags.value.filter((tag) => !selected.has(tagKey(tag.name)))
+})
 
 const avatar = computed(() => getAvatarMeta(draft.value.title || t('detail.newEntry')))
 
@@ -94,7 +116,7 @@ function resetDraftFromEntry(): void {
       isFavorite: false,
       displayIcon: '',
     }
-    tagsInput.value = ''
+    closeTagPicker()
     return
   }
 
@@ -109,7 +131,7 @@ function resetDraftFromEntry(): void {
     isFavorite: selectedEntry.value.isFavorite,
     displayIcon: selectedEntry.value.displayIcon ?? '',
   }
-  tagsInput.value = selectedEntry.value.tags.join(', ')
+  closeTagPicker()
 }
 
 watch([selectedEntry, isCreating], resetDraftFromEntry, { immediate: true })
@@ -117,10 +139,7 @@ watch([selectedEntry, isCreating], resetDraftFromEntry, { immediate: true })
 function buildInput(): PasswordEntryInput {
   return {
     ...draft.value,
-    tags: tagsInput.value
-      .split(/[,，]/)
-      .map((tag) => tag.trim())
-      .filter(Boolean),
+    tags: [...draftTags.value],
   }
 }
 
@@ -160,6 +179,99 @@ function handleGeneratePassword(): void {
   draft.value.password = createGeneratedPassword()
 }
 
+function updateTagPickerPosition(): void {
+  const trigger = tagPickerTriggerRef.value
+  if (!trigger) return
+
+  const rect = trigger.getBoundingClientRect()
+  const menuWidth = 280
+  const menuMaxHeight = 220
+  const gap = 8
+  const itemCount = Math.max(availableVaultTags.value.length, 1)
+  const estimatedHeight = Math.min(menuMaxHeight, itemCount * 40 + 16)
+
+  let left = rect.right - menuWidth
+  left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8))
+
+  const spaceAbove = rect.top - gap
+  const spaceBelow = window.innerHeight - rect.bottom - gap
+  const openAbove = spaceAbove >= estimatedHeight || spaceAbove >= spaceBelow
+
+  let top = openAbove ? rect.top - estimatedHeight - gap : rect.bottom + gap
+  top = Math.max(8, Math.min(top, window.innerHeight - estimatedHeight - 8))
+
+  tagPickerMenuStyle.value = {
+    position: 'fixed',
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${menuWidth}px`,
+    maxHeight: `${openAbove ? Math.min(menuMaxHeight, spaceAbove) : Math.min(menuMaxHeight, spaceBelow)}px`,
+    zIndex: '10050',
+  }
+}
+
+function unbindTagPickerOutsideClose(): void {
+  if (!tagPickerOutsideHandler) return
+  document.removeEventListener('mousedown', tagPickerOutsideHandler, true)
+  tagPickerOutsideHandler = null
+}
+
+function bindTagPickerOutsideClose(): void {
+  unbindTagPickerOutsideClose()
+  tagPickerOutsideHandler = (event: MouseEvent) => {
+    const target = event.target as HTMLElement | null
+    if (target?.closest('.tag-picker-menu--portal') || target?.closest('.tag-picker-trigger')) return
+    closeTagPicker()
+  }
+  window.setTimeout(() => {
+    if (!showTagPicker.value || !tagPickerOutsideHandler) return
+    document.addEventListener('mousedown', tagPickerOutsideHandler, true)
+  }, 0)
+}
+
+async function openTagPicker(): Promise<void> {
+  showTagPicker.value = true
+  await nextTick()
+  updateTagPickerPosition()
+  bindTagPickerOutsideClose()
+}
+
+function closeTagPicker(): void {
+  showTagPicker.value = false
+  unbindTagPickerOutsideClose()
+}
+
+function toggleTagPicker(): void {
+  if (showTagPicker.value) {
+    closeTagPicker()
+    return
+  }
+  void openTagPicker()
+}
+
+function addTagFromVault(name: string): void {
+  if (draftTags.value.some((tag) => tagKey(tag) === tagKey(name))) {
+    closeTagPicker()
+    return
+  }
+  draftTags.value = [...draftTags.value, name]
+  closeTagPicker()
+}
+
+function removeTag(index: number): void {
+  draftTags.value = draftTags.value.filter((_, i) => i !== index)
+}
+
+function onDetailBodyScroll(): void {
+  if (!showTagPicker.value) return
+  updateTagPickerPosition()
+}
+
+function onWindowResize(): void {
+  if (!showTagPicker.value) return
+  updateTagPickerPosition()
+}
+
 function handleIconSelect(icon: string): void {
   draft.value.displayIcon = icon
 }
@@ -191,6 +303,8 @@ function onResizeMove(event: MouseEvent): void {
 
 function onResizeStart(event: MouseEvent): void {
   if (detailCollapsed.value || event.button !== 0) return
+  const target = event.target as HTMLElement | null
+  if (target?.closest('.edge-toggle')) return
   isResizing.value = true
   document.body.style.cursor = 'col-resize'
   document.body.style.userSelect = 'none'
@@ -198,8 +312,22 @@ function onResizeStart(event: MouseEvent): void {
   window.addEventListener('mouseup', stopResize)
 }
 
+watch(showTagPicker, (open) => {
+  if (open) {
+    window.addEventListener('resize', onWindowResize)
+    detailBodyRef.value?.addEventListener('scroll', onDetailBodyScroll, { passive: true })
+  } else {
+    window.removeEventListener('resize', onWindowResize)
+    detailBodyRef.value?.removeEventListener('scroll', onDetailBodyScroll)
+    unbindTagPickerOutsideClose()
+  }
+})
+
 onUnmounted(() => {
   stopResize()
+  unbindTagPickerOutsideClose()
+  window.removeEventListener('resize', onWindowResize)
+  detailBodyRef.value?.removeEventListener('scroll', onDetailBodyScroll)
 })
 
 const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value))
@@ -222,7 +350,6 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
         class="edge-toggle"
         :title="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
         :aria-label="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
-        @mousedown.stop
         @click.stop="toggleCollapse"
       >
         <ChevronRight v-if="!detailCollapsed" :size="16" :stroke-width="2" />
@@ -285,7 +412,7 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
         </div>
       </div>
 
-      <div class="detail-body">
+      <div ref="detailBodyRef" class="detail-body">
         <div class="field">
           <label>{{ t('detail.title') }}</label>
           <UiInput v-model="draft.title" class="detail-field" :placeholder="t('detail.titlePlaceholder')" />
@@ -367,7 +494,38 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
 
         <div class="field">
           <label>{{ t('detail.tags') }}</label>
-          <UiInput v-model="tagsInput" class="detail-field" :placeholder="t('detail.tagsPlaceholder')" />
+          <div class="field-row tags-field-row" :class="{ 'tags-field-row--open': showTagPicker }">
+            <div class="tags-display input-field" role="group" :aria-label="t('detail.tags')">
+              <span v-if="draftTags.length === 0" class="tags-placeholder">{{ t('detail.tagsPickHint') }}</span>
+              <span
+                v-for="(tag, index) in draftTags"
+                :key="`${tag}-${index}`"
+                class="selected-tag"
+              >
+                {{ tag }}
+                <button
+                  type="button"
+                  class="selected-tag-remove"
+                  :title="t('detail.removeTag', { name: tag })"
+                  :aria-label="t('detail.removeTag', { name: tag })"
+                  @click.stop="removeTag(index)"
+                >
+                  <X :size="16" :stroke-width="2" />
+                </button>
+              </span>
+            </div>
+            <button
+              ref="tagPickerTriggerRef"
+              type="button"
+              class="icon-btn square tag-picker-trigger"
+              :title="t('detail.pickExistingTags')"
+              :aria-label="t('detail.pickExistingTags')"
+              :aria-expanded="showTagPicker"
+              @click.stop="toggleTagPicker"
+            >
+              <Tags :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
         </div>
 
         <UiCheckbox v-model="draft.isFavorite" :label="t('detail.addFavorite')" class="favorite-row" />
@@ -404,6 +562,29 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
       @select="handleIconSelect"
       @clear="handleIconClear"
     />
+
+    <Teleport to="body">
+      <div
+        v-if="showTagPicker"
+        class="tag-picker-menu tag-picker-menu--portal surface-card"
+        :style="tagPickerMenuStyle"
+        @click.stop
+      >
+        <p v-if="availableVaultTags.length === 0" class="tag-picker-empty">
+          {{ t('detail.noTagsAvailable') }}
+        </p>
+        <button
+          v-for="tag in availableVaultTags"
+          :key="tag.name"
+          type="button"
+          class="tag-picker-item"
+          @click="addTagFromVault(tag.name)"
+        >
+          <span class="tag-picker-label">{{ tag.name }}</span>
+          <span class="tag-picker-count">{{ t('tag.entryCount', { count: tag.entryCount }) }}</span>
+        </button>
+      </div>
+    </Teleport>
   </aside>
 </template>
 
@@ -427,6 +608,7 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
 
 .panel-edge {
   position: relative;
+  z-index: 2;
   flex-shrink: 0;
   align-self: stretch;
   width: 20px;
@@ -446,6 +628,8 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
 }
 
 .edge-toggle {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -470,8 +654,8 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
 .detail-main {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
 }
 
@@ -596,9 +780,159 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
   border: 1px solid var(--border-default);
 }
 
-.detail-body {
-  padding: 24px 24px 24px 16px;
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.icon-btn:disabled:hover {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+.tags-field-row {
+  position: relative;
+  z-index: 1;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.tags-field-row--open {
+  z-index: 100;
+}
+
+.tags-field-row .tags-display.input-field {
+  width: auto;
+}
+
+.tags-display {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: calc(100% - 48px);
+  min-height: 44px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.tags-display .selected-tag,
+.tags-display .tags-placeholder {
+  pointer-events: auto;
+}
+
+.tags-placeholder {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.selected-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 4px 5px 10px;
+  border-radius: 6px;
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.selected-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  margin: -2px -2px -2px 0;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+
+.selected-tag-remove:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.tag-picker-trigger {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  align-self: center;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.tag-picker-menu--portal {
+  min-width: 200px;
+  overflow-y: auto;
+  padding: 4px;
+  pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.tag-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.tag-picker-item:hover {
+  background: var(--bg-hover);
+}
+
+.tag-picker-label {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-picker-count {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.tag-picker-empty {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.detail-body {
+  position: relative;
+  z-index: 1;
+  padding: 24px 24px 24px 16px;
   min-height: 0;
   overflow-y: auto;
   display: flex;
@@ -674,6 +1008,8 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
 }
 
 .detail-footer {
+  position: relative;
+  z-index: 0;
   display: flex;
   gap: 8px;
   padding: 16px 16px 16px 12px;

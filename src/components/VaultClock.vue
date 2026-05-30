@@ -45,21 +45,28 @@ onUnmounted(() => {
   <div class="vault-clock" :class="{ 'vault-clock--animal': isAnimalIsland }">
     <Time v-if="isAnimalIsland" />
     <template v-else>
-      <p class="vault-clock__weekday font-display">{{ weekday }}</p>
-      <p class="vault-clock__date">{{ dateLine }}</p>
-      <p class="vault-clock__time">{{ timeLine }}</p>
+      <div class="vault-clock__date-block">
+        <p class="vault-clock__weekday font-display">{{ weekday }}</p>
+        <p class="vault-clock__date">{{ dateLine }}</p>
+      </div>
+      <p class="vault-clock__time font-display">{{ timeLine }}</p>
     </template>
   </div>
 </template>
 
 <style scoped>
-.vault-clock {
-  margin-bottom: 12px;
-  padding: 12px 14px;
+.vault-clock:not(.vault-clock--animal) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
-  text-align: center;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 .vault-clock--animal {
@@ -69,26 +76,37 @@ onUnmounted(() => {
   border: none;
 }
 
+.vault-clock__date-block {
+  flex: 1;
+  min-width: 0;
+  padding-right: 10px;
+  border-right: 1px solid var(--border-default);
+}
+
 .vault-clock__weekday {
-  margin: 0 0 2px;
+  margin: 0 0 3px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
 }
 
 .vault-clock__date {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 12px;
+  line-height: 1.2;
   color: var(--text-secondary);
 }
 
 .vault-clock__time {
   margin: 0;
-  font-size: 22px;
+  flex-shrink: 0;
+  font-size: 24px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--accent-primary);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.5px;
+  line-height: 1;
 }
 </style>

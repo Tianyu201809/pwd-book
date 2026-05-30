@@ -296,7 +296,11 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-top {
-  padding: 16px;
+  padding: 10px 12px 4px;
+}
+
+.sidebar--animal .sidebar-top {
+  padding: 10px 12px 8px;
 }
 
 .category-search-wrap {
@@ -319,10 +323,6 @@ onBeforeUnmount(() => {
 .sidebar-bottom,
 .sidebar-divider {
   flex-shrink: 0;
-}
-
-.sidebar--animal .sidebar-top {
-  padding: 10px 12px 8px;
 }
 
 .sidebar--animal .tool-section {
