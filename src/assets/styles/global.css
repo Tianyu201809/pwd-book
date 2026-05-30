@@ -151,6 +151,36 @@ select {
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
+/* Compact search (sidebar category filter, category manage dialog, etc.) */
+.search-field-wrap {
+  position: relative;
+}
+
+.search-field-wrap .search-field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.search-field-wrap .search-field-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px 8px 36px;
+  font-size: 13px;
+  min-height: 36px;
+}
+
+.search-field-wrap .search-field-input--animal {
+  width: 100%;
+  padding: 0;
+  min-height: unset;
+  font-size: 13px;
+}
+
 .surface-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);

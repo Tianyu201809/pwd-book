@@ -6,9 +6,11 @@ import {
   FolderPlus,
   Layers,
   Plus,
+  Search,
   Trash2,
   X,
 } from 'lucide-vue-next'
+import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
@@ -18,8 +20,10 @@ const { createCategory, updateCategory, deleteCategory, customCategories, loadin
   useAppState()
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 
 const showManageDialog = ref(false)
+const manageSearchQuery = ref('')
 const showCreateIconPicker = ref(false)
 const showEditIconPicker = ref(false)
 const editIconCategoryId = ref<string | null>(null)
@@ -34,6 +38,12 @@ const nameInputRef = ref<HTMLInputElement | null>(null)
 
 const categoryCount = computed(() => customCategories.value.length)
 
+const filteredManageCategories = computed(() => {
+  const q = manageSearchQuery.value.trim().toLowerCase()
+  if (!q) return customCategories.value
+  return customCategories.value.filter((category) => category.label.toLowerCase().includes(q))
+})
+
 const editIconPickerSelected = computed(() => {
   if (!editIconCategoryId.value) return 'Folder'
   return customCategories.value.find((category) => category.id === editIconCategoryId.value)?.icon ?? 'Folder'
@@ -42,6 +52,7 @@ const editIconPickerSelected = computed(() => {
 function openManageDialog(): void {
   showManageDialog.value = true
   dialogMode.value = 'list'
+  manageSearchQuery.value = ''
   confirmDeleteId.value = null
   localError.value = ''
   clearError()
@@ -50,6 +61,7 @@ function openManageDialog(): void {
 function closeManageDialog(): void {
   showManageDialog.value = false
   dialogMode.value = 'list'
+  manageSearchQuery.value = ''
   confirmDeleteId.value = null
   editingId.value = null
   editingName.value = ''
@@ -200,11 +212,26 @@ async function confirmDelete(id: string, name: string): Promise<void> {
               </button>
             </div>
 
+            <div v-if="customCategories.length" class="search-field-wrap manage-search-wrap">
+              <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
+              <UiInput
+                v-model="manageSearchQuery"
+                class="search-field-input"
+                :class="{ 'search-field-input--animal': isAnimalIsland }"
+                :placeholder="t('category.searchPlaceholder')"
+                allow-clear
+              >
+                <template v-if="isAnimalIsland" #prefix>
+                  <Search :size="14" :stroke-width="1.5" />
+                </template>
+              </UiInput>
+            </div>
+
             <p v-if="localError" class="error-text">{{ localError }}</p>
 
-            <div v-if="customCategories.length" class="manage-list">
+            <div v-if="customCategories.length && filteredManageCategories.length" class="manage-list">
               <div
-                v-for="category in customCategories"
+                v-for="category in filteredManageCategories"
                 :key="category.id"
                 class="manage-item"
                 :class="{ confirming: confirmDeleteId === category.id }"
@@ -272,6 +299,11 @@ async function confirmDelete(id: string, name: string): Promise<void> {
                   </button>
                 </template>
               </div>
+            </div>
+
+            <div v-else-if="customCategories.length && !filteredManageCategories.length" class="empty-state">
+              <Search :size="22" :stroke-width="1.5" />
+              <p>{{ t('category.noSearchResults') }}</p>
             </div>
 
             <div v-else class="empty-state">
@@ -433,6 +465,11 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 }
 
 .dialog-toolbar {
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.manage-search-wrap {
   margin-bottom: 12px;
   flex-shrink: 0;
 }

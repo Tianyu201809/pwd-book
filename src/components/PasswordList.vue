@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, SlidersHorizontal, MoreHorizontal, Check, MailCheck, Sparkles } from 'lucide-vue-next'
+import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
 import { UiInput, UiButton } from '@/components/ui'
@@ -19,8 +19,7 @@ const {
   isCreating,
   setListSortOrder,
   touchActivity,
-  openEmailBackup,
-  openPasswordGen,
+  startCreateEntry,
 } = useAppState()
 
 const { t } = useI18n()
@@ -116,22 +115,10 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           </template>
         </UiInput>
       </div>
-      <button
-        type="button"
-        class="tool-quick-btn tool-quick-btn--mail"
-        :title="t('tools.emailBackupTitle')"
-        @click="openEmailBackup"
-      >
-        <MailCheck :size="16" :stroke-width="1.5" />
-      </button>
-      <button
-        type="button"
-        class="tool-quick-btn tool-quick-btn--gen"
-        :title="t('tools.passwordGenTitle')"
-        @click="openPasswordGen()"
-      >
-        <Sparkles :size="16" :stroke-width="1.5" />
-      </button>
+      <UiButton variant="primary" class="new-entry-btn" @click="startCreateEntry">
+        <template #icon><Plus :size="16" :stroke-width="1.5" /></template>
+        {{ t('vault.newEntry') }}
+      </UiButton>
       <div class="sort-menu-wrap">
         <UiButton
           variant="ghost"
@@ -189,8 +176,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           <div class="meta">
             <div class="title-row">
               <span class="entry-title">{{ entry.title }}</span>
-              <span v-if="entry.isFavorite" class="tag favorite">{{ t('common.favorite') }}</span>
-              <span v-else-if="entry.tags[0]" class="tag">{{ entry.tags[0] }}</span>
+              <span v-if="entry.tags[0]" class="tag">{{ entry.tags[0] }}</span>
               <span v-else-if="entry.categoryName" class="tag category">{{ entry.categoryName }}</span>
             </div>
             <p class="username">{{ entry.username || entry.url || t('vault.noAccount') }}</p>
@@ -198,6 +184,14 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         </button>
 
         <div class="list-item-side">
+          <span
+            v-if="entry.isFavorite"
+            class="favorite-indicator"
+            :title="t('common.favorite')"
+            :aria-label="t('common.favorite')"
+          >
+            <Star :size="14" :stroke-width="1.5" fill="currentColor" />
+          </span>
           <span class="time">{{ entry.lastUsedLabel }}</span>
           <div class="action-menu-wrap">
             <button
@@ -270,6 +264,13 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   width: 100%;
   padding: 0;
   font-size: 14px;
+}
+
+.new-entry-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .filter-btn {
@@ -427,8 +428,11 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   font-weight: 500;
 }
 
-.tag.favorite {
-  background: rgba(245, 158, 11, 0.12);
+.favorite-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   color: #f59e0b;
 }
 

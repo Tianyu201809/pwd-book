@@ -21,6 +21,7 @@ const {
   copyEntryData,
   removeEntry,
   moveEntryToCategory,
+  toggleFavorite,
 } = useAppState()
 
 const moveTargets = computed(() =>
@@ -41,6 +42,12 @@ async function handleCopy(event: MouseEvent): Promise<void> {
   event.stopPropagation()
   done()
   await copyEntryData(props.entry)
+}
+
+async function handleToggleFavorite(event: MouseEvent): Promise<void> {
+  event.stopPropagation()
+  done()
+  await toggleFavorite(props.entry.id)
 }
 
 async function handleDelete(event: MouseEvent): Promise<void> {
@@ -91,6 +98,9 @@ function scheduleCloseMoveSubmenu(): void {
   </button>
   <button type="button" class="action-menu-item" @click="handleCopy">
     {{ t('vault.copyData') }}
+  </button>
+  <button type="button" class="action-menu-item" @click="handleToggleFavorite">
+    {{ entry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite') }}
   </button>
 
   <div

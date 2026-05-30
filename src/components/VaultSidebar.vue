@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, Search } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { Divider } from 'animal-island-vue'
 import VaultClock from '@/components/VaultClock.vue'
-import { UiButton } from '@/components/ui'
+import { UiInput } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import type { FilterCategory } from '@/types'
@@ -19,13 +19,13 @@ const {
   openEmailBackup,
   openPasswordGen,
   lock,
-  startCreateEntry,
   reorderSidebarCategories,
 } = useAppState()
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
 
+const categorySearchQuery = ref('')
 const sidebarNavRef = ref<HTMLElement | null>(null)
 const dragFromIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
@@ -38,15 +38,20 @@ const BODY_DRAG_CLASS = 'category-drag-active'
 
 const isDragging = computed(() => dragFromIndex.value !== null)
 
+const isCategorySearchActive = computed(() => categorySearchQuery.value.trim().length > 0)
+
 const displayCategories = computed(() => {
   const items = [...categories.value]
   const from = dragFromIndex.value
   const to = dragOverIndex.value
-  if (from === null || to === null || from === to) return items
+  if (from !== null && to !== null && from !== to) {
+    const [moved] = items.splice(from, 1)
+    items.splice(to, 0, moved)
+  }
 
-  const [moved] = items.splice(from, 1)
-  items.splice(to, 0, moved)
-  return items
+  const q = categorySearchQuery.value.trim().toLowerCase()
+  if (!q) return items
+  return items.filter((cat) => cat.label.toLowerCase().includes(q))
 })
 
 function cleanupDrag(): void {
@@ -169,10 +174,23 @@ onBeforeUnmount(() => {
   >
     <div class="sidebar-top">
       <VaultClock />
-      <UiButton variant="primary" class="new-btn" block @click="startCreateEntry">
-        <template #icon><Plus :size="16" :stroke-width="1.5" /></template>
-        {{ t('vault.newEntry') }}
-      </UiButton>
+    </div>
+
+    <div class="category-search-wrap">
+      <div class="search-field-wrap">
+        <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
+        <UiInput
+          v-model="categorySearchQuery"
+          class="search-field-input"
+          :class="{ 'search-field-input--animal': isAnimalIsland }"
+          :placeholder="t('vault.categorySearchPlaceholder')"
+          allow-clear
+        >
+          <template v-if="isAnimalIsland" #prefix>
+            <Search :size="14" :stroke-width="1.5" />
+          </template>
+        </UiInput>
+      </div>
     </div>
 
     <nav ref="sidebarNavRef" class="sidebar-nav">
@@ -184,6 +202,7 @@ onBeforeUnmount(() => {
           :class="{
             active: selectedCategory === cat.id,
             'is-dragging': draggingId === cat.id,
+            'no-drag': isCategorySearchActive,
           }"
           role="button"
           tabindex="0"
@@ -192,6 +211,7 @@ onBeforeUnmount(() => {
           @keydown.enter="selectCategory(cat.id as FilterCategory)"
         >
           <span
+            v-if="!isCategorySearchActive"
             class="drag-handle"
             :title="t('vault.dragSort')"
             @pointerdown="onHandlePointerDown(cat.id, $event)"
@@ -208,7 +228,6 @@ onBeforeUnmount(() => {
     <Divider v-if="isAnimalIsland" type="wave-yellow" class="sidebar-divider" />
 
     <div class="tool-section">
-      <p class="tool-section-label">{{ t('tools.sectionLabel') }}</p>
       <div class="tool-list">
         <button type="button" class="tool-entry tool-entry--mail" @click="openEmailBackup">
           <span class="tool-entry-icon">
@@ -278,14 +297,10 @@ onBeforeUnmount(() => {
   padding: 16px;
 }
 
-.new-btn {
-  width: 100%;
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
+.category-search-wrap {
+  flex-shrink: 0;
+  padding: 0 12px;
+  margin-bottom: 8px;
 }
 
 .sidebar-nav {
@@ -370,6 +385,10 @@ onBeforeUnmount(() => {
 .nav-item.is-dragging .drag-handle {
   cursor: grabbing;
   color: var(--accent-primary);
+}
+
+.nav-item.no-drag {
+  padding-left: 12px;
 }
 
 .nav-label {

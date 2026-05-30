@@ -114,6 +114,7 @@ export default {
     sortCreated: '创建时间',
     sortBy: '排序方式',
     searchPlaceholder: '搜索网站、账号或标签…',
+    categorySearchPlaceholder: '搜索分类…',
     noAccount: '未填写账号',
     copyData: '复制数据',
     moveTo: '移动到',
@@ -310,6 +311,8 @@ export default {
     empty: '还没有自定义分类',
     createFirst: '创建第一个',
     createHint: '创建后可在侧边栏拖拽调整顺序',
+    searchPlaceholder: '搜索分类名称…',
+    noSearchResults: '未找到匹配的分类',
   },
   recovery: {
     sectionTitle: '恢复与应急',

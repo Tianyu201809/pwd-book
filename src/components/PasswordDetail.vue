@@ -198,12 +198,16 @@ onUnmounted(() => {
 
 const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value))
 
-watch(isCreating, (creating) => {
-  if (creating) {
-    collapsed.value = false
-    localStorage.setItem(COLLAPSED_STORAGE_KEY, 'false')
-  }
-})
+watch(
+  isCreating,
+  (creating) => {
+    if (creating) {
+      collapsed.value = false
+      localStorage.setItem(COLLAPSED_STORAGE_KEY, 'false')
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

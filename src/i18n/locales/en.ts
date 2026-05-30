@@ -115,6 +115,7 @@ export default {
     sortCreated: 'Date created',
     sortBy: 'Sort by',
     searchPlaceholder: 'Search sites, accounts, or tags…',
+    categorySearchPlaceholder: 'Search categories…',
     noAccount: 'No account',
     copyData: 'Copy data',
     moveTo: 'Move to',
@@ -312,6 +313,8 @@ export default {
     empty: 'No custom categories yet',
     createFirst: 'Create the first one',
     createHint: 'After creating, drag categories in the sidebar to reorder',
+    searchPlaceholder: 'Search category name…',
+    noSearchResults: 'No matching categories',
   },
   recovery: {
     sectionTitle: 'Recovery & emergency',
