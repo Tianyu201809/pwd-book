@@ -9,7 +9,6 @@ import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
 
-const COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
 const WIDTH_STORAGE_KEY = 'pwdbook-detail-width'
 const DETAIL_MIN_WIDTH = 280
 const DETAIL_MAX_WIDTH = 560
@@ -28,6 +27,8 @@ const {
   copyPassword,
   cancelCreateEntry,
   getCreateDefaultCategoryId,
+  detailCollapsed,
+  setDetailCollapsed,
 } = useAppState()
 
 const { t } = useI18n()
@@ -38,7 +39,6 @@ function loadPanelWidth(): number {
   return Math.min(DETAIL_MAX_WIDTH, Math.max(DETAIL_MIN_WIDTH, stored))
 }
 
-const collapsed = ref(localStorage.getItem(COLLAPSED_STORAGE_KEY) === 'true')
 const panelWidth = ref(loadPanelWidth())
 const isResizing = ref(false)
 const showPassword = ref(false)
@@ -75,7 +75,7 @@ const strengthLevel = computed(() => {
 })
 
 const shellWidth = computed(() =>
-  collapsed.value ? `${DETAIL_COLLAPSED_WIDTH}px` : `${panelWidth.value}px`,
+  detailCollapsed.value ? `${DETAIL_COLLAPSED_WIDTH}px` : `${panelWidth.value}px`,
 )
 
 function resetDraftFromEntry(): void {
@@ -162,8 +162,7 @@ function handleIconClear(): void {
 }
 
 function toggleCollapse(): void {
-  collapsed.value = !collapsed.value
-  localStorage.setItem(COLLAPSED_STORAGE_KEY, String(collapsed.value))
+  setDetailCollapsed(!detailCollapsed.value)
 }
 
 function stopResize(): void {
@@ -184,7 +183,7 @@ function onResizeMove(event: MouseEvent): void {
 }
 
 function onResizeStart(event: MouseEvent): void {
-  if (collapsed.value || event.button !== 0) return
+  if (detailCollapsed.value || event.button !== 0) return
   isResizing.value = true
   document.body.style.cursor = 'col-resize'
   document.body.style.userSelect = 'none'
@@ -197,45 +196,34 @@ onUnmounted(() => {
 })
 
 const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value))
-
-watch(
-  isCreating,
-  (creating) => {
-    if (creating) {
-      collapsed.value = false
-      localStorage.setItem(COLLAPSED_STORAGE_KEY, 'false')
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
   <aside
     v-if="showPanel"
     class="detail-shell"
-    :class="{ collapsed, resizing: isResizing }"
+    :class="{ collapsed: detailCollapsed, resizing: isResizing }"
     :style="{ width: shellWidth }"
   >
     <div
       class="panel-edge"
-      :class="{ collapsed }"
+      :class="{ collapsed: detailCollapsed }"
       @mousedown="onResizeStart"
     >
       <button
         type="button"
         class="edge-toggle"
-        :title="collapsed ? t('detail.expand') : t('detail.collapse')"
-        :aria-label="collapsed ? t('detail.expand') : t('detail.collapse')"
+        :title="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
+        :aria-label="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
         @mousedown.stop
         @click.stop="toggleCollapse"
       >
-        <ChevronRight v-if="!collapsed" :size="16" :stroke-width="2" />
+        <ChevronRight v-if="!detailCollapsed" :size="16" :stroke-width="2" />
         <ChevronLeft v-else :size="16" :stroke-width="2" />
       </button>
     </div>
 
-    <div v-if="!collapsed" class="detail-main">
+    <div v-if="!detailCollapsed" class="detail-main">
       <div class="detail-header">
         <div class="header-main">
           <button

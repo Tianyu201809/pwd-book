@@ -79,6 +79,8 @@ const entries = ref<PasswordEntry[]>([])
 const vaultCategories = ref<VaultCategory[]>([])
 const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
 const isCreating = ref(false)
+const DETAIL_COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
+const detailCollapsed = ref(localStorage.getItem(DETAIL_COLLAPSED_STORAGE_KEY) === 'true')
 const loading = ref(false)
 const errorMessage = ref('')
 const lastActivityAt = ref(Date.now())
@@ -473,9 +475,20 @@ function selectEntry(id: string): void {
   touchActivity()
 }
 
+function expandDetailPanel(): void {
+  detailCollapsed.value = false
+  localStorage.setItem(DETAIL_COLLAPSED_STORAGE_KEY, 'false')
+}
+
+function setDetailCollapsed(collapsed: boolean): void {
+  detailCollapsed.value = collapsed
+  localStorage.setItem(DETAIL_COLLAPSED_STORAGE_KEY, String(collapsed))
+}
+
 function startCreateEntry(): void {
   isCreating.value = true
   selectedEntryId.value = null
+  expandDetailPanel()
   touchActivity()
 }
 
@@ -786,6 +799,9 @@ export function useAppState() {
     entries,
     vaultCategories,
     isCreating,
+    detailCollapsed,
+    expandDetailPanel,
+    setDetailCollapsed,
     loading,
     errorMessage,
     lastActivityAt,
