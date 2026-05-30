@@ -513,6 +513,7 @@ function selectCategory(id: FilterCategory): void {
 function selectEntry(id: string): void {
   isCreating.value = false
   selectedEntryId.value = id
+  expandDetailPanel()
   touchActivity()
 }
 
