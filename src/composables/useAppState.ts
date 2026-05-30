@@ -537,6 +537,8 @@ function startCreateEntry(): void {
 function cancelCreateEntry(): void {
   isCreating.value = false
   selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  setDetailCollapsed(true)
+  touchActivity()
 }
 
 function getCreateDefaultCategoryId(): string {
