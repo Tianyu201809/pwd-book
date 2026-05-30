@@ -126,7 +126,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       </UiButton>
       <div class="sort-menu-wrap">
         <UiButton
-          variant="ghost"
+          :variant="isAnimalIsland ? 'primary' : 'ghost'"
           class="vault-filter-btn"
           :class="{
             'filter-btn': !isAnimalIsland,
