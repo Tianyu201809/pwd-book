@@ -17,6 +17,8 @@ export type {
   RecoveryVerifyResult,
   SettingsTab,
   VaultCategory,
+  VaultTag,
+  TagInput,
   VaultStatus,
 } from '@/shared/types'
 

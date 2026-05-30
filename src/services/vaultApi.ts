@@ -8,6 +8,8 @@ import type {
   RecoveryVerifyResult,
   SecuritySettings,
   VaultCategory,
+  VaultTag,
+  TagInput,
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
@@ -58,6 +60,12 @@ export const vaultApi = {
   getSidebarCategoryOrder: (): Promise<string[]> => getApi().getSidebarCategoryOrder(),
   reorderSidebarCategories: (order: string[]): Promise<VaultCategory[]> =>
     getApi().reorderSidebarCategories(order),
+
+  listTags: (): Promise<VaultTag[]> => getApi().listTags(),
+  createTag: (input: TagInput): Promise<VaultTag> => getApi().createTag(input),
+  updateTag: (oldName: string, input: TagInput): Promise<VaultTag> =>
+    getApi().updateTag(oldName, input),
+  deleteTag: (name: string): Promise<void> => getApi().deleteTag(name),
 
   getSettings: (): Promise<SecuritySettings> => getApi().getSettings(),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>

@@ -77,6 +77,15 @@ export interface CategoryInput {
   icon?: string
 }
 
+export interface VaultTag {
+  name: string
+  entryCount: number
+}
+
+export interface TagInput {
+  name: string
+}
+
 export interface PasswordEntry {
   id: string
   title: string
@@ -186,6 +195,10 @@ export const IPC = {
   categoriesReorder: 'categories:reorder',
   categoriesSidebarOrder: 'categories:sidebar-order',
   categoriesReorderSidebar: 'categories:reorder-sidebar',
+  tagsList: 'tags:list',
+  tagsCreate: 'tags:create',
+  tagsUpdate: 'tags:update',
+  tagsDelete: 'tags:delete',
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
   clipboardCopy: 'clipboard:copy-secret',

@@ -12,6 +12,8 @@ import type {
   RecoveryVerifyResult,
   SecuritySettings,
   VaultCategory,
+  VaultTag,
+  TagInput,
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
@@ -90,6 +92,12 @@ export const electronAPI = {
   getSidebarCategoryOrder: (): Promise<string[]> => invoke(IPC.categoriesSidebarOrder),
   reorderSidebarCategories: (order: string[]): Promise<VaultCategory[]> =>
     invoke(IPC.categoriesReorderSidebar, order),
+
+  listTags: (): Promise<VaultTag[]> => invoke(IPC.tagsList),
+  createTag: (input: TagInput): Promise<VaultTag> => invoke(IPC.tagsCreate, input),
+  updateTag: (oldName: string, input: TagInput): Promise<VaultTag> =>
+    invoke(IPC.tagsUpdate, { oldName, input }),
+  deleteTag: (name: string): Promise<void> => invoke(IPC.tagsDelete, name),
 
   getSettings: (): Promise<SecuritySettings> => invoke(IPC.settingsGet),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>

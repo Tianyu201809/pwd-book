@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, Search } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
+import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { Divider } from 'animal-island-vue'
 import VaultClock from '@/components/VaultClock.vue'
@@ -254,6 +255,7 @@ onBeforeUnmount(() => {
 
     <div class="sidebar-bottom">
       <CategoryManagePanel />
+      <TagManagePanel />
       <button type="button" class="nav-item" @click="navigateTo('settings')">
         <Settings :size="16" :stroke-width="1.5" />
         {{ t('vault.settings') }}

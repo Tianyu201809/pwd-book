@@ -26,6 +26,8 @@ import type {
   SecuritySettings,
   SettingsTab,
   VaultCategory,
+  VaultTag,
+  TagInput,
   VaultImportPayload,
   VaultStatus,
   ExportPayload,
@@ -79,6 +81,7 @@ const emailBackupSettings = ref<EmailBackupSettings>({
 const scheduledBackupPromptOpen = ref(false)
 const entries = ref<PasswordEntry[]>([])
 const vaultCategories = ref<VaultCategory[]>([])
+const vaultTags = ref<VaultTag[]>([])
 const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
 const isCreating = ref(false)
 const DETAIL_COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
@@ -297,8 +300,12 @@ async function refreshEntries(): Promise<void> {
   }
 }
 
+async function refreshTags(): Promise<void> {
+  vaultTags.value = await vaultApi.listTags()
+}
+
 async function refreshVaultData(): Promise<void> {
-  await Promise.all([refreshCategories(), refreshEntries()])
+  await Promise.all([refreshCategories(), refreshEntries(), refreshTags()])
 }
 
 async function bootstrap(): Promise<void> {
@@ -457,6 +464,7 @@ async function lock(): Promise<void> {
   vaultStatus.value = await vaultApi.lockVault()
   entries.value = []
   vaultCategories.value = []
+  vaultTags.value = []
   selectedEntryId.value = null
   isCreating.value = false
   screen.value = 'lock'
@@ -693,6 +701,54 @@ async function deleteCategory(id: string): Promise<boolean> {
   }
 }
 
+async function createTag(input: TagInput): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    await vaultApi.createTag(input)
+    await refreshVaultData()
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function updateTag(oldName: string, input: TagInput): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    await vaultApi.updateTag(oldName, input)
+    await refreshVaultData()
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function deleteTag(name: string): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    await vaultApi.deleteTag(name)
+    await refreshVaultData()
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
 async function reorderSidebarCategories(order: string[]): Promise<boolean> {
   clearError()
   try {
@@ -820,6 +876,7 @@ async function resetAllData(): Promise<void> {
   }
   entries.value = []
   vaultCategories.value = []
+  vaultTags.value = []
   selectedEntryId.value = null
   isCreating.value = false
   screen.value = 'lock'
@@ -847,6 +904,7 @@ export function useAppState() {
     listSortOrder,
     entries,
     vaultCategories,
+    vaultTags,
     isCreating,
     detailCollapsed,
     expandDetailPanel,
@@ -885,6 +943,9 @@ export function useAppState() {
     createCategory,
     updateCategory,
     deleteCategory,
+    createTag,
+    updateTag,
+    deleteTag,
     reorderSidebarCategories,
     copyUsername,
     copyPassword,

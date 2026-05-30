@@ -34,6 +34,7 @@ import {
   getSidebarCategoryOrder,
   reorderSidebarCategories,
 } from '../services/categoryService'
+import { createTag, deleteTag, listTags, updateTag } from '../services/tagService'
 import {
   createRecoveryKey,
   clearRecoveryKeyData,
@@ -42,7 +43,7 @@ import {
   verifyRecoveryKey,
   regenerateRecoveryKey,
 } from '../services/recoveryService'
-import type { CategoryInput, RecoveryResetPayload } from '../../shared/types'
+import type { CategoryInput, RecoveryResetPayload, TagInput } from '../../shared/types'
 import { getSecuritySettings, updateSecuritySettings } from '../services/settingsService'
 import {
   getEmailBackupSettings,
@@ -270,6 +271,36 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       return reorderSidebarCategories(order)
+    }),
+  )
+
+  ipcMain.handle(IPC.tagsList, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return listTags()
+    }),
+  )
+
+  ipcMain.handle(IPC.tagsCreate, (_event, input: TagInput) =>
+    wrap(() => {
+      ensureUnlocked()
+      return createTag(input)
+    }),
+  )
+
+  ipcMain.handle(
+    IPC.tagsUpdate,
+    (_event, payload: { oldName: string; input: TagInput }) =>
+      wrap(() => {
+        ensureUnlocked()
+        return updateTag(payload.oldName, payload.input)
+      }),
+  )
+
+  ipcMain.handle(IPC.tagsDelete, (_event, name: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      deleteTag(name)
     }),
   )
 

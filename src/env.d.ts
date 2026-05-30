@@ -8,6 +8,8 @@ import type {
   RecoveryVerifyResult,
   SecuritySettings,
   VaultCategory,
+  VaultTag,
+  TagInput,
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
@@ -50,6 +52,10 @@ declare global {
       reorderCategories: (categoryIds: string[]) => Promise<VaultCategory[]>
       getSidebarCategoryOrder: () => Promise<string[]>
       reorderSidebarCategories: (order: string[]) => Promise<VaultCategory[]>
+      listTags: () => Promise<VaultTag[]>
+      createTag: (input: TagInput) => Promise<VaultTag>
+      updateTag: (oldName: string, input: TagInput) => Promise<VaultTag>
+      deleteTag: (name: string) => Promise<void>
       getSettings: () => Promise<SecuritySettings>
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
