@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -34,6 +34,7 @@ const sortOptions = computed(() => [
 const openMenuId = ref<string | null>(null)
 const showSortMenu = ref(false)
 const contextMenu = ref<{ entry: PasswordEntry; x: number; y: number } | null>(null)
+const contextMenuRef = ref<HTMLElement | null>(null)
 const listPanelRef = ref<HTMLElement | null>(null)
 const isCompactList = ref(false)
 
@@ -115,6 +116,23 @@ function handleSort(order: ListSortOrder, event: MouseEvent): void {
   closeMenus()
 }
 
+const VIEWPORT_MENU_PADDING = 8
+
+function adjustContextMenuPosition(): void {
+  const menu = contextMenuRef.value
+  if (!menu || !contextMenu.value) return
+
+  const { width, height } = menu.getBoundingClientRect()
+  const maxX = window.innerWidth - width - VIEWPORT_MENU_PADDING
+  const maxY = window.innerHeight - height - VIEWPORT_MENU_PADDING
+
+  contextMenu.value = {
+    ...contextMenu.value,
+    x: Math.max(VIEWPORT_MENU_PADDING, Math.min(contextMenu.value.x, maxX)),
+    y: Math.max(VIEWPORT_MENU_PADDING, Math.min(contextMenu.value.y, maxY)),
+  }
+}
+
 function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   event.preventDefault()
   event.stopPropagation()
@@ -125,6 +143,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
     x: event.clientX,
     y: event.clientY,
   }
+  nextTick(adjustContextMenuPosition)
 }
 </script>
 
@@ -259,6 +278,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
     <Teleport to="body">
       <div
         v-if="contextMenu"
+        ref="contextMenuRef"
         class="context-menu surface-card"
         :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
         @click.stop

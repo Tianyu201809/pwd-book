@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -68,20 +68,76 @@ function canOpenInBrowser(): boolean {
 }
 
 const moveSubmenuOpen = ref(false)
+const moveSubmenuWrapRef = ref<HTMLElement | null>(null)
+const moveSubmenuStyle = ref<Record<string, string>>({})
 let moveSubmenuCloseTimer: ReturnType<typeof setTimeout> | null = null
 
-function openMoveSubmenu(): void {
+const SUBMENU_MAX_HEIGHT = 280
+const SUBMENU_MIN_WIDTH = 168
+const VIEWPORT_PADDING = 8
+const SUBMENU_GAP = 4
+
+function adjustMoveSubmenuPosition(): void {
+  const wrap = moveSubmenuWrapRef.value
+  if (!wrap || !moveSubmenuOpen.value) return
+
+  const triggerRect = wrap.getBoundingClientRect()
+  const itemCount = Math.max(moveTargets.value.length, 1)
+  const estimatedHeight = moveTargets.value.length === 0
+    ? 36
+    : Math.min(SUBMENU_MAX_HEIGHT, itemCount * 36 + 8)
+
+  let left = triggerRect.right + SUBMENU_GAP
+  if (left + SUBMENU_MIN_WIDTH > window.innerWidth - VIEWPORT_PADDING) {
+    left = Math.max(VIEWPORT_PADDING, triggerRect.left - SUBMENU_GAP - SUBMENU_MIN_WIDTH)
+  }
+
+  const spaceBelow = window.innerHeight - triggerRect.top - VIEWPORT_PADDING
+  const spaceAbove = triggerRect.bottom - VIEWPORT_PADDING
+  const openDownward = estimatedHeight <= spaceBelow || spaceBelow >= spaceAbove
+
+  let maxHeight: number
+  let top: number
+
+  if (openDownward) {
+    maxHeight = Math.min(SUBMENU_MAX_HEIGHT, spaceBelow)
+    top = triggerRect.top
+  } else {
+    maxHeight = Math.min(SUBMENU_MAX_HEIGHT, spaceAbove)
+    top = triggerRect.bottom - Math.min(estimatedHeight, maxHeight)
+  }
+
+  top = Math.max(VIEWPORT_PADDING, Math.min(top, window.innerHeight - maxHeight - VIEWPORT_PADDING))
+
+  moveSubmenuStyle.value = {
+    position: 'fixed',
+    left: `${left}px`,
+    top: `${top}px`,
+    maxHeight: `${maxHeight}px`,
+  }
+}
+
+function cancelCloseMoveSubmenu(): void {
   if (moveSubmenuCloseTimer) {
     clearTimeout(moveSubmenuCloseTimer)
     moveSubmenuCloseTimer = null
   }
+}
+
+async function openMoveSubmenu(): Promise<void> {
+  cancelCloseMoveSubmenu()
+  if (moveSubmenuOpen.value) return
+
   moveSubmenuOpen.value = true
+  await nextTick()
+  adjustMoveSubmenuPosition()
 }
 
 function scheduleCloseMoveSubmenu(): void {
   if (moveSubmenuCloseTimer) clearTimeout(moveSubmenuCloseTimer)
   moveSubmenuCloseTimer = setTimeout(() => {
     moveSubmenuOpen.value = false
+    moveSubmenuStyle.value = {}
     moveSubmenuCloseTimer = null
   }, 120)
 }
@@ -104,6 +160,7 @@ function scheduleCloseMoveSubmenu(): void {
   </button>
 
   <div
+    ref="moveSubmenuWrapRef"
     class="menu-item-submenu"
     @click.stop
     @mouseenter="openMoveSubmenu"
@@ -113,7 +170,13 @@ function scheduleCloseMoveSubmenu(): void {
       <span>{{ t('vault.moveTo') }}</span>
       <ChevronRight :size="14" :stroke-width="2" class="submenu-chevron" />
     </button>
-    <div class="submenu surface-card" :class="{ open: moveSubmenuOpen }">
+    <div
+      class="submenu surface-card"
+      :class="{ open: moveSubmenuOpen }"
+      :style="moveSubmenuStyle"
+      @mouseenter="cancelCloseMoveSubmenu"
+      @mouseleave="scheduleCloseMoveSubmenu"
+    >
       <p v-if="moveTargets.length === 0" class="submenu-empty">{{ t('vault.noOtherCategory') }}</p>
       <button
         v-for="category in moveTargets"
@@ -194,15 +257,11 @@ function scheduleCloseMoveSubmenu(): void {
 
 .submenu {
   display: none;
-  position: absolute;
-  left: calc(100% + 4px);
-  top: 0;
   min-width: 168px;
   max-width: 220px;
-  max-height: 280px;
   overflow-y: auto;
   padding: 4px;
-  z-index: 120;
+  z-index: 130;
 }
 
 .submenu.open {
