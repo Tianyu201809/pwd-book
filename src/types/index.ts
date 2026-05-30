@@ -7,6 +7,7 @@ export type {
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   ExportPayload,
+  VaultImportPayload,
   FilterCategory,
   PasswordEntry,
   PasswordEntryInput,

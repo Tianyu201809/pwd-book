@@ -11,6 +11,7 @@ import type {
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
+  VaultImportPayload,
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
@@ -69,7 +70,7 @@ export const vaultApi = {
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
   exportDataAsExcel: (): Promise<Uint8Array> => getApi().exportDataAsExcel(),
-  importData: (entries: PasswordEntryInput[]): Promise<number> => getApi().importData(entries),
+  importData: (payload: VaultImportPayload): Promise<number> => getApi().importData(payload),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => getApi().getEmailBackupSettings(),
   updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>

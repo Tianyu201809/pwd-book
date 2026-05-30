@@ -156,6 +156,11 @@ export interface ExportPayload {
   entries: PasswordEntry[]
 }
 
+export interface VaultImportPayload {
+  categories?: VaultCategory[]
+  entries: PasswordEntryInput[]
+}
+
 export const IPC = {
   vaultStatus: 'vault:status',
   vaultSetup: 'vault:setup',

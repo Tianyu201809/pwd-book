@@ -5,6 +5,7 @@ import type {
   SecuritySettings,
   VaultSetupPayload,
   VaultUnlockPayload,
+  VaultImportPayload,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
 } from '../../shared/types'
@@ -14,7 +15,7 @@ import {
   createEntry,
   deleteEntry,
   getVaultStatus,
-  importEntries,
+  importFromExportPayload,
   listEntries,
   lockVault,
   resetVault,
@@ -316,10 +317,10 @@ export function registerIpcHandlers(): void {
     }),
   )
 
-  ipcMain.handle(IPC.dataImport, (_event, entries: PasswordEntryInput[]) =>
+  ipcMain.handle(IPC.dataImport, (_event, payload: VaultImportPayload) =>
     wrap(() => {
       ensureUnlocked()
-      return importEntries(entries)
+      return importFromExportPayload(payload)
     }),
   )
 

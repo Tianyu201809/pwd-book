@@ -11,6 +11,7 @@ import type {
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
+  VaultImportPayload,
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
@@ -55,7 +56,7 @@ declare global {
       openExternal: (url: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
       exportDataAsExcel: () => Promise<Uint8Array>
-      importData: (entries: PasswordEntryInput[]) => Promise<number>
+      importData: (payload: VaultImportPayload) => Promise<number>
       getEmailBackupSettings: () => Promise<EmailBackupSettings>
       updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate) => Promise<EmailBackupSettings>
       testEmailBackupConnection: () => Promise<void>

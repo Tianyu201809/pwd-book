@@ -203,3 +203,87 @@ export function getCategoryName(categoryId: string): string {
   const category = readCategoryRow(db, categoryId)
   return category?.name ?? '未分类'
 }
+
+function normalizeImportCategoryName(name: string): string {
+  const trimmed = name.trim()
+  if (!trimmed) return '导入分类'
+  const clipped = trimmed.length > 20 ? trimmed.slice(0, 20) : trimmed
+  const lower = clipped.toLowerCase()
+  if (RESERVED_CATEGORY_NAMES.some((reserved) => reserved.toLowerCase() === lower)) {
+    return clipped.length > 17 ? `${clipped.slice(0, 17)}…` : `${clipped}·`
+  }
+  return clipped
+}
+
+function insertCategoryFromImport(category: VaultCategory): void {
+  const db = getDatabase()
+  const name = normalizeImportCategoryName(category.name)
+  const icon = ALLOWED_ICONS.has(category.icon ?? '') ? category.icon! : 'Folder'
+  const rows = readCategoryRows(db)
+  const sortOrder =
+    typeof category.sortOrder === 'number' && category.sortOrder > 0
+      ? category.sortOrder
+      : rows.length + 1
+  const createdAt = typeof category.createdAt === 'number' ? category.createdAt : Date.now()
+
+  db.run(
+    'INSERT INTO categories (id, name, icon, sort_order, created_at) VALUES (?, ?, ?, ?, ?)',
+    [category.id, name, icon, sortOrder, createdAt],
+  )
+}
+
+function mergeSidebarOrderAfterImport(): void {
+  const stored = getSidebarCategoryOrder()
+  const categoryIds = listCategories().map((category) => category.id)
+  const valid = new Set(['all', 'favorite', ...categoryIds])
+  const merged: string[] = []
+
+  for (const id of stored) {
+    if (valid.has(id) && !merged.includes(id)) {
+      merged.push(id)
+    }
+  }
+  for (const id of ['all', 'favorite', ...categoryIds]) {
+    if (!merged.includes(id)) {
+      merged.push(id)
+    }
+  }
+
+  setSidebarCategoryOrder(merged)
+  const dbCategoryOrder = merged.filter((id) => !SYSTEM_CATEGORY_IDS.has(id))
+  reorderCategories(dbCategoryOrder)
+}
+
+/**
+ * Ensures categories from a backup exist locally. Returns a map from backup category id
+ * to the local category id entries should use.
+ */
+export function ensureCategoriesFromImport(imported: VaultCategory[]): Map<string, string> {
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
+
+  const db = getDatabase()
+  const idRemap = new Map<string, string>()
+
+  for (const category of imported) {
+    if (!category?.id || SYSTEM_CATEGORY_IDS.has(category.id)) continue
+
+    const existingById = readCategoryRow(db, category.id)
+    if (existingById) {
+      idRemap.set(category.id, existingById.id)
+      continue
+    }
+
+    const existingByName = findCategoryByName(db, category.name)
+    if (existingByName) {
+      idRemap.set(category.id, existingByName.id)
+      continue
+    }
+
+    insertCategoryFromImport(category)
+    idRemap.set(category.id, category.id)
+  }
+
+  persistDatabase()
+  mergeSidebarOrderAfterImport()
+  return idRemap
+}

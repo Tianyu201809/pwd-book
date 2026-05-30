@@ -14,7 +14,8 @@ import type { PasswordEntry, PasswordEntryInput, VaultStatus } from '../../share
 import type { EntryRow } from '../db/helpers'
 import { appError, ErrorCode } from '../../shared/errors'
 import { getDatabase, persistDatabase } from '../db/database'
-import { resolveCategoryId, getCategoryName } from './categoryService'
+import { ensureCategoriesFromImport, resolveCategoryId, getCategoryName } from './categoryService'
+import type { VaultImportPayload } from '../../shared/types'
 import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
 
 const MASTER_SALT_KEY = 'master_salt'
@@ -184,13 +185,27 @@ export function touchEntry(id: string): void {
   persistDatabase()
 }
 
-export function importEntries(entries: PasswordEntryInput[]): number {
+export function importFromExportPayload(payload: VaultImportPayload): number {
+  const idRemap = ensureCategoriesFromImport(payload.categories ?? [])
   let count = 0
-  entries.forEach((entry) => {
-    if (entry.title?.trim() && entry.password) {
-      createEntry(entry)
-      count += 1
-    }
+
+  payload.entries.forEach((entry) => {
+    if (!entry.title?.trim() || !entry.password) return
+
+    const importCategoryId = entry.categoryId?.trim()
+    const mappedCategoryId = importCategoryId ? idRemap.get(importCategoryId) : undefined
+
+    createEntry({
+      ...entry,
+      categoryId: mappedCategoryId ?? importCategoryId,
+    })
+    count += 1
   })
+
   return count
+}
+
+/** @deprecated Use importFromExportPayload */
+export function importEntries(entries: PasswordEntryInput[]): number {
+  return importFromExportPayload({ entries })
 }

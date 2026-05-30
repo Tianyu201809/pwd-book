@@ -4,6 +4,7 @@ import { IPC, IPC_EVENTS } from '../shared/types'
 import type {
   CategoryInput,
   ExportPayload,
+  VaultImportPayload,
   PasswordEntry,
   PasswordEntryInput,
   RecoveryCreateResult,
@@ -101,7 +102,7 @@ export const electronAPI = {
 
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
   exportDataAsExcel: (): Promise<Uint8Array> => invoke(IPC.dataExportExcel),
-  importData: (entries: PasswordEntryInput[]): Promise<number> => invoke(IPC.dataImport, entries),
+  importData: (payload: VaultImportPayload): Promise<number> => invoke(IPC.dataImport, payload),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => invoke(IPC.emailBackupGet),
   updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>

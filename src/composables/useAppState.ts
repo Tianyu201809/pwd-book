@@ -26,7 +26,9 @@ import type {
   SecuritySettings,
   SettingsTab,
   VaultCategory,
+  VaultImportPayload,
   VaultStatus,
+  ExportPayload,
 } from '@/types'
 
 const LEGACY_CATEGORY_MAP: Record<string, string> = {
@@ -215,11 +217,50 @@ function clearError(): void {
   errorMessage.value = ''
 }
 
+function normalizeImportCategory(raw: Record<string, unknown>): VaultCategory | null {
+  const id = String(raw.id ?? '').trim()
+  if (!id || id === 'all' || id === 'favorite') return null
+
+  return {
+    id,
+    name: String(raw.name ?? raw.label ?? '').trim() || id,
+    icon: String(raw.icon ?? 'Folder'),
+    sortOrder: Number(raw.sortOrder ?? raw.sort_order ?? 0) || 0,
+    createdAt: Number(raw.createdAt ?? raw.created_at ?? Date.now()),
+  }
+}
+
+function collectImportCategories(parsed: ExportPayload): VaultCategory[] {
+  const byId = new Map<string, VaultCategory>()
+
+  for (const raw of parsed.categories ?? []) {
+    const category = normalizeImportCategory(raw as unknown as Record<string, unknown>)
+    if (category) byId.set(category.id, category)
+  }
+
+  for (const raw of parsed.entries ?? []) {
+    const entry = raw as unknown as Record<string, unknown>
+    const categoryId = String(entry.categoryId ?? entry.category ?? '').trim()
+    if (!categoryId || categoryId === 'all' || categoryId === 'favorite') continue
+    if (byId.has(categoryId)) continue
+
+    byId.set(categoryId, {
+      id: categoryId,
+      name: String(entry.categoryName ?? entry.category_name ?? categoryId).trim() || categoryId,
+      icon: 'Folder',
+      sortOrder: 99,
+      createdAt: Date.now(),
+    })
+  }
+
+  return Array.from(byId.values())
+}
+
 function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntryInput {
   const categoryId =
     (raw.categoryId as string | undefined) ??
     LEGACY_CATEGORY_MAP[String(raw.category ?? '')] ??
-    defaultCategoryId.value
+    undefined
 
   return {
     title: String(raw.title ?? ''),
@@ -753,9 +794,14 @@ async function exportDataAsExcel(): Promise<Uint8Array> {
 }
 
 async function importDataFromJson(raw: string): Promise<number> {
-  const parsed = JSON.parse(raw) as { entries?: Record<string, unknown>[] }
-  const entriesToImport = (parsed.entries ?? []).map(normalizeImportEntry)
-  const count = await vaultApi.importData(entriesToImport)
+  const parsed = JSON.parse(raw) as ExportPayload
+  const payload: VaultImportPayload = {
+    categories: collectImportCategories(parsed),
+    entries: (parsed.entries ?? []).map((entry) =>
+      normalizeImportEntry(entry as unknown as Record<string, unknown>),
+    ),
+  }
+  const count = await vaultApi.importData(payload)
   await refreshVaultData()
   touchActivity()
   return count
