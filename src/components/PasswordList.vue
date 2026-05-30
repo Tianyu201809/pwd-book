@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -34,6 +34,13 @@ const sortOptions = computed(() => [
 const openMenuId = ref<string | null>(null)
 const showSortMenu = ref(false)
 const contextMenu = ref<{ entry: PasswordEntry; x: number; y: number } | null>(null)
+const listPanelRef = ref<HTMLElement | null>(null)
+const isCompactList = ref(false)
+
+/** 宽度不足时隐藏次要信息，避免右侧时间戳挤占导致标题被裁切 */
+const LIST_COMPACT_WIDTH = 400
+
+let listResizeObserver: ResizeObserver | null = null
 
 function toggleMenu(id: string, event: MouseEvent): void {
   event.stopPropagation()
@@ -63,14 +70,38 @@ function onKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') closeMenus()
 }
 
+function updateCompactList(width: number): void {
+  isCompactList.value = width < LIST_COMPACT_WIDTH
+}
+
 onMounted(() => {
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onKeydown)
+
+  listResizeObserver = new ResizeObserver((entries) => {
+    const width = entries[0]?.contentRect.width ?? 0
+    updateCompactList(width)
+  })
+  if (listPanelRef.value) {
+    listResizeObserver.observe(listPanelRef.value)
+    updateCompactList(listPanelRef.value.getBoundingClientRect().width)
+  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
   document.removeEventListener('keydown', onKeydown)
+  listResizeObserver?.disconnect()
+  listResizeObserver = null
+})
+
+watch(listPanelRef, (el) => {
+  if (!listResizeObserver) return
+  listResizeObserver.disconnect()
+  if (el) {
+    listResizeObserver.observe(el)
+    updateCompactList(el.getBoundingClientRect().width)
+  }
 })
 
 function handleSelect(id: string): void {
@@ -98,7 +129,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 </script>
 
 <template>
-  <main class="list-panel">
+  <main ref="listPanelRef" class="list-panel" :class="{ 'list-panel--compact': isCompactList }">
     <div class="list-toolbar">
       <div class="search-wrap">
         <Search v-if="!isAnimalIsland" class="search-icon" :size="16" :stroke-width="1.5" />
@@ -189,7 +220,14 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
                 <span v-for="(tag, index) in entry.tags" :key="`${entry.id}-tag-${index}`" class="tag">{{ tag }}</span>
               </div>
             </div>
-            <p class="username">{{ entry.username || entry.url || t('vault.noAccount') }}</p>
+            <div class="meta-secondary">
+              <p class="username">{{ entry.username || entry.url || t('vault.noAccount') }}</p>
+              <span
+                v-if="!isCompactList"
+                class="time"
+                :title="entry.lastUsedLabel"
+              >{{ entry.lastUsedLabel }}</span>
+            </div>
           </div>
         </button>
 
@@ -202,7 +240,6 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           >
             <Star :size="14" :stroke-width="1.5" fill="currentColor" />
           </span>
-          <span class="time">{{ entry.lastUsedLabel }}</span>
           <div class="action-menu-wrap">
             <button
               type="button"
@@ -364,6 +401,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   border-bottom: 1px solid var(--border-default);
   transition: background-color 0.2s;
 }
@@ -377,8 +415,9 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 }
 
 .list-item-main {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -395,7 +434,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   align-items: center;
   gap: 4px;
   padding-right: 16px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 .avatar {
@@ -416,15 +455,16 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 }
 
 .title-row {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 
 .entry-title {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-width: 0;
   font-size: 14px;
   font-weight: 500;
@@ -458,8 +498,18 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   color: #f59e0b;
 }
 
+.meta-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  min-width: 0;
+}
+
 .username {
-  margin: 2px 0 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
   font-size: 12px;
   color: var(--text-secondary);
   overflow: hidden;
@@ -468,9 +518,19 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 }
 
 .time {
+  flex: 0 0 auto;
   font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
+}
+
+.list-panel--compact .list-item-main {
+  padding-left: 16px;
+  gap: 12px;
+}
+
+.list-panel--compact .entry-tags {
+  display: none;
 }
 
 .action-menu-wrap {

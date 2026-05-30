@@ -40,8 +40,8 @@ const { isAnimalIsland } = useTheme()
 }
 
 .vault-list-column {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 0%;
+  min-width: var(--list-column-min-width);
   min-height: 0;
   display: flex;
   flex-direction: column;

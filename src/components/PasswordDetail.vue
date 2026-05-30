@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Tags, X } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -11,10 +11,25 @@ import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
 
 const WIDTH_STORAGE_KEY = 'pwdbook-detail-width'
-const DETAIL_MIN_WIDTH = 280
-const DETAIL_MAX_WIDTH = 560
 const DETAIL_DEFAULT_WIDTH = 360
 const DETAIL_COLLAPSED_WIDTH = 40
+const DETAIL_MIN_WIDTH_FALLBACK = 400
+const DETAIL_MAX_WIDTH_FALLBACK = 560
+const LIST_COLUMN_MIN_WIDTH_FALLBACK = 240
+
+function readCssPxVar(name: string, fallback: number): number {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  const parsed = Number.parseFloat(raw)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function readDetailMinWidth(): number {
+  return readCssPxVar('--detail-min-width', DETAIL_MIN_WIDTH_FALLBACK)
+}
+
+function readDetailMaxWidth(): number {
+  return readCssPxVar('--detail-max-width', DETAIL_MAX_WIDTH_FALLBACK)
+}
 
 const {
   selectedEntry,
@@ -37,10 +52,41 @@ const {
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
 
+function readListColumnMinWidth(): number {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--list-column-min-width')
+    .trim()
+  const parsed = Number.parseFloat(raw)
+  return Number.isFinite(parsed) ? parsed : LIST_COLUMN_MIN_WIDTH_FALLBACK
+}
+
+function getMaxPanelWidth(): number {
+  const body = document.querySelector('.vault-body')
+  if (!body) return readDetailMaxWidth()
+  const sidebar = document.querySelector('.sidebar')
+  const sidebarWidth = sidebar?.getBoundingClientRect().width ?? 0
+  const reserved = sidebarWidth + readListColumnMinWidth()
+  const available = body.getBoundingClientRect().width - reserved
+  return Math.min(readDetailMaxWidth(), Math.max(0, Math.floor(available)))
+}
+
+function clampPanelWidth(): void {
+  if (detailCollapsed.value) return
+  const minW = readDetailMinWidth()
+  const max = getMaxPanelWidth()
+  if (max < minW) {
+    setDetailCollapsed(true)
+    return
+  }
+  panelWidth.value = Math.min(max, Math.max(minW, panelWidth.value))
+}
+
 function loadPanelWidth(): number {
   const stored = Number(localStorage.getItem(WIDTH_STORAGE_KEY))
-  if (!Number.isFinite(stored)) return DETAIL_DEFAULT_WIDTH
-  return Math.min(DETAIL_MAX_WIDTH, Math.max(DETAIL_MIN_WIDTH, stored))
+  const base = Number.isFinite(stored) ? stored : DETAIL_DEFAULT_WIDTH
+  const minW = readDetailMinWidth()
+  const maxW = readDetailMaxWidth()
+  return Math.min(maxW, Math.max(minW, base))
 }
 
 const panelWidth = ref(loadPanelWidth())
@@ -298,7 +344,10 @@ function onResizeMove(event: MouseEvent): void {
   if (!shell) return
   const rect = shell.getBoundingClientRect()
   const next = Math.round(rect.right - event.clientX)
-  panelWidth.value = Math.min(DETAIL_MAX_WIDTH, Math.max(DETAIL_MIN_WIDTH, next))
+  const minW = readDetailMinWidth()
+  const max = getMaxPanelWidth()
+  if (max < minW) return
+  panelWidth.value = Math.min(max, Math.max(minW, next))
 }
 
 function onResizeStart(event: MouseEvent): void {
@@ -323,14 +372,33 @@ watch(showTagPicker, (open) => {
   }
 })
 
+function onVaultLayoutResize(): void {
+  clampPanelWidth()
+  if (showTagPicker.value) updateTagPickerPosition()
+}
+
+onMounted(() => {
+  clampPanelWidth()
+  window.addEventListener('resize', onVaultLayoutResize)
+})
+
 onUnmounted(() => {
   stopResize()
   unbindTagPickerOutsideClose()
   window.removeEventListener('resize', onWindowResize)
+  window.removeEventListener('resize', onVaultLayoutResize)
   detailBodyRef.value?.removeEventListener('scroll', onDetailBodyScroll)
 })
 
 const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value))
+
+watch(showPanel, (visible) => {
+  if (visible) nextTick(() => clampPanelWidth())
+})
+
+watch(detailCollapsed, () => {
+  nextTick(() => clampPanelWidth())
+})
 </script>
 
 <template>
@@ -600,6 +668,10 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
   border-left: 1px solid var(--border-default);
   overflow: hidden;
   transition: width 0.2s ease;
+}
+
+.detail-shell:not(.collapsed) {
+  min-width: var(--detail-min-width);
 }
 
 .detail-shell.resizing {

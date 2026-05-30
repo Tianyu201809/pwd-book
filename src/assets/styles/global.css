@@ -468,6 +468,9 @@ body.category-drag-active * {
   font-weight: 600;
   line-height: 1.2;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tool-entry-desc {
@@ -476,6 +479,9 @@ body.category-drag-active * {
   margin-top: 2px;
   line-height: 1.3;
   color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tool-entry-arrow {
