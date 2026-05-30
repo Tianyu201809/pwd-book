@@ -149,6 +149,12 @@ const shellWidth = computed(() =>
   detailCollapsed.value ? `${DETAIL_COLLAPSED_WIDTH}px` : `${panelWidth.value}px`,
 )
 
+const shellStyle = computed(() => ({
+  width: shellWidth.value,
+  maxWidth: shellWidth.value,
+  flexBasis: shellWidth.value,
+}))
+
 function resetDraftFromEntry(): void {
   if (isCreating.value || !selectedEntry.value) {
     draft.value = {
@@ -406,7 +412,7 @@ watch(detailCollapsed, () => {
     v-if="showPanel"
     class="detail-shell"
     :class="{ collapsed: detailCollapsed, resizing: isResizing }"
-    :style="{ width: shellWidth }"
+    :style="shellStyle"
   >
     <div
       class="panel-edge"
@@ -671,7 +677,7 @@ watch(detailCollapsed, () => {
 }
 
 .detail-shell:not(.collapsed) {
-  min-width: var(--detail-min-width);
+  min-width: min(var(--detail-min-width), 100%);
 }
 
 .detail-shell.resizing {
@@ -736,6 +742,7 @@ watch(detailCollapsed, () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
   padding: 24px 24px 24px 16px;
   border-bottom: 1px solid var(--border-default);
 }
@@ -1006,10 +1013,16 @@ watch(detailCollapsed, () => {
   z-index: 1;
   padding: 24px 24px 24px 16px;
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.field {
+  min-width: 0;
 }
 
 .field label {
@@ -1025,11 +1038,67 @@ watch(detailCollapsed, () => {
 .field-row {
   display: flex;
   gap: 8px;
+  min-width: 0;
+}
+
+.field-row .icon-btn.square {
+  flex-shrink: 0;
+}
+
+.field-row :deep(.detail-field),
+.field :deep(.detail-field) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.field :deep(.detail-field) {
+  width: 100%;
+}
+
+.field-row :deep(.detail-field) {
+  flex: 1 1 0;
+  width: auto;
+}
+
+/* animal-island-vue Input: inline-flex + long text expands the whole panel */
+.field-row :deep(.animal-input),
+.field :deep(.animal-input) {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.field-row :deep(.animal-input) {
+  flex: 1 1 0;
+  width: auto;
+}
+
+.field-row :deep(.animal-input__inner),
+.field :deep(.animal-input__inner) {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+}
+
+.field :deep(.ui-animal-select) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .field-row .input-field,
 .field .input-field {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.field-row .input-field {
+  flex: 1 1 0;
+  width: auto;
 }
 
 .select {
@@ -1084,6 +1153,7 @@ watch(detailCollapsed, () => {
   z-index: 0;
   display: flex;
   gap: 8px;
+  min-width: 0;
   padding: 16px 16px 16px 12px;
   border-top: 1px solid var(--border-default);
 }

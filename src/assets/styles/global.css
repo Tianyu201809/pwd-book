@@ -11,6 +11,12 @@
   min-height: 0;
 }
 
+.vault-view,
+.vault-body,
+.vault-list-column {
+  min-width: 0;
+}
+
 .vault-password-list .list-scroll {
   overflow-x: hidden;
   overflow-y: auto;
@@ -138,6 +144,8 @@ select {
 
 .input-field {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
   font-size: 14px;
