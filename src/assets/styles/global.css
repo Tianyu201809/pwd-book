@@ -208,6 +208,12 @@ textarea.input-field {
   border-radius: var(--radius-lg);
 }
 
+.menu-popover.surface-card {
+  background: var(--bg-popover);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-popover);
+}
+
 .theme-segment {
   display: flex;
   padding: 4px;

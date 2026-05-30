@@ -10,6 +10,8 @@
   --bg-surface: rgb(247, 243, 223);
   --bg-elevated: #faf6e8;
   --bg-hover: #ebe3c8;
+  --bg-popover: #f3efe4;
+  --shadow-popover: 0 3px 12px rgba(114, 93, 66, 0.1);
   --text-primary: #725d42;
   --text-secondary: #8a7358;
   --text-muted: #a89478;

@@ -115,6 +115,8 @@
   --bg-surface: var(--color-ink-900);
   --bg-elevated: var(--color-ink-800);
   --bg-hover: var(--color-ink-700);
+  --bg-popover: var(--color-ink-800);
+  --shadow-popover: 0 6px 20px rgba(0, 0, 0, 0.28);
   --text-primary: var(--color-ink-50);
   --text-secondary: var(--color-ink-400);
   --text-muted: #5c6478;
@@ -145,6 +147,8 @@
   --bg-surface: #ffffff;
   --bg-elevated: #f9fafb;
   --bg-hover: #f3f4f6;
+  --bg-popover: #ffffff;
+  --shadow-popover: 0 2px 10px rgba(15, 18, 25, 0.08);
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;

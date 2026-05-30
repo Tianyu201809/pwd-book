@@ -72,20 +72,26 @@ const moveSubmenuWrapRef = ref<HTMLElement | null>(null)
 const moveSubmenuStyle = ref<Record<string, string>>({})
 let moveSubmenuCloseTimer: ReturnType<typeof setTimeout> | null = null
 
-const SUBMENU_MAX_HEIGHT = 280
+const SUBMENU_ITEM_HEIGHT = 36
+const SUBMENU_PADDING = 8
+const SUBMENU_MAX_VISIBLE_ITEMS = 5
+const SUBMENU_MAX_HEIGHT = SUBMENU_MAX_VISIBLE_ITEMS * SUBMENU_ITEM_HEIGHT + SUBMENU_PADDING
 const SUBMENU_MIN_WIDTH = 168
 const VIEWPORT_PADDING = 8
 const SUBMENU_GAP = 4
+
+function getSubmenuVisibleHeight(itemCount: number): number {
+  if (itemCount === 0) return SUBMENU_ITEM_HEIGHT
+  const visibleCount = Math.min(itemCount, SUBMENU_MAX_VISIBLE_ITEMS)
+  return visibleCount * SUBMENU_ITEM_HEIGHT + SUBMENU_PADDING
+}
 
 function adjustMoveSubmenuPosition(): void {
   const wrap = moveSubmenuWrapRef.value
   if (!wrap || !moveSubmenuOpen.value) return
 
   const triggerRect = wrap.getBoundingClientRect()
-  const itemCount = Math.max(moveTargets.value.length, 1)
-  const estimatedHeight = moveTargets.value.length === 0
-    ? 36
-    : Math.min(SUBMENU_MAX_HEIGHT, itemCount * 36 + 8)
+  const estimatedHeight = getSubmenuVisibleHeight(moveTargets.value.length)
 
   let left = triggerRect.right + SUBMENU_GAP
   if (left + SUBMENU_MIN_WIDTH > window.innerWidth - VIEWPORT_PADDING) {
@@ -171,7 +177,7 @@ function scheduleCloseMoveSubmenu(): void {
       <ChevronRight :size="14" :stroke-width="2" class="submenu-chevron" />
     </button>
     <div
-      class="submenu surface-card"
+      class="submenu menu-popover surface-card"
       :class="{ open: moveSubmenuOpen }"
       :style="moveSubmenuStyle"
       @mouseenter="cancelCloseMoveSubmenu"
@@ -262,6 +268,27 @@ function scheduleCloseMoveSubmenu(): void {
   overflow-y: auto;
   padding: 4px;
   z-index: 130;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--scrollbar-thumb) 42%, transparent) transparent;
+}
+
+.submenu::-webkit-scrollbar {
+  width: 2px;
+}
+
+.submenu::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;
+}
+
+.submenu::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--scrollbar-thumb) 38%, transparent);
+  border-radius: 99px;
+  min-height: 28px;
+}
+
+.submenu:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--scrollbar-thumb) 58%, transparent);
 }
 
 .submenu.open {

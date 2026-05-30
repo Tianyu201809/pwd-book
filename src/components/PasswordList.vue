@@ -267,7 +267,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
             >
               <MoreHorizontal :size="16" :stroke-width="1.5" />
             </button>
-            <div v-if="openMenuId === entry.id" class="action-menu surface-card" @click.stop>
+            <div v-if="openMenuId === entry.id" class="action-menu menu-popover surface-card" @click.stop>
               <EntryListMenu :entry="entry" @action="closeMenus" />
             </div>
           </div>
@@ -279,7 +279,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       <div
         v-if="contextMenu"
         ref="contextMenuRef"
-        class="context-menu surface-card"
+        class="context-menu menu-popover surface-card"
         :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
         @click.stop
       >
@@ -477,14 +477,14 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 .title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   width: 100%;
   min-width: 0;
   overflow: hidden;
 }
 
 .entry-title {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   font-size: 14px;
   font-weight: 500;
