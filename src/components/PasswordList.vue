@@ -185,8 +185,9 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           <div class="meta">
             <div class="title-row">
               <span class="entry-title">{{ entry.title }}</span>
-              <span v-if="entry.tags[0]" class="tag">{{ entry.tags[0] }}</span>
-              <span v-else-if="entry.categoryName" class="tag category">{{ entry.categoryName }}</span>
+              <div v-if="entry.tags.length" class="entry-tags">
+                <span v-for="(tag, index) in entry.tags" :key="`${entry.id}-tag-${index}`" class="tag">{{ tag }}</span>
+              </div>
             </div>
             <p class="username">{{ entry.username || entry.url || t('vault.noAccount') }}</p>
           </div>
@@ -415,12 +416,16 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 }
 
 .title-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .entry-title {
+  flex: 0 1 auto;
+  min-width: 0;
   font-size: 14px;
   font-weight: 500;
   overflow: hidden;
@@ -428,7 +433,15 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   white-space: nowrap;
 }
 
+.entry-tags {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
 .tag {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
