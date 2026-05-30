@@ -411,15 +411,6 @@ h1 {
   position: relative;
 }
 
-.lock-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px 14px;
-  min-height: 44px;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
 .input-wrap .lock-input {
   padding-right: 40px;
 }

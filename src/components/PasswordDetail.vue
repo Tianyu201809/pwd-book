@@ -610,8 +610,6 @@ const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value
 .field-row .input-field,
 .field .input-field {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 14px;
 }
 
 .select {

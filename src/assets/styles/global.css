@@ -138,12 +138,25 @@ select {
 
 .input-field {
   width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.4;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   color: var(--text-primary);
   border-radius: var(--radius-md);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input.input-field {
+  min-height: 44px;
+}
+
+textarea.input-field {
+  min-height: auto;
+  resize: vertical;
 }
 
 .input-field:focus {

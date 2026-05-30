@@ -331,7 +331,7 @@ function goBack(): void {
 
 .field-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 16px;
 }
 
@@ -345,8 +345,8 @@ function goBack(): void {
   gap: 8px;
   font-size: 12px;
   color: var(--text-secondary);
-  padding-bottom: 10px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .frequency-grid {
