@@ -258,6 +258,19 @@ function mergeSidebarOrderAfterImport(): void {
  * Ensures categories from a backup exist locally. Returns a map from backup category id
  * to the local category id entries should use.
  */
+/** 按显示名查找或创建分类（用于按来源设备归类导入） */
+export function ensureCategoryByDisplayName(displayName: string, icon = 'Folder'): string {
+  if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
+
+  const db = getDatabase()
+  const name = normalizeImportCategoryName(displayName)
+  const existing = findCategoryByName(db, name)
+  if (existing) return existing.id
+
+  const created = createCategory({ name, icon })
+  return created.id
+}
+
 export function ensureCategoriesFromImport(imported: VaultCategory[]): Map<string, string> {
   if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
 

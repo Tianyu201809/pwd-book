@@ -28,17 +28,8 @@ import type {
   VaultCategory,
   VaultTag,
   TagInput,
-  VaultImportPayload,
   VaultStatus,
-  ExportPayload,
 } from '@/types'
-
-const LEGACY_CATEGORY_MAP: Record<string, string> = {
-  work: 'cat-work',
-  social: 'cat-social',
-  finance: 'cat-finance',
-  other: 'cat-other',
-}
 
 const screen = ref<AppScreen>('lock')
 const settingsTab = ref<SettingsTab>('security')
@@ -218,64 +209,6 @@ function setError(error: unknown): void {
 
 function clearError(): void {
   errorMessage.value = ''
-}
-
-function normalizeImportCategory(raw: Record<string, unknown>): VaultCategory | null {
-  const id = String(raw.id ?? '').trim()
-  if (!id || id === 'all' || id === 'favorite') return null
-
-  return {
-    id,
-    name: String(raw.name ?? raw.label ?? '').trim() || id,
-    icon: String(raw.icon ?? 'Folder'),
-    sortOrder: Number(raw.sortOrder ?? raw.sort_order ?? 0) || 0,
-    createdAt: Number(raw.createdAt ?? raw.created_at ?? Date.now()),
-  }
-}
-
-function collectImportCategories(parsed: ExportPayload): VaultCategory[] {
-  const byId = new Map<string, VaultCategory>()
-
-  for (const raw of parsed.categories ?? []) {
-    const category = normalizeImportCategory(raw as unknown as Record<string, unknown>)
-    if (category) byId.set(category.id, category)
-  }
-
-  for (const raw of parsed.entries ?? []) {
-    const entry = raw as unknown as Record<string, unknown>
-    const categoryId = String(entry.categoryId ?? entry.category ?? '').trim()
-    if (!categoryId || categoryId === 'all' || categoryId === 'favorite') continue
-    if (byId.has(categoryId)) continue
-
-    byId.set(categoryId, {
-      id: categoryId,
-      name: String(entry.categoryName ?? entry.category_name ?? categoryId).trim() || categoryId,
-      icon: 'Folder',
-      sortOrder: 99,
-      createdAt: Date.now(),
-    })
-  }
-
-  return Array.from(byId.values())
-}
-
-function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntryInput {
-  const categoryId =
-    (raw.categoryId as string | undefined) ??
-    LEGACY_CATEGORY_MAP[String(raw.category ?? '')] ??
-    undefined
-
-  return {
-    title: String(raw.title ?? ''),
-    url: String(raw.url ?? ''),
-    username: String(raw.username ?? ''),
-    password: String(raw.password ?? ''),
-    note: String(raw.note ?? ''),
-    tags: Array.isArray(raw.tags) ? (raw.tags as string[]) : [],
-    categoryId,
-    isFavorite: Boolean(raw.isFavorite),
-    displayIcon: String(raw.displayIcon ?? ''),
-  }
 }
 
 async function refreshCategories(): Promise<void> {
@@ -852,15 +785,16 @@ async function exportDataAsExcel(): Promise<Uint8Array> {
   return bytes
 }
 
-async function importDataFromJson(raw: string): Promise<number> {
-  const parsed = JSON.parse(raw) as ExportPayload
-  const payload: VaultImportPayload = {
-    categories: collectImportCategories(parsed),
-    entries: (parsed.entries ?? []).map((entry) =>
-      normalizeImportEntry(entry as unknown as Record<string, unknown>),
-    ),
-  }
-  const count = await vaultApi.importData(payload)
+async function previewImportData(sourceId: string, content: string) {
+  return vaultApi.previewImport({ sourceId, content })
+}
+
+async function commitImportData(
+  sourceId: string,
+  entries: PasswordEntryInput[],
+  categories?: VaultCategory[],
+): Promise<number> {
+  const count = await vaultApi.commitImport({ sourceId, entries, categories })
   await refreshVaultData()
   touchActivity()
   return count
@@ -969,7 +903,8 @@ export function useAppState() {
     updateSecuritySettings,
     exportData,
     exportDataAsExcel,
-    importDataFromJson,
+    previewImportData,
+    commitImportData,
     resetAllData,
     switchSettingsTab,
     setListSortOrder,

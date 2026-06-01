@@ -6,13 +6,14 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
-  FileSpreadsheet,
   Upload,
   AlertCircle,
   HelpCircle,
 } from 'lucide-vue-next'
-import { UiModal, UiButton, UiCard } from '@/components/ui'
+import { UiModal, UiButton, UiCard, UiLoading } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
+import { useAppState } from '@/composables/useAppState'
+import type { ImportPreviewItem, ImportPreviewResult } from '@/shared/types'
 import {
   IMPORT_SOURCES,
   getImportSource,
@@ -23,16 +24,18 @@ import {
 const open = defineModel<boolean>('open', { default: false })
 
 const emit = defineEmits<{
-  'import-json': [raw: string]
+  imported: [count: number]
 }>()
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
+const { previewImportData, commitImportData } = useAppState()
 
 /** 导入向导统一宽度（经典 / 动森） */
 const IMPORT_MODAL_WIDTH = 760
 
-type WizardStep = 'source' | 'file' | 'preview'
+type WizardStep = 'source' | 'file' | 'review'
+type ReviewTab = 'ready' | 'skipped' | 'invalid'
 
 const step = ref<WizardStep>('source')
 const selectedId = ref<ImportSourceId | null>(null)
@@ -42,6 +45,10 @@ const csvRowCount = ref(0)
 const parseError = ref('')
 const guideExpanded = ref(false)
 const isDragging = ref(false)
+const previewLoading = ref(false)
+const committing = ref(false)
+const previewResult = ref<ImportPreviewResult | null>(null)
+const reviewTab = ref<ReviewTab>('ready')
 
 const selectedSource = computed(() =>
   selectedId.value ? getImportSource(selectedId.value) : undefined,
@@ -61,11 +68,28 @@ const canGoNext = computed(() => {
   return false
 })
 
-const canImport = computed(() => {
-  if (step.value !== 'preview' || !selectedFile.value || parseError.value) return false
-  if (isJsonSource.value) return true
-  return csvRowCount.value > 0
+const canImport = computed(
+  () => step.value === 'review' && (previewResult.value?.totals.ready ?? 0) > 0 && !committing.value,
+)
+
+const reviewList = computed((): ImportPreviewItem[] => {
+  if (!previewResult.value) return []
+  if (reviewTab.value === 'ready') return previewResult.value.ready
+  if (reviewTab.value === 'skipped') return previewResult.value.skipped
+  return previewResult.value.invalid
 })
+
+const reviewTabs = computed(() => [
+  { id: 'ready' as const, label: t('import.tabReady', { n: previewResult.value?.totals.ready ?? 0 }) },
+  {
+    id: 'skipped' as const,
+    label: t('import.tabSkipped', { n: previewResult.value?.totals.skipped ?? 0 }),
+  },
+  {
+    id: 'invalid' as const,
+    label: t('import.tabInvalid', { n: previewResult.value?.totals.invalid ?? 0 }),
+  },
+])
 
 watch(open, (isOpen) => {
   if (!isOpen) resetWizard()
@@ -80,6 +104,10 @@ function resetWizard(): void {
   parseError.value = ''
   guideExpanded.value = false
   isDragging.value = false
+  previewLoading.value = false
+  committing.value = false
+  previewResult.value = null
+  reviewTab.value = 'ready'
 }
 
 function close(): void {
@@ -96,8 +124,9 @@ function pickSource(id: ImportSourceId): void {
 }
 
 function goBack(): void {
-  if (step.value === 'preview') {
+  if (step.value === 'review') {
     step.value = 'file'
+    previewResult.value = null
     return
   }
   if (step.value === 'file') {
@@ -113,8 +142,33 @@ function goNext(): void {
     return
   }
   if (step.value === 'file' && canGoNext.value) {
-    step.value = 'preview'
+    void runPreview()
   }
+}
+
+async function runPreview(): Promise<void> {
+  if (!selectedFile.value || !selectedId.value) return
+  previewLoading.value = true
+  parseError.value = ''
+  try {
+    const content = await selectedFile.value.text()
+    previewResult.value = await previewImportData(selectedId.value, content)
+    reviewTab.value = previewResult.value.ready.length > 0 ? 'ready' : 'skipped'
+    step.value = 'review'
+  } catch (error) {
+    parseError.value = error instanceof Error ? error.message : t('import.errors.previewFailed')
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+function reasonLabel(item: ImportPreviewItem): string {
+  if (item.reason === 'duplicate_vault') {
+    return t('import.reasonDuplicateVault', { title: item.matchTitle ?? item.title })
+  }
+  if (item.reason === 'duplicate_file') return t('import.reasonDuplicateFile')
+  if (item.reason === 'missing_password') return t('import.reasonMissingPassword')
+  return t('import.reasonMissingTitle')
 }
 
 /** 简易 CSV 首行解析（仅用于预览，非完整 RFC 4180） */
@@ -204,23 +258,32 @@ function openFilePicker(): void {
   input.click()
 }
 
-function handleImport(): void {
-  if (!selectedFile.value || !selectedId.value) return
-  if (selectedId.value === 'pwdbook-json') {
-    void selectedFile.value.text().then((raw) => {
-      emit('import-json', raw)
-      close()
-    })
-    return
+async function handleImport(): Promise<void> {
+  if (!selectedId.value || !previewResult.value || previewResult.value.totals.ready === 0) return
+  committing.value = true
+  parseError.value = ''
+  try {
+    const entries = previewResult.value.ready
+      .map((item) => item.entry)
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    const count = await commitImportData(
+      selectedId.value,
+      entries,
+      previewResult.value.categories,
+    )
+    emit('imported', count)
+    close()
+  } catch (error) {
+    parseError.value = error instanceof Error ? error.message : t('import.errors.previewFailed')
+  } finally {
+    committing.value = false
   }
-  // CSV 解析器尚未接入 — 设计阶段保留入口
-  parseError.value = t('import.errors.parserPending')
 }
 
 const stepLabels = computed(() => [
   t('import.steps.source'),
   t('import.steps.file'),
-  t('import.steps.preview'),
+  t('import.steps.review'),
 ])
 </script>
 
@@ -328,30 +391,72 @@ const stepLabels = computed(() => [
         </p>
       </section>
 
-      <!-- Step 3: 预览确认 -->
-      <section v-else class="step-panel">
-        <div v-if="selectedSource && selectedFile" class="preview-summary">
-          <FileSpreadsheet :size="18" :stroke-width="1.5" />
-          <div>
-            <p class="preview-file">{{ selectedFile.name }}</p>
-            <p v-if="!isJsonSource" class="preview-meta">
-              {{ t('import.previewMeta', { rows: csvRowCount, cols: csvHeaders.length }) }}
-            </p>
-            <p v-else class="preview-meta">{{ t('import.previewJson') }}</p>
-          </div>
-        </div>
+      <!-- Step 3: 检查确认 -->
+      <section v-else-if="step === 'review'" class="step-panel step-panel--review">
+        <UiLoading v-if="previewLoading" class="review-loading" />
+        <template v-else-if="previewResult">
+          <p class="step-lead">
+            {{
+              t('import.reviewLead', {
+                parsed: previewResult.totals.parsed,
+                ready: previewResult.totals.ready,
+                skipped: previewResult.totals.skipped,
+                invalid: previewResult.totals.invalid,
+              })
+            }}
+          </p>
+          <p class="review-category-hint">
+            {{
+              isJsonSource
+                ? t('import.reviewCategoryJson')
+                : t('import.reviewCategory', { name: previewResult.sourceCategoryName })
+            }}
+          </p>
 
-        <template v-if="!isJsonSource && csvHeaders.length">
-          <p class="preview-caption">{{ t('import.detectedColumns') }}</p>
-          <div class="header-chips">
-            <span v-for="header in csvHeaders" :key="header" class="header-chip">{{ header }}</span>
+          <div class="review-tabs">
+            <button
+              v-for="tab in reviewTabs"
+              :key="tab.id"
+              type="button"
+              class="review-tab"
+              :class="{ active: reviewTab === tab.id }"
+              @click="reviewTab = tab.id"
+            >
+              {{ tab.label }}
+            </button>
           </div>
-          <p class="preview-note">{{ t('import.previewNote') }}</p>
+
+          <div class="review-table-wrap">
+            <table class="review-table">
+              <thead>
+                <tr>
+                  <th>{{ t('import.colTitle') }}</th>
+                  <th>{{ t('import.colAccount') }}</th>
+                  <th>{{ t('import.colUrl') }}</th>
+                  <th v-if="reviewTab !== 'ready'">{{ t('import.colReason') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="reviewList.length === 0">
+                  <td :colspan="reviewTab === 'ready' ? 3 : 4" class="empty-cell">
+                    {{ t('import.listEmpty') }}
+                  </td>
+                </tr>
+                <tr v-for="item in reviewList" :key="`${reviewTab}-${item.row}`">
+                  <td>{{ item.title || `行 ${item.row}` }}</td>
+                  <td>{{ item.username || '—' }}</td>
+                  <td class="url-cell">{{ item.url || '—' }}</td>
+                  <td v-if="reviewTab !== 'ready'" class="reason-cell">{{ reasonLabel(item) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </template>
 
-        <UiCard v-else-if="isJsonSource" class="json-hint-card">
-          <p>{{ t('import.jsonConfirmHint') }}</p>
-        </UiCard>
+        <p v-if="parseError" class="inline-error">
+          <AlertCircle :size="14" :stroke-width="1.5" />
+          {{ parseError }}
+        </p>
       </section>
 
       <footer class="wizard-footer">
@@ -361,9 +466,10 @@ const stepLabels = computed(() => [
         </UiButton>
         <div class="footer-actions">
           <UiButton
-            v-if="step !== 'preview'"
+            v-if="step !== 'review'"
             variant="primary"
-            :disabled="!canGoNext"
+            :disabled="!canGoNext || previewLoading"
+            :loading="previewLoading"
             @click="goNext"
           >
             {{ t('common.next') }}
@@ -373,9 +479,15 @@ const stepLabels = computed(() => [
             v-else
             variant="primary"
             :disabled="!canImport"
+            :loading="committing"
+            :title="!canImport ? t('import.noReadyToImport') : undefined"
             @click="handleImport"
           >
-            {{ isJsonSource ? t('import.confirmJson') : t('import.confirmCsv') }}
+            {{
+              canImport
+                ? t('import.confirmImport', { n: previewResult?.totals.ready ?? 0 })
+                : t('import.noReadyToImport')
+            }}
           </UiButton>
         </div>
       </footer>
@@ -786,6 +898,91 @@ const stepLabels = computed(() => [
 .footer-actions {
   display: flex;
   gap: 8px;
+}
+
+.step-panel--review {
+  gap: 10px;
+}
+
+.review-loading {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.review-category-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--accent-primary);
+}
+
+.review-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.review-tab {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.review-tab.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-subtle);
+  color: var(--text-primary);
+}
+
+.review-table-wrap {
+  max-height: 280px;
+  overflow: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.review-table th,
+.review-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.review-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elevated);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.review-table tr:last-child td {
+  border-bottom: none;
+}
+
+.url-cell,
+.reason-cell {
+  color: var(--text-muted);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-cell {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 20px;
 }
 </style>
 

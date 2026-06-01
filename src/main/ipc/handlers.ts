@@ -6,11 +6,14 @@ import type {
   VaultSetupPayload,
   VaultUnlockPayload,
   VaultImportPayload,
+  ImportPreviewRequest,
+  ImportCommitRequest,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
 } from '../../shared/types'
 import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
+import { commitImport, previewImport } from '../services/importService'
 import {
   createEntry,
   deleteEntry,
@@ -352,6 +355,20 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       return importFromExportPayload(payload)
+    }),
+  )
+
+  ipcMain.handle(IPC.dataImportPreview, (_event, request: ImportPreviewRequest) =>
+    wrap(() => {
+      ensureUnlocked()
+      return previewImport(request)
+    }),
+  )
+
+  ipcMain.handle(IPC.dataImportCommit, (_event, request: ImportCommitRequest) =>
+    wrap(() => {
+      ensureUnlocked()
+      return commitImport(request)
     }),
   )
 

@@ -5,6 +5,9 @@ import type {
   CategoryInput,
   ExportPayload,
   VaultImportPayload,
+  ImportPreviewRequest,
+  ImportPreviewResult,
+  ImportCommitRequest,
   PasswordEntry,
   PasswordEntryInput,
   RecoveryCreateResult,
@@ -111,6 +114,10 @@ export const electronAPI = {
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
   exportDataAsExcel: (): Promise<Uint8Array> => invoke(IPC.dataExportExcel),
   importData: (payload: VaultImportPayload): Promise<number> => invoke(IPC.dataImport, payload),
+  previewImport: (request: ImportPreviewRequest): Promise<ImportPreviewResult> =>
+    invoke(IPC.dataImportPreview, request),
+  commitImport: (request: ImportCommitRequest): Promise<number> =>
+    invoke(IPC.dataImportCommit, request),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => invoke(IPC.emailBackupGet),
   updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>

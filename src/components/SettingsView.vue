@@ -30,7 +30,6 @@ const {
   updateSecuritySettings,
   exportData,
   exportDataAsExcel,
-  importDataFromJson,
   resetAllData,
   errorMessage,
   clearError,
@@ -122,13 +121,8 @@ function openImportModal(): void {
   importModalOpen.value = true
 }
 
-async function handleImportJson(raw: string): Promise<void> {
-  try {
-    const count = await importDataFromJson(raw)
-    statusMessage.value = t('settings.importSuccess', { count })
-  } catch (error) {
-    statusMessage.value = error instanceof Error ? error.message : t('errors.import_failed')
-  }
+function onImportCompleted(count: number): void {
+  statusMessage.value = t('settings.importSuccess', { count })
 }
 
 async function handleReset(): Promise<void> {
@@ -230,7 +224,7 @@ async function handleReset(): Promise<void> {
               <span><Upload :size="16" :stroke-width="1.5" /> {{ t('settings.importData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
-            <ImportDataModal v-model:open="importModalOpen" @import-json="handleImportJson" />
+            <ImportDataModal v-model:open="importModalOpen" @imported="onImportCompleted" />
             <button type="button" class="link-row danger-row" @click="handleReset">
               <span><AlertTriangle :size="16" :stroke-width="1.5" /> {{ t('settings.clearAllData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />

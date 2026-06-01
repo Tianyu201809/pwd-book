@@ -170,6 +170,47 @@ export interface VaultImportPayload {
   entries: PasswordEntryInput[]
 }
 
+export type ImportPreviewItemStatus = 'ready' | 'duplicate' | 'invalid'
+
+export interface ImportPreviewItem {
+  row: number
+  status: ImportPreviewItemStatus
+  title: string
+  username: string
+  url: string
+  /** 仅 status=ready 时存在 */
+  entry?: PasswordEntryInput
+  reason?: 'missing_title' | 'missing_password' | 'duplicate_vault' | 'duplicate_file'
+  matchTitle?: string
+}
+
+export interface ImportPreviewResult {
+  sourceId: string
+  sourceCategoryName: string
+  /** PwdBook JSON 备份中的分类（提交导入时使用） */
+  categories?: VaultCategory[]
+  ready: ImportPreviewItem[]
+  skipped: ImportPreviewItem[]
+  invalid: ImportPreviewItem[]
+  totals: {
+    parsed: number
+    ready: number
+    skipped: number
+    invalid: number
+  }
+}
+
+export interface ImportPreviewRequest {
+  sourceId: string
+  content: string
+}
+
+export interface ImportCommitRequest {
+  sourceId: string
+  entries: PasswordEntryInput[]
+  categories?: VaultCategory[]
+}
+
 export const IPC = {
   vaultStatus: 'vault:status',
   vaultSetup: 'vault:setup',
@@ -206,6 +247,8 @@ export const IPC = {
   dataExport: 'data:export',
   dataExportExcel: 'data:export-excel',
   dataImport: 'data:import',
+  dataImportPreview: 'data:import-preview',
+  dataImportCommit: 'data:import-commit',
   emailBackupGet: 'email-backup:get',
   emailBackupUpdate: 'email-backup:update',
   emailBackupTest: 'email-backup:test',

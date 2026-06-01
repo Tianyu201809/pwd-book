@@ -9,6 +9,8 @@ export type ImportSourceId =
 
 export interface ImportSourceMeta {
   id: ImportSourceId
+  /** 入库时使用的分类名称（按来源设备） */
+  categoryName: string
   /** i18n key under import.sources.* */
   nameKey: string
   descKey: string
@@ -26,6 +28,7 @@ export interface ImportSourceMeta {
 export const IMPORT_SOURCES: ImportSourceMeta[] = [
   {
     id: 'keepass',
+    categoryName: 'KeePass',
     nameKey: 'keepass',
     descKey: 'keepassDesc',
     monogram: 'K',
@@ -36,6 +39,7 @@ export const IMPORT_SOURCES: ImportSourceMeta[] = [
   },
   {
     id: 'enpass',
+    categoryName: 'Enpass',
     nameKey: 'enpass',
     descKey: 'enpassDesc',
     monogram: 'E',
@@ -46,6 +50,7 @@ export const IMPORT_SOURCES: ImportSourceMeta[] = [
   },
   {
     id: 'bitwarden',
+    categoryName: 'Bitwarden',
     nameKey: 'bitwarden',
     descKey: 'bitwardenDesc',
     monogram: 'B',
@@ -56,6 +61,7 @@ export const IMPORT_SOURCES: ImportSourceMeta[] = [
   },
   {
     id: 'onepassword',
+    categoryName: '1Password',
     nameKey: 'onepassword',
     descKey: 'onepasswordDesc',
     monogram: '1',
@@ -66,6 +72,7 @@ export const IMPORT_SOURCES: ImportSourceMeta[] = [
   },
   {
     id: 'chrome',
+    categoryName: 'Chrome',
     nameKey: 'chrome',
     descKey: 'chromeDesc',
     monogram: 'Cr',
@@ -76,6 +83,7 @@ export const IMPORT_SOURCES: ImportSourceMeta[] = [
   },
   {
     id: 'pwdbook-json',
+    categoryName: 'PwdBook',
     nameKey: 'pwdbook',
     descKey: 'pwdbookDesc',
     monogram: 'Pb',

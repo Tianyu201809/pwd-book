@@ -14,6 +14,9 @@ import type {
   VaultStatus,
   VaultUnlockPayload,
   VaultImportPayload,
+  ImportPreviewRequest,
+  ImportPreviewResult,
+  ImportCommitRequest,
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
@@ -79,6 +82,9 @@ export const vaultApi = {
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
   exportDataAsExcel: (): Promise<Uint8Array> => getApi().exportDataAsExcel(),
   importData: (payload: VaultImportPayload): Promise<number> => getApi().importData(payload),
+  previewImport: (request: ImportPreviewRequest): Promise<ImportPreviewResult> =>
+    getApi().previewImport(request),
+  commitImport: (request: ImportCommitRequest): Promise<number> => getApi().commitImport(request),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => getApi().getEmailBackupSettings(),
   updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>

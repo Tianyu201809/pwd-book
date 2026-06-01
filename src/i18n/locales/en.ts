@@ -279,17 +279,29 @@ export default {
     steps: {
       source: 'Source',
       file: 'Upload',
-      preview: 'Preview',
+      review: 'Review',
     },
+    checking: 'Checking for duplicates and invalid rows…',
+    reviewLead:
+      'Parsed {parsed} rows. {ready} will be imported; {skipped} duplicates skipped; {invalid} invalid.',
+    reviewCategory: 'New entries go to category “{name}”',
+    reviewCategoryJson: 'Categories from the backup will be preserved',
+    tabReady: 'To import ({n})',
+    tabSkipped: 'Skipped duplicates ({n})',
+    tabInvalid: 'Invalid ({n})',
+    colTitle: 'Title',
+    colAccount: 'Account',
+    colUrl: 'URL',
+    colReason: 'Reason',
+    reasonDuplicateVault: 'Duplicate of “{title}” in vault',
+    reasonDuplicateFile: 'Duplicate in file',
+    reasonMissingTitle: 'Missing title',
+    reasonMissingPassword: 'Missing password',
+    listEmpty: 'No entries',
+    confirmImport: 'Import {n} entries',
+    noReadyToImport: 'No new entries to import',
     detectedColumns: 'Detected CSV columns',
     previewMeta: 'About {rows} rows · {cols} columns',
-    previewJson: 'PwdBook JSON full backup',
-    previewNote:
-      'On import, fields map to title, URL, username, password, and more. Duplicate handling will be configurable in a later step.',
-    jsonConfirmHint:
-      'Merges categories and entries from the backup. Duplicate handling for existing entries is planned for a later version.',
-    confirmJson: 'Import now',
-    confirmCsv: 'Import now',
     sources: {
       keepass: 'KeePass',
       keepassDesc: 'KeePass 2.x CSV export',
@@ -306,7 +318,7 @@ export default {
     },
     guides: {
       keepassGuide:
-        'KeePass: File → Export → choose “KeePass CSV (2.x)”. The Group column can map to categories on import.',
+        'KeePass: File → Export → choose “KeePass CSV (2.x)”. Imported entries go to the “KeePass” category.',
       enpassGuide:
         'Enpass: Settings → Export → CSV. Use an unencrypted CSV export (decrypt in Enpass first if required).',
       bitwardenGuide:
@@ -322,7 +334,7 @@ export default {
       jsonOnly: 'Please choose a JSON file',
       emptyFile: 'File is empty',
       noHeaders: 'Could not read CSV headers',
-      parserPending: 'CSV import for this source is not implemented yet',
+      previewFailed: 'Review failed. Check the file format and selected source.',
     },
   },
   appearance: {

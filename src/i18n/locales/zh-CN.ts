@@ -277,15 +277,28 @@ export default {
     steps: {
       source: '选择来源',
       file: '上传文件',
-      preview: '确认预览',
+      review: '检查确认',
     },
+    checking: '正在检查重复与无效条目…',
+    reviewLead: '已解析 {parsed} 条。将导入 {ready} 条；{skipped} 条与现有数据重复已跳过；{invalid} 条无效。',
+    reviewCategory: '新条目将归入分类「{name}」',
+    reviewCategoryJson: '将保留备份中的分类信息',
+    tabReady: '将导入 ({n})',
+    tabSkipped: '重复跳过 ({n})',
+    tabInvalid: '无效 ({n})',
+    colTitle: '标题',
+    colAccount: '账号',
+    colUrl: '网址',
+    colReason: '原因',
+    reasonDuplicateVault: '与库中「{title}」重复',
+    reasonDuplicateFile: '文件内重复',
+    reasonMissingTitle: '缺少标题',
+    reasonMissingPassword: '缺少密码',
+    listEmpty: '无条目',
+    confirmImport: '确认导入 {n} 条',
+    noReadyToImport: '没有可导入的新条目',
     detectedColumns: '检测到的 CSV 列',
     previewMeta: '约 {rows} 条数据 · {cols} 列',
-    previewJson: 'PwdBook JSON 完整备份',
-    previewNote: '正式导入时将自动映射到标题、网址、用户名、密码等字段。重复条目策略将在下一步提供。',
-    jsonConfirmHint: '将合并备份中的分类与条目；与现有数据重复的条目可在后续版本中配置处理方式。',
-    confirmJson: '开始导入',
-    confirmCsv: '开始导入',
     sources: {
       keepass: 'KeePass',
       keepassDesc: 'KeePass 2.x CSV 导出',
@@ -302,7 +315,7 @@ export default {
     },
     guides: {
       keepassGuide:
-        'KeePass：文件 → 导出 → 选择「KeePass CSV (2.x)」格式并保存。导出文件包含 Group 列，导入时可映射为分类。',
+        'KeePass：文件 → 导出 → 选择「KeePass CSV (2.x)」格式并保存。导入后条目将归入「KeePass」分类。',
       enpassGuide:
         'Enpass：设置 → 导出 → 选择 CSV 格式。请使用未加密的 CSV 导出（若 Enpass 要求主密码解密后再导出）。',
       bitwardenGuide:
@@ -318,7 +331,7 @@ export default {
       jsonOnly: '请选择 JSON 文件',
       emptyFile: '文件为空',
       noHeaders: '无法读取 CSV 表头',
-      parserPending: '该来源的 CSV 解析尚未实现，敬请期待下一版本',
+      previewFailed: '检查失败，请确认文件格式与来源是否匹配',
     },
   },
   appearance: {
