@@ -246,6 +246,7 @@ export const IPC = {
   shellOpenExternal: 'shell:open-external',
   dataExport: 'data:export',
   dataExportExcel: 'data:export-excel',
+  dataExportCsv: 'data:export-csv',
   dataImport: 'data:import',
   dataImportPreview: 'data:import-preview',
   dataImportCommit: 'data:import-commit',

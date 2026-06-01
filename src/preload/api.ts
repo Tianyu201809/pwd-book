@@ -113,6 +113,7 @@ export const electronAPI = {
 
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
   exportDataAsExcel: (): Promise<Uint8Array> => invoke(IPC.dataExportExcel),
+  exportDataAsCsv: (formatId: string): Promise<string> => invoke(IPC.dataExportCsv, formatId),
   importData: (payload: VaultImportPayload): Promise<number> => invoke(IPC.dataImport, payload),
   previewImport: (request: ImportPreviewRequest): Promise<ImportPreviewResult> =>
     invoke(IPC.dataImportPreview, request),

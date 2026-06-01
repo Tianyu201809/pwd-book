@@ -14,6 +14,8 @@ import type {
 import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
 import { commitImport, previewImport } from '../services/importService'
+import { buildExportCsv } from '../services/exportCsvService'
+import type { ExportFormatId } from '../../shared/exportFormats'
 import {
   createEntry,
   deleteEntry,
@@ -348,6 +350,13 @@ export function registerIpcHandlers(): void {
       ensureUnlocked()
       const payload = buildExportPayload()
       return buildExcelBuffer(payload)
+    }),
+  )
+
+  ipcMain.handle(IPC.dataExportCsv, (_event, formatId: ExportFormatId) =>
+    wrap(() => {
+      ensureUnlocked()
+      return buildExportCsv(formatId)
     }),
   )
 

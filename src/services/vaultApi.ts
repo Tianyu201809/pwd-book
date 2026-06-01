@@ -81,6 +81,7 @@ export const vaultApi = {
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
   exportDataAsExcel: (): Promise<Uint8Array> => getApi().exportDataAsExcel(),
+  exportDataAsCsv: (formatId: string): Promise<string> => getApi().exportDataAsCsv(formatId),
   importData: (payload: VaultImportPayload): Promise<number> => getApi().importData(payload),
   previewImport: (request: ImportPreviewRequest): Promise<ImportPreviewResult> =>
     getApi().previewImport(request),

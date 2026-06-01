@@ -786,6 +786,12 @@ async function exportDataAsExcel(): Promise<Uint8Array> {
   return bytes
 }
 
+async function exportDataAsCsv(formatId: string): Promise<string> {
+  const csv = await vaultApi.exportDataAsCsv(formatId)
+  touchActivity()
+  return csv
+}
+
 async function previewImportData(sourceId: string, content: string) {
   return vaultApi.previewImport({ sourceId, content })
 }
@@ -906,6 +912,7 @@ export function useAppState() {
     updateSecuritySettings,
     exportData,
     exportDataAsExcel,
+    exportDataAsCsv,
     previewImportData,
     commitImportData,
     resetAllData,

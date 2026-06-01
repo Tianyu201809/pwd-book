@@ -252,6 +252,7 @@ export default {
     closeWindowQuit: 'Quit application',
     exportJson: 'Export JSON backup',
     exportExcel: 'Export Excel spreadsheet',
+    exportToApps: 'Export for other apps (CSV)',
     importData: 'Import data',
     importFromApps: 'Import from other apps',
     clearAllData: 'Clear all data',
@@ -266,6 +267,20 @@ export default {
     animalIslandCredit:
       'Animal Crossing premium skin UI uses animal-island-vue (MIT, personal learning and non-commercial use only).',
     version: 'Version {version} · Electron + Vue 3 + SQLite',
+  },
+  export: {
+    title: 'Export passwords',
+    lead: 'Pick a target app CSV format to export your vault for import into another password manager.',
+    plainTextWarning: 'CSV files contain plaintext passwords. Store and share them securely.',
+    downloadCsv: 'Download CSV',
+    exported: 'CSV exported',
+    formats: {
+      keepass: 'KeePass 2.x CSV',
+      enpass: 'Enpass CSV',
+      bitwarden: 'Bitwarden unencrypted CSV',
+      onepassword: '1Password CSV',
+      chrome: 'Chrome password CSV',
+    },
   },
   import: {
     title: 'Import passwords',

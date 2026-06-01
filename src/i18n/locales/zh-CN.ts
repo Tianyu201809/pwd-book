@@ -251,6 +251,7 @@ export default {
     closeWindowQuit: '退出程序',
     exportJson: '导出 JSON 备份',
     exportExcel: '导出 Excel 表格',
+    exportToApps: '导出到其他应用 (CSV)',
     importData: '导入数据',
     importFromApps: '从其他应用导入',
     clearAllData: '清除所有数据',
@@ -264,6 +265,20 @@ export default {
     animalIslandCredit:
       '「动物森友会」高级皮肤 UI 组件来自 animal-island-vue（MIT，仅限个人学习与非商业展示）。',
     version: '版本 {version} · Electron + Vue 3 + SQLite',
+  },
+  export: {
+    title: '导出密码',
+    lead: '选择目标应用的 CSV 格式，从当前保险库导出全部条目，便于在其他密码管理器中导入。',
+    plainTextWarning: 'CSV 为明文密码，请妥善保管导出文件，勿通过不安全渠道传输。',
+    downloadCsv: '下载 CSV',
+    exported: 'CSV 已导出',
+    formats: {
+      keepass: 'KeePass 2.x CSV',
+      enpass: 'Enpass CSV',
+      bitwarden: 'Bitwarden 未加密 CSV',
+      onepassword: '1Password CSV',
+      chrome: 'Chrome 密码 CSV',
+    },
   },
   import: {
     title: '导入密码',

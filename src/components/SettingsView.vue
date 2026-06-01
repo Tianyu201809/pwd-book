@@ -19,6 +19,7 @@ import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
 import ImportDataModal from '@/components/import/ImportDataModal.vue'
+import ExportDataModal from '@/components/export/ExportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
 import type { SettingsTab } from '@/types'
 
@@ -40,6 +41,7 @@ const { isAnimalIsland } = useTheme()
 
 const statusMessage = ref('')
 const importModalOpen = ref(false)
+const exportModalOpen = ref(false)
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield },
@@ -121,8 +123,18 @@ function openImportModal(): void {
   importModalOpen.value = true
 }
 
+function openExportModal(): void {
+  clearError()
+  statusMessage.value = ''
+  exportModalOpen.value = true
+}
+
 function onImportCompleted(count: number): void {
   statusMessage.value = t('settings.importSuccess', { count })
+}
+
+function onExportCompleted(): void {
+  statusMessage.value = t('export.exported')
 }
 
 async function handleReset(): Promise<void> {
@@ -220,6 +232,11 @@ async function handleReset(): Promise<void> {
               <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportExcel') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
+            <button type="button" class="link-row" @click="openExportModal">
+              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportToApps') }}</span>
+              <ChevronRight :size="16" :stroke-width="1.5" />
+            </button>
+            <ExportDataModal v-model:open="exportModalOpen" @exported="onExportCompleted" />
             <button type="button" class="link-row" @click="openImportModal">
               <span><Upload :size="16" :stroke-width="1.5" /> {{ t('settings.importData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
