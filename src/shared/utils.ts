@@ -129,6 +129,11 @@ export function formatRelativeTime(timestamp: number | null): string {
   return i18n.global.t('common.weeksAgo', { n: Math.floor(diff / week) })
 }
 
+/** 剥离 Vue 响应式代理，供 Electron IPC structured clone 使用 */
+export function cloneForIpc<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
 export function getAvatarMeta(title: string): { text: string; color: string } {
   const text = title.trim().charAt(0).toUpperCase() || '?'
   const palette = [

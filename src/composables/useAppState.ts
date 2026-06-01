@@ -3,6 +3,7 @@ import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import {
   buildUrlWithCredentialParams,
+  cloneForIpc,
   formatEntryForClipboard,
   formatRelativeTime,
   getAvatarMeta,
@@ -794,7 +795,9 @@ async function commitImportData(
   entries: PasswordEntryInput[],
   categories?: VaultCategory[],
 ): Promise<number> {
-  const count = await vaultApi.commitImport({ sourceId, entries, categories })
+  const count = await vaultApi.commitImport(
+    cloneForIpc({ sourceId, entries, categories }),
+  )
   await refreshVaultData()
   touchActivity()
   return count

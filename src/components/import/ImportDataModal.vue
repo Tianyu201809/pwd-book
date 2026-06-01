@@ -9,6 +9,7 @@ import {
   Upload,
   AlertCircle,
   HelpCircle,
+  X,
 } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCard, UiLoading } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
@@ -159,6 +160,18 @@ async function runPreview(): Promise<void> {
     parseError.value = error instanceof Error ? error.message : t('import.errors.previewFailed')
   } finally {
     previewLoading.value = false
+  }
+}
+
+function removeReadyItem(index: number): void {
+  const result = previewResult.value
+  if (!result || reviewTab.value !== 'ready') return
+  const nextReady = [...result.ready]
+  nextReady.splice(index, 1)
+  previewResult.value = {
+    ...result,
+    ready: nextReady,
+    totals: { ...result.totals, ready: nextReady.length },
   }
 }
 
@@ -413,6 +426,10 @@ const stepLabels = computed(() => [
             }}
           </p>
 
+          <p v-if="reviewTab === 'ready' && previewResult.totals.ready > 0" class="review-remove-hint">
+            {{ t('import.removeHint') }}
+          </p>
+
           <div class="review-tabs">
             <button
               v-for="tab in reviewTabs"
@@ -434,19 +451,34 @@ const stepLabels = computed(() => [
                   <th>{{ t('import.colAccount') }}</th>
                   <th>{{ t('import.colUrl') }}</th>
                   <th v-if="reviewTab !== 'ready'">{{ t('import.colReason') }}</th>
+                  <th v-else class="col-action">{{ t('import.colAction') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="reviewList.length === 0">
-                  <td :colspan="reviewTab === 'ready' ? 3 : 4" class="empty-cell">
+                  <td colspan="4" class="empty-cell">
                     {{ t('import.listEmpty') }}
                   </td>
                 </tr>
-                <tr v-for="item in reviewList" :key="`${reviewTab}-${item.row}`">
+                <tr
+                  v-for="(item, index) in reviewList"
+                  :key="`${reviewTab}-${item.row}-${index}`"
+                >
                   <td>{{ item.title || `行 ${item.row}` }}</td>
                   <td>{{ item.username || '—' }}</td>
                   <td class="url-cell">{{ item.url || '—' }}</td>
                   <td v-if="reviewTab !== 'ready'" class="reason-cell">{{ reasonLabel(item) }}</td>
+                  <td v-else class="col-action">
+                    <button
+                      type="button"
+                      class="remove-row-btn"
+                      :title="t('import.removeRow')"
+                      :aria-label="t('import.removeRow')"
+                      @click="removeReadyItem(index)"
+                    >
+                      <X :size="16" :stroke-width="1.5" />
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -914,6 +946,39 @@ const stepLabels = computed(() => [
   margin: 0;
   font-size: 12px;
   color: var(--accent-primary);
+}
+
+.review-remove-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.review-table .col-action {
+  width: 48px;
+  text-align: center;
+}
+
+.remove-row-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.remove-row-btn:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--status-danger);
 }
 
 .review-tabs {
