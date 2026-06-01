@@ -252,7 +252,8 @@ export default {
     closeWindowQuit: 'Quit application',
     exportJson: 'Export JSON backup',
     exportExcel: 'Export Excel spreadsheet',
-    importData: 'Import JSON data',
+    importData: 'Import data',
+    importFromApps: 'Import from other apps',
     clearAllData: 'Clear all data',
     clearAllConfirm:
       'This will erase all local passwords and master password settings. Continue?',
@@ -265,6 +266,64 @@ export default {
     animalIslandCredit:
       'Animal Crossing premium skin UI uses animal-island-vue (MIT, personal learning and non-commercial use only).',
     version: 'Version {version} · Electron + Vue 3 + SQLite',
+  },
+  import: {
+    title: 'Import passwords',
+    sourceLead: 'Pick the app you exported from. We parse CSV or JSON using the matching column layout.',
+    fileHint: 'Upload the file exported from that app',
+    exportGuide: 'How to export?',
+    expectedColumns: 'Typical columns:',
+    dropTitle: 'Click or drop a file here',
+    dropSubCsv: 'Accepts .csv files',
+    dropSubJson: 'Accepts PwdBook .json backups',
+    steps: {
+      source: 'Source',
+      file: 'Upload',
+      preview: 'Preview',
+    },
+    detectedColumns: 'Detected CSV columns',
+    previewMeta: 'About {rows} rows · {cols} columns',
+    previewJson: 'PwdBook JSON full backup',
+    previewNote:
+      'On import, fields map to title, URL, username, password, and more. Duplicate handling will be configurable in a later step.',
+    jsonConfirmHint:
+      'Merges categories and entries from the backup. Duplicate handling for existing entries is planned for a later version.',
+    confirmJson: 'Import now',
+    confirmCsv: 'Import now',
+    sources: {
+      keepass: 'KeePass',
+      keepassDesc: 'KeePass 2.x CSV export',
+      enpass: 'Enpass',
+      enpassDesc: 'Enpass desktop CSV',
+      bitwarden: 'Bitwarden',
+      bitwardenDesc: 'Bitwarden unencrypted CSV',
+      onepassword: '1Password',
+      onepasswordDesc: '1Password 8 CSV export',
+      chrome: 'Google Chrome',
+      chromeDesc: 'Chrome password CSV export',
+      pwdbook: 'PwdBook',
+      pwdbookDesc: 'This app’s JSON backup',
+    },
+    guides: {
+      keepassGuide:
+        'KeePass: File → Export → choose “KeePass CSV (2.x)”. The Group column can map to categories on import.',
+      enpassGuide:
+        'Enpass: Settings → Export → CSV. Use an unencrypted CSV export (decrypt in Enpass first if required).',
+      bitwardenGuide:
+        'Bitwarden: Tools → Export vault → CSV, unencrypted. Login items use login_* columns.',
+      onepasswordGuide:
+        '1Password: File → Export → CSV with Website, Username, and Password columns.',
+      chromeGuide:
+        'Chrome: Settings → Autofill → Google Password Manager → gear → Download file (Google Password CSV).',
+      pwdbookGuide: 'Use the .json file from Settings → Data → Export JSON backup.',
+    },
+    errors: {
+      csvOnly: 'Please choose a CSV file',
+      jsonOnly: 'Please choose a JSON file',
+      emptyFile: 'File is empty',
+      noHeaders: 'Could not read CSV headers',
+      parserPending: 'CSV import for this source is not implemented yet',
+    },
   },
   appearance: {
     skinTitle: 'Interface skin',

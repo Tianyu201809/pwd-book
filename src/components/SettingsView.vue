@@ -18,6 +18,7 @@ import { UiSelect, UiSwitch, UiCard } from '@/components/ui'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
+import ImportDataModal from '@/components/import/ImportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
 import type { SettingsTab } from '@/types'
 
@@ -39,6 +40,7 @@ const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
 
 const statusMessage = ref('')
+const importModalOpen = ref(false)
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield },
@@ -114,24 +116,19 @@ async function handleExportExcel(): Promise<void> {
   }
 }
 
-async function handleImport(): Promise<void> {
+function openImportModal(): void {
   clearError()
   statusMessage.value = ''
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = 'application/json,.json'
-  input.onchange = async () => {
-    const file = input.files?.[0]
-    if (!file) return
-    try {
-      const text = await file.text()
-      const count = await importDataFromJson(text)
-      statusMessage.value = t('settings.importSuccess', { count })
-    } catch (error) {
-      statusMessage.value = error instanceof Error ? error.message : t('errors.import_failed')
-    }
+  importModalOpen.value = true
+}
+
+async function handleImportJson(raw: string): Promise<void> {
+  try {
+    const count = await importDataFromJson(raw)
+    statusMessage.value = t('settings.importSuccess', { count })
+  } catch (error) {
+    statusMessage.value = error instanceof Error ? error.message : t('errors.import_failed')
   }
-  input.click()
 }
 
 async function handleReset(): Promise<void> {
@@ -229,10 +226,11 @@ async function handleReset(): Promise<void> {
               <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportExcel') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
-            <button type="button" class="link-row" @click="handleImport">
+            <button type="button" class="link-row" @click="openImportModal">
               <span><Upload :size="16" :stroke-width="1.5" /> {{ t('settings.importData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
+            <ImportDataModal v-model:open="importModalOpen" @import-json="handleImportJson" />
             <button type="button" class="link-row danger-row" @click="handleReset">
               <span><AlertTriangle :size="16" :stroke-width="1.5" /> {{ t('settings.clearAllData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />

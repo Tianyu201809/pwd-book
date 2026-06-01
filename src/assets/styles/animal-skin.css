@@ -78,6 +78,14 @@
   z-index: var(--z-overlay-stacked) !important;
 }
 
+/* 导入向导：动森 Modal 加宽（与 :width 双保险） */
+[data-skin="animalIsland"] .animal-modal:has(.import-wizard),
+[data-skin="animalIsland"] .import-data-modal {
+  width: 760px !important;
+  max-width: min(760px, calc(100vw - 32px)) !important;
+}
+
+
 [data-skin="animalIsland"] .close-dialog-actions {
   align-items: stretch;
 }

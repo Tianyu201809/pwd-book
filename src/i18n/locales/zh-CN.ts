@@ -251,7 +251,8 @@ export default {
     closeWindowQuit: '退出程序',
     exportJson: '导出 JSON 备份',
     exportExcel: '导出 Excel 表格',
-    importData: '导入 JSON 数据',
+    importData: '导入数据',
+    importFromApps: '从其他应用导入',
     clearAllData: '清除所有数据',
     clearAllConfirm: '这将清除所有本地密码数据和主密码设置，且不可恢复。确定继续吗？',
     backupExported: 'JSON 备份已导出',
@@ -263,6 +264,62 @@ export default {
     animalIslandCredit:
       '「动物森友会」高级皮肤 UI 组件来自 animal-island-vue（MIT，仅限个人学习与非商业展示）。',
     version: '版本 {version} · Electron + Vue 3 + SQLite',
+  },
+  import: {
+    title: '导入密码',
+    sourceLead: '选择你导出 CSV 或 JSON 时使用的应用，我们会按对应格式解析字段。',
+    fileHint: '请上传从该应用导出的文件',
+    exportGuide: '如何导出？',
+    expectedColumns: '常见列名：',
+    dropTitle: '点击或拖拽文件到此处',
+    dropSubCsv: '支持 .csv 文件',
+    dropSubJson: '支持 PwdBook .json 备份',
+    steps: {
+      source: '选择来源',
+      file: '上传文件',
+      preview: '确认预览',
+    },
+    detectedColumns: '检测到的 CSV 列',
+    previewMeta: '约 {rows} 条数据 · {cols} 列',
+    previewJson: 'PwdBook JSON 完整备份',
+    previewNote: '正式导入时将自动映射到标题、网址、用户名、密码等字段。重复条目策略将在下一步提供。',
+    jsonConfirmHint: '将合并备份中的分类与条目；与现有数据重复的条目可在后续版本中配置处理方式。',
+    confirmJson: '开始导入',
+    confirmCsv: '开始导入',
+    sources: {
+      keepass: 'KeePass',
+      keepassDesc: 'KeePass 2.x CSV 导出',
+      enpass: 'Enpass',
+      enpassDesc: 'Enpass 桌面端 CSV',
+      bitwarden: 'Bitwarden',
+      bitwardenDesc: 'Bitwarden 未加密 CSV',
+      onepassword: '1Password',
+      onepasswordDesc: '1Password 8 CSV 导出',
+      chrome: 'Google Chrome',
+      chromeDesc: 'Chrome 密码 CSV 导出',
+      pwdbook: 'PwdBook',
+      pwdbookDesc: '本应用 JSON 备份',
+    },
+    guides: {
+      keepassGuide:
+        'KeePass：文件 → 导出 → 选择「KeePass CSV (2.x)」格式并保存。导出文件包含 Group 列，导入时可映射为分类。',
+      enpassGuide:
+        'Enpass：设置 → 导出 → 选择 CSV 格式。请使用未加密的 CSV 导出（若 Enpass 要求主密码解密后再导出）。',
+      bitwardenGuide:
+        'Bitwarden：工具 → 导出保险库 → 文件格式选 CSV，加密格式选「未加密」。登录类条目使用 login_* 列。',
+      onepasswordGuide:
+        '1Password：文件 → 导出 → 选择 CSV。确保导出包含 Website、Username、Password 列。',
+      chromeGuide:
+        'Chrome：设置 → 自动填充 → Google 密码管理器 → 设置（齿轮）→ 下载文件。导出为 Google 密码 CSV。',
+      pwdbookGuide: '在「设置 → 数据」中使用「导出 JSON 备份」生成的 .json 文件。',
+    },
+    errors: {
+      csvOnly: '请选择 CSV 文件',
+      jsonOnly: '请选择 JSON 文件',
+      emptyFile: '文件为空',
+      noHeaders: '无法读取 CSV 表头',
+      parserPending: '该来源的 CSV 解析尚未实现，敬请期待下一版本',
+    },
   },
   appearance: {
     skinTitle: '界面皮肤',
