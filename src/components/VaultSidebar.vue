@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, Search, Plus } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, ChevronDown, Search, Plus, Wrench } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -37,6 +37,14 @@ const suppressNextClick = ref(false)
 const activePointerId = ref<number | null>(null)
 
 const BODY_DRAG_CLASS = 'category-drag-active'
+const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
+
+function readUtilitiesExpanded(): boolean {
+  const stored = localStorage.getItem(UTILITIES_EXPANDED_STORAGE_KEY)
+  return stored === null ? true : stored === 'true'
+}
+
+const utilitiesExpanded = ref(readUtilitiesExpanded())
 
 const isDragging = computed(() => dragFromIndex.value !== null)
 
@@ -168,6 +176,11 @@ function openCreateCategory(): void {
   categoryManagePanelRef.value?.openCreateDialog()
 }
 
+function toggleUtilities(): void {
+  utilitiesExpanded.value = !utilitiesExpanded.value
+  localStorage.setItem(UTILITIES_EXPANDED_STORAGE_KEY, String(utilitiesExpanded.value))
+}
+
 onBeforeUnmount(() => {
   cleanupDrag()
 })
@@ -242,44 +255,74 @@ onBeforeUnmount(() => {
       </TransitionGroup>
     </nav>
 
-    <Divider v-if="isAnimalIsland" type="wave-yellow" class="sidebar-divider" />
+    <div class="sidebar-utilities">
+      <button
+        type="button"
+        class="utilities-toggle"
+        :aria-expanded="utilitiesExpanded"
+        :title="utilitiesExpanded ? t('vault.collapseUtilities') : t('vault.expandUtilities')"
+        @click="toggleUtilities"
+      >
+        <span class="utilities-toggle-leading">
+          <span class="utilities-toggle-icon-wrap" aria-hidden="true">
+            <Wrench class="utilities-toggle-icon" :size="15" :stroke-width="1.5" />
+          </span>
+          <span class="utilities-toggle-label">{{ t('tools.sectionLabel') }}</span>
+        </span>
+        <ChevronDown
+          class="utilities-chevron"
+          :class="{ open: utilitiesExpanded }"
+          :size="14"
+          :stroke-width="1.5"
+        />
+      </button>
 
-    <div class="tool-section">
-      <div class="tool-list">
-        <button type="button" class="tool-entry tool-entry--mail" @click="openEmailBackup">
-          <span class="tool-entry-icon">
-            <MailCheck :size="16" :stroke-width="1.5" />
-          </span>
-          <span class="tool-entry-body">
-            <span class="tool-entry-title">{{ t('tools.emailBackupTitle') }}</span>
-            <span class="tool-entry-desc">{{ t('tools.emailBackupDesc') }}</span>
-          </span>
-          <ChevronRight class="tool-entry-arrow" :size="14" :stroke-width="1.5" />
-        </button>
-        <button type="button" class="tool-entry tool-entry--gen" @click="openPasswordGen()">
-          <span class="tool-entry-icon">
-            <Sparkles :size="16" :stroke-width="1.5" />
-          </span>
-          <span class="tool-entry-body">
-            <span class="tool-entry-title">{{ t('tools.passwordGenTitle') }}</span>
-            <span class="tool-entry-desc">{{ t('tools.passwordGenDesc') }}</span>
-          </span>
-          <ChevronRight class="tool-entry-arrow" :size="14" :stroke-width="1.5" />
-        </button>
+      <div
+        class="utilities-collapse"
+        :class="{ 'utilities-collapse--open': utilitiesExpanded }"
+      >
+        <div class="utilities-body" :inert="!utilitiesExpanded || undefined">
+          <Divider v-if="isAnimalIsland" type="wave-yellow" class="sidebar-divider" />
+
+          <div class="tool-section">
+            <div class="tool-list">
+              <button type="button" class="tool-entry tool-entry--mail" @click="openEmailBackup">
+                <span class="tool-entry-icon">
+                  <MailCheck :size="16" :stroke-width="1.5" />
+                </span>
+                <span class="tool-entry-body">
+                  <span class="tool-entry-title">{{ t('tools.emailBackupTitle') }}</span>
+                  <span class="tool-entry-desc">{{ t('tools.emailBackupDesc') }}</span>
+                </span>
+                <ChevronRight class="tool-entry-arrow" :size="14" :stroke-width="1.5" />
+              </button>
+              <button type="button" class="tool-entry tool-entry--gen" @click="openPasswordGen()">
+                <span class="tool-entry-icon">
+                  <Sparkles :size="16" :stroke-width="1.5" />
+                </span>
+                <span class="tool-entry-body">
+                  <span class="tool-entry-title">{{ t('tools.passwordGenTitle') }}</span>
+                  <span class="tool-entry-desc">{{ t('tools.passwordGenDesc') }}</span>
+                </span>
+                <ChevronRight class="tool-entry-arrow" :size="14" :stroke-width="1.5" />
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-bottom">
+            <CategoryManagePanel ref="categoryManagePanelRef" />
+            <TagManagePanel />
+            <button type="button" class="nav-item" @click="navigateTo('settings')">
+              <Settings :size="16" :stroke-width="1.5" />
+              {{ t('vault.settings') }}
+            </button>
+            <button type="button" class="nav-item lock-btn" @click="lock">
+              <Lock :size="16" :stroke-width="1.5" />
+              {{ t('vault.lock') }}
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="sidebar-bottom">
-      <CategoryManagePanel ref="categoryManagePanelRef" />
-      <TagManagePanel />
-      <button type="button" class="nav-item" @click="navigateTo('settings')">
-        <Settings :size="16" :stroke-width="1.5" />
-        {{ t('vault.settings') }}
-      </button>
-      <button type="button" class="nav-item lock-btn" @click="lock">
-        <Lock :size="16" :stroke-width="1.5" />
-        {{ t('vault.lock') }}
-      </button>
     </div>
   </aside>
 </template>
@@ -374,10 +417,107 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-top,
-.tool-section,
-.sidebar-bottom,
+.sidebar-utilities,
 .sidebar-divider {
   flex-shrink: 0;
+}
+
+.sidebar-utilities {
+  border-top: 1px solid var(--border-default);
+}
+
+.utilities-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.utilities-toggle:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.utilities-toggle-label {
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.utilities-toggle-leading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.utilities-toggle-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.utilities-toggle-icon {
+  display: block;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.utilities-toggle:hover .utilities-toggle-label,
+.utilities-toggle:hover .utilities-toggle-icon {
+  color: var(--text-secondary);
+}
+
+.utilities-chevron {
+  flex-shrink: 0;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.utilities-chevron.open {
+  transform: rotate(180deg);
+}
+
+.utilities-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.utilities-collapse--open {
+  grid-template-rows: 1fr;
+}
+
+.utilities-body {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.utilities-collapse--open .utilities-body {
+  opacity: 1;
+  transition: opacity 0.28s ease 0.06s;
+}
+
+.sidebar--animal .utilities-toggle {
+  padding: 8px 12px 6px;
 }
 
 .sidebar--animal .tool-section {
@@ -385,7 +525,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar--animal .sidebar-divider {
-  margin: 4px 12px 6px;
+  margin: 0 12px 6px;
 }
 
 .sort-list {
@@ -472,7 +612,8 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-bottom {
-  padding: 12px;
+  margin-top: 4px;
+  padding: 8px 12px 12px;
   border-top: 1px solid var(--border-default);
 }
 

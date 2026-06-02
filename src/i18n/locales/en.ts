@@ -124,6 +124,8 @@ export default {
     sortBy: 'Sort by',
     searchPlaceholder: 'Search sites, accounts, or tags…',
     categorySearchPlaceholder: 'Search categories…',
+    expandUtilities: 'Expand tools & settings',
+    collapseUtilities: 'Collapse tools & settings',
     noAccount: 'No account',
     copyData: 'Copy data',
     moveTo: 'Move to',

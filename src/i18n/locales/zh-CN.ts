@@ -123,6 +123,8 @@ export default {
     sortBy: '排序方式',
     searchPlaceholder: '搜索网站、账号或标签…',
     categorySearchPlaceholder: '搜索分类…',
+    expandUtilities: '展开工具与设置',
+    collapseUtilities: '收起工具与设置',
     noAccount: '未填写账号',
     copyData: '复制数据',
     moveTo: '移动到',
