@@ -41,7 +41,7 @@ const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
 
 function readUtilitiesExpanded(): boolean {
   const stored = localStorage.getItem(UTILITIES_EXPANDED_STORAGE_KEY)
-  return stored === null ? true : stored === 'true'
+  return stored === null ? false : stored === 'true'
 }
 
 const utilitiesExpanded = ref(readUtilitiesExpanded())
