@@ -4,6 +4,7 @@ import type { ExportPayload } from '../../shared/types'
 const ENTRY_HEADERS = [
   '标题',
   '网址',
+  '本地程序路径',
   '用户名',
   '密码',
   '备注',
@@ -25,6 +26,7 @@ export function buildExcelBuffer(payload: ExportPayload): Buffer {
   const entryRows = payload.entries.map((entry) => [
     entry.title,
     entry.url,
+    entry.localProgramPath ?? '',
     entry.username,
     entry.password,
     entry.note,

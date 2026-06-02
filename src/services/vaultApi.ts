@@ -78,6 +78,7 @@ export const vaultApi = {
     getApi().copySecret(text, clearAfterMs),
 
   openExternal: (url: string): Promise<void> => getApi().openExternal(url),
+  openLocalProgram: (programPath: string): Promise<void> => getApi().openLocalProgram(programPath),
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
   exportDataAsExcel: (): Promise<Uint8Array> => getApi().exportDataAsExcel(),

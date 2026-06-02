@@ -24,6 +24,7 @@ export function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntr
     categoryId,
     isFavorite: Boolean(raw.isFavorite),
     displayIcon: String(raw.displayIcon ?? ''),
+    localProgramPath: String(raw.localProgramPath ?? raw.local_program_path ?? ''),
   }
 }
 

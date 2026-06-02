@@ -524,6 +524,7 @@ function entryToInput(entry: PasswordEntry): PasswordEntryInput {
     categoryId: entry.categoryId,
     isFavorite: entry.isFavorite,
     displayIcon: entry.displayIcon ?? '',
+    localProgramPath: entry.localProgramPath ?? '',
   }
 }
 
@@ -715,6 +716,20 @@ async function copyPassword(id: string, text: string): Promise<void> {
   touchActivity()
 }
 
+async function openLocalProgramForEntry(entry: PasswordEntry): Promise<void> {
+  const programPath = entry.localProgramPath?.trim() ?? ''
+  if (!programPath) return
+  clearError()
+  try {
+    await vaultApi.openLocalProgram(programPath)
+    await vaultApi.touchEntry(entry.id)
+    await refreshEntries()
+    touchActivity()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
 async function openEntryInBrowser(entry: PasswordEntry): Promise<void> {
   if (!entry.url.trim()) {
     showToast(i18n.global.t('vault.noUrlToOpen'), 'error')
@@ -894,6 +909,7 @@ export function useAppState() {
     copyPassword,
     copyEntryData,
     openEntryInBrowser,
+    openLocalProgramForEntry,
     createGeneratedPassword,
     passwordGenApplyMode,
     pendingApplyPassword,

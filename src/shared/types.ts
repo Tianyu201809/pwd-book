@@ -98,6 +98,8 @@ export interface PasswordEntry {
   categoryName: string
   isFavorite: boolean
   displayIcon: string
+  /** 可选：本地可执行程序路径，用于右键启动 */
+  localProgramPath: string
   lastUsedAt: number | null
   createdAt: number
   updatedAt: number
@@ -113,6 +115,7 @@ export interface PasswordEntryInput {
   categoryId?: string
   isFavorite?: boolean
   displayIcon?: string
+  localProgramPath?: string
 }
 
 export interface SecuritySettings {
@@ -246,6 +249,7 @@ export const IPC = {
   settingsUpdate: 'settings:update',
   clipboardCopy: 'clipboard:copy-secret',
   shellOpenExternal: 'shell:open-external',
+  shellOpenLocalProgram: 'shell:open-local-program',
   dataExport: 'data:export',
   dataExportExcel: 'data:export-excel',
   dataExportCsv: 'data:export-csv',

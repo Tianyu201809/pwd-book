@@ -15,6 +15,7 @@ import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
 import { commitImport, previewImport } from '../services/importService'
 import { buildExportCsv } from '../services/exportCsvService'
+import { openLocalProgram } from '../services/localProgramService'
 import type { ExportFormatId } from '../../shared/exportFormats'
 import {
   createEntry,
@@ -336,6 +337,16 @@ export function registerIpcHandlers(): void {
       throw appError(ErrorCode.INVALID_EXTERNAL_URL)
     }
     await shell.openExternal(url)
+  })
+
+  ipcMain.handle(IPC.shellOpenLocalProgram, async (_event, programPath: string) => {
+    try {
+      ensureUnlocked()
+      await openLocalProgram(programPath)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
   })
 
   ipcMain.handle(IPC.dataExport, () =>

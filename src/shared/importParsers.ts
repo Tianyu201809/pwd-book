@@ -29,6 +29,7 @@ function rowEntry(
       tags: partial.tags ?? [],
       isFavorite: partial.isFavorite ?? false,
       displayIcon: partial.displayIcon ?? '',
+      localProgramPath: partial.localProgramPath ?? '',
     },
   }
 }

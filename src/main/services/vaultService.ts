@@ -35,6 +35,7 @@ function rowToEntry(row: EntryRow): PasswordEntry {
     tags: JSON.parse(row.tags || '[]') as string[],
     isFavorite: row.is_favorite === 1,
     displayIcon: row.display_icon,
+    localProgramPath: row.local_program_path,
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -101,8 +102,8 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
 
   db.run(
     `INSERT INTO password_entries
-      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, last_used_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, last_used_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.title.trim(),
@@ -114,6 +115,7 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
       JSON.stringify(input.tags ?? []),
       input.isFavorite ? 1 : 0,
       input.displayIcon?.trim() ?? '',
+      input.localProgramPath?.trim() ?? '',
       null,
       now,
       now,
@@ -134,7 +136,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
 
   db.run(
     `UPDATE password_entries
-     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, updated_at = ?
+     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, local_program_path = ?, updated_at = ?
      WHERE id = ?`,
     [
       input.title.trim(),
@@ -146,6 +148,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
       JSON.stringify(input.tags ?? JSON.parse(existing.tags || '[]')),
       input.isFavorite ? 1 : 0,
       input.displayIcon?.trim() ?? existing.display_icon,
+      input.localProgramPath?.trim() ?? existing.local_program_path,
       now,
       id,
     ],

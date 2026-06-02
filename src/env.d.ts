@@ -63,6 +63,7 @@ declare global {
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
       openExternal: (url: string) => Promise<void>
+      openLocalProgram: (programPath: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
       exportDataAsExcel: () => Promise<Uint8Array>
       exportDataAsCsv: (formatId: string) => Promise<string>

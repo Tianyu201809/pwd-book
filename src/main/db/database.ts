@@ -71,6 +71,7 @@ export async function initDatabase(): Promise<Database> {
   seedAndMigrateCategories(db)
 
   migrateEntryDisplayIcon(db)
+  migrateEntryLocalProgramPath(db)
 
   persistDatabase()
   return db
@@ -98,11 +99,21 @@ export function resetDatabaseFile(): void {
   }
 }
 
-function migrateEntryDisplayIcon(db: Database): void {
+function readEntryTableColumns(db: Database): string[] {
   const info = db.exec('PRAGMA table_info(password_entries)')
-  const columns =
-    info.length > 0 ? info[0].values.map((value) => String(value[1])) : []
+  return info.length > 0 ? info[0].values.map((value) => String(value[1])) : []
+}
+
+function migrateEntryDisplayIcon(db: Database): void {
+  const columns = readEntryTableColumns(db)
   if (!columns.includes('display_icon')) {
     db.run(`ALTER TABLE password_entries ADD COLUMN display_icon TEXT NOT NULL DEFAULT ''`)
+  }
+}
+
+function migrateEntryLocalProgramPath(db: Database): void {
+  const columns = readEntryTableColumns(db)
+  if (!columns.includes('local_program_path')) {
+    db.run(`ALTER TABLE password_entries ADD COLUMN local_program_path TEXT NOT NULL DEFAULT ''`)
   }
 }

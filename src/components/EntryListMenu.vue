@@ -19,6 +19,7 @@ const {
   securitySettings,
   customCategories,
   openEntryInBrowser,
+  openLocalProgramForEntry,
   copyEntryData,
   removeEntry,
   moveEntryToCategory,
@@ -37,6 +38,16 @@ async function handleOpenInBrowser(event: MouseEvent): Promise<void> {
   event.stopPropagation()
   done()
   await openEntryInBrowser(props.entry)
+}
+
+async function handleOpenLocalProgram(event: MouseEvent): Promise<void> {
+  event.stopPropagation()
+  done()
+  await openLocalProgramForEntry(props.entry)
+}
+
+function hasLocalProgram(): boolean {
+  return Boolean(props.entry.localProgramPath?.trim())
 }
 
 async function handleCopy(event: MouseEvent): Promise<void> {
@@ -164,6 +175,14 @@ function scheduleCloseMoveSubmenu(): void {
     @click="handleOpenInBrowser"
   >
     {{ openBrowserLabel }}
+  </button>
+  <button
+    v-if="hasLocalProgram()"
+    type="button"
+    class="action-menu-item"
+    @click="handleOpenLocalProgram"
+  >
+    {{ t('vault.openLocalProgram') }}
   </button>
   <button type="button" class="action-menu-item" @click="handleCopy">
     {{ t('vault.copyData') }}

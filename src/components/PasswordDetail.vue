@@ -103,6 +103,7 @@ const draft = ref<PasswordEntryInput>({
   categoryId: '',
   isFavorite: false,
   displayIcon: '',
+  localProgramPath: '',
 })
 
 const categoryOptions = computed(() =>
@@ -167,6 +168,7 @@ function resetDraftFromEntry(): void {
       categoryId: getCreateDefaultCategoryId(),
       isFavorite: false,
       displayIcon: '',
+      localProgramPath: '',
     }
     closeTagPicker()
     return
@@ -182,6 +184,7 @@ function resetDraftFromEntry(): void {
     categoryId: selectedEntry.value.categoryId,
     isFavorite: selectedEntry.value.isFavorite,
     displayIcon: selectedEntry.value.displayIcon ?? '',
+    localProgramPath: selectedEntry.value.localProgramPath ?? '',
   }
   closeTagPicker()
 }
@@ -500,6 +503,16 @@ watch(detailCollapsed, () => {
               <Copy :size="16" :stroke-width="1.5" />
             </button>
           </div>
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.localProgramPath') }}</label>
+          <UiInput
+            v-model="draft.localProgramPath"
+            class="detail-field"
+            :placeholder="t('detail.localProgramPathPlaceholder')"
+          />
+          <p class="field-hint">{{ t('detail.localProgramPathHint') }}</p>
         </div>
 
         <div class="field">
@@ -1033,6 +1046,13 @@ watch(detailCollapsed, () => {
   letter-spacing: 0.04em;
   color: var(--text-muted);
   margin-bottom: 8px;
+}
+
+.field-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 
 .field-row {

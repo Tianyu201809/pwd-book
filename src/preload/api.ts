@@ -110,6 +110,8 @@ export const electronAPI = {
     invoke(IPC.clipboardCopy, { text, clearAfterMs }),
 
   openExternal: (url: string): Promise<void> => invoke(IPC.shellOpenExternal, url),
+  openLocalProgram: (programPath: string): Promise<void> =>
+    invoke(IPC.shellOpenLocalProgram, programPath),
 
   exportData: (): Promise<ExportPayload> => invoke(IPC.dataExport),
   exportDataAsExcel: (): Promise<Uint8Array> => invoke(IPC.dataExportExcel),
