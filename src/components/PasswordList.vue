@@ -426,11 +426,12 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   transition: background-color 0.2s;
 }
 
-.list-item:hover {
+.list-item:hover:not(.list-item-active) {
   background: var(--bg-hover);
 }
 
-.list-item-active {
+.list-item.list-item-active,
+.list-item.list-item-active:hover {
   background: var(--accent-subtle);
 }
 

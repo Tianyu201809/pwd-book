@@ -348,8 +348,14 @@
   background: var(--bg-surface);
 }
 
-[data-skin="animalIsland"] .list-scroll--animal .list-item.list-item-active {
+[data-skin="animalIsland"] .list-scroll--animal .list-item:hover:not(.list-item-active) {
+  background: var(--bg-hover);
+}
+
+[data-skin="animalIsland"] .list-scroll--animal .list-item.list-item-active,
+[data-skin="animalIsland"] .list-scroll--animal .list-item.list-item-active:hover {
   border-left: 3px solid var(--accent-primary);
+  background: var(--accent-subtle);
 }
 
 [data-skin="animalIsland"] .list-scroll--animal .entry-title {

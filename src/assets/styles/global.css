@@ -297,7 +297,8 @@ textarea.input-field {
   opacity: 1;
 }
 
-.list-item-active {
+.list-item.list-item-active,
+.list-item.list-item-active:hover {
   background: var(--bg-elevated);
   border-left: 3px solid var(--accent-primary);
 }
