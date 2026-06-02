@@ -1214,7 +1214,8 @@ watch(detailCollapsed, () => {
   max-width: 100%;
 }
 
-.field-row .input-field {
+/* 仅 field-row 的直接 input 子项参与 flex；经典 UiInput 的 input 在 wrap 内，须保持 width:100% */
+.field-row > .input-field {
   flex: 1 1 0;
   width: auto;
 }

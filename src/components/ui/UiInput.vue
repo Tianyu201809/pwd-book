@@ -67,13 +67,12 @@ function clearInput(): void {
   <div
     v-else
     class="ui-input-classic-wrap"
-    :class="{ 'ui-input-classic-wrap--has-clear': showClear }"
+    :class="[$attrs.class, { 'ui-input-classic-wrap--has-clear': showClear }]"
   >
     <input
       v-model="model"
       :type="type"
       class="input-field"
-      :class="$attrs.class"
       :placeholder="placeholder"
       :disabled="disabled"
       :readonly="readonly"
