@@ -174,6 +174,8 @@ export default {
     generatePassword: '生成密码',
     pickExistingTags: '从已有标签添加',
     noTagsAvailable: '没有可添加的标签',
+    edit: '编辑',
+    noTags: '无标签',
   },
   tools: {
     sectionLabel: '工具',

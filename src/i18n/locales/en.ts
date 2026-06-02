@@ -175,6 +175,8 @@ export default {
     generatePassword: 'Generate password',
     pickExistingTags: 'Add from existing tags',
     noTagsAvailable: 'No tags available to add',
+    edit: 'Edit',
+    noTags: 'No tags',
   },
   tools: {
     sectionLabel: 'Tools',
