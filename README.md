@@ -158,7 +158,8 @@ npm run dev
 ### 窗口与系统集成（Windows）
 
 - **系统托盘** — 标题栏「−」或关闭流程可选「最小化到托盘」；托盘图标点击可重新显示窗口；托盘菜单可打开 **快捷搜索**
-- **悬浮快捷搜索条** — 置顶细长搜索窗（默认 `Alt+Shift+P`）；输入后 `Enter` **直接打开网址或启动本地程序**；可在 **设置 → 安全** 启用/禁用
+- **悬浮快捷搜索条** — 置顶细长搜索窗（默认 `Alt+Shift+P`）；输入后 `Enter` **直接打开网址或启动本地程序**；无输入时显示**最近打开**（最多 5 条，可手动移除）；可在 **设置 → 安全** 启用/禁用
+- **快捷键唤起主窗口** — 全局快捷键（默认 `Alt+Shift+M`）显示并聚焦主窗口；可在 **设置 → 安全** 启用/禁用
 - **关闭行为** — 设置 → 安全：每次询问、默认最小化到托盘、或直接退出；标题栏关闭对话框可勾选「记住选择」
 - **单实例** — 重复启动已运行的实例时，会聚焦已有窗口并提示应用已在运行
 
@@ -304,10 +305,13 @@ Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%
 在 **设置 → 安全** 中默认关闭；开启后，列表菜单与快捷搜索条打开网址时会写入 `user` / `pwd` 查询参数。仅适合你自己信任、且确实从 URL 读取凭据的页面；对普通 HTTPS 登录页无帮助，且 URL 可能留在浏览器历史记录中，请谨慎使用。
 
 **快捷搜索条怎么用？**  
-解锁后按 `Alt+Shift+P`（或在设置中点击「打开快捷条」）。输入关键词，↑↓ 选择条目，`Enter` 启动本地程序或打开网址（优先程序路径）。失焦后快捷条自动隐藏。可在 **设置 → 安全** 关闭该功能。
+解锁后按 `Alt+Shift+P`（或在设置中点击「打开快捷条」）。无输入时显示**最近打开**（最多 5 条，悬停可 × 移除）；输入关键词后 ↑↓ 选择条目，`Enter` 启动本地程序或打开网址（优先程序路径）。失焦后快捷条自动隐藏。移除最近打开**不会**删除条目，也不会清除主列表的「最近使用时间」；全部移除后列表保持为空，直到再次打开条目。详见 [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md)。
+
+**如何用快捷键唤起主窗口？**  
+默认 `Alt+Shift+M`（可在 **设置 → 安全 → 快捷键唤起主窗口** 开关）。窗口最小化到托盘时也可通过该快捷键恢复。
 
 **如何参与开发？**  
-从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，标签逻辑见 `src/main/services/tagService.ts` 与 `TagManagePanel.vue`，托盘与关闭逻辑见 `src/main/tray.ts`，邮箱备份见 `src/main/services/emailBackupService.ts`。
+从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，标签逻辑见 `src/main/services/tagService.ts` 与 `TagManagePanel.vue`，托盘与关闭逻辑见 `src/main/tray.ts`，快捷条与最近打开见 [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md)，邮箱备份见 `src/main/services/emailBackupService.ts`。
 
 ---
 

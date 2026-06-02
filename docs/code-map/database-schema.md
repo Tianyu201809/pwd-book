@@ -48,8 +48,22 @@
 
 | Key | 说明 |
 |-----|------|
-| `security_settings` | JSON：`SecuritySettings` |
+| `auto_lock_minutes` | 自动锁定分钟数 |
+| `clipboard_clear_enabled` | 剪贴板定时清除 |
+| `clipboard_clear_seconds` | 清除延迟秒数 |
+| `close_window_action` | `ask` / `tray` / `quit` |
+| `open_url_with_credentials` | 打开网址是否附带 user/pwd |
+| `quick_bar_enabled` | 快捷搜索条开关 |
+| `quick_bar_accelerator` | 快捷条快捷键，默认 `Alt+Shift+P` |
+| `main_window_shortcut_enabled` | 主窗口全局快捷键开关 |
+| `main_window_shortcut_accelerator` | 主窗口快捷键，默认 `Alt+Shift+M` |
 | `sidebar_category_order` | JSON：`string[]`，含 `all`、`favorite` 及自定义分类 id |
+
+### 快捷条与快捷键
+
+| Key | 说明 |
+|-----|------|
+| `quick_bar_recent_ids` | JSON：`string[]`，快捷条「最近打开」条目 id，最多 5；**空数组表示用户已清空**，不会自动从历史补位 |
 
 ### 分类数据
 

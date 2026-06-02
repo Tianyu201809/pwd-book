@@ -24,8 +24,18 @@ App.vue
 ├── CategoryIconView.vue      # 彩色图标渲染
 └── ToastHost.vue             # 全局 Toast 容器
 
-# 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 CHANGELOG 1.2.0）
+# 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
 ```
+
+### QuickBarApp.vue
+
+- 无搜索词时展示「最近打开」（`listQuickBarRecent`），最多 5 条，可手动移除。
+- 有搜索词时 `filterEntriesBySearch` 过滤；↑↓ / Enter 选择并 `launchEntry`。
+- 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
+
+### EntryListMenu.vue
+
+列表项右键 / 「⋯」菜单；「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
 
 ## Composables
 

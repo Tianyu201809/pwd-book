@@ -34,7 +34,16 @@
 | `entries:update` | 是 | 同上 |
 | `entries:delete` | 是 | 按 id 删除 |
 | `entries:toggle-favorite` | 是 | 切换收藏 |
-| `entries:touch` | 是 | 更新 `last_used_at` |
+| `entries:touch` | 是 | 更新 `last_used_at`，并写入快捷条 `quick_bar_recent_ids` |
+
+### 快捷搜索条
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `quickbar:list-recent` | 是 | 返回快捷条「最近打开」条目（独立 ID 列表，最多 5） |
+| `quickbar:remove-recent` | 是 | 从最近打开移除指定 id |
+
+快捷条窗口控制为 `send` 通道（`quickbar:hide/show/resize/show-main`），详见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)。
 
 ### 分类
 
@@ -53,7 +62,7 @@
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
-| `settings:update` | 否 | 部分更新 |
+| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
 | `data:export` | 是 | JSON 结构 `ExportPayload` |
 | `data:import` | 是 | 批量导入条目 |

@@ -49,7 +49,16 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（自动锁定分钟数、剪贴板清除开关与秒数），存 `app_settings`。
+读写 `SecuritySettings`（自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+
+### quickBarRecentService (`src/main/services/quickBarRecentService.ts`)
+
+快捷条「最近打开」专用列表（`quick_bar_recent_ids`），与条目 `last_used_at` 分离。详见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)。
+
+### quickBar / mainWindowShortcut
+
+- `src/main/quickBar.ts` — 快捷条窗口与 `Alt+Shift+P` 注册
+- `src/main/mainWindowShortcut.ts` — 主窗口 `Alt+Shift+M` 注册，调用 `showFromTray()`
 
 ## 加密模块 (`src/main/crypto/vaultCrypto.ts`)
 

@@ -11,6 +11,7 @@
 | [renderer-ui.md](./renderer-ui.md) | 渲染进程：组件树、composables、状态 |
 | [ipc-and-data-flow.md](./ipc-and-data-flow.md) | IPC 通道表、解锁/保存/恢复流程图 |
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
+| [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试 |
 
 ## 相关文档
 
@@ -28,4 +29,5 @@
 | 改恢复密钥流程 | `recoveryService.ts`、`LockScreen.vue`、`recovery/*` |
 | 改 UI 状态与保存 | `useAppState.ts`、`PasswordDetail.vue` |
 | 改分类/侧边栏 | `categoryService.ts`、`VaultSidebar.vue` |
+| 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue` |
 | 改类型定义 | `src/shared/types.ts` |
