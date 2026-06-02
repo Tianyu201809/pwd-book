@@ -145,6 +145,11 @@ function openCreateView(): void {
   clearError()
 }
 
+function openCreateDialog(): void {
+  showManageDialog.value = true
+  openCreateView()
+}
+
 function backToList(): void {
   dialogMode.value = 'list'
   localError.value = ''
@@ -181,6 +186,11 @@ async function confirmDelete(id: string, name: string): Promise<void> {
     localError.value = errorMessage.value || t('errors.cannot_delete_category', { name })
   }
 }
+
+defineExpose({
+  openManageDialog,
+  openCreateDialog,
+})
 </script>
 
 <template>

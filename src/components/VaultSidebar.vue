@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, Search } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, Search, Plus } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -27,6 +27,7 @@ const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
 
 const categorySearchQuery = ref('')
+const categoryManagePanelRef = ref<InstanceType<typeof CategoryManagePanel> | null>(null)
 const sidebarNavRef = ref<HTMLElement | null>(null)
 const dragFromIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
@@ -163,6 +164,10 @@ function onNavClick(categoryId: FilterCategory, event: MouseEvent): void {
   selectCategory(categoryId)
 }
 
+function openCreateCategory(): void {
+  categoryManagePanelRef.value?.openCreateDialog()
+}
+
 onBeforeUnmount(() => {
   cleanupDrag()
 })
@@ -178,19 +183,30 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="category-search-wrap">
-      <div class="search-field-wrap">
-        <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
-        <UiInput
-          v-model="categorySearchQuery"
-          class="search-field-input"
-          :class="{ 'search-field-input--animal': isAnimalIsland }"
-          :placeholder="t('vault.categorySearchPlaceholder')"
-          allow-clear
+      <div class="category-search-row">
+        <div class="search-field-wrap">
+          <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
+          <UiInput
+            v-model="categorySearchQuery"
+            class="search-field-input"
+            :class="{ 'search-field-input--animal': isAnimalIsland }"
+            :placeholder="t('vault.categorySearchPlaceholder')"
+            allow-clear
+          >
+            <template v-if="isAnimalIsland" #prefix>
+              <Search :size="14" :stroke-width="1.5" />
+            </template>
+          </UiInput>
+        </div>
+        <button
+          type="button"
+          class="category-add-btn"
+          :title="t('category.newCategory')"
+          :aria-label="t('category.newCategory')"
+          @click="openCreateCategory"
         >
-          <template v-if="isAnimalIsland" #prefix>
-            <Search :size="14" :stroke-width="1.5" />
-          </template>
-        </UiInput>
+          <Plus :size="16" :stroke-width="1.5" />
+        </button>
       </div>
     </div>
 
@@ -254,7 +270,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="sidebar-bottom">
-      <CategoryManagePanel />
+      <CategoryManagePanel ref="categoryManagePanelRef" />
       <TagManagePanel />
       <button type="button" class="nav-item" @click="navigateTo('settings')">
         <Settings :size="16" :stroke-width="1.5" />
@@ -307,6 +323,45 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   padding: 0 12px;
   margin-bottom: 8px;
+}
+
+.category-search-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.category-search-row .search-field-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.category-add-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+}
+
+.category-add-btn:hover {
+  color: var(--accent-primary);
+  border-color: var(--border-accent);
+  background: var(--accent-subtle);
+}
+
+.category-add-btn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
 .sidebar-nav {
