@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const {
+  securitySettings,
   customCategories,
   openEntryInBrowser,
   copyEntryData,
@@ -66,6 +67,12 @@ async function handleMove(categoryId: string, event: MouseEvent): Promise<void> 
 function canOpenInBrowser(): boolean {
   return Boolean(props.entry.url.trim())
 }
+
+const openBrowserLabel = computed(() =>
+  securitySettings.value.openUrlWithCredentials
+    ? t('vault.openWithCredentials')
+    : t('vault.openUrl'),
+)
 
 const moveSubmenuOpen = ref(false)
 const moveSubmenuWrapRef = ref<HTMLElement | null>(null)
@@ -156,7 +163,7 @@ function scheduleCloseMoveSubmenu(): void {
     :disabled="!canOpenInBrowser()"
     @click="handleOpenInBrowser"
   >
-    {{ t('vault.openWithCredentials') }}
+    {{ openBrowserLabel }}
   </button>
   <button type="button" class="action-menu-item" @click="handleCopy">
     {{ t('vault.copyData') }}

@@ -57,19 +57,21 @@ export function buildRecoveryKeyFileContent(recoveryKey: string): string {
   ].join('\n')
 }
 
+export function normalizeExternalUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim()
+  if (!trimmed) {
+    throw new Error(`${ERR_PREFIX}URL_REQUIRED`)
+  }
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
 /** Append `user` and `pwd` query params for sites that read credentials from the URL. */
 export function buildUrlWithCredentialParams(
   rawUrl: string,
   username: string,
   password: string,
 ): string {
-  const trimmed = rawUrl.trim()
-  if (!trimmed) {
-    throw new Error(`${ERR_PREFIX}URL_REQUIRED`)
-  }
-
-  const href = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
-  const url = new URL(href)
+  const url = new URL(normalizeExternalUrl(rawUrl))
   url.searchParams.set('user', username)
   url.searchParams.set('pwd', password)
   return url.toString()

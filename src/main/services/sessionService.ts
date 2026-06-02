@@ -6,6 +6,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   clipboardClearEnabled: true,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
+  openUrlWithCredentials: false,
 }
 
 let sessionKey: Buffer | null = null

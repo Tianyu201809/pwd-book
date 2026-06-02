@@ -7,6 +7,7 @@ const SETTINGS_KEYS = {
   clipboardClearEnabled: 'clipboard_clear_enabled',
   clipboardClearSeconds: 'clipboard_clear_seconds',
   closeWindowAction: 'close_window_action',
+  openUrlWithCredentials: 'open_url_with_credentials',
 } as const
 
 function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
@@ -27,6 +28,9 @@ export function getSecuritySettings(): SecuritySettings {
     closeWindowAction: parseCloseWindowAction(
       getSetting(SETTINGS_KEYS.closeWindowAction) ?? defaults.closeWindowAction,
     ),
+    openUrlWithCredentials:
+      (getSetting(SETTINGS_KEYS.openUrlWithCredentials) ??
+        String(defaults.openUrlWithCredentials)) === 'true',
   }
 }
 
@@ -38,6 +42,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.clipboardClearEnabled, String(next.clipboardClearEnabled))
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
   setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
+  setSetting(SETTINGS_KEYS.openUrlWithCredentials, String(next.openUrlWithCredentials))
 
   return next
 }

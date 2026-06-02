@@ -3,6 +3,7 @@ import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import {
   buildUrlWithCredentialParams,
+  normalizeExternalUrl,
   cloneForIpc,
   formatEntryForClipboard,
   formatRelativeTime,
@@ -45,6 +46,7 @@ const securitySettings = ref<SecuritySettings>({
   clipboardClearEnabled: true,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
+  openUrlWithCredentials: false,
 })
 
 const selectedCategory = ref<FilterCategory>('all')
@@ -720,11 +722,9 @@ async function openEntryInBrowser(entry: PasswordEntry): Promise<void> {
   }
   clearError()
   try {
-    const target = buildUrlWithCredentialParams(
-      entry.url,
-      entry.username ?? '',
-      entry.password ?? '',
-    )
+    const target = securitySettings.value.openUrlWithCredentials
+      ? buildUrlWithCredentialParams(entry.url, entry.username ?? '', entry.password ?? '')
+      : normalizeExternalUrl(entry.url)
     await vaultApi.openExternal(target)
     await vaultApi.touchEntry(entry.id)
     await refreshEntries()

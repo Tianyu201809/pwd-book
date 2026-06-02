@@ -120,6 +120,8 @@ export interface SecuritySettings {
   clipboardClearEnabled: boolean
   clipboardClearSeconds: number
   closeWindowAction: CloseWindowAction
+  /** 右键/菜单打开网址时是否在 URL 上附带 user、pwd 查询参数 */
+  openUrlWithCredentials: boolean
 }
 
 export interface VaultStatus {

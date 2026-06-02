@@ -125,6 +125,7 @@ export default {
     moveTo: '移动到',
     noOtherCategory: '无其他分类',
     movedToCategory: '已移动到「{name}」',
+    openUrl: '打开网址',
     openWithCredentials: '打开网址（携带账号密码）',
     noUrlToOpen: '请先填写网址',
     emptyCreating: '填写右侧表单创建第一条密码',
@@ -244,6 +245,9 @@ export default {
     autoLockDesc: '无操作后自动锁定应用',
     clipboardClear: '剪贴板自动清除',
     clipboardClearDesc: '复制密码后 {seconds} 秒清除',
+    openUrlWithCredentials: '打开网址携带账号密码',
+    openUrlWithCredentialsDesc:
+      '开启后，右键菜单「打开网址」会在链接上附加 user、pwd 参数；关闭则仅打开原始网址',
     closeWindow: '关闭窗口时',
     closeWindowDesc: '点击标题栏关闭按钮或 Alt+F4 时的默认行为',
     closeWindowAsk: '每次询问',

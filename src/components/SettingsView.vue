@@ -79,6 +79,10 @@ async function onCloseWindowChange(value: string): Promise<void> {
   await updateSecuritySettings({ closeWindowAction: value as 'ask' | 'tray' | 'quit' })
 }
 
+async function onOpenUrlWithCredentialsChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ openUrlWithCredentials: enabled })
+}
+
 async function handleExportJson(): Promise<void> {
   clearError()
   statusMessage.value = ''
@@ -198,6 +202,16 @@ async function handleReset(): Promise<void> {
               <UiSwitch
                 :model-value="securitySettings.clipboardClearEnabled"
                 @update:model-value="onClipboardClearChange"
+              />
+            </div>
+            <div class="row">
+              <div>
+                <p class="row-title">{{ t('settings.openUrlWithCredentials') }}</p>
+                <p class="row-desc">{{ t('settings.openUrlWithCredentialsDesc') }}</p>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.openUrlWithCredentials"
+                @update:model-value="onOpenUrlWithCredentialsChange"
               />
             </div>
             <div class="row last">
