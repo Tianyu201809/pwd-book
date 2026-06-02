@@ -340,6 +340,13 @@
   overflow: hidden;
 }
 
+/* animal-island-vue 默认指针 49×48，缩至 70% 以适配桌面密度 */
+[data-skin="animalIsland"] .animal-cursor--force,
+[data-skin="animalIsland"] .animal-cursor--force *,
+[data-skin="animalIsland"] .animal-cursor.animal-cursor--scoped {
+  cursor: url("../images/animal/cursor-icon.png") 3 0, default !important;
+}
+
 [data-skin="animalIsland"] .list-scroll--animal {
   flex: 1 1 auto;
   min-height: 0;
