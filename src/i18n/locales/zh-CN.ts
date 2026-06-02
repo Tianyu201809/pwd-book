@@ -277,6 +277,8 @@ export default {
     quickBar: '悬浮快捷搜索',
     quickBarDesc: '屏幕顶部细长搜索条，Enter 直接打开网址或启动本地程序。快捷键：{accelerator}',
     quickBarOpen: '打开快捷条',
+    mainWindowShortcut: '快捷键唤起主窗口',
+    mainWindowShortcutDesc: '全局快捷键显示并聚焦主窗口。快捷键：{accelerator}',
     exportJson: '导出 JSON 备份',
     exportExcel: '导出 Excel 表格',
     exportToApps: '导出到其他应用 (CSV)',

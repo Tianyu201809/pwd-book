@@ -1,5 +1,6 @@
 import { clipboard, ipcMain, shell } from 'electron'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
+import { registerMainWindowShortcut } from '../mainWindowShortcut'
 import { IPC } from '../../shared/types'
 import type {
   PasswordEntryInput,
@@ -336,6 +337,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
     const next = updateSecuritySettings(partial)
     registerQuickBarShortcut()
+    registerMainWindowShortcut()
     return next
   })
 

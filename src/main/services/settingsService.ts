@@ -10,6 +10,8 @@ const SETTINGS_KEYS = {
   openUrlWithCredentials: 'open_url_with_credentials',
   quickBarEnabled: 'quick_bar_enabled',
   quickBarAccelerator: 'quick_bar_accelerator',
+  mainWindowShortcutEnabled: 'main_window_shortcut_enabled',
+  mainWindowShortcutAccelerator: 'main_window_shortcut_accelerator',
 } as const
 
 function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
@@ -37,6 +39,12 @@ export function getSecuritySettings(): SecuritySettings {
       (getSetting(SETTINGS_KEYS.quickBarEnabled) ?? String(defaults.quickBarEnabled)) === 'true',
     quickBarAccelerator:
       getSetting(SETTINGS_KEYS.quickBarAccelerator) ?? defaults.quickBarAccelerator,
+    mainWindowShortcutEnabled:
+      (getSetting(SETTINGS_KEYS.mainWindowShortcutEnabled) ??
+        String(defaults.mainWindowShortcutEnabled)) === 'true',
+    mainWindowShortcutAccelerator:
+      getSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator) ??
+      defaults.mainWindowShortcutAccelerator,
   }
 }
 
@@ -51,6 +59,8 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.openUrlWithCredentials, String(next.openUrlWithCredentials))
   setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))
   setSetting(SETTINGS_KEYS.quickBarAccelerator, next.quickBarAccelerator)
+  setSetting(SETTINGS_KEYS.mainWindowShortcutEnabled, String(next.mainWindowShortcutEnabled))
+  setSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator, next.mainWindowShortcutAccelerator)
 
   return next
 }

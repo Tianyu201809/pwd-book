@@ -24,12 +24,18 @@ function setQuickBarRecentIds(ids: string[]): void {
   setSetting(QUICK_BAR_RECENT_KEY, JSON.stringify(ids.slice(0, QUICK_BAR_RECENT_LIMIT)))
 }
 
+function hasQuickBarRecentStore(): boolean {
+  const raw = getSetting(QUICK_BAR_RECENT_KEY)
+  return raw != null && raw !== ''
+}
+
 function seedQuickBarRecentIfEmpty(entries: PasswordEntry[]): string[] {
-  const existing = getQuickBarRecentIds()
-  if (existing.length > 0) return existing
+  if (hasQuickBarRecentStore()) {
+    return getQuickBarRecentIds()
+  }
 
   const seeded = getRecentOpenedEntries(entries, QUICK_BAR_RECENT_LIMIT).map((entry) => entry.id)
-  if (seeded.length > 0) setQuickBarRecentIds(seeded)
+  setQuickBarRecentIds(seeded)
   return seeded
 }
 

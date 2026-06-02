@@ -9,6 +9,8 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   openUrlWithCredentials: false,
   quickBarEnabled: true,
   quickBarAccelerator: 'Alt+Shift+P',
+  mainWindowShortcutEnabled: true,
+  mainWindowShortcutAccelerator: 'Alt+Shift+M',
 }
 
 let sessionKey: Buffer | null = null

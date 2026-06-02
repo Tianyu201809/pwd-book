@@ -49,6 +49,8 @@ const securitySettings = ref<SecuritySettings>({
   openUrlWithCredentials: false,
   quickBarEnabled: true,
   quickBarAccelerator: 'Alt+Shift+P',
+  mainWindowShortcutEnabled: true,
+  mainWindowShortcutAccelerator: 'Alt+Shift+M',
 })
 
 const selectedCategory = ref<FilterCategory>('all')

@@ -88,6 +88,10 @@ async function onQuickBarEnabledChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ quickBarEnabled: enabled })
 }
 
+async function onMainWindowShortcutEnabledChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ mainWindowShortcutEnabled: enabled })
+}
+
 function openQuickBar(): void {
   window.electronAPI?.showQuickBar?.()
 }
@@ -235,7 +239,7 @@ async function handleReset(): Promise<void> {
                 @update:model-value="onCloseWindowChange"
               />
             </div>
-            <div class="row last quickbar-row">
+            <div class="row quickbar-row">
               <div>
                 <p class="row-title">{{ t('settings.quickBar') }}</p>
                 <p class="row-desc">
@@ -255,6 +259,22 @@ async function handleReset(): Promise<void> {
               <UiSwitch
                 :model-value="securitySettings.quickBarEnabled"
                 @update:model-value="onQuickBarEnabledChange"
+              />
+            </div>
+            <div class="row last">
+              <div>
+                <p class="row-title">{{ t('settings.mainWindowShortcut') }}</p>
+                <p class="row-desc">
+                  {{
+                    t('settings.mainWindowShortcutDesc', {
+                      accelerator: securitySettings.mainWindowShortcutAccelerator,
+                    })
+                  }}
+                </p>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.mainWindowShortcutEnabled"
+                @update:model-value="onMainWindowShortcutEnabledChange"
               />
             </div>
           </UiCard>

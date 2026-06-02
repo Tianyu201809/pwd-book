@@ -129,6 +129,10 @@ export interface SecuritySettings {
   quickBarEnabled: boolean
   /** Electron globalShortcut 加速器，如 Alt+Shift+P */
   quickBarAccelerator: string
+  /** 全局快捷键唤起主窗口 */
+  mainWindowShortcutEnabled: boolean
+  /** Electron globalShortcut 加速器，如 Alt+Shift+M */
+  mainWindowShortcutAccelerator: string
 }
 
 export interface VaultStatus {
