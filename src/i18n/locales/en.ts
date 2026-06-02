@@ -17,6 +17,7 @@ export default {
     show: 'Show',
     hide: 'Hide',
     search: 'Search',
+    clear: 'Clear',
     yes: 'Yes',
     no: 'No',
     minutes: '{n} min',

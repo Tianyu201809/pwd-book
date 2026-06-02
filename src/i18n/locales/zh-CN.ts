@@ -17,6 +17,7 @@ export default {
     show: '显示',
     hide: '隐藏',
     search: '搜索',
+    clear: '清除',
     yes: '是',
     no: '否',
     minutes: '{n} 分钟',
