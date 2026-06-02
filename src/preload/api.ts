@@ -1,6 +1,13 @@
 import { ipcRenderer } from 'electron'
 import { ERR_PREFIX } from '../shared/errors'
 import { IPC, IPC_EVENTS } from '../shared/types'
+
+const QUICKBAR_CHANNELS = {
+  hide: 'quickbar:hide',
+  show: 'quickbar:show',
+  showMain: 'quickbar:show-main',
+  resize: 'quickbar:resize',
+} as const
 import type {
   CategoryInput,
   ExportPayload,
@@ -132,5 +139,15 @@ export const electronAPI = {
     const listener = (): void => handler()
     ipcRenderer.on(IPC_EVENTS.scheduledBackupDue, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.scheduledBackupDue, listener)
+  },
+
+  hideQuickBar: (): void => ipcRenderer.send(QUICKBAR_CHANNELS.hide),
+  showQuickBar: (): void => ipcRenderer.send(QUICKBAR_CHANNELS.show),
+  quickBarShowMain: (): void => ipcRenderer.send(QUICKBAR_CHANNELS.showMain),
+  resizeQuickBar: (height: number): void => ipcRenderer.send(QUICKBAR_CHANNELS.resize, height),
+  onQuickBarShown: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.quickBarShown, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.quickBarShown, listener)
   },
 }

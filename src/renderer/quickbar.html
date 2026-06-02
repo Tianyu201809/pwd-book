@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PwdBook Quick</title>
+    <script>
+      ;(function () {
+        try {
+          var skin = localStorage.getItem('pwdbook-theme-skin') || 'classic'
+          var mode = localStorage.getItem('pwdbook-theme-mode') || 'dark'
+          var accent = localStorage.getItem('pwdbook-theme-accent') || 'brass'
+          document.documentElement.setAttribute('data-skin', skin === 'animalIsland' ? 'animalIsland' : 'classic')
+          var locale = localStorage.getItem('pwdbook-locale')
+          if (!locale) {
+            locale = navigator.language.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en'
+          }
+          document.documentElement.lang = locale
+          var resolved =
+            skin === 'animalIsland'
+              ? 'light'
+              : mode === 'system'
+                ? matchMedia('(prefers-color-scheme: dark)').matches
+                  ? 'dark'
+                  : 'light'
+                : mode === 'light'
+                  ? 'light'
+                  : 'dark'
+          document.documentElement.setAttribute('data-mode', resolved)
+          document.documentElement.setAttribute('data-accent', accent)
+          document.documentElement.setAttribute('data-mode-pref', mode)
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body class="quickbar-body">
+    <div id="app"></div>
+    <script type="module" src="./quickbar.ts"></script>
+  </body>
+</html>

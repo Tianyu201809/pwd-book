@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { getSecuritySettings } from './services/settingsService'
+import { showQuickBar } from './quickBar'
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -62,8 +63,12 @@ function ensureTray(): void {
   tray = new Tray(image)
   tray.setToolTip('PwdBook')
 
+  const quickBarEnabled = getSecuritySettings().quickBarEnabled
   const contextMenu = Menu.buildFromTemplate([
     { label: '显示主窗口', click: () => showFromTray() },
+    ...(quickBarEnabled
+      ? [{ label: '快捷搜索', click: () => showQuickBar() } as Electron.MenuItemConstructorOptions]
+      : []),
     { type: 'separator' },
     { label: '退出 PwdBook', click: () => requestQuit() },
   ])

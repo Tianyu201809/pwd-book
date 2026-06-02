@@ -12,9 +12,10 @@ import {
   Upload,
   AlertTriangle,
   ChevronRight,
+  PanelTop,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
-import { UiSelect, UiSwitch, UiCard } from '@/components/ui'
+import { UiSelect, UiSwitch, UiCard, UiButton } from '@/components/ui'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
@@ -81,6 +82,14 @@ async function onCloseWindowChange(value: string): Promise<void> {
 
 async function onOpenUrlWithCredentialsChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ openUrlWithCredentials: enabled })
+}
+
+async function onQuickBarEnabledChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ quickBarEnabled: enabled })
+}
+
+function openQuickBar(): void {
+  window.electronAPI?.showQuickBar?.()
 }
 
 async function handleExportJson(): Promise<void> {
@@ -214,7 +223,7 @@ async function handleReset(): Promise<void> {
                 @update:model-value="onOpenUrlWithCredentialsChange"
               />
             </div>
-            <div class="row last">
+            <div class="row">
               <div>
                 <p class="row-title">{{ t('settings.closeWindow') }}</p>
                 <p class="row-desc">{{ t('settings.closeWindowDesc') }}</p>
@@ -224,6 +233,28 @@ async function handleReset(): Promise<void> {
                 class="settings-select"
                 :options="closeWindowOptions"
                 @update:model-value="onCloseWindowChange"
+              />
+            </div>
+            <div class="row last quickbar-row">
+              <div>
+                <p class="row-title">{{ t('settings.quickBar') }}</p>
+                <p class="row-desc">
+                  {{ t('settings.quickBarDesc', { accelerator: securitySettings.quickBarAccelerator }) }}
+                </p>
+                <UiButton
+                  v-if="securitySettings.quickBarEnabled"
+                  variant="default"
+                  size="small"
+                  class="quickbar-open-btn"
+                  @click="openQuickBar"
+                >
+                  <PanelTop :size="14" :stroke-width="1.75" />
+                  {{ t('settings.quickBarOpen') }}
+                </UiButton>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.quickBarEnabled"
+                @update:model-value="onQuickBarEnabledChange"
               />
             </div>
           </UiCard>
@@ -383,6 +414,10 @@ h3 {
   margin: 2px 0 0;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.quickbar-open-btn {
+  margin-top: 10px;
 }
 
 .select {

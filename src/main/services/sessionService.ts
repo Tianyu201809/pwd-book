@@ -7,6 +7,8 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   openUrlWithCredentials: false,
+  quickBarEnabled: true,
+  quickBarAccelerator: 'Alt+Shift+P',
 }
 
 let sessionKey: Buffer | null = null

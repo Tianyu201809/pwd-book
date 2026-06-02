@@ -16,5 +16,13 @@ export default defineConfig({
       },
     },
     plugins: [vue()],
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve('src/renderer/index.html'),
+          quickbar: resolve('src/renderer/quickbar.html'),
+        },
+      },
+    },
   },
 })

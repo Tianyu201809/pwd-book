@@ -114,6 +114,13 @@ export default {
     backupHint: 'Unlock first, then import a JSON backup under Settings → Data',
     enterCurrentPassword: 'Enter your current master password',
   },
+  quickBar: {
+    placeholder: 'Search and jump to an entry…',
+    hintNavigate: '↑↓ select · Enter open',
+    locked: 'Vault is locked — click to open the main window',
+    noMatch: 'No matching entries',
+    noLaunchTarget: 'This entry has no program path or URL configured',
+  },
   vault: {
     newEntry: 'New entry',
     settings: 'Settings',
@@ -266,6 +273,9 @@ export default {
     closeWindowAsk: 'Ask every time',
     closeWindowTray: 'Minimize to tray',
     closeWindowQuit: 'Quit application',
+    quickBar: 'Floating quick search',
+    quickBarDesc: 'A slim bar at the top of the screen; Enter opens the URL or launches the local program. Shortcut: {accelerator}',
+    quickBarOpen: 'Open quick bar',
     exportJson: 'Export JSON backup',
     exportExcel: 'Export Excel spreadsheet',
     exportToApps: 'Export for other apps (CSV)',

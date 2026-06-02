@@ -1,4 +1,5 @@
 import { clipboard, ipcMain, shell } from 'electron'
+import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
 import { IPC } from '../../shared/types'
 import type {
   PasswordEntryInput,
@@ -119,6 +120,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultLock, () =>
     wrap(() => {
       lockVault()
+      hideQuickBarOnLock()
       resetScheduledBackupNotification()
       return getVaultStatus()
     }),
@@ -312,9 +314,11 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC.settingsGet, () => getSecuritySettings())
 
-  ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) =>
-    updateSecuritySettings(partial),
-  )
+  ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
+    const next = updateSecuritySettings(partial)
+    registerQuickBarShortcut()
+    return next
+  })
 
   ipcMain.handle(IPC.clipboardCopy, (_event, payload: { text: string; clearAfterMs?: number }) =>
     wrap(() => {

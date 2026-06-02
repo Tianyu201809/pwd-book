@@ -8,6 +8,8 @@ const SETTINGS_KEYS = {
   clipboardClearSeconds: 'clipboard_clear_seconds',
   closeWindowAction: 'close_window_action',
   openUrlWithCredentials: 'open_url_with_credentials',
+  quickBarEnabled: 'quick_bar_enabled',
+  quickBarAccelerator: 'quick_bar_accelerator',
 } as const
 
 function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
@@ -31,6 +33,10 @@ export function getSecuritySettings(): SecuritySettings {
     openUrlWithCredentials:
       (getSetting(SETTINGS_KEYS.openUrlWithCredentials) ??
         String(defaults.openUrlWithCredentials)) === 'true',
+    quickBarEnabled:
+      (getSetting(SETTINGS_KEYS.quickBarEnabled) ?? String(defaults.quickBarEnabled)) === 'true',
+    quickBarAccelerator:
+      getSetting(SETTINGS_KEYS.quickBarAccelerator) ?? defaults.quickBarAccelerator,
   }
 }
 
@@ -43,6 +49,8 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
   setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
   setSetting(SETTINGS_KEYS.openUrlWithCredentials, String(next.openUrlWithCredentials))
+  setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))
+  setSetting(SETTINGS_KEYS.quickBarAccelerator, next.quickBarAccelerator)
 
   return next
 }

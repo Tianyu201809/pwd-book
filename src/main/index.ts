@@ -13,6 +13,12 @@ import {
   showFromTray,
 } from './tray'
 import {
+  destroyQuickBar,
+  registerQuickBarIpc,
+  registerQuickBarShortcut,
+  unregisterQuickBarShortcut,
+} from './quickBar'
+import {
   isScreenshotMode,
   prepareScreenshotEnvironment,
   runAnimalScreenshotCapture,
@@ -110,6 +116,8 @@ if (gotSingleInstanceLock) {
       setupScreenshotFixture()
     }
     registerIpcHandlers()
+    registerQuickBarIpc()
+    registerQuickBarShortcut()
 
     ipcMain.on('window-minimize', () => hideToTray())
     ipcMain.on('window-maximize', () => {
@@ -152,6 +160,8 @@ if (gotSingleInstanceLock) {
   })
 
   app.on('before-quit', () => {
+    unregisterQuickBarShortcut()
+    destroyQuickBar()
     destroyTray()
   })
 }

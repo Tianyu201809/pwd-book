@@ -47,6 +47,8 @@ const securitySettings = ref<SecuritySettings>({
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   openUrlWithCredentials: false,
+  quickBarEnabled: true,
+  quickBarAccelerator: 'Alt+Shift+P',
 })
 
 const selectedCategory = ref<FilterCategory>('all')

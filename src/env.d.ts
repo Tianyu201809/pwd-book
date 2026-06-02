@@ -75,6 +75,11 @@ declare global {
       testEmailBackupConnection: () => Promise<void>
       sendEmailBackup: (payload: EmailBackupSendPayload) => Promise<EmailBackupSettings>
       onScheduledBackupDue: (handler: () => void) => () => void
+      hideQuickBar?: () => void
+      showQuickBar?: () => void
+      quickBarShowMain?: () => void
+      resizeQuickBar?: (height: number) => void
+      onQuickBarShown?: (handler: () => void) => () => void
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }

@@ -113,6 +113,13 @@ export default {
     backupHint: '请先解锁后，在「设置 → 数据」中导入 JSON 备份',
     enterCurrentPassword: '请输入当前主密码',
   },
+  quickBar: {
+    placeholder: '搜索并跳转到条目…',
+    hintNavigate: '↑↓ 选择 · Enter 打开',
+    locked: '保险库已锁定，点击打开主窗口解锁',
+    noMatch: '没有匹配的条目',
+    noLaunchTarget: '该条目未配置本地程序或网址',
+  },
   vault: {
     newEntry: '新建条目',
     settings: '设置',
@@ -265,6 +272,9 @@ export default {
     closeWindowAsk: '每次询问',
     closeWindowTray: '最小化到托盘',
     closeWindowQuit: '退出程序',
+    quickBar: '悬浮快捷搜索',
+    quickBarDesc: '屏幕顶部细长搜索条，Enter 直接打开网址或启动本地程序。快捷键：{accelerator}',
+    quickBarOpen: '打开快捷条',
     exportJson: '导出 JSON 备份',
     exportExcel: '导出 Excel 表格',
     exportToApps: '导出到其他应用 (CSV)',

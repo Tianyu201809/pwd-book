@@ -125,6 +125,10 @@ export interface SecuritySettings {
   closeWindowAction: CloseWindowAction
   /** 右键/菜单打开网址时是否在 URL 上附带 user、pwd 查询参数 */
   openUrlWithCredentials: boolean
+  /** 悬浮快捷搜索条 */
+  quickBarEnabled: boolean
+  /** Electron globalShortcut 加速器，如 Alt+Shift+P */
+  quickBarAccelerator: string
 }
 
 export interface VaultStatus {
@@ -264,6 +268,7 @@ export const IPC = {
 
 export const IPC_EVENTS = {
   scheduledBackupDue: 'email-backup:scheduled-due',
+  quickBarShown: 'quickbar:shown',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [
