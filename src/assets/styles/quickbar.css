@@ -158,3 +158,52 @@ body.quickbar-body {
   color: var(--text-muted);
   border-top: 1px solid var(--border-default);
 }
+
+/* Animal Island 皮肤 */
+[data-skin='animalIsland'] .quickbar-root,
+.quickbar-root--animal {
+  border-radius: 20px;
+  border-color: var(--border-default);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+[data-skin='animalIsland'] .quickbar-strip,
+.quickbar-root--animal .quickbar-strip {
+  min-height: 52px;
+  padding: 0 12px;
+}
+
+[data-skin='animalIsland'] .quickbar-input--animal,
+.quickbar-root--animal .quickbar-input--animal {
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+[data-skin='animalIsland'] .quickbar-input--animal:focus,
+.quickbar-root--animal .quickbar-input--animal:focus {
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+[data-skin='animalIsland'] .quickbar-result,
+.quickbar-root--animal .quickbar-result {
+  border-radius: 14px;
+}
+
+[data-skin='animalIsland'] .quickbar-result--active,
+[data-skin='animalIsland'] .quickbar-result:hover,
+.quickbar-root--animal .quickbar-result--active,
+.quickbar-root--animal .quickbar-result:hover {
+  background: var(--accent-subtle);
+}
+
+[data-skin='animalIsland'] .quickbar-avatar,
+.quickbar-root--animal .quickbar-avatar {
+  border-radius: 10px;
+}

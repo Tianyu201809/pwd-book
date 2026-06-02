@@ -31,9 +31,29 @@ export function initLocale(): void {
   applyDocumentLocale(locale.value)
 }
 
+export function syncLocaleFromStorage(): void {
+  locale.value = readStoredLocale()
+  i18n.global.locale.value = locale.value
+  applyDocumentLocale(locale.value)
+}
+
+export function bindLocaleStorageSync(): () => void {
+  const onStorage = (event: StorageEvent): void => {
+    if (event.key !== LOCALE_STORAGE_KEY) return
+    syncLocaleFromStorage()
+  }
+  window.addEventListener('storage', onStorage)
+  return () => window.removeEventListener('storage', onStorage)
+}
+
+function notifyQuickBarLocaleChanged(): void {
+  window.electronAPI?.notifyThemeChanged?.()
+}
+
 export function useLocale() {
   function setLocale(next: AppLocale): void {
     locale.value = next
+    notifyQuickBarLocaleChanged()
   }
 
   return {

@@ -80,6 +80,9 @@ declare global {
       quickBarShowMain?: () => void
       resizeQuickBar?: (height: number) => void
       onQuickBarShown?: (handler: () => void) => () => void
+      notifyThemeChanged?: () => void
+      onThemeChanged?: (handler: () => void) => () => void
+      setQuickBarBackground?: (color: string) => void
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }

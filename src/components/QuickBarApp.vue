@@ -4,13 +4,21 @@ import { useI18n } from 'vue-i18n'
 import { Search, Lock } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import ToastHost from '@/components/ToastHost.vue'
+import { syncLocaleFromStorage } from '@/composables/useLocale'
 import { showToast } from '@/composables/useToast'
+import { syncThemeFromStorage, useTheme } from '@/composables/useTheme'
 import { filterEntriesBySearch } from '@/shared/entrySearch'
 import { launchEntry } from '@/shared/launchEntry'
 import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
 import type { PasswordEntry } from '@/types'
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
+
+function refreshChrome(): void {
+  syncThemeFromStorage()
+  syncLocaleFromStorage()
+}
 
 const query = ref('')
 const entries = ref<PasswordEntry[]>([])
@@ -113,6 +121,7 @@ onMounted(async () => {
   reportHeight()
   inputRef.value?.focus()
   removeShownListener = window.electronAPI?.onQuickBarShown?.(() => {
+    refreshChrome()
     void refreshEntries().then(() => {
       query.value = ''
       activeIndex.value = 0
@@ -130,7 +139,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="quickbar-root">
+  <div
+    ref="rootRef"
+    class="quickbar-root"
+    :class="{ 'quickbar-root--animal': isAnimalIsland }"
+  >
     <div class="quickbar-strip">
       <Search class="quickbar-search-icon" :size="16" :stroke-width="1.75" />
       <template v-if="unlocked">
@@ -139,6 +152,7 @@ onUnmounted(() => {
           v-model="query"
           type="text"
           class="quickbar-input"
+          :class="{ 'quickbar-input--animal': isAnimalIsland }"
           :placeholder="t('quickBar.placeholder')"
           spellcheck="false"
           autocomplete="off"

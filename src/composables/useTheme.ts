@@ -83,7 +83,23 @@ function applyTheme(
   } else {
     window.electronAPI?.setNativeTheme('light')
   }
+  syncQuickBarWindowChrome()
   return resolved
+}
+
+/** 快捷条窗口透明区域外的底色（与当前 document 主题一致） */
+export function resolveQuickBarBackgroundColor(): string {
+  const skin = document.documentElement.getAttribute('data-skin')
+  if (skin === 'animalIsland') return '#f0e6d0'
+  return document.documentElement.getAttribute('data-mode') === 'light' ? '#eef0f4' : '#0a0c10'
+}
+
+function syncQuickBarWindowChrome(): void {
+  window.electronAPI?.setQuickBarBackground?.(resolveQuickBarBackgroundColor())
+}
+
+function notifyQuickBarThemeChanged(): void {
+  window.electronAPI?.notifyThemeChanged?.()
 }
 
 const modePref = ref<ThemeModePref>(readStorage(STORAGE_MODE, 'dark') as ThemeModePref)
@@ -157,6 +173,7 @@ function setMode(mode: ThemeModePref): void {
   modePref.value = mode
   localStorage.setItem(STORAGE_MODE, mode)
   resolvedMode.value = applyTheme(mode, accent.value, skin.value)
+  notifyQuickBarThemeChanged()
 }
 
 function setAccent(next: ThemeAccent): void {
@@ -164,6 +181,7 @@ function setAccent(next: ThemeAccent): void {
   accent.value = next
   localStorage.setItem(STORAGE_ACCENT, next)
   resolvedMode.value = applyTheme(modePref.value, next, skin.value)
+  notifyQuickBarThemeChanged()
 }
 
 function setSkin(next: ThemeSkin): void {
@@ -173,6 +191,7 @@ function setSkin(next: ThemeSkin): void {
     skin.value = next
     localStorage.setItem(STORAGE_SKIN, next)
     resolvedMode.value = applyTheme(modePref.value, accent.value, next)
+    notifyQuickBarThemeChanged()
     return
   }
   skin.value = next
@@ -183,10 +202,36 @@ function setSkin(next: ThemeSkin): void {
     localStorage.setItem(STORAGE_MODE, restored)
   }
   resolvedMode.value = applyTheme(modePref.value, accent.value, next)
+  notifyQuickBarThemeChanged()
 }
 
 export function initTheme(): void {
   resolvedMode.value = applyTheme(modePref.value, accent.value, skin.value)
+}
+
+/** 从 localStorage 重新读取并应用到 document（供快捷条等多窗口同步） */
+export function syncThemeFromStorage(): ResolvedThemeMode {
+  const storedMode = readStorage(STORAGE_MODE, 'dark') as ThemeModePref
+  const storedAccent = readStorage(STORAGE_ACCENT, 'brass') as ThemeAccent
+  const storedSkin =
+    readStorage(STORAGE_SKIN, 'classic') === 'animalIsland' ? 'animalIsland' : 'classic'
+  modePref.value = MODE_IDS.includes(storedMode) ? storedMode : 'dark'
+  accent.value = ACCENT_IDS.includes(storedAccent) ? storedAccent : 'brass'
+  skin.value = storedSkin
+  resolvedMode.value = applyTheme(modePref.value, accent.value, skin.value)
+  return resolvedMode.value
+}
+
+const THEME_STORAGE_KEYS = [STORAGE_MODE, STORAGE_ACCENT, STORAGE_SKIN] as const
+
+/** 监听其他窗口（主界面）写入的主题偏好 */
+export function bindThemeStorageSync(): () => void {
+  const onStorage = (event: StorageEvent): void => {
+    if (event.key && !(THEME_STORAGE_KEYS as readonly string[]).includes(event.key)) return
+    syncThemeFromStorage()
+  }
+  window.addEventListener('storage', onStorage)
+  return () => window.removeEventListener('storage', onStorage)
 }
 
 let mediaQuery: MediaQueryList | null = null

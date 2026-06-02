@@ -150,4 +150,12 @@ export const electronAPI = {
     ipcRenderer.on(IPC_EVENTS.quickBarShown, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.quickBarShown, listener)
   },
+  notifyThemeChanged: (): void => ipcRenderer.send('theme:notify-change'),
+  onThemeChanged: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.themeChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.themeChanged, listener)
+  },
+  setQuickBarBackground: (color: string): void =>
+    ipcRenderer.send('quickbar:set-background', color),
 }

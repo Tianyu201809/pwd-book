@@ -92,6 +92,7 @@ export function showQuickBar(): void {
     win.show()
   }
   win.focus()
+  win.webContents.send(IPC_EVENTS.themeChanged)
   win.webContents.send(IPC_EVENTS.quickBarShown)
 }
 
@@ -134,10 +135,22 @@ export function registerQuickBarShortcut(): void {
   }
 }
 
+export function notifyQuickBarThemeSync(): void {
+  if (!quickBarWindow || quickBarWindow.isDestroyed()) return
+  quickBarWindow.webContents.send(IPC_EVENTS.themeChanged)
+}
+
 export function registerQuickBarIpc(): void {
   ipcMain.on('quickbar:hide', () => hideQuickBar())
   ipcMain.on('quickbar:show', () => showQuickBar())
   ipcMain.on('quickbar:show-main', () => showFromTray())
+  ipcMain.on('theme:notify-change', () => notifyQuickBarThemeSync())
+  ipcMain.on('quickbar:set-background', (_event, color: string) => {
+    if (!quickBarWindow || quickBarWindow.isDestroyed()) return
+    if (typeof color === 'string' && color) {
+      quickBarWindow.setBackgroundColor(color)
+    }
+  })
   ipcMain.on('quickbar:resize', (_event, height: number) => {
     if (!quickBarWindow || quickBarWindow.isDestroyed()) return
     const nextHeight = Math.max(

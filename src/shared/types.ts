@@ -269,6 +269,7 @@ export const IPC = {
 export const IPC_EVENTS = {
   scheduledBackupDue: 'email-backup:scheduled-due',
   quickBarShown: 'quickbar:shown',
+  themeChanged: 'theme:changed',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [
