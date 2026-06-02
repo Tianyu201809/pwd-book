@@ -79,12 +79,24 @@ body.quickbar-body {
   color: var(--text-primary);
 }
 
+.quickbar-section-label {
+  margin: 0;
+  padding: 8px 16px 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-default);
+}
+
 .quickbar-results {
   list-style: none;
   margin: 0;
   padding: 4px 6px 8px;
   max-height: 320px;
   overflow-y: auto;
+}
+
+.quickbar-results--top-border {
   border-top: 1px solid var(--border-default);
 }
 
@@ -95,12 +107,27 @@ body.quickbar-body {
   padding: 8px 10px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition:
+    background 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
-.quickbar-result--active,
 .quickbar-result:hover {
   background: var(--bg-hover);
+}
+
+.quickbar-result--active {
+  background: var(--accent-subtle);
+  box-shadow: inset 0 0 0 1px var(--border-accent);
+}
+
+.quickbar-result--active:hover {
+  background: var(--accent-muted);
+}
+
+.quickbar-result--active .quickbar-result-title {
+  color: var(--accent-primary);
+  font-weight: 600;
 }
 
 .quickbar-avatar {
@@ -128,10 +155,40 @@ body.quickbar-body {
 }
 
 .quickbar-result-main {
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.quickbar-result-remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.quickbar-result--recent:hover .quickbar-result-remove,
+.quickbar-result--recent.quickbar-result--active .quickbar-result-remove {
+  opacity: 1;
+}
+
+.quickbar-result-remove:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .quickbar-result-title {
@@ -197,10 +254,19 @@ body.quickbar-body {
 }
 
 [data-skin='animalIsland'] .quickbar-result--active,
-[data-skin='animalIsland'] .quickbar-result:hover,
-.quickbar-root--animal .quickbar-result--active,
-.quickbar-root--animal .quickbar-result:hover {
-  background: var(--accent-subtle);
+.quickbar-root--animal .quickbar-result--active {
+  background: var(--accent-muted);
+  box-shadow: inset 0 0 0 1px var(--border-accent);
+}
+
+[data-skin='animalIsland'] .quickbar-result--active:hover,
+.quickbar-root--animal .quickbar-result--active:hover {
+  background: color-mix(in srgb, var(--accent-primary) 22%, transparent);
+}
+
+[data-skin='animalIsland'] .quickbar-result:hover:not(.quickbar-result--active),
+.quickbar-root--animal .quickbar-result:hover:not(.quickbar-result--active) {
+  background: var(--bg-hover);
 }
 
 [data-skin='animalIsland'] .quickbar-avatar,

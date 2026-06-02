@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, Lock } from 'lucide-vue-next'
+import { Search, Lock, X } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import { syncLocaleFromStorage } from '@/composables/useLocale'
@@ -22,6 +22,7 @@ function refreshChrome(): void {
 
 const query = ref('')
 const entries = ref<PasswordEntry[]>([])
+const recentEntries = ref<PasswordEntry[]>([])
 const unlocked = ref(false)
 const loading = ref(true)
 const activeIndex = ref(0)
@@ -30,9 +31,25 @@ const inputRef = ref<HTMLInputElement | null>(null)
 
 const results = computed(() => filterEntriesBySearch(entries.value, query.value, 12))
 
-const showDropdown = computed(
-  () => unlocked.value && query.value.trim().length > 0 && (results.value.length > 0 || !loading.value),
+const listItems = computed(() =>
+  query.value.trim() ? results.value : recentEntries.value,
 )
+
+const showRecent = computed(
+  () =>
+    unlocked.value &&
+    !query.value.trim() &&
+    recentEntries.value.length > 0 &&
+    !loading.value,
+)
+
+const isRecentList = computed(() => showRecent.value && !query.value.trim())
+
+const showList = computed(() => {
+  if (!unlocked.value || loading.value) return false
+  if (query.value.trim()) return results.value.length > 0
+  return recentEntries.value.length > 0
+})
 
 const showEmpty = computed(
   () => unlocked.value && query.value.trim().length > 0 && results.value.length === 0 && !loading.value,
@@ -44,9 +61,12 @@ async function refreshEntries(): Promise<void> {
     const status = await window.electronAPI?.getVaultStatus()
     unlocked.value = Boolean(status?.unlocked)
     if (unlocked.value) {
-      entries.value = (await window.electronAPI?.listEntries()) ?? []
+      const api = window.electronAPI
+      entries.value = (await api?.listEntries()) ?? []
+      recentEntries.value = (await api?.listQuickBarRecent()) ?? []
     } else {
       entries.value = []
+      recentEntries.value = []
     }
   } finally {
     loading.value = false
@@ -85,8 +105,24 @@ async function activateEntry(entry: PasswordEntry): Promise<void> {
   }
 }
 
+async function removeFromRecent(entry: PasswordEntry, event: MouseEvent): Promise<void> {
+  event.preventDefault()
+  event.stopPropagation()
+  const api = window.electronAPI
+  if (!api?.removeQuickBarRecent) return
+  try {
+    recentEntries.value = await api.removeQuickBarRecent(entry.id)
+    if (activeIndex.value >= listItems.value.length) {
+      activeIndex.value = Math.max(0, listItems.value.length - 1)
+    }
+    reportHeight()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
 function onSelectActive(): void {
-  const entry = results.value[activeIndex.value]
+  const entry = listItems.value[activeIndex.value]
   if (entry) void activateEntry(entry)
 }
 
@@ -96,10 +132,10 @@ function onKeydown(event: KeyboardEvent): void {
     window.electronAPI?.hideQuickBar?.()
     return
   }
-  if (!showDropdown.value) return
+  if (!listItems.value.length) return
   if (event.key === 'ArrowDown') {
     event.preventDefault()
-    activeIndex.value = Math.min(activeIndex.value + 1, results.value.length - 1)
+    activeIndex.value = Math.min(activeIndex.value + 1, listItems.value.length - 1)
   } else if (event.key === 'ArrowUp') {
     event.preventDefault()
     activeIndex.value = Math.max(activeIndex.value - 1, 0)
@@ -111,7 +147,7 @@ function onKeydown(event: KeyboardEvent): void {
 
 let removeShownListener: (() => void) | undefined
 
-watch([query, results, showDropdown, showEmpty, unlocked], () => {
+watch([query, listItems, showList, showEmpty, unlocked], () => {
   activeIndex.value = 0
   reportHeight()
 })
@@ -157,7 +193,7 @@ onUnmounted(() => {
           spellcheck="false"
           autocomplete="off"
         />
-        <span v-if="query" class="quickbar-hint">{{ t('quickBar.hintNavigate') }}</span>
+        <span v-if="query || showRecent" class="quickbar-hint">{{ t('quickBar.hintNavigate') }}</span>
       </template>
       <button v-else type="button" class="quickbar-locked" @click="focusMain">
         <Lock :size="14" :stroke-width="1.75" />
@@ -165,14 +201,21 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <ul v-if="showDropdown && results.length" class="quickbar-results" role="listbox">
+    <p v-if="showRecent" class="quickbar-section-label">{{ t('quickBar.recentOpened') }}</p>
+
+    <ul
+      v-if="showList && listItems.length"
+      class="quickbar-results"
+      :class="{ 'quickbar-results--top-border': !showRecent }"
+      role="listbox"
+    >
       <li
-        v-for="(entry, index) in results"
+        v-for="(entry, index) in listItems"
         :key="entry.id"
         role="option"
         :aria-selected="index === activeIndex"
         class="quickbar-result"
-        :class="{ 'quickbar-result--active': index === activeIndex }"
+        :class="{ 'quickbar-result--active': index === activeIndex, 'quickbar-result--recent': isRecentList }"
         @mousedown.prevent="activateEntry(entry)"
         @mouseenter="activeIndex = index"
       >
@@ -197,6 +240,16 @@ onUnmounted(() => {
             <template v-if="entry.categoryName"> · {{ entry.categoryName }}</template>
           </span>
         </span>
+        <button
+          v-if="isRecentList"
+          type="button"
+          class="quickbar-result-remove"
+          :title="t('quickBar.removeFromRecent')"
+          :aria-label="t('quickBar.removeFromRecent')"
+          @mousedown.prevent.stop="removeFromRecent(entry, $event)"
+        >
+          <X :size="14" :stroke-width="2" />
+        </button>
       </li>
     </ul>
 

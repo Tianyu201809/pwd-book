@@ -238,6 +238,8 @@ export const IPC = {
   entriesDelete: 'entries:delete',
   entriesToggleFavorite: 'entries:toggle-favorite',
   entriesTouch: 'entries:touch',
+  quickBarListRecent: 'quickbar:list-recent',
+  quickBarRemoveRecent: 'quickbar:remove-recent',
   categoriesList: 'categories:list',
   categoriesCreate: 'categories:create',
   categoriesUpdate: 'categories:update',

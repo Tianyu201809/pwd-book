@@ -117,6 +117,8 @@ export default {
   quickBar: {
     placeholder: 'Search and jump to an entry…',
     hintNavigate: '↑↓ select · Enter open',
+    recentOpened: 'Recently opened',
+    removeFromRecent: 'Remove from recently opened',
     locked: 'Vault is locked — click to open the main window',
     noMatch: 'No matching entries',
     noLaunchTarget: 'This entry has no program path or URL configured',

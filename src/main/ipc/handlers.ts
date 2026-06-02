@@ -17,6 +17,10 @@ import { initDatabase } from '../db/database'
 import { commitImport, previewImport } from '../services/importService'
 import { buildExportCsv } from '../services/exportCsvService'
 import { openLocalProgram } from '../services/localProgramService'
+import {
+  removeQuickBarRecentEntry,
+  resolveQuickBarRecentEntries,
+} from '../services/quickBarRecentService'
 import type { ExportFormatId } from '../../shared/exportFormats'
 import {
   createEntry,
@@ -231,6 +235,21 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       touchEntry(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.quickBarListRecent, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return resolveQuickBarRecentEntries(listEntries())
+    }),
+  )
+
+  ipcMain.handle(IPC.quickBarRemoveRecent, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      removeQuickBarRecentEntry(id)
+      return resolveQuickBarRecentEntries(listEntries())
     }),
   )
 

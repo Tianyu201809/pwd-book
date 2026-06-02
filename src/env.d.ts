@@ -48,6 +48,8 @@ declare global {
       deleteEntry: (id: string) => Promise<void>
       toggleFavorite: (id: string) => Promise<PasswordEntry>
       touchEntry: (id: string) => Promise<void>
+      listQuickBarRecent: () => Promise<PasswordEntry[]>
+      removeQuickBarRecent: (id: string) => Promise<PasswordEntry[]>
       listCategories: () => Promise<VaultCategory[]>
       createCategory: (input: CategoryInput) => Promise<VaultCategory>
       updateCategory: (id: string, input: CategoryInput) => Promise<VaultCategory>

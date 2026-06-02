@@ -116,6 +116,8 @@ export default {
   quickBar: {
     placeholder: '搜索并跳转到条目…',
     hintNavigate: '↑↓ 选择 · Enter 打开',
+    recentOpened: '最近打开',
+    removeFromRecent: '从最近打开中移除',
     locked: '保险库已锁定，点击打开主窗口解锁',
     noMatch: '没有匹配的条目',
     noLaunchTarget: '该条目未配置本地程序或网址',

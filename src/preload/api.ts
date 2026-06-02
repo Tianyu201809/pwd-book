@@ -90,6 +90,9 @@ export const electronAPI = {
   deleteEntry: (id: string): Promise<void> => invoke(IPC.entriesDelete, id),
   toggleFavorite: (id: string): Promise<PasswordEntry> => invoke(IPC.entriesToggleFavorite, id),
   touchEntry: (id: string): Promise<void> => invoke(IPC.entriesTouch, id),
+  listQuickBarRecent: (): Promise<PasswordEntry[]> => invoke(IPC.quickBarListRecent),
+  removeQuickBarRecent: (id: string): Promise<PasswordEntry[]> =>
+    invoke(IPC.quickBarRemoveRecent, id),
 
   listCategories: (): Promise<VaultCategory[]> => invoke(IPC.categoriesList),
   createCategory: (input: CategoryInput): Promise<VaultCategory> =>

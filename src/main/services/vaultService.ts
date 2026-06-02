@@ -17,6 +17,7 @@ import { getDatabase, persistDatabase } from '../db/database'
 import { ensureCategoriesFromImport, resolveCategoryId, getCategoryName } from './categoryService'
 import type { VaultImportPayload } from '../../shared/types'
 import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
+import { recordQuickBarRecentEntry } from './quickBarRecentService'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
@@ -186,6 +187,7 @@ export function touchEntry(id: string): void {
   const now = Date.now()
   db.run('UPDATE password_entries SET last_used_at = ?, updated_at = ? WHERE id = ?', [now, now, id])
   persistDatabase()
+  recordQuickBarRecentEntry(id)
 }
 
 export function importFromExportPayload(payload: VaultImportPayload): number {

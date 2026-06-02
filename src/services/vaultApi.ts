@@ -52,6 +52,8 @@ export const vaultApi = {
   deleteEntry: (id: string): Promise<void> => getApi().deleteEntry(id),
   toggleFavorite: (id: string): Promise<PasswordEntry> => getApi().toggleFavorite(id),
   touchEntry: (id: string): Promise<void> => getApi().touchEntry(id),
+  listQuickBarRecent: (): Promise<PasswordEntry[]> => getApi().listQuickBarRecent(),
+  removeQuickBarRecent: (id: string): Promise<PasswordEntry[]> => getApi().removeQuickBarRecent(id),
 
   listCategories: (): Promise<VaultCategory[]> => getApi().listCategories(),
   createCategory: (input: CategoryInput): Promise<VaultCategory> => getApi().createCategory(input),

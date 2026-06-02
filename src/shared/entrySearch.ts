@@ -30,3 +30,9 @@ export function sortEntriesByRecent(entries: PasswordEntry[]): PasswordEntry[] {
     return b.updatedAt - a.updatedAt
   })
 }
+
+export function getRecentOpenedEntries(entries: PasswordEntry[], limit = 5): PasswordEntry[] {
+  return sortEntriesByRecent(entries)
+    .filter((entry) => entry.lastUsedAt != null)
+    .slice(0, limit)
+}
