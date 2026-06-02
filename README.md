@@ -4,13 +4,13 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-[![Version](https://img.shields.io/badge/version-1.1.1-blue?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue?style=flat-square)](package.json)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white)
 
-[概览](#概览) · [产品截图](#产品截图) · [功能](#功能) · [快速开始](#快速开始) · [安全模型](#安全模型) · [项目结构](#项目结构) · [文档](#文档) · [常见问题](#常见问题)
+[概览](#概览) · [产品截图](#产品截图) · [功能](#功能) · [版本更新](#版本更新) · [快速开始](#快速开始) · [安全模型](#安全模型) · [项目结构](#项目结构) · [文档](#文档) · [常见问题](#常见问题)
 
 </div>
 
@@ -126,9 +126,10 @@ npm run dev
 - **分类** — 自定义分类名称与图标；侧栏支持拖拽排序；分类管理中支持名称内联编辑、点击图标更换
 - **标签** — 侧栏「标签管理」：新建、重命名、删除（同步更新所有关联条目）；详情页从已有标签中选用，支持搜索与条目数统计
 - **浏览** — 全部 / 收藏筛选、标题搜索、**最近使用 / 标题 A–Z / 创建时间** 排序、条目列表与详情侧栏
-- **条目字段** — 标题、网址、用户名、密码、备注、标签、显示图标、所属分类
-- **详情侧栏** — 选中条目或点击「新建条目」时自动展开；左缘可收起（偏好写入 `localStorage`）；拖拽左缘调整宽度（280–560px）；网址旁一键复制；新建时可一键生成密码，取消创建会收起侧栏
-- **列表操作** — 右键或「⋯」菜单：复制条目信息、删除、**移动到其他分类**、**在浏览器中打开网址**（向 URL 追加 `user` / `pwd` 查询参数，便于部分站点自动填表）
+- **条目字段** — 标题、网址、用户名、密码、备注、标签、显示图标、所属分类、**本地程序路径**（可选，用于右键或快捷条启动 exe）
+- **详情侧栏** — 选中条目或点击「新建条目」时自动展开；**打开已有条目时默认为只读**，点「编辑」后再改；左缘可收起（偏好写入 `localStorage`）；拖拽左缘调整宽度（280–560px）；网址旁一键复制；新建时可一键生成密码，取消创建会收起侧栏
+- **列表操作** — 右键或「⋯」菜单：复制条目信息、删除、**移动到其他分类**、**打开网址**（是否向 URL 追加 `user` / `pwd` 由设置控制）、**打开程序**（已填本地路径时）
+- **侧栏快捷操作** — 分类搜索框旁 **「+」** 可快速新建分类；底部「工具与设置」默认收起，可展开访问邮箱备份、随机密码、设置等
 
 ### 主密码、锁定与恢复
 
@@ -146,6 +147,8 @@ npm run dev
 
 - **JSON** — 完整备份与恢复（含明文密码，请离线妥善保管）；导入时自动创建备份中缺失的分类
 - **Excel** — 导出 `.xlsx`，含「密码条目」与「分类」两个工作表，便于查阅与归档
+- **从其他应用导入** — 向导式导入 **KeePass / Enpass / Bitwarden / 1Password / Chrome** 导出的 CSV，或 **PwdBook JSON**；上传前可查看各来源的导出说明与常见列名；导入前预览「将导入 / 重复跳过 / 无效」条目
+- **导出到其他应用** — 按上述应用的 CSV 列格式导出，便于迁移或与其他密码库并用
 
 ### 外观
 
@@ -154,7 +157,8 @@ npm run dev
 
 ### 窗口与系统集成（Windows）
 
-- **系统托盘** — 标题栏「−」或关闭流程可选「最小化到托盘」；托盘图标点击可重新显示窗口
+- **系统托盘** — 标题栏「−」或关闭流程可选「最小化到托盘」；托盘图标点击可重新显示窗口；托盘菜单可打开 **快捷搜索**
+- **悬浮快捷搜索条** — 置顶细长搜索窗（默认 `Alt+Shift+P`）；输入后 `Enter` **直接打开网址或启动本地程序**；可在 **设置 → 安全** 启用/禁用
 - **关闭行为** — 设置 → 安全：每次询问、默认最小化到托盘、或直接退出；标题栏关闭对话框可勾选「记住选择」
 - **单实例** — 重复启动已运行的实例时，会聚焦已有窗口并提示应用已在运行
 
@@ -215,7 +219,25 @@ npm run dev
 - **剪贴板**：可选在复制后 N 秒清空剪贴板（若内容未被用户改写）。
 - **导出文件**：JSON / Excel 均包含**明文密码**，勿上传至网盘或聊天工具。
 - **邮箱备份**：ZIP 使用 AES-256 加密，解压密码为主密码；SMTP 凭据经会话密钥加密后存于本地设置。
-- **打开网址（携带参数）**：仅在用户主动选择该菜单项时，用系统默认浏览器打开带 `user` / `pwd` 的 URL；请勿对不可信站点使用。
+- **打开网址（携带参数）**：在 **设置 → 安全** 开启后，列表菜单打开网址时会附加 `user` / `pwd`；快捷搜索条 `Enter` 遵循同一设置。请勿对不可信站点使用。
+
+## 版本更新
+
+### v1.2.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#120---2026-06-02)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 快捷访问 | 悬浮快捷搜索条（`Alt+Shift+P`），Enter 打开程序/网址 |
+| 迁移 | 多来源 CSV 导入向导、多格式 CSV 导出 |
+| 条目 | 本地程序路径、详情默认只读、侧栏快速新建分类 |
+| 安全/行为 | 「打开网址携带账号密码」改为设置项开关 |
+| 体验 | 搜索框清除按钮、侧栏工具区默认收起、UI 与动森指针修复 |
+
+### v1.1.1
+
+补丁版本，修复详情侧栏布局、长文本溢出、右键菜单定位与滚动条样式。详见 **[CHANGELOG.md](./CHANGELOG.md#111---2026-05-30)**。v1.1.0 的标签管理、列表排序等能力见 **[CHANGELOG.md#110---2026-05-30](./CHANGELOG.md#110---2026-05-30)**。
 
 <details>
 <summary><b>详情</b> — IPC 数据流与恢复流程</summary>
@@ -233,11 +255,11 @@ pwd-book/
 ├── src/
 │   ├── main/           # Electron 主进程：IPC、加密、SQLite、标签/分类服务、托盘、单实例、邮箱备份
 │   ├── preload/        # contextBridge API（window.electronAPI）
-│   ├── renderer/       # Vue 入口
-│   ├── components/     # UI（LockScreen、VaultView、TagManagePanel、EmailBackupView、PasswordGenView 等）
+│   ├── renderer/       # 主窗口 index.html 与 quickbar.html 双入口
+│   ├── components/     # UI（LockScreen、VaultView、QuickBarApp、import/、export/ 等）
 │   ├── composables/    # useAppState、useTheme、useAutoLock、useLocale 等
 │   ├── i18n/           # 中英文文案
-│   └── shared/         # 类型、IPC 常量、工具函数（含 URL 参数拼接、密码生成）
+│   └── shared/         # 类型、IPC、导入/导出解析、launchEntry、entrySearch 等
 ├── deps/               # 打包依赖脚本（NSIS 卸载时可选删除用户数据）
 ├── docs/images/        # README 等产品截图
 ├── design/             # 设计系统、原型与恢复流程规范
@@ -251,6 +273,7 @@ pwd-book/
 
 | 文档 | 内容 |
 |------|------|
+| [CHANGELOG.md](./CHANGELOG.md) | **版本更新日志**（自 v1.1.0 起） |
 | [docs/code-map/README.md](./docs/code-map/README.md) | 代码地图索引 |
 | [docs/code-map/overview.md](./docs/code-map/overview.md) | 三层进程模型与目录说明 |
 | [docs/code-map/database-schema.md](./docs/code-map/database-schema.md) | 表结构与 `app_settings` 键 |
@@ -278,7 +301,10 @@ Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%
 应用为单实例；第二次启动会激活已有进程并提示，不会打开第二个数据目录实例。
 
 **「打开网址（携带账号密码）」安全吗？**  
-该功能会把用户名、密码写入 URL 查询参数，仅适合你自己信任、且确实从 URL 读取凭据的页面；对普通 HTTPS 登录页无帮助，且 URL 可能留在浏览器历史记录中，请谨慎使用。
+在 **设置 → 安全** 中默认关闭；开启后，列表菜单与快捷搜索条打开网址时会写入 `user` / `pwd` 查询参数。仅适合你自己信任、且确实从 URL 读取凭据的页面；对普通 HTTPS 登录页无帮助，且 URL 可能留在浏览器历史记录中，请谨慎使用。
+
+**快捷搜索条怎么用？**  
+解锁后按 `Alt+Shift+P`（或在设置中点击「打开快捷条」）。输入关键词，↑↓ 选择条目，`Enter` 启动本地程序或打开网址（优先程序路径）。失焦后快捷条自动隐藏。可在 **设置 → 安全** 关闭该功能。
 
 **如何参与开发？**  
 从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，标签逻辑见 `src/main/services/tagService.ts` 与 `TagManagePanel.vue`，托盘与关闭逻辑见 `src/main/tray.ts`，邮箱备份见 `src/main/services/emailBackupService.ts`。

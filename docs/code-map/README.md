@@ -16,6 +16,7 @@
 
 - 产品设计：[design/recovery-flow.md](../../design/recovery-flow.md)
 - 用户指南：[README.md](../../README.md)
+- 版本日志：[CHANGELOG.md](../../CHANGELOG.md)
 - 贡献流程：[CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## 快速定位

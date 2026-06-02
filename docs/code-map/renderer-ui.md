@@ -17,9 +17,14 @@ App.vue
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
+├── TagManagePanel.vue        # 标签管理
+├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
+├── export/ExportDataModal.vue  # 导出到其他应用 CSV
 ├── IconPickerModal.vue       # 条目/分类图标选择
 ├── CategoryIconView.vue      # 彩色图标渲染
 └── ToastHost.vue             # 全局 Toast 容器
+
+# 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 CHANGELOG 1.2.0）
 ```
 
 ## Composables
@@ -30,13 +35,15 @@ App.vue
 
 | 状态/方法 | 说明 |
 |-----------|------|
-| `screen` | `'lock' \| 'vault' \| 'settings'` |
+| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'password-gen'` |
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
 | `loadEntries` / `selectEntry` | 列表与选中项 |
 | 分类 | `createCategory`、`reorderSidebarCategories` 等 |
 | `exportData` / `importData` | JSON 备份 |
+| `previewImportData` / `commitImportData` | 多来源导入预览与提交 |
+| `exportDataAsCsv` | 按第三方格式导出 CSV |
 
 错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。
 
