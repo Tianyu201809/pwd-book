@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, ChevronDown, Search, Plus, Wrench } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronRight, ChevronDown, Search, Plus, Wrench, Pencil, Trash2 } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -10,7 +10,16 @@ import VaultClock from '@/components/VaultClock.vue'
 import { UiInput } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
+import { showToast } from '@/composables/useToast'
+import { parseErrorMessage } from '@/shared/utils'
 import type { FilterCategory } from '@/types'
+
+type SidebarCategoryItem = {
+  id: string
+  label: string
+  icon: string
+  count: number
+}
 
 const {
   categories,
@@ -21,6 +30,9 @@ const {
   openPasswordGen,
   lock,
   reorderSidebarCategories,
+  deleteCategory,
+  loading,
+  errorMessage,
 } = useAppState()
 
 const { t } = useI18n()
@@ -35,9 +47,86 @@ const draggingId = ref<string | null>(null)
 const dragMoved = ref(false)
 const suppressNextClick = ref(false)
 const activePointerId = ref<number | null>(null)
+const contextMenu = ref<{ category: SidebarCategoryItem; x: number; y: number; confirmDelete: boolean } | null>(null)
+const contextMenuRef = ref<HTMLElement | null>(null)
 
 const BODY_DRAG_CLASS = 'category-drag-active'
+const VIEWPORT_MENU_PADDING = 8
 const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
+
+function isCustomCategory(id: string): boolean {
+  return id !== 'all' && id !== 'favorite'
+}
+
+function closeContextMenu(): void {
+  contextMenu.value = null
+}
+
+function adjustContextMenuPosition(): void {
+  const menu = contextMenuRef.value
+  if (!menu || !contextMenu.value) return
+
+  const { width, height } = menu.getBoundingClientRect()
+  const maxX = window.innerWidth - width - VIEWPORT_MENU_PADDING
+  const maxY = window.innerHeight - height - VIEWPORT_MENU_PADDING
+
+  contextMenu.value = {
+    ...contextMenu.value,
+    x: Math.max(VIEWPORT_MENU_PADDING, Math.min(contextMenu.value.x, maxX)),
+    y: Math.max(VIEWPORT_MENU_PADDING, Math.min(contextMenu.value.y, maxY)),
+  }
+}
+
+function handleCategoryContextMenu(category: SidebarCategoryItem, event: MouseEvent): void {
+  if (!isCustomCategory(category.id)) return
+  event.preventDefault()
+  event.stopPropagation()
+  contextMenu.value = {
+    category,
+    x: event.clientX,
+    y: event.clientY,
+    confirmDelete: false,
+  }
+  nextTick(adjustContextMenuPosition)
+}
+
+function handleEditCategory(): void {
+  const category = contextMenu.value?.category
+  closeContextMenu()
+  if (category) {
+    categoryManagePanelRef.value?.openEditDialog(category)
+  }
+}
+
+function startContextDelete(): void {
+  if (!contextMenu.value || contextMenu.value.category.count > 0) return
+  contextMenu.value = { ...contextMenu.value, confirmDelete: true }
+  nextTick(adjustContextMenuPosition)
+}
+
+function cancelContextDelete(): void {
+  if (!contextMenu.value) return
+  contextMenu.value = { ...contextMenu.value, confirmDelete: false }
+}
+
+async function confirmContextDelete(): Promise<void> {
+  const category = contextMenu.value?.category
+  if (!category || category.count > 0) return
+
+  closeContextMenu()
+  const ok = await deleteCategory(category.id)
+  if (!ok) {
+    showToast(errorMessage.value || t('errors.cannot_delete_category', { name: category.label }), 'error')
+  }
+}
+
+function onDocumentClick(): void {
+  closeContextMenu()
+}
+
+function onDocumentKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') closeContextMenu()
+}
 
 function readUtilitiesExpanded(): boolean {
   const stored = localStorage.getItem(UTILITIES_EXPANDED_STORAGE_KEY)
@@ -181,8 +270,15 @@ function toggleUtilities(): void {
   localStorage.setItem(UTILITIES_EXPANDED_STORAGE_KEY, String(utilitiesExpanded.value))
 }
 
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+  document.addEventListener('keydown', onDocumentKeydown)
+})
+
 onBeforeUnmount(() => {
   cleanupDrag()
+  document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('keydown', onDocumentKeydown)
 })
 </script>
 
@@ -239,6 +335,7 @@ onBeforeUnmount(() => {
           @selectstart.prevent
           @click="onNavClick(cat.id as FilterCategory, $event)"
           @keydown.enter="selectCategory(cat.id as FilterCategory)"
+          @contextmenu="handleCategoryContextMenu(cat, $event)"
         >
           <span
             v-if="!isCategorySearchActive"
@@ -325,6 +422,54 @@ onBeforeUnmount(() => {
       </div>
     </div>
   </aside>
+
+  <Teleport to="body">
+    <div
+      v-if="contextMenu"
+      ref="contextMenuRef"
+      class="category-context-menu menu-popover surface-card"
+      :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
+      @click.stop
+    >
+      <template v-if="!contextMenu.confirmDelete">
+        <button type="button" class="context-menu-item" @click="handleEditCategory">
+          <Pencil :size="14" :stroke-width="1.5" />
+          {{ t('common.edit') }}
+        </button>
+        <button
+          type="button"
+          class="context-menu-item context-menu-item--danger"
+          :class="{ 'context-menu-item--disabled': contextMenu.category.count > 0 }"
+          :disabled="contextMenu.category.count > 0"
+          :title="
+            contextMenu.category.count > 0
+              ? t('category.hasEntriesHint', { count: contextMenu.category.count })
+              : t('category.deleteCategory')
+          "
+          @click="startContextDelete"
+        >
+          <Trash2 :size="14" :stroke-width="1.5" />
+          {{ t('common.delete') }}
+        </button>
+      </template>
+      <template v-else>
+        <p class="context-menu-confirm">{{ t('category.deleteConfirm', { name: contextMenu.category.label }) }}</p>
+        <div class="context-menu-confirm-actions">
+          <button type="button" class="context-menu-item" @click="cancelContextDelete">
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="context-menu-item context-menu-item--danger"
+            :disabled="loading"
+            @click="confirmContextDelete"
+          >
+            {{ t('common.delete') }}
+          </button>
+        </div>
+      </template>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -629,5 +774,65 @@ onBeforeUnmount(() => {
 
 .lock-btn:hover {
   color: var(--status-danger);
+}
+
+.category-context-menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 180px;
+  padding: 4px;
+}
+
+.context-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.context-menu-item:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.context-menu-item--danger {
+  color: var(--status-danger);
+}
+
+.context-menu-item--danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.context-menu-item--disabled,
+.context-menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.context-menu-confirm {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--status-danger);
+  line-height: 1.4;
+}
+
+.context-menu-confirm-actions {
+  display: flex;
+  gap: 4px;
+  padding: 0 4px 4px;
+}
+
+.context-menu-confirm-actions .context-menu-item {
+  flex: 1;
+  justify-content: center;
 }
 </style>

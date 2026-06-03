@@ -27,11 +27,12 @@ const manageSearchQuery = ref('')
 const showCreateIconPicker = ref(false)
 const showEditIconPicker = ref(false)
 const editIconCategoryId = ref<string | null>(null)
-const dialogMode = ref<'list' | 'create'>('list')
+const dialogMode = ref<'list' | 'create' | 'edit'>('list')
 const confirmDeleteId = ref<string | null>(null)
 const categoryName = ref('')
 const localError = ref('')
 const selectedIcon = ref('Folder')
+const editingCategoryId = ref<string | null>(null)
 const editingId = ref<string | null>(null)
 const editingName = ref('')
 const nameInputRef = ref<HTMLInputElement | null>(null)
@@ -63,6 +64,7 @@ function closeManageDialog(): void {
   dialogMode.value = 'list'
   manageSearchQuery.value = ''
   confirmDeleteId.value = null
+  editingCategoryId.value = null
   editingId.value = null
   editingName.value = ''
   showEditIconPicker.value = false
@@ -150,6 +152,16 @@ function openCreateDialog(): void {
   openCreateView()
 }
 
+function openEditDialog(category: { id: string; label: string; icon: string }): void {
+  showManageDialog.value = true
+  dialogMode.value = 'edit'
+  editingCategoryId.value = category.id
+  categoryName.value = category.label
+  selectedIcon.value = category.icon
+  localError.value = ''
+  clearError()
+}
+
 function backToList(): void {
   dialogMode.value = 'list'
   localError.value = ''
@@ -164,6 +176,25 @@ async function submitCategory(): Promise<void> {
   if (ok) {
     dialogMode.value = 'list'
     categoryName.value = ''
+    return
+  }
+  localError.value = errorMessage.value
+}
+
+async function submitEditCategory(): Promise<void> {
+  if (!editingCategoryId.value) return
+
+  const name = categoryName.value.trim()
+  if (!name) {
+    localError.value = t('errors.category_name_empty')
+    return
+  }
+
+  localError.value = ''
+  clearError()
+  const ok = await updateCategory(editingCategoryId.value, { name, icon: selectedIcon.value })
+  if (ok) {
+    closeManageDialog()
     return
   }
   localError.value = errorMessage.value
@@ -190,6 +221,7 @@ async function confirmDelete(id: string, name: string): Promise<void> {
 defineExpose({
   openManageDialog,
   openCreateDialog,
+  openEditDialog,
 })
 </script>
 
@@ -323,7 +355,7 @@ defineExpose({
             </div>
           </template>
 
-          <template v-else>
+          <template v-else-if="dialogMode === 'create'">
             <div class="dialog-header">
               <button type="button" class="icon-btn back-btn" :aria-label="t('common.back')" @click="backToList">
                 <ArrowLeft :size="16" :stroke-width="1.5" />
@@ -363,6 +395,47 @@ defineExpose({
                 @click="submitCategory"
               >
                 {{ loading ? t('common.creating') : t('category.createCategory') }}
+              </UiButton>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="dialog-header">
+              <div class="header-main">
+                <h4 class="dialog-title">{{ t('category.editCategory') }}</h4>
+                <p class="dialog-desc">{{ t('category.editHint') }}</p>
+              </div>
+              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
+                <X :size="16" :stroke-width="1.5" />
+              </button>
+            </div>
+
+            <label class="field-label">{{ t('category.categoryName') }}</label>
+            <UiInput
+              v-model="categoryName"
+              :maxlength="20"
+              :placeholder="t('category.namePlaceholder')"
+              @keydown.enter="submitEditCategory"
+            />
+
+            <label class="field-label">{{ t('category.icon') }}</label>
+            <button type="button" class="icon-picker-trigger" @click="showCreateIconPicker = true">
+              <CategoryIconView :name="selectedIcon" :badge-size="36" :size="18" />
+              <span>{{ t('category.pickIcon') }}</span>
+            </button>
+
+            <p v-if="localError" class="error-text">{{ localError }}</p>
+
+            <div class="dialog-actions">
+              <UiButton variant="ghost" class="action-btn" @click="closeManageDialog">{{ t('common.cancel') }}</UiButton>
+              <UiButton
+                variant="primary"
+                class="action-btn"
+                :disabled="loading || !categoryName.trim()"
+                :loading="loading"
+                @click="submitEditCategory"
+              >
+                {{ loading ? t('common.saving') : t('common.save') }}
               </UiButton>
             </div>
           </template>

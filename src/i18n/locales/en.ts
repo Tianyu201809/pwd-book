@@ -445,6 +445,8 @@ export default {
     manage: 'Manage categories',
     manageDesc: '{count} categories · Reorder in the sidebar',
     newCategory: 'New category',
+    editCategory: 'Edit category',
+    editHint: 'Change the category name and icon',
     createCategory: 'Create category',
     categoryName: 'Category name',
     namePlaceholder: 'e.g. Learning, Shopping',

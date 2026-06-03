@@ -442,6 +442,8 @@ export default {
     manage: '分类管理',
     manageDesc: '共 {count} 个分类 · 排序请在侧边栏拖拽',
     newCategory: '新建分类',
+    editCategory: '编辑分类',
+    editHint: '修改分类名称与图标',
     createCategory: '创建分类',
     categoryName: '分类名称',
     namePlaceholder: '例如：学习、购物',
