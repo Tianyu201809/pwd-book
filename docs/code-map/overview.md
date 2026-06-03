@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.2.0（`package.json`） |
+| 版本 | 1.3.0（`package.json`） |
 | 源码文件 | ~60+ 个 `.ts` / `.vue`（`src/`） |
 | IPC 通道 | 30+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
 | 测试 | 暂无自动化测试套件 |

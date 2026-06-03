@@ -10,7 +10,7 @@ App.vue
 ├── LockScreen.vue            # 锁定页状态机
 │   └── recovery/*            # 恢复流程子组件
 ├── VaultView.vue             # 主工作区
-│   ├── VaultSidebar.vue      # 分类导航、拖拽排序
+│   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
 │   └── PasswordDetail.vue    # 条目编辑、图标选择
 ├── SettingsView.vue          # 设置页 Tab 容器
@@ -33,9 +33,16 @@ App.vue
 - 有搜索词时 `filterEntriesBySearch` 过滤；↑↓ / Enter 选择并 `launchEntry`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 
+### VaultSidebar.vue
+
+- 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
+- HTML5 拖拽排序，`reorderSidebarCategories` 持久化。
+
 ### EntryListMenu.vue
 
-列表项右键 / 「⋯」菜单；「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
+列表项右键 / 「⋯」菜单；含 **复制到剪贴板**（`copyEntryData`）、**创建副本**（`duplicateEntry`，标题追加 ` - 副本`）、移动、打开网址/程序等。「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
+
+`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。
 
 ## Composables
 
@@ -49,6 +56,7 @@ App.vue
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
+| `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
 | `loadEntries` / `selectEntry` | 列表与选中项 |
 | 分类 | `createCategory`、`reorderSidebarCategories` 等 |
 | `exportData` / `importData` | JSON 备份 |
@@ -97,8 +105,8 @@ App.vue
 
 - `categoryIcons.ts` — 30+ 图标 id → 颜色/符号映射
 - `IconPickerModal.vue` — 搜索过滤、选中回调
-- `VaultSidebar.vue` — HTML5 拖拽排序，`reorderSidebarCategories` 持久化
-- `CategoryManagePanel.vue` — 新建/删除分类，复用 IconPicker
+- `VaultSidebar.vue` — HTML5 拖拽排序、分类右键菜单，`reorderSidebarCategories` 持久化
+- `CategoryManagePanel.vue` — 新建/编辑/删除分类，复用 IconPicker；可由侧栏右键「编辑」唤起
 
 ## 样式
 
