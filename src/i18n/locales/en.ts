@@ -6,6 +6,7 @@ export default {
     close: 'Close',
     confirm: 'Confirm',
     delete: 'Delete',
+    edit: 'Edit',
     save: 'Save',
     saving: 'Saving…',
     processing: 'Processing…',

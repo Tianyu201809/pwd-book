@@ -6,6 +6,7 @@ export default {
     close: '关闭',
     confirm: '确认',
     delete: '删除',
+    edit: '编辑',
     save: '保存',
     saving: '保存中…',
     processing: '处理中…',
