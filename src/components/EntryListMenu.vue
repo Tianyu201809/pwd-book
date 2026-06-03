@@ -21,6 +21,7 @@ const {
   openEntryInBrowser,
   openLocalProgramForEntry,
   copyEntryData,
+  duplicateEntry,
   removeEntry,
   moveEntryToCategory,
   toggleFavorite,
@@ -54,6 +55,12 @@ async function handleCopy(event: MouseEvent): Promise<void> {
   event.stopPropagation()
   done()
   await copyEntryData(props.entry)
+}
+
+async function handleDuplicate(event: MouseEvent): Promise<void> {
+  event.stopPropagation()
+  done()
+  await duplicateEntry(props.entry)
 }
 
 async function handleToggleFavorite(event: MouseEvent): Promise<void> {
@@ -186,6 +193,9 @@ function scheduleCloseMoveSubmenu(): void {
   </button>
   <button type="button" class="action-menu-item" @click="handleCopy">
     {{ t('vault.copyData') }}
+  </button>
+  <button type="button" class="action-menu-item" @click="handleDuplicate">
+    {{ t('vault.duplicateEntry') }}
   </button>
   <button type="button" class="action-menu-item" @click="handleToggleFavorite">
     {{ entry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite') }}

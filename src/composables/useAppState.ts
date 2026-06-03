@@ -532,6 +532,29 @@ function entryToInput(entry: PasswordEntry): PasswordEntryInput {
   }
 }
 
+async function duplicateEntry(entry: PasswordEntry): Promise<boolean> {
+  const input = entryToInput(entry)
+  input.title = `${entry.title}${i18n.global.t('vault.duplicateTitleSuffix')}`
+
+  loading.value = true
+  clearError()
+  try {
+    const saved = await vaultApi.createEntry(input)
+    isCreating.value = false
+    selectedEntryId.value = saved.id
+    expandDetailPanel()
+    await refreshVaultData()
+    touchActivity()
+    showToast(i18n.global.t('vault.duplicated'), 'success')
+    return true
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
 async function moveEntryToCategory(entryId: string, categoryId: string): Promise<boolean> {
   const entry = entries.value.find((item) => item.id === entryId)
   if (!entry || entry.categoryId === categoryId) return false
@@ -899,6 +922,7 @@ export function useAppState() {
     cancelCreateEntry,
     getCreateDefaultCategoryId,
     saveEntry,
+    duplicateEntry,
     moveEntryToCategory,
     removeEntry,
     toggleFavorite,

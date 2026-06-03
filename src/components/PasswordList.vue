@@ -138,6 +138,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   event.stopPropagation()
   openMenuId.value = null
   showSortMenu.value = false
+  selectEntry(entry.id)
   contextMenu.value = {
     entry,
     x: event.clientX,
