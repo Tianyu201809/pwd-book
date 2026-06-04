@@ -4,10 +4,21 @@
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-06-06
+
 ### 新增
 
-- **浏览器自动填充（Chrome / Edge）** — **设置 → 安全** 可开启本机桥接服务；配合 `extension/` 目录中的 MV3 扩展与 `native-host/`，在保险库解锁后按网页域名匹配并填充登录表单。全程本机通信（Native Messaging + `127.0.0.1`），无业务出站。
-- **设置页一键注册扩展** — 在「浏览器自动填充」区域填写 Chrome 扩展 ID 并点击「注册到 Chrome / Edge」，无需手动执行注册表脚本（仍保留 `npm run register-native-host` 命令行方式）。
+- **浏览器自动填充（Chrome / Edge）** — **设置 → 安全** 可开启本机桥接；`extension/` MV3 扩展在登录页按域名匹配条目并填充；Native Host（`native-host/`）+ 主进程 `127.0.0.1` 桥接；无业务出站。
+- **设置页一键注册扩展** — 填写 Chrome 扩展 ID 后点击「注册到 Chrome / Edge」，写入用户目录清单与系统注册表；可打开 `chrome://extensions/`；仍保留 `npm run register-native-host`。
+
+### 改进
+
+- 扩展填充条 UI 对齐经典主题（黄铜强调色）；多账号自定义下拉，避免与页面 MutationObserver 冲突。
+- 桥接 TCP 断连（`ECONNRESET`）不再导致主进程崩溃；Native Host 正确读取 `%APPDATA%\pwd-book\native-bridge.json`。
+
+### 文档
+
+- 新增 [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md)；更新 code-map 索引、IPC、数据库与主进程说明；README 浏览器集成章节。
 
 ## [1.5.0] - 2026-06-05
 

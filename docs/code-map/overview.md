@@ -6,9 +6,9 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.3.0（`package.json`） |
-| 源码文件 | ~60+ 个 `.ts` / `.vue`（`src/`） |
-| IPC 通道 | 30+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
+| 版本 | 1.6.0（`package.json`） |
+| 源码文件 | ~60+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
+| IPC 通道 | 35+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
 | 测试 | 暂无自动化测试套件 |
 
 ## 三层进程模型
@@ -76,7 +76,9 @@ src/
 │   ├── ipc/handlers.ts   # IPC 路由与校验
 │   ├── crypto/           # scrypt + AES-256-GCM
 │   ├── db/               # sql.js 初始化、迁移、helpers
-│   └── services/         # 业务逻辑（vault、recovery、category、settings、session）
+│   └── services/         # vault、recovery、category、settings、browserBridge、nativeHostRegistry
+├── extension/            # Chrome/Edge MV3（v1.6.0）
+├── native-host/          # Native Messaging Host（v1.6.0）
 ├── preload/
 │   ├── index.ts          # contextBridge 暴露
 │   └── api.ts            # typed IPC 封装
@@ -88,6 +90,8 @@ src/
 │   └── vaultApi.ts       # 渲染层 API 门面
 ├── shared/
 │   ├── types.ts          # 共享类型 + IPC 常量
+│   ├── browserBridgeProtocol.ts  # 浏览器桥接协议（v1.6.0）
+│   ├── urlMatch.ts       # 条目 URL / 页面 hostname 匹配
 │   ├── utils.ts          # 格式化、错误解析、密码生成
 │   └── categoryIcons.ts  # 分类/条目图标注册表
 └── assets/styles/        # tokens.css、global.css

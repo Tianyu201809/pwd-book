@@ -49,7 +49,19 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+
+### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
+
+浏览器扩展经 Native Host 访问保险库，详见 [browser-autofill.md](./browser-autofill.md)。
+
+| 模块 | 职责 |
+|------|------|
+| `browserBridgeService` | `127.0.0.1` TCP 桥接、`native-bridge.json`、处理 `matchLogins` / `getCredential` |
+| `browserMatchService` | 按页面 URL hostname 匹配条目（`urlMatch.ts`） |
+| `nativeHostRegistryService` | 设置页一键注册：写 `%APPDATA%\pwd-book\native-host\com.pwdbook.app.json` + Chrome/Edge 注册表 |
+
+生命周期：`main/index.ts` 启动时 `syncBrowserBridge()`；`before-quit` 时 `destroyBrowserBridge()`。
 
 ### quickBarRecentService (`src/main/services/quickBarRecentService.ts`)
 

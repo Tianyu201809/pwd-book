@@ -62,10 +62,22 @@
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
-| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口） |
+| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口）；同步 `browserBridgeService` |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
 | `data:export` | 是 | JSON 结构 `ExportPayload` |
 | `data:import` | 是 | 批量导入条目 |
+
+### 浏览器自动填充（v1.6.0）
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `browser:bridge-status` | 否 | 桥接是否运行、端口、是否已解锁 |
+| `browser:bridge-regenerate-token` | 否 | 重新生成 `native-bridge.json` token |
+| `browser:native-host-info` | 否 | 已注册扩展 ID、清单路径、Host 是否存在 |
+| `browser:register-native-host` | 否 | 参数：32 位扩展 ID；写注册表 + 用户目录清单 |
+| `shell:open-extensions-page` | 否 | 打开 `chrome://extensions/` |
+
+扩展与主进程不经上述 IPC 直连，而是 **Native Host → TCP 桥接**。详见 [browser-autofill.md](./browser-autofill.md)。
 
 ### 窗口（非 IPC handle）
 

@@ -2,6 +2,8 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
+**当前版本：v1.6.0**（`package.json`）— 新增 Chrome/Edge 浏览器自动填充（扩展 + Native Host + 本机桥接）。
+
 ## 文档索引
 
 | 文档 | 内容 |
@@ -12,6 +14,7 @@
 | [ipc-and-data-flow.md](./ipc-and-data-flow.md) | IPC 通道表、解锁/保存/恢复流程图 |
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试 |
+| [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全 |
 
 ## 相关文档
 
@@ -19,6 +22,7 @@
 - 用户指南：[README.md](../../README.md)
 - 版本日志：[CHANGELOG.md](../../CHANGELOG.md)
 - 贡献流程：[CONTRIBUTING.md](../../CONTRIBUTING.md)
+- Native Host 模板说明：[native-host/README.md](../../native-host/README.md)
 
 ## 快速定位
 
@@ -30,4 +34,5 @@
 | 改 UI 状态与保存 | `useAppState.ts`、`PasswordDetail.vue` |
 | 改分类/侧边栏 | `categoryService.ts`、`VaultSidebar.vue` |
 | 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue` |
-| 改类型定义 | `src/shared/types.ts` |
+| 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |
+| 改类型定义 | `src/shared/types.ts`、`src/shared/browserBridgeProtocol.ts` |

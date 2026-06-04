@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.6.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -121,7 +121,7 @@ npm run dev
 
 ## 功能
 
-功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [外观](#外观) · [系统集成](#窗口与系统集成windows)
+功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [外观](#外观) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
 
 以下按用户可见模块整理；实现细节见 [docs/code-map](./docs/code-map/README.md)。
 
@@ -164,7 +164,7 @@ npm run dev
 | 关闭窗口 | 每次询问 / 默认最小化到托盘 / 直接退出；标题栏关闭对话框可「记住选择」 |
 | 快捷搜索条 | 开关 +「打开快捷条」；默认全局快捷键 `Alt+Shift+P` |
 | 快捷键唤起主窗口 | 开关；默认 `Alt+Shift+M` |
-| **浏览器自动填充** | 开关；启用后本机桥接服务（`127.0.0.1`，无出站网络）配合 Chrome/Edge 扩展，在保险库**已解锁**时按当前网页域名匹配条目并填充。见 [浏览器扩展](#浏览器扩展-chrome--edge) |
+| **浏览器自动填充** | 开关；启用后本机桥接服务（`127.0.0.1`，无出站网络）配合 Chrome/Edge 扩展，在保险库**已解锁**时按当前网页域名匹配条目并填充。见 [浏览器扩展](#浏览器扩展chrome--edge) |
 | **恢复密钥** | 查看是否已配置；**设置**或**重新生成**（需验证当前主密码）；明文密钥仅展示一次，可下载 `.txt`；同页提供 **导出 JSON / Excel** 快捷备份（与「数据」导出内容一致） |
 
 #### 外观
@@ -325,10 +325,20 @@ npm run dev
 - **导出文件**：JSON、CSV、Excel 等导出均可能包含**明文密码**，勿上传至网盘或聊天工具。
 - **邮箱备份**：ZIP 使用 AES-256 加密，解压密码为主密码；SMTP 凭据经会话密钥加密后存于本地设置。
 - **打开网址（携带参数）**：在 **设置 → 安全** 开启后，列表菜单打开网址时会附加 `user` / `pwd`；快捷搜索条 `Enter` 遵循同一设置。请勿对不可信站点使用。
+- **浏览器自动填充**：扩展仅在保险库解锁时经本机桥接取密；`getCredential` 校验条目网址与当前页域名一致。详见 [浏览器扩展](#浏览器扩展chrome--edge)。
 
 ## 版本更新
 
-### v1.5.0（当前）
+### v1.6.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#160---2026-06-06)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 浏览器 | **Chrome / Edge** 自动填充：扩展 + 本机桥接；设置页填写扩展 ID 一键注册 |
+| 安全 | 填充需保险库解锁；按网页域名匹配；全程本机、无云端 |
+
+### v1.5.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#150---2026-06-05)**。摘要：
 
@@ -391,13 +401,15 @@ npm run dev
 ```
 pwd-book/
 ├── src/
-│   ├── main/           # Electron 主进程：IPC、加密、SQLite、标签/分类服务、托盘、单实例、邮箱备份
+│   ├── main/           # Electron 主进程：IPC、加密、SQLite、标签/分类服务、托盘、单实例、邮箱备份、浏览器桥接
 │   ├── preload/        # contextBridge API（window.electronAPI）
 │   ├── renderer/       # 主窗口 index.html 与 quickbar.html 双入口
 │   ├── components/     # UI（LockScreen、VaultView、QuickBarApp、import/、export/ 等）
 │   ├── composables/    # useAppState、useTheme、useAutoLock、useLocale 等
 │   ├── i18n/           # 中英文文案
-│   └── shared/         # 类型、IPC、导入/导出解析、launchEntry、entrySearch 等
+│   └── shared/         # 类型、IPC、导入/导出解析、launchEntry、entrySearch、urlMatch 等
+├── extension/          # Chrome/Edge MV3 自动填充扩展
+├── native-host/        # Native Messaging Host（桥接 Chrome ↔ PwdBook）
 ├── deps/               # 打包依赖脚本（NSIS 卸载时可选删除用户数据）
 ├── docs/images/        # README 等产品截图
 ├── design/             # 设计系统、原型与恢复流程规范
@@ -416,6 +428,7 @@ pwd-book/
 | [docs/code-map/overview.md](./docs/code-map/overview.md) | 三层进程模型与目录说明 |
 | [docs/code-map/database-schema.md](./docs/code-map/database-schema.md) | 表结构与 `app_settings` 键 |
 | [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md) | 快捷搜索条、最近打开与全局快捷键 |
+| [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0） |
 | [design/design-system.md](./design/design-system.md) | 色彩、字体与组件 Token |
 | [design/recovery-flow.md](./design/recovery-flow.md) | 恢复密钥 UX 与文案规范 |
 

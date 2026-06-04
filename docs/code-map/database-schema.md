@@ -57,6 +57,8 @@
 | `quick_bar_accelerator` | 快捷条快捷键，默认 `Alt+Shift+P` |
 | `main_window_shortcut_enabled` | 主窗口全局快捷键开关 |
 | `main_window_shortcut_accelerator` | 主窗口快捷键，默认 `Alt+Shift+M` |
+| `browser_fill_enabled` | 浏览器自动填充桥接开关（v1.6.0） |
+| `browser_extension_id` | 上次注册的 Chrome 扩展 ID（32 位 a–p） |
 | `sidebar_category_order` | JSON：`string[]`，含 `all`、`favorite` 及自定义分类 id |
 
 ### 快捷条与快捷键
@@ -72,6 +74,15 @@
 ## 迁移策略
 
 当前采用 **启动时检测 + ALTER**（如 `display_icon`），无独立 migration 版本表。新增列时在 `database.ts` 或专用 migrate 函数中添加 PRAGMA 检测。
+
+## 浏览器桥接运行时文件（非 SQLite）
+
+| 路径 | 说明 |
+|------|------|
+| `{userData}/native-bridge.json` | Bridge 监听端口与 `token`（`browserFillEnabled` 时生成） |
+| `{userData}/native-host/com.pwdbook.app.json` | Chrome Native Messaging 清单（设置页注册后） |
+
+详见 [browser-autofill.md](./browser-autofill.md)。
 
 ## 备份 JSON 结构
 
