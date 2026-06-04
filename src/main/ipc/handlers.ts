@@ -22,7 +22,7 @@ import {
   removeQuickBarRecentEntry,
   resolveQuickBarRecentEntries,
 } from '../services/quickBarRecentService'
-import type { ExportFormatId } from '../../shared/exportFormats'
+import type { CsvExportId } from '../../shared/exportFormats'
 import {
   createEntry,
   deleteEntry,
@@ -389,7 +389,7 @@ export function registerIpcHandlers(): void {
     }),
   )
 
-  ipcMain.handle(IPC.dataExportCsv, (_event, formatId: ExportFormatId) =>
+  ipcMain.handle(IPC.dataExportCsv, (_event, formatId: CsvExportId) =>
     wrap(() => {
       ensureUnlocked()
       return buildExportCsv(formatId)

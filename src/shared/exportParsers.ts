@@ -1,5 +1,7 @@
 import { buildCsvContent } from './csvFormat'
-import type { ExportFormatId } from './exportFormats'
+import { entryToPwdBookRow, PWD_BOOK_ENTRY_HEADERS } from './exportEntryColumns'
+import type { CsvExportId, ExportDestinationId, ExportFormatId } from './exportFormats'
+import { isPwdBookExport } from './exportFormats'
 import type { PasswordEntry } from './types'
 
 function formatKeePassDate(timestamp: number): string {
@@ -86,10 +88,36 @@ const EXPORT_SPECS: Record<
   },
 }
 
+function isThirdPartyExportable(entry: PasswordEntry): boolean {
+  return Boolean(entry.title?.trim() && entry.password)
+}
+
+export function countExportableForFormat(
+  formatId: ExportDestinationId,
+  entries: PasswordEntry[],
+): { total: number; exportable: number; skipped: number } {
+  const total = entries.length
+  if (isPwdBookExport(formatId)) {
+    return { total, exportable: total, skipped: 0 }
+  }
+  const exportable = entries.filter(isThirdPartyExportable).length
+  return { total, exportable, skipped: total - exportable }
+}
+
+export function entriesToPwdBookCsv(entries: PasswordEntry[]): string {
+  const rows = entries.map(entryToPwdBookRow)
+  return buildCsvContent([...PWD_BOOK_ENTRY_HEADERS], rows)
+}
+
 export function entriesToCsv(formatId: ExportFormatId, entries: PasswordEntry[]): string {
   const spec = EXPORT_SPECS[formatId]
-  const rows = entries
-    .filter((entry) => entry.title?.trim() && entry.password)
-    .map((entry) => spec.row(entry))
+  const rows = entries.filter(isThirdPartyExportable).map((entry) => spec.row(entry))
   return buildCsvContent(spec.headers, rows)
+}
+
+export function buildCsvForDestination(formatId: CsvExportId, entries: PasswordEntry[]): string {
+  if (formatId === 'pwdbook-csv') {
+    return entriesToPwdBookCsv(entries)
+  }
+  return entriesToCsv(formatId, entries)
 }

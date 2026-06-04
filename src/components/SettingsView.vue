@@ -22,6 +22,7 @@ import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
 import ImportDataModal from '@/components/import/ImportDataModal.vue'
 import ExportDataModal from '@/components/export/ExportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
+import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
 
 const {
@@ -30,8 +31,6 @@ const {
   navigateTo,
   securitySettings,
   updateSecuritySettings,
-  exportData,
-  exportDataAsExcel,
   resetAllData,
   errorMessage,
   clearError,
@@ -96,42 +95,10 @@ function openQuickBar(): void {
   window.electronAPI?.showQuickBar?.()
 }
 
-async function handleExportJson(): Promise<void> {
+function openExportModal(): void {
   clearError()
   statusMessage.value = ''
-  try {
-    const json = await exportData()
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = `pwdbook-backup-${Date.now()}.json`
-    anchor.click()
-    URL.revokeObjectURL(url)
-    statusMessage.value = t('settings.backupExported')
-  } catch (error) {
-    statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
-  }
-}
-
-async function handleExportExcel(): Promise<void> {
-  clearError()
-  statusMessage.value = ''
-  try {
-    const bytes = await exportDataAsExcel()
-    const blob = new Blob([new Uint8Array(bytes)], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = `pwdbook-backup-${Date.now()}.xlsx`
-    anchor.click()
-    URL.revokeObjectURL(url)
-    statusMessage.value = t('settings.excelExported')
-  } catch (error) {
-    statusMessage.value = error instanceof Error ? error.message : t('errors.export_failed')
-  }
+  exportModalOpen.value = true
 }
 
 function openImportModal(): void {
@@ -140,18 +107,20 @@ function openImportModal(): void {
   importModalOpen.value = true
 }
 
-function openExportModal(): void {
-  clearError()
-  statusMessage.value = ''
-  exportModalOpen.value = true
-}
-
 function onImportCompleted(count: number): void {
   statusMessage.value = t('settings.importSuccess', { count })
 }
 
-function onExportCompleted(): void {
-  statusMessage.value = t('export.exported')
+function onExportCompleted(formatId: ExportDestinationId): void {
+  if (formatId === 'pwdbook-json') {
+    statusMessage.value = t('export.exportedJson')
+    return
+  }
+  if (formatId === 'pwdbook-xlsx') {
+    statusMessage.value = t('export.exportedExcel')
+    return
+  }
+  statusMessage.value = t('export.exportedCsv')
 }
 
 async function handleReset(): Promise<void> {
@@ -289,16 +258,8 @@ async function handleReset(): Promise<void> {
           <p v-if="statusMessage" class="status-message">{{ statusMessage }}</p>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           <div class="surface-card settings-card">
-            <button type="button" class="link-row" @click="handleExportJson">
-              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportJson') }}</span>
-              <ChevronRight :size="16" :stroke-width="1.5" />
-            </button>
-            <button type="button" class="link-row" @click="handleExportExcel">
-              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportExcel') }}</span>
-              <ChevronRight :size="16" :stroke-width="1.5" />
-            </button>
             <button type="button" class="link-row" @click="openExportModal">
-              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportToApps') }}</span>
+              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
             <ExportDataModal v-model:open="exportModalOpen" @exported="onExportCompleted" />

@@ -1,41 +1,13 @@
 import * as XLSX from 'xlsx'
+import {
+  entryToPwdBookRow,
+  PWD_BOOK_CATEGORY_HEADERS,
+  PWD_BOOK_ENTRY_HEADERS,
+} from '../../shared/exportEntryColumns'
 import type { ExportPayload } from '../../shared/types'
 
-const ENTRY_HEADERS = [
-  '标题',
-  '网址',
-  '本地程序路径',
-  '用户名',
-  '密码',
-  '备注',
-  '标签',
-  '分类',
-  '收藏',
-  '创建时间',
-  '更新时间',
-] as const
-
-const CATEGORY_HEADERS = ['ID', '名称', '图标', '排序', '条目数'] as const
-
-function formatTimestamp(ms: number | null): string {
-  if (ms == null) return ''
-  return new Date(ms).toISOString()
-}
-
 export function buildExcelBuffer(payload: ExportPayload): Buffer {
-  const entryRows = payload.entries.map((entry) => [
-    entry.title,
-    entry.url,
-    entry.localProgramPath ?? '',
-    entry.username,
-    entry.password,
-    entry.note,
-    entry.tags.join(', '),
-    entry.categoryName,
-    entry.isFavorite ? '是' : '否',
-    formatTimestamp(entry.createdAt),
-    formatTimestamp(entry.updatedAt),
-  ])
+  const entryRows = payload.entries.map(entryToPwdBookRow)
 
   const categoryRows = payload.categories.map((cat) => [
     cat.id,
@@ -46,9 +18,12 @@ export function buildExcelBuffer(payload: ExportPayload): Buffer {
   ])
 
   const workbook = XLSX.utils.book_new()
-  const entriesSheet = XLSX.utils.aoa_to_sheet([ENTRY_HEADERS as unknown as string[], ...entryRows])
+  const entriesSheet = XLSX.utils.aoa_to_sheet([
+    PWD_BOOK_ENTRY_HEADERS as unknown as string[],
+    ...entryRows,
+  ])
   const categoriesSheet = XLSX.utils.aoa_to_sheet([
-    CATEGORY_HEADERS as unknown as string[],
+    PWD_BOOK_CATEGORY_HEADERS as unknown as string[],
     ...categoryRows,
   ])
 
