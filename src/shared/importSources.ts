@@ -6,6 +6,12 @@ export type ImportSourceId =
   | 'onepassword'
   | 'chrome'
   | 'pwdbook-json'
+  | 'pwdbook-csv'
+
+/** PwdBook 原生备份（JSON / CSV），导入时保留备份中的分类 */
+export function isPwdbookNativeImport(sourceId: ImportSourceId): boolean {
+  return sourceId === 'pwdbook-json' || sourceId === 'pwdbook-csv'
+}
 
 export interface ImportSourceMeta {
   id: ImportSourceId
@@ -91,6 +97,27 @@ export const IMPORT_SOURCES: ImportSourceMeta[] = [
     accept: 'application/json,.json',
     exportGuideKey: 'pwdbookGuide',
     expectedColumns: [],
+  },
+  {
+    id: 'pwdbook-csv',
+    categoryName: 'PwdBook',
+    nameKey: 'pwdbookCsv',
+    descKey: 'pwdbookCsvDesc',
+    monogram: 'Pb',
+    accent: 'var(--accent-primary)',
+    accept: '.csv,text/csv',
+    exportGuideKey: 'pwdbookCsvGuide',
+    expectedColumns: [
+      '标题',
+      '网址',
+      '本地程序路径',
+      '用户名',
+      '密码',
+      '备注',
+      '标签',
+      '分类',
+      '收藏',
+    ],
   },
 ]
 

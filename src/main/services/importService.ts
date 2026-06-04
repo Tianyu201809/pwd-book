@@ -1,7 +1,7 @@
 import { appError, ErrorCode } from '../../shared/errors'
 import { fingerprintFromInput, entryFingerprint } from '../../shared/importDedup'
 import { parseImportContent } from '../../shared/importParsers'
-import { getImportSource, type ImportSourceId } from '../../shared/importSources'
+import { getImportSource, isPwdbookNativeImport, type ImportSourceId } from '../../shared/importSources'
 import type {
   ImportCommitRequest,
   ImportPreviewItem,
@@ -9,7 +9,7 @@ import type {
   ImportPreviewResult,
   PasswordEntryInput,
 } from '../../shared/types'
-import { ensureCategoriesFromImport, ensureCategoryByDisplayName } from './categoryService'
+import { ensureCategoryByDisplayName } from './categoryService'
 import { isUnlocked } from './sessionService'
 import { createEntry, importFromExportPayload } from './vaultService'
 import { readEntryRows } from '../db/helpers'
@@ -38,7 +38,7 @@ function classifyRows(
   const skipped: ImportPreviewItem[] = []
   const invalid: ImportPreviewItem[] = []
 
-  const useSourceCategory = sourceId !== 'pwdbook-json'
+  const useSourceCategory = !isPwdbookNativeImport(sourceId)
 
   for (const parsed of rows) {
     const base = {
@@ -129,7 +129,7 @@ export function commitImport(request: ImportCommitRequest): number {
 
   const entries = request.entries.filter((e) => e.title?.trim() && e.password)
 
-  if (sourceId === 'pwdbook-json') {
+  if (isPwdbookNativeImport(sourceId)) {
     return importFromExportPayload({
       categories: request.categories ?? [],
       entries,

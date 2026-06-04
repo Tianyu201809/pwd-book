@@ -402,6 +402,8 @@ export default {
       chromeDesc: 'Chrome password CSV export',
       pwdbook: 'PwdBook',
       pwdbookDesc: 'This app’s JSON backup',
+      pwdbookCsv: 'PwdBook',
+      pwdbookCsvDesc: 'This app’s CSV spreadsheet export',
     },
     guides: {
       keepassGuide:
@@ -415,6 +417,8 @@ export default {
       chromeGuide:
         'Chrome: Settings → Autofill → Google Password Manager → gear → Download file (Google Password CSV).',
       pwdbookGuide: 'Use the .json file from Settings → Data → Export JSON backup.',
+      pwdbookCsvGuide:
+        'Settings → Data → Export data → choose “CSV spreadsheet”. Categories are restored from the 分类 column; entries without a category use the default.',
     },
     errors: {
       csvOnly: 'Please choose a CSV file',

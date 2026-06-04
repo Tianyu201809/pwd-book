@@ -18,6 +18,7 @@ import type { ImportPreviewItem, ImportPreviewResult } from '@/shared/types'
 import {
   IMPORT_SOURCES,
   getImportSource,
+  isPwdbookNativeImport,
   type ImportSourceId,
   type ImportSourceMeta,
 } from '@/shared/importSources'
@@ -56,6 +57,9 @@ const selectedSource = computed(() =>
 )
 
 const isJsonSource = computed(() => selectedId.value === 'pwdbook-json')
+const isPwdbookNativeSource = computed(() =>
+  selectedId.value ? isPwdbookNativeImport(selectedId.value) : false,
+)
 
 const stepIndex = computed(() => {
   if (step.value === 'source') return 0
@@ -420,7 +424,7 @@ const stepLabels = computed(() => [
           </p>
           <p class="review-category-hint">
             {{
-              isJsonSource
+              isPwdbookNativeSource
                 ? t('import.reviewCategoryJson')
                 : t('import.reviewCategory', { name: previewResult.sourceCategoryName })
             }}

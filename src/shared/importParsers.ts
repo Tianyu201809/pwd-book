@@ -2,7 +2,7 @@ import type { PasswordEntryInput } from './types'
 import type { ImportSourceId } from './importSources'
 import { getImportSource } from './importSources'
 import { parseCsvRecords, pickField } from './importCsv'
-import { parsePwdbookJson } from './importNormalize'
+import { parsePwdbookCsv, parsePwdbookJson } from './importNormalize'
 
 export interface ParsedImportRow {
   row: number
@@ -117,7 +117,20 @@ export function parseImportContent(
     return { rows, categories }
   }
 
-  const parsers: Record<Exclude<ImportSourceId, 'pwdbook-json'>, (c: string) => ParsedImportRow[]> = {
+  if (sourceId === 'pwdbook-csv') {
+    const { categories, entries } = parsePwdbookCsv(content)
+    const rows: ParsedImportRow[] = entries.map((entry, index) => {
+      if (!entry.title?.trim()) return { row: index + 2, entry: null, invalidReason: 'missing_title' }
+      if (!entry.password) return { row: index + 2, entry: null, invalidReason: 'missing_password' }
+      return { row: index + 2, entry }
+    })
+    return { rows, categories }
+  }
+
+  const parsers: Record<
+    Exclude<ImportSourceId, 'pwdbook-json' | 'pwdbook-csv'>,
+    (c: string) => ParsedImportRow[]
+  > = {
     keepass: parseKeePassCsv,
     enpass: parseEnpassCsv,
     bitwarden: parseBitwardenCsv,
@@ -125,7 +138,7 @@ export function parseImportContent(
     chrome: parseChromeCsv,
   }
 
-  const parser = parsers[sourceId as Exclude<ImportSourceId, 'pwdbook-json'>]
+  const parser = parsers[sourceId as Exclude<ImportSourceId, 'pwdbook-json' | 'pwdbook-csv'>]
   if (!parser) {
     throw new Error(`Unsupported import source: ${sourceId}`)
   }

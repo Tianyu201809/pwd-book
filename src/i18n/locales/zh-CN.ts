@@ -399,6 +399,8 @@ export default {
       chromeDesc: 'Chrome 密码 CSV 导出',
       pwdbook: 'PwdBook',
       pwdbookDesc: '本应用 JSON 备份',
+      pwdbookCsv: 'PwdBook',
+      pwdbookCsvDesc: '本应用 CSV 表格导出',
     },
     guides: {
       keepassGuide:
@@ -412,6 +414,8 @@ export default {
       chromeGuide:
         'Chrome：设置 → 自动填充 → Google 密码管理器 → 设置（齿轮）→ 下载文件。导出为 Google 密码 CSV。',
       pwdbookGuide: '在「设置 → 数据」中使用「导出 JSON 备份」生成的 .json 文件。',
+      pwdbookCsvGuide:
+        '在「设置 → 数据 → 导出数据」中选择「CSV 表格」格式。导入后将按「分类」列还原分类；无分类的条目进入默认分类。',
     },
     errors: {
       csvOnly: '请选择 CSV 文件',

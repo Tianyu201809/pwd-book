@@ -1,8 +1,8 @@
-import { IMPORT_SOURCES, type ImportSourceId } from './importSources'
+import { IMPORT_SOURCES, isPwdbookNativeImport, type ImportSourceId } from './importSources'
 import { PWD_BOOK_ENTRY_HEADERS } from './exportEntryColumns'
 
-/** 可导出的第三方 CSV 格式（与导入来源一致，不含 PwdBook JSON） */
-export type ExportFormatId = Exclude<ImportSourceId, 'pwdbook-json'>
+/** 可导出的第三方 CSV 格式（与导入来源一致，不含 PwdBook 原生备份） */
+export type ExportFormatId = Exclude<ImportSourceId, 'pwdbook-json' | 'pwdbook-csv'>
 
 export type PwdBookExportId = 'pwdbook-json' | 'pwdbook-csv' | 'pwdbook-xlsx'
 
@@ -68,7 +68,7 @@ const PWD_BOOK_DESTINATIONS: ExportDestinationMeta[] = [
 
 const THIRD_PARTY_DESTINATIONS: ExportDestinationMeta[] = IMPORT_SOURCES.filter(
   (source): source is (typeof IMPORT_SOURCES)[number] & { id: ExportFormatId } =>
-    source.id !== 'pwdbook-json',
+    !isPwdbookNativeImport(source.id),
 ).map((source) => ({
   id: source.id,
   group: 'thirdParty' as const,

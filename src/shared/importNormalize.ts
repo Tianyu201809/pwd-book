@@ -1,3 +1,4 @@
+import { parseCsvRecords, pickField } from './importCsv'
 import type { ExportPayload, PasswordEntryInput, VaultCategory } from './types'
 
 const LEGACY_CATEGORY_MAP: Record<string, string> = {
@@ -77,5 +78,62 @@ export function parsePwdbookJson(content: string): {
     entries: (parsed.entries ?? []).map((entry) =>
       normalizeImportEntry(entry as unknown as Record<string, unknown>),
     ),
+  }
+}
+
+function parsePwdbookFavorite(value: string): boolean {
+  const normalized = value.trim().toLowerCase()
+  return normalized === '是' || normalized === 'yes' || normalized === 'true' || normalized === '1'
+}
+
+function parsePwdbookTags(value: string): string[] {
+  if (!value.trim()) return []
+  return value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+}
+
+/** 解析 PwdBook 导出的 CSV（列与 exportEntryColumns 一致） */
+export function parsePwdbookCsv(content: string): {
+  categories: VaultCategory[]
+  entries: PasswordEntryInput[]
+} {
+  const records = parseCsvRecords(content)
+  const entries: PasswordEntryInput[] = []
+  const categoryByName = new Map<string, VaultCategory>()
+
+  for (const record of records) {
+    const title = pickField(record, '标题', 'title')
+    const password = pickField(record, '密码', 'password')
+    if (!title && !password) continue
+
+    const categoryName = pickField(record, '分类', 'category', 'categoryName')
+    if (categoryName && !categoryByName.has(categoryName)) {
+      categoryByName.set(categoryName, {
+        id: categoryName,
+        name: categoryName,
+        icon: 'Folder',
+        sortOrder: 99,
+        createdAt: Date.now(),
+      })
+    }
+
+    entries.push({
+      title,
+      url: pickField(record, '网址', 'url'),
+      localProgramPath: pickField(record, '本地程序路径', 'localProgramPath', 'local_program_path'),
+      username: pickField(record, '用户名', 'username'),
+      password,
+      note: pickField(record, '备注', 'note', 'notes'),
+      tags: parsePwdbookTags(pickField(record, '标签', 'tags')),
+      categoryId: categoryName || undefined,
+      isFavorite: parsePwdbookFavorite(pickField(record, '收藏', 'favorite', 'isFavorite')),
+    })
+  }
+
+  return {
+    categories: Array.from(categoryByName.values()),
+    entries,
   }
 }
