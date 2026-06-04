@@ -59,9 +59,9 @@ App.vue
 | `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
 | `loadEntries` / `selectEntry` | 列表与选中项 |
 | 分类 | `createCategory`、`reorderSidebarCategories` 等 |
-| `exportData` / `importData` | JSON 备份 |
-| `previewImportData` / `commitImportData` | 多来源导入预览与提交 |
-| `exportDataAsCsv` | 按第三方格式导出 CSV |
+| `exportData` / `importData` | PwdBook JSON 备份导入 |
+| `previewImportData` / `commitImportData` | 多来源导入（含 PwdBook CSV）预览与提交 |
+| `exportDataAsCsv` | PwdBook / 第三方 CSV 导出 |
 
 错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。
 

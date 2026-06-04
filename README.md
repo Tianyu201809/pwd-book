@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue?style=flat-square)](package.json)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -196,7 +196,7 @@ npm run dev
 **无法解锁时的三条路径**（`recovery-menu`）：
 
 1. **我有恢复密钥** — 验证恢复密钥 → 设置新主密码 → 后台重加密全部条目密码字段（进度遮罩）
-2. **我有 JSON 备份** — 提示需先用**备份时的主密码**解锁，再在 **设置 → 数据 → 导入数据** 选择 PwdBook JSON 恢复（锁定页不直接导入文件）
+2. **我有 JSON / CSV 备份** — 提示需先用**备份时的主密码**解锁，再在 **设置 → 数据 → 导入数据** 选择 PwdBook JSON 或 CSV 恢复（锁定页不直接导入文件）
 3. **我什么都没有** — **清除保险库**：分步说明 + 输入确认短语后删除本地数据并回到首次创建流程（不可恢复）
 
 ### 工具
@@ -231,12 +231,12 @@ npm run dev
 | | **Excel** | 工作簿含「密码条目」「分类」两表；便于人工查阅，**不可用于导入** |
 | **迁移到其他应用** | KeePass / Enpass / Bitwarden / 1Password / Chrome **CSV** | 按目标应用常见列名导出；确认页展示**将导出**条数、**因缺标题或密码将跳过**条数及期望列名；附各应用导入指引 |
 
-> 除 JSON 外，CSV / Excel 均含**明文密码**，请离线保管，勿上传网盘或聊天工具。
+> 导出文件（含 JSON、PwdBook CSV、第三方 CSV、Excel）均可能含**明文密码**，请离线保管，勿上传网盘或聊天工具。
 
 #### 导入数据（三步）
 
-1. **选择来源** — KeePass / Enpass / Bitwarden / 1Password / Chrome **CSV**，或 **PwdBook JSON**
-2. **上传文件** — 展示各来源导出指引与典型列名；JSON 仅接受 `.json`
+1. **选择来源** — KeePass / Enpass / Bitwarden / 1Password / Chrome **CSV**，或 **PwdBook JSON / CSV**
+2. **上传文件** — 展示各来源导出指引与典型列名；PwdBook JSON 接受 `.json`，PwdBook CSV 接受 `.csv`
 3. **预览确认** — 分 tab 查看 **将导入** / **重复跳过** / **无效** 及原因；第三方 CSV 按来源解析并**自动归入对应分类**；PwdBook JSON / CSV 导入时**保留或按列还原分类**
 
 重复判定：与现有条目在标题 + 用户名 + 网址等维度匹配时归入「重复跳过」。
@@ -310,13 +310,21 @@ npm run dev
 - **本地存储**：默认无云端同步；安全与界面偏好写入 `app_settings` 表。
 - **恢复密钥**：独立 scrypt 校验；用恢复密钥包装会话密钥，支持主密码重置后的条目重加密。
 - **剪贴板**：可选在复制后 N 秒清空剪贴板（若内容未被用户改写）。
-- **导出文件**：JSON / Excel 均包含**明文密码**，勿上传至网盘或聊天工具。
+- **导出文件**：JSON、CSV、Excel 等导出均可能包含**明文密码**，勿上传至网盘或聊天工具。
 - **邮箱备份**：ZIP 使用 AES-256 加密，解压密码为主密码；SMTP 凭据经会话密钥加密后存于本地设置。
 - **打开网址（携带参数）**：在 **设置 → 安全** 开启后，列表菜单打开网址时会附加 `user` / `pwd`；快捷搜索条 `Enter` 遵循同一设置。请勿对不可信站点使用。
 
 ## 版本更新
 
-### v1.4.0（当前）
+### v1.5.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#150---2026-06-05)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 导入 | **PwdBook CSV** 可导入恢复；按「分类」列还原分类，与 JSON 备份行为一致 |
+
+### v1.4.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#140---2026-06-04)**。摘要：
 
@@ -408,10 +416,10 @@ Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%
 当前版本不支持内置云同步。可自行通过「设置 → 数据 → 导出数据」导出 **JSON**（推荐）或 **CSV**，再在其他机器用「导入数据」恢复；Excel 仅便于查阅。也可使用「邮箱备份」将加密 ZIP 发到自己的邮箱作灾备。
 
 **忘记主密码怎么办？**  
-若曾保存恢复密钥：锁定页 →「使用恢复密钥」→ 验证后设置新主密码。若仍有 **JSON 备份** 且记得备份时的主密码：先解锁，再在「设置 → 数据 → 导入数据」恢复。若未配置恢复密钥且无可用备份：只能「清除保险库」后重新创建。
+若曾保存恢复密钥：锁定页 →「使用恢复密钥」→ 验证后设置新主密码。若仍有 **JSON 或 PwdBook CSV 备份** 且记得备份时的主密码：先解锁，再在「设置 → 数据 → 导入数据」恢复。若未配置恢复密钥且无可用备份：只能「清除保险库」后重新创建。
 
 **邮箱备份会上传明文吗？**  
-不会。备份以 AES-256 密码 ZIP 发送，解压密码为你的主密码；ZIP 内同时含 JSON（可导入）与 Excel（便于查看）。仅在你配置 SMTP 并主动发送（或确认定时提醒）时才会联网。
+不会。备份以 AES-256 密码 ZIP 发送，解压密码为你的主密码；ZIP 内同时含 JSON（可导入）与 Excel（便于查看）；亦可自行导出 PwdBook CSV 作灾备。仅在你配置 SMTP 并主动发送（或确认定时提醒）时才会联网。
 
 **最小化后找不到窗口？**  
 查看任务栏右侧系统托盘中的 PwdBook 图标，单击即可恢复窗口。
