@@ -12,6 +12,7 @@ const SETTINGS_KEYS = {
   quickBarAccelerator: 'quick_bar_accelerator',
   mainWindowShortcutEnabled: 'main_window_shortcut_enabled',
   mainWindowShortcutAccelerator: 'main_window_shortcut_accelerator',
+  browserFillEnabled: 'browser_fill_enabled',
 } as const
 
 function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
@@ -45,6 +46,9 @@ export function getSecuritySettings(): SecuritySettings {
     mainWindowShortcutAccelerator:
       getSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator) ??
       defaults.mainWindowShortcutAccelerator,
+    browserFillEnabled:
+      (getSetting(SETTINGS_KEYS.browserFillEnabled) ?? String(defaults.browserFillEnabled)) ===
+      'true',
   }
 }
 
@@ -61,6 +65,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.quickBarAccelerator, next.quickBarAccelerator)
   setSetting(SETTINGS_KEYS.mainWindowShortcutEnabled, String(next.mainWindowShortcutEnabled))
   setSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator, next.mainWindowShortcutAccelerator)
+  setSetting(SETTINGS_KEYS.browserFillEnabled, String(next.browserFillEnabled))
 
   return next
 }

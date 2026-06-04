@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { rcedit } from 'rcedit'
@@ -22,4 +23,19 @@ export default async function afterPack(context) {
   })
 
   console.log(`Embedded icon into ${exePath}`)
+
+  const nativeHostDir = path.join(context.appOutDir, 'resources', 'native-host')
+  const cmdPath = path.join(nativeHostDir, 'pwdbook-native-host.cmd')
+  const manifestPath = path.join(nativeHostDir, 'com.pwdbook.app.json')
+  if (fs.existsSync(cmdPath)) {
+    const manifest = {
+      name: 'com.pwdbook.app',
+      description: 'PwdBook Native Messaging Host',
+      path: cmdPath,
+      type: 'stdio',
+      allowed_origins: ['chrome-extension://REPLACE_EXTENSION_ID/'],
+    }
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+    console.log(`Wrote native messaging manifest: ${manifestPath}`)
+  }
 }

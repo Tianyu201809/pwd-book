@@ -1,6 +1,15 @@
+; PwdBook install: register native messaging host for browser extension (Chrome / Edge).
+
+!macro customInstall
+  WriteRegStr HKCU "Software\Google\Chrome\NativeMessagingHosts\com.pwdbook.app" "" "$INSTDIR\resources\native-host\com.pwdbook.app.json"
+  WriteRegStr HKCU "Software\Microsoft\Edge\NativeMessagingHosts\com.pwdbook.app" "" "$INSTDIR\resources\native-host\com.pwdbook.app.json"
+!macroend
+
 ; PwdBook uninstall: optionally remove local vault data (skip during in-place updates).
 
 !macro customUnInstall
+  DeleteRegKey HKCU "Software\Google\Chrome\NativeMessagingHosts\com.pwdbook.app"
+  DeleteRegKey HKCU "Software\Microsoft\Edge\NativeMessagingHosts\com.pwdbook.app"
   ; Installer passes --updated when upgrading; do not prompt or delete data then.
   ClearErrors
   ${GetParameters} $R0

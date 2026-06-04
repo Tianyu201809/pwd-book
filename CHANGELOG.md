@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### 新增
+
+- **浏览器自动填充（Chrome / Edge）** — **设置 → 安全** 可开启本机桥接服务；配合 `extension/` 目录中的 MV3 扩展与 `native-host/`，在保险库解锁后按网页域名匹配并填充登录表单。全程本机通信（Native Messaging + `127.0.0.1`），无业务出站。
+- **设置页一键注册扩展** — 在「浏览器自动填充」区域填写 Chrome 扩展 ID 并点击「注册到 Chrome / Edge」，无需手动执行注册表脚本（仍保留 `npm run register-native-host` 命令行方式）。
+
 ## [1.5.0] - 2026-06-05
 
 ### 新增

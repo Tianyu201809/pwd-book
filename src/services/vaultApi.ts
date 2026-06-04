@@ -75,6 +75,11 @@ export const vaultApi = {
   getSettings: (): Promise<SecuritySettings> => getApi().getSettings(),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>
     getApi().updateSettings(partial),
+  getBrowserBridgeStatus: () => getApi().getBrowserBridgeStatus(),
+  regenerateBrowserBridgeToken: () => getApi().regenerateBrowserBridgeToken(),
+  getNativeHostRegistrationInfo: () => getApi().getNativeHostRegistrationInfo(),
+  registerNativeHost: (extensionId: string) => getApi().registerNativeHost(extensionId),
+  openExtensionsPage: () => getApi().openExtensionsPage(),
 
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     getApi().copySecret(text, clearAfterMs),

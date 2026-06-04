@@ -1,0 +1,112 @@
+import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { app } from 'electron'
+import { appError, ErrorCode } from '../../shared/errors'
+import { getSetting, setSetting } from '../db/helpers'
+import type { NativeHostRegistrationInfo } from '../../shared/browserBridgeProtocol'
+
+const SETTINGS_KEY_EXTENSION_ID = 'browser_extension_id'
+const HOST_NAME = 'com.pwdbook.app'
+
+const EXTENSION_ID_RE = /^[a-p]{32}$/
+
+export function getSavedExtensionId(): string {
+  return getSetting(SETTINGS_KEY_EXTENSION_ID)?.trim().toLowerCase() ?? ''
+}
+
+function resolveBundledNativeHostDir(): string {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'native-host')
+  }
+  return path.join(app.getAppPath(), 'native-host')
+}
+
+export function getUserNativeHostDir(): string {
+  return path.join(app.getPath('userData'), 'native-host')
+}
+
+export function getUserManifestPath(): string {
+  return path.join(getUserNativeHostDir(), `${HOST_NAME}.json`)
+}
+
+function readExtensionIdFromManifest(manifestPath: string): string {
+  if (!fs.existsSync(manifestPath)) return ''
+  try {
+    const json = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as {
+      allowed_origins?: string[]
+    }
+    const origin = json.allowed_origins?.[0]
+    if (typeof origin !== 'string') return ''
+    const match = origin.match(/^chrome-extension:\/\/([a-p]{32})\/$/)
+    return match?.[1] ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function getNativeHostRegistrationInfo(): NativeHostRegistrationInfo {
+  const manifestPath = getUserManifestPath()
+  const hostDir = resolveBundledNativeHostDir()
+  const hostCmdPath = path.join(hostDir, 'pwdbook-native-host.cmd')
+  const hostCmdExists = fs.existsSync(hostCmdPath)
+  const manifestExists = fs.existsSync(manifestPath)
+  const fromManifest = readExtensionIdFromManifest(manifestPath)
+  const fromSettings = getSavedExtensionId()
+  const extensionId = fromSettings || fromManifest
+
+  return {
+    extensionId,
+    registered: manifestExists && Boolean(extensionId) && hostCmdExists,
+    manifestPath: manifestExists ? manifestPath : '',
+    hostCmdPath: hostCmdExists ? hostCmdPath : '',
+    hostCmdExists,
+  }
+}
+
+export function registerNativeHost(extensionId: string): NativeHostRegistrationInfo {
+  const id = extensionId.trim().toLowerCase()
+  if (!EXTENSION_ID_RE.test(id)) {
+    throw appError(ErrorCode.INVALID_EXTENSION_ID)
+  }
+  if (process.platform !== 'win32') {
+    throw appError(ErrorCode.PLATFORM_UNSUPPORTED)
+  }
+
+  const hostDir = resolveBundledNativeHostDir()
+  const hostCmdPath = path.join(hostDir, 'pwdbook-native-host.cmd')
+  if (!fs.existsSync(hostCmdPath)) {
+    throw appError(ErrorCode.NATIVE_HOST_NOT_FOUND)
+  }
+
+  const manifestDir = getUserNativeHostDir()
+  fs.mkdirSync(manifestDir, { recursive: true })
+  const manifestPath = getUserManifestPath()
+
+  const manifest = {
+    name: HOST_NAME,
+    description: 'PwdBook Native Messaging Host',
+    path: hostCmdPath.replace(/\//g, '\\'),
+    type: 'stdio',
+    allowed_origins: [`chrome-extension://${id}/`],
+  }
+
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+  setSetting(SETTINGS_KEY_EXTENSION_ID, id)
+
+  const regValue = manifestPath.replace(/\//g, '\\')
+  const registryKeys = [
+    `HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\${HOST_NAME}`,
+    `HKCU\\Software\\Microsoft\\Edge\\NativeMessagingHosts\\${HOST_NAME}`,
+  ]
+
+  try {
+    for (const key of registryKeys) {
+      execSync(`reg add "${key}" /ve /t REG_SZ /d "${regValue}" /f`, { encoding: 'utf8' })
+    }
+  } catch {
+    throw appError(ErrorCode.NATIVE_HOST_REGISTRY_FAILED)
+  }
+
+  return getNativeHostRegistrationInfo()
+}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import packageJson from '../../package.json'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
@@ -15,15 +15,19 @@ import {
   PanelTop,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
-import { UiSelect, UiSwitch, UiCard, UiButton } from '@/components/ui'
+import { UiSelect, UiSwitch, UiCard, UiButton, UiInput } from '@/components/ui'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
 import ImportDataModal from '@/components/import/ImportDataModal.vue'
 import ExportDataModal from '@/components/export/ExportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
+import { vaultApi } from '@/services/vaultApi'
+import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '@/shared/browserBridgeProtocol'
+import { parseErrorMessage } from '@/shared/utils'
 import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
+import { useToast } from '@/composables/useToast'
 
 const {
   settingsTab,
@@ -38,8 +42,13 @@ const {
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
+const { showToast } = useToast()
 
 const statusMessage = ref('')
+const bridgeStatus = ref<BrowserBridgeStatus | null>(null)
+const nativeHostInfo = ref<NativeHostRegistrationInfo | null>(null)
+const extensionIdInput = ref('')
+const registerLoading = ref(false)
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 
@@ -90,6 +99,81 @@ async function onQuickBarEnabledChange(enabled: boolean): Promise<void> {
 async function onMainWindowShortcutEnabledChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ mainWindowShortcutEnabled: enabled })
 }
+
+async function onBrowserFillEnabledChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ browserFillEnabled: enabled })
+  await refreshBridgeStatus()
+}
+
+async function refreshBridgeStatus(): Promise<void> {
+  try {
+    bridgeStatus.value = await vaultApi.getBrowserBridgeStatus()
+  } catch {
+    bridgeStatus.value = null
+  }
+}
+
+async function refreshNativeHostInfo(): Promise<void> {
+  try {
+    nativeHostInfo.value = await vaultApi.getNativeHostRegistrationInfo()
+    if (nativeHostInfo.value.extensionId && !extensionIdInput.value) {
+      extensionIdInput.value = nativeHostInfo.value.extensionId
+    }
+  } catch {
+    nativeHostInfo.value = null
+  }
+}
+
+async function registerNativeHost(): Promise<void> {
+  clearError()
+  registerLoading.value = true
+  try {
+    nativeHostInfo.value = await vaultApi.registerNativeHost(extensionIdInput.value)
+    statusMessage.value = t('settings.browserFillRegisterSuccess')
+    showToast(t('settings.browserFillRegisterSuccess'), 'success')
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  } finally {
+    registerLoading.value = false
+  }
+}
+
+async function openExtensionsPage(): Promise<void> {
+  try {
+    await vaultApi.openExtensionsPage()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
+async function regenerateBridgeToken(): Promise<void> {
+  try {
+    bridgeStatus.value = await vaultApi.regenerateBrowserBridgeToken()
+    statusMessage.value = t('settings.browserFillRegenerateDone')
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : String(error), 'error')
+  }
+}
+
+const bridgeStatusText = computed(() => {
+  const s = bridgeStatus.value
+  if (!s?.enabled) return ''
+  if (!s.unlocked) return t('settings.browserFillStatusLocked')
+  if (s.running && s.port) return t('settings.browserFillStatusRunning', { port: s.port })
+  return t('settings.browserFillStatusStopped')
+})
+
+onMounted(() => {
+  void refreshBridgeStatus()
+  void refreshNativeHostInfo()
+})
+
+watch(
+  () => securitySettings.value.browserFillEnabled,
+  () => {
+    void refreshBridgeStatus()
+  },
+)
 
 function openQuickBar(): void {
   window.electronAPI?.showQuickBar?.()
@@ -230,7 +314,7 @@ async function handleReset(): Promise<void> {
                 @update:model-value="onQuickBarEnabledChange"
               />
             </div>
-            <div class="row last">
+            <div class="row">
               <div>
                 <p class="row-title">{{ t('settings.mainWindowShortcut') }}</p>
                 <p class="row-desc">
@@ -245,6 +329,60 @@ async function handleReset(): Promise<void> {
                 :model-value="securitySettings.mainWindowShortcutEnabled"
                 @update:model-value="onMainWindowShortcutEnabledChange"
               />
+            </div>
+            <div class="row browser-fill-row">
+              <div>
+                <p class="row-title">{{ t('settings.browserFill') }}</p>
+                <p class="row-desc">{{ t('settings.browserFillDesc') }}</p>
+                <p v-if="securitySettings.browserFillEnabled && bridgeStatusText" class="row-desc bridge-status">
+                  {{ bridgeStatusText }}
+                </p>
+                <UiButton
+                  v-if="securitySettings.browserFillEnabled"
+                  variant="default"
+                  size="small"
+                  class="bridge-regen-btn"
+                  @click="regenerateBridgeToken"
+                >
+                  {{ t('settings.browserFillRegenerateToken') }}
+                </UiButton>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.browserFillEnabled"
+                @update:model-value="onBrowserFillEnabledChange"
+              />
+            </div>
+            <div v-if="securitySettings.browserFillEnabled" class="browser-fill-setup">
+              <p class="setup-title">{{ t('settings.browserFillSetupTitle') }}</p>
+              <p class="row-desc">{{ t('settings.browserFillSetupStep1') }}</p>
+              <p class="row-desc">{{ t('settings.browserFillSetupStep2') }}</p>
+              <p v-if="nativeHostInfo?.registered" class="row-desc setup-ok">
+                {{ t('settings.browserFillRegistered', { id: nativeHostInfo.extensionId }) }}
+              </p>
+              <p v-else-if="nativeHostInfo && !nativeHostInfo.hostCmdExists" class="row-desc setup-warn">
+                {{ t('settings.browserFillHostMissing') }}
+              </p>
+              <p v-else class="row-desc">{{ t('settings.browserFillNotRegistered') }}</p>
+              <label class="setup-label">{{ t('settings.browserFillExtensionId') }}</label>
+              <UiInput
+                v-model="extensionIdInput"
+                class="setup-input"
+                :placeholder="t('settings.browserFillExtensionIdPlaceholder')"
+                allow-clear
+              />
+              <div class="setup-actions">
+                <UiButton
+                  variant="primary"
+                  size="small"
+                  :disabled="!extensionIdInput.trim() || registerLoading"
+                  @click="registerNativeHost"
+                >
+                  {{ t('settings.browserFillRegister') }}
+                </UiButton>
+                <UiButton variant="default" size="small" @click="openExtensionsPage">
+                  {{ t('settings.browserFillOpenExtensions') }}
+                </UiButton>
+              </div>
             </div>
           </UiCard>
 
@@ -397,8 +535,50 @@ h3 {
   color: var(--text-muted);
 }
 
-.quickbar-open-btn {
+.quickbar-open-btn,
+.bridge-regen-btn {
   margin-top: 10px;
+}
+
+.browser-fill-setup {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+}
+
+.browser-fill-setup .setup-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.browser-fill-setup .setup-label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.browser-fill-setup .setup-input {
+  width: 100%;
+  max-width: 420px;
+}
+
+.browser-fill-setup .setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.browser-fill-setup .setup-ok {
+  color: var(--status-success);
+}
+
+.browser-fill-setup .setup-warn {
+  color: var(--status-danger);
 }
 
 .select {

@@ -16,7 +16,8 @@
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
     "dist:win:dir": "npm run build && electron-builder --win --dir",
-    "screenshots:animal": "node scripts/capture-animal-screenshots.mjs"
+    "screenshots:animal": "node scripts/capture-animal-screenshots.mjs",
+    "register-native-host": "node scripts/register-native-host.mjs"
   },
   "build": {
     "appId": "com.pwdbook.app",
@@ -44,6 +45,16 @@
       {
         "from": "icon/icon.ico",
         "to": "icon.ico"
+      },
+      {
+        "from": "native-host",
+        "to": "native-host",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "extension",
+        "to": "extension",
+        "filter": ["**/*"]
       }
     ],
     "win": {

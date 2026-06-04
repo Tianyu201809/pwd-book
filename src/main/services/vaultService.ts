@@ -95,6 +95,12 @@ export function listEntries(): PasswordEntry[] {
   return readEntryRows().map(rowToEntry)
 }
 
+export function getEntryById(id: string): PasswordEntry | null {
+  const row = readEntryRow(id)
+  if (!row) return null
+  return rowToEntry(row)
+}
+
 export function createEntry(input: PasswordEntryInput): PasswordEntry {
   const key = getSessionKey()
   const now = Date.now()

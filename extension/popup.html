@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PwdBook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="pwdbook-popup">
+    <header class="pwdbook-popup-header">
+      <span class="pwdbook-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="15" r="4" />
+          <path d="M11.5 11.5 21 2" />
+          <path d="M16 2h5v5" />
+        </svg>
+      </span>
+      <div>
+        <h1>PwdBook</h1>
+        <p>浏览器自动填充</p>
+      </div>
+    </header>
+    <p id="status">检查连接…</p>
+    <script src="popup.js"></script>
+  </body>
+</html>

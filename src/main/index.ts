@@ -28,6 +28,7 @@ import {
   runAnimalScreenshotCapture,
   setupScreenshotFixture,
 } from './screenshotMode'
+import { destroyBrowserBridge, syncBrowserBridge } from './services/browserBridgeService'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -123,6 +124,7 @@ if (gotSingleInstanceLock) {
     registerQuickBarIpc()
     registerQuickBarShortcut()
     registerMainWindowShortcut()
+    syncBrowserBridge()
 
     ipcMain.on('window-minimize', () => hideToTray())
     ipcMain.on('window-maximize', () => {
@@ -169,5 +171,6 @@ if (gotSingleInstanceLock) {
     unregisterMainWindowShortcut()
     destroyQuickBar()
     destroyTray()
+    destroyBrowserBridge()
   })
 }

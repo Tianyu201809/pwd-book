@@ -133,6 +133,8 @@ export interface SecuritySettings {
   mainWindowShortcutEnabled: boolean
   /** Electron globalShortcut 加速器，如 Alt+Shift+M */
   mainWindowShortcutAccelerator: string
+  /** 浏览器扩展自动填充（本机 Native Messaging，无出站网络） */
+  browserFillEnabled: boolean
 }
 
 export interface VaultStatus {
@@ -270,6 +272,11 @@ export const IPC = {
   emailBackupUpdate: 'email-backup:update',
   emailBackupTest: 'email-backup:test',
   emailBackupSend: 'email-backup:send',
+  browserBridgeStatus: 'browser:bridge-status',
+  browserBridgeRegenerateToken: 'browser:bridge-regenerate-token',
+  browserNativeHostInfo: 'browser:native-host-info',
+  browserRegisterNativeHost: 'browser:register-native-host',
+  shellOpenExtensionsPage: 'shell:open-extensions-page',
 } as const
 
 export const IPC_EVENTS = {

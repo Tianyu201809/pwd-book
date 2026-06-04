@@ -1,0 +1,55 @@
+/* PwdBook 经典主题（与 src/assets/styles/tokens.css 暗色 + 黄铜强调色一致） */
+/* 字体：与桌面端一致；无网络时使用 Georgia / system-ui 回退 */
+#pwdbook-fill-root,
+.pwdbook-popup {
+  --pb-font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --pb-font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --pb-accent-500: #c9a227;
+  --pb-accent-400: #d4b44a;
+  --pb-accent-rgb: 201, 162, 39;
+
+  --pb-ink-950: #0a0c10;
+  --pb-ink-900: #0f1219;
+  --pb-ink-800: #161b26;
+  --pb-ink-700: #1e2433;
+  --pb-ink-600: #2a3144;
+  --pb-ink-400: #6b7289;
+  --pb-ink-50: #f4f5f8;
+
+  --pb-bg-surface: var(--pb-ink-900);
+  --pb-bg-elevated: var(--pb-ink-800);
+  --pb-bg-hover: var(--pb-ink-700);
+  --pb-text-primary: var(--pb-ink-50);
+  --pb-text-secondary: var(--pb-ink-400);
+  --pb-border: rgba(255, 255, 255, 0.06);
+  --pb-border-strong: rgba(255, 255, 255, 0.12);
+  --pb-border-accent: rgba(var(--pb-accent-rgb), 0.35);
+  --pb-accent-subtle: rgba(var(--pb-accent-rgb), 0.12);
+  --pb-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --pb-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --pb-radius-sm: 8px;
+  --pb-radius-md: 12px;
+  --pb-btn-primary-text: #0a0c10;
+  --pb-bg-app: var(--pb-ink-950);
+
+  font-family: var(--pb-font-body);
+  color: var(--pb-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: light) {
+  #pwdbook-fill-root,
+  .pwdbook-popup {
+    --pb-bg-surface: #ffffff;
+    --pb-bg-elevated: #f9fafb;
+    --pb-bg-hover: #f3f4f6;
+    --pb-text-primary: #111827;
+    --pb-text-secondary: #6b7280;
+    --pb-border: rgba(0, 0, 0, 0.08);
+    --pb-border-strong: rgba(0, 0, 0, 0.14);
+    --pb-shadow: 0 16px 48px rgba(15, 18, 25, 0.12);
+    --pb-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --pb-btn-primary-text: #ffffff;
+  }
+}

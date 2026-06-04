@@ -1,0 +1,9 @@
+{
+  "name": "com.pwdbook.app",
+  "description": "PwdBook Native Messaging Host (template — do not use as-is)",
+  "path": "REPLACE_WITH_HOST_CMD_PATH",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://REPLACE_EXTENSION_ID/"
+  ]
+}

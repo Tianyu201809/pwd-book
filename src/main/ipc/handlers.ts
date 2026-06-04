@@ -71,6 +71,15 @@ import {
 import { isUnlocked } from '../services/sessionService'
 import { buildExportPayload } from '../services/exportPayloadService'
 import { buildExcelBuffer } from '../services/exportExcelService'
+import {
+  getBrowserBridgeStatus,
+  regenerateBrowserBridgeToken,
+  syncBrowserBridge,
+} from '../services/browserBridgeService'
+import {
+  getNativeHostRegistrationInfo,
+  registerNativeHost,
+} from '../services/nativeHostRegistryService'
 
 let clipboardTimer: NodeJS.Timeout | null = null
 
@@ -338,7 +347,27 @@ export function registerIpcHandlers(): void {
     const next = updateSecuritySettings(partial)
     registerQuickBarShortcut()
     registerMainWindowShortcut()
+    syncBrowserBridge()
     return next
+  })
+
+  ipcMain.handle(IPC.browserBridgeStatus, () => getBrowserBridgeStatus())
+
+  ipcMain.handle(IPC.browserBridgeRegenerateToken, () =>
+    wrap(() => {
+      regenerateBrowserBridgeToken()
+      return getBrowserBridgeStatus()
+    }),
+  )
+
+  ipcMain.handle(IPC.browserNativeHostInfo, () => getNativeHostRegistrationInfo())
+
+  ipcMain.handle(IPC.browserRegisterNativeHost, (_event, extensionId: string) =>
+    wrap(() => registerNativeHost(extensionId)),
+  )
+
+  ipcMain.handle(IPC.shellOpenExtensionsPage, async () => {
+    await shell.openExternal('chrome://extensions/')
   })
 
   ipcMain.handle(IPC.clipboardCopy, (_event, payload: { text: string; clearAfterMs?: number }) =>

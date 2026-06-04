@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { ERR_PREFIX } from '../shared/errors'
+import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '../shared/browserBridgeProtocol'
 import { IPC, IPC_EVENTS } from '../shared/types'
 
 const QUICKBAR_CHANNELS = {
@@ -115,6 +116,15 @@ export const electronAPI = {
   getSettings: (): Promise<SecuritySettings> => invoke(IPC.settingsGet),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>
     invoke(IPC.settingsUpdate, partial),
+
+  getBrowserBridgeStatus: (): Promise<BrowserBridgeStatus> => invoke(IPC.browserBridgeStatus),
+  regenerateBrowserBridgeToken: (): Promise<BrowserBridgeStatus> =>
+    invoke(IPC.browserBridgeRegenerateToken),
+  getNativeHostRegistrationInfo: (): Promise<NativeHostRegistrationInfo> =>
+    invoke(IPC.browserNativeHostInfo),
+  registerNativeHost: (extensionId: string): Promise<NativeHostRegistrationInfo> =>
+    invoke(IPC.browserRegisterNativeHost, extensionId),
+  openExtensionsPage: (): Promise<void> => invoke(IPC.shellOpenExtensionsPage),
 
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     invoke(IPC.clipboardCopy, { text, clearAfterMs }),

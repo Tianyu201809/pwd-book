@@ -21,6 +21,7 @@ import type {
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
 } from '@/shared/types'
+import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '@/shared/browserBridgeProtocol'
 
 declare global {
   interface Window {
@@ -63,6 +64,11 @@ declare global {
       deleteTag: (name: string) => Promise<void>
       getSettings: () => Promise<SecuritySettings>
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
+      getBrowserBridgeStatus: () => Promise<BrowserBridgeStatus>
+      regenerateBrowserBridgeToken: () => Promise<BrowserBridgeStatus>
+      getNativeHostRegistrationInfo: () => Promise<NativeHostRegistrationInfo>
+      registerNativeHost: (extensionId: string) => Promise<NativeHostRegistrationInfo>
+      openExtensionsPage: () => Promise<void>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
       openExternal: (url: string) => Promise<void>
       openLocalProgram: (programPath: string) => Promise<void>

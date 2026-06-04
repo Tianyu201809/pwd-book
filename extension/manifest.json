@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "PwdBook Autofill",
+  "version": "1.0.0",
+  "description": "Fill passwords from local PwdBook desktop app. No cloud; native messaging only.",
+  "permissions": ["nativeMessaging", "activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "PwdBook",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "css": ["pwdbook-theme.css", "content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   quickBarAccelerator: 'Alt+Shift+P',
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
+  browserFillEnabled: false,
 }
 
 let sessionKey: Buffer | null = null
