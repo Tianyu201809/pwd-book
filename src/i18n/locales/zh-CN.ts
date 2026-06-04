@@ -95,6 +95,9 @@ export default {
     closePrompt: '最小化将隐藏到系统托盘，程序继续在后台运行',
     rememberChoice: '记住我的选择',
     quit: '退出程序',
+    skinMenu: '换肤',
+    skinMenuTitle: '界面皮肤',
+    openAppearanceSettings: '更多外观设置',
   },
   lock: {
     createMasterPassword: '创建主密码',

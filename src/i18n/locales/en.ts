@@ -96,6 +96,9 @@ export default {
     closePrompt: 'Minimize hides the app to the system tray; it keeps running in the background',
     rememberChoice: 'Remember my choice',
     quit: 'Quit',
+    skinMenu: 'Change skin',
+    skinMenuTitle: 'Interface skin',
+    openAppearanceSettings: 'More appearance settings',
   },
   lock: {
     createMasterPassword: 'Create master password',

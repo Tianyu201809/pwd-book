@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Minus, Square, X } from 'lucide-vue-next'
+import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
+import { useTheme } from '@/composables/useTheme'
 import type { CloseWindowAction } from '@/shared/types'
+import type { ThemeSkin } from '@/types'
 
 const { t } = useI18n()
-const { securitySettings, updateSecuritySettings } = useAppState()
+const { securitySettings, updateSecuritySettings, screen, navigateTo } = useAppState()
+const { skin, skinOptions, setSkin, isAnimalIsland } = useTheme()
 
 const showCloseDialog = ref(false)
 const rememberChoice = ref(false)
+const showSkinMenu = ref(false)
+const skinMenuRef = ref<HTMLElement | null>(null)
+const skinTriggerRef = ref<HTMLButtonElement | null>(null)
+const popoverStyle = ref<Record<string, string>>({})
+
+const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 
 let removeClosePromptListener: (() => void) | undefined
 
@@ -65,12 +74,85 @@ async function quitApp(): Promise<void> {
   window.electronAPI?.close()
 }
 
+function updatePopoverPosition(): void {
+  const trigger = skinTriggerRef.value
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  popoverStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 6}px`,
+    right: `${Math.max(8, window.innerWidth - rect.right)}px`,
+    zIndex: '1000',
+  }
+}
+
+function toggleSkinMenu(event: MouseEvent): void {
+  event.preventDefault()
+  event.stopPropagation()
+  if (!showSkinMenu.value) {
+    updatePopoverPosition()
+  }
+  showSkinMenu.value = !showSkinMenu.value
+}
+
+function closeSkinMenu(): void {
+  showSkinMenu.value = false
+}
+
+function selectSkin(next: ThemeSkin): void {
+  setSkin(next)
+  closeSkinMenu()
+}
+
+function openAppearanceSettings(): void {
+  navigateTo('settings', 'appearance')
+  closeSkinMenu()
+}
+
+function onDocumentPointerDown(event: MouseEvent): void {
+  if (!showSkinMenu.value) return
+  const target = event.target as Node
+  if (skinMenuRef.value?.contains(target) || skinTriggerRef.value?.contains(target)) return
+  closeSkinMenu()
+}
+
+function onSkinMenuKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') closeSkinMenu()
+}
+
+function bindSkinMenuOutsideClose(): void {
+  window.setTimeout(() => {
+    if (!showSkinMenu.value) return
+    document.addEventListener('mousedown', onDocumentPointerDown, true)
+  }, 0)
+}
+
+function unbindSkinMenuOutsideClose(): void {
+  document.removeEventListener('mousedown', onDocumentPointerDown, true)
+}
+
+watch(showSkinMenu, (open) => {
+  if (open) {
+    updatePopoverPosition()
+    nextTick(() => bindSkinMenuOutsideClose())
+    window.addEventListener('resize', updatePopoverPosition)
+    document.addEventListener('keydown', onSkinMenuKeydown)
+    return
+  }
+  unbindSkinMenuOutsideClose()
+  window.removeEventListener('resize', updatePopoverPosition)
+  document.removeEventListener('keydown', onSkinMenuKeydown)
+})
+
 onMounted(() => {
   removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
 })
 
 onUnmounted(() => {
   removeClosePromptListener?.()
+  unbindSkinMenuOutsideClose()
+  window.removeEventListener('resize', updatePopoverPosition)
+  document.removeEventListener('keydown', onSkinMenuKeydown)
 })
 </script>
 
@@ -81,6 +163,56 @@ onUnmounted(() => {
       <span class="title">{{ t('common.appName') }}</span>
     </div>
     <div class="titlebar-actions titlebar-no-drag">
+      <div class="skin-menu-wrap">
+        <button
+          ref="skinTriggerRef"
+          type="button"
+          class="win-btn skin-trigger titlebar-no-drag"
+          :class="{ 'skin-trigger--open': showSkinMenu, 'skin-trigger--animal': isAnimalIsland }"
+          :aria-label="t('titlebar.skinMenu')"
+          :aria-expanded="showSkinMenu"
+          @click.stop="toggleSkinMenu"
+        >
+          <Palette :size="14" :stroke-width="1.5" />
+        </button>
+        <Teleport to="body">
+          <Transition name="skin-popover">
+            <div
+              v-if="showSkinMenu"
+              ref="skinMenuRef"
+              class="skin-popover menu-popover surface-card"
+              :style="popoverStyle"
+              @click.stop
+            >
+              <p class="skin-popover-title">{{ t('titlebar.skinMenuTitle') }}</p>
+              <button
+                v-for="item in skinOptions"
+                :key="item.id"
+                type="button"
+                class="skin-option titlebar-no-drag"
+                :class="{ active: skin === item.id }"
+                @click="selectSkin(item.id as ThemeSkin)"
+              >
+                <span class="skin-option-icon" :class="`skin-option-icon--${item.id}`">
+                  <TreePalm v-if="item.id === 'animalIsland'" :size="15" :stroke-width="1.5" />
+                  <Sparkles v-else :size="15" :stroke-width="1.5" />
+                </span>
+                <span class="skin-option-label">{{ item.label }}</span>
+                <Check v-if="skin === item.id" class="skin-option-check" :size="14" :stroke-width="2.5" />
+              </button>
+              <button
+                v-if="canOpenAppearanceSettings"
+                type="button"
+                class="skin-more-btn titlebar-no-drag"
+                @click="openAppearanceSettings"
+              >
+                {{ t('titlebar.openAppearanceSettings') }}
+              </button>
+            </div>
+          </Transition>
+        </Teleport>
+      </div>
+      <span class="titlebar-divider" aria-hidden="true" />
       <button type="button" class="win-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
         <Minus :size="14" :stroke-width="1.5" />
       </button>
@@ -117,6 +249,8 @@ onUnmounted(() => {
 
 <style scoped>
 .titlebar {
+  position: relative;
+  z-index: 100;
   height: var(--titlebar-height);
   display: flex;
   align-items: center;
@@ -145,7 +279,140 @@ onUnmounted(() => {
 
 .titlebar-actions {
   display: flex;
+  align-items: center;
   gap: 4px;
+}
+
+.skin-menu-wrap {
+  position: relative;
+}
+
+.skin-trigger--open,
+.skin-trigger:hover {
+  color: var(--accent-primary);
+}
+
+.skin-trigger--open {
+  background: var(--accent-subtle);
+}
+
+.skin-trigger--animal.skin-trigger--open {
+  color: #6b5344;
+  background: rgba(189, 174, 160, 0.35);
+}
+
+.titlebar-divider {
+  width: 1px;
+  height: 14px;
+  margin: 0 2px;
+  background: var(--border-default);
+  flex-shrink: 0;
+}
+
+.skin-popover {
+  width: 220px;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  pointer-events: auto;
+}
+
+.skin-popover-title {
+  margin: 0;
+  padding: 4px 8px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.skin-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.skin-option:hover {
+  background: var(--bg-hover);
+}
+
+.skin-option.active {
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+.skin-option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.skin-option-icon--classic {
+  background: var(--bg-elevated);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-default);
+}
+
+.skin-option-icon--animalIsland {
+  background: linear-gradient(145deg, #f7f3df, #e8dcc4);
+  color: #6b8f71;
+  border: 1px solid #d4c4a8;
+}
+
+.skin-option-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.skin-option-check {
+  flex-shrink: 0;
+  color: var(--accent-primary);
+}
+
+.skin-more-btn {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: none;
+  border-top: 1px solid var(--border-default);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.skin-more-btn:hover {
+  color: var(--accent-primary);
+  background: var(--bg-hover);
+}
+
+.skin-popover-enter-active,
+.skin-popover-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.skin-popover-enter-from,
+.skin-popover-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
 }
 
 .win-btn {

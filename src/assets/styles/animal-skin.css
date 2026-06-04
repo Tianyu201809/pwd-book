@@ -68,9 +68,29 @@
 }
 
 [data-skin="animalIsland"] .titlebar {
+  position: relative;
+  z-index: 200;
   background: rgba(247, 243, 223, 0.94);
   backdrop-filter: blur(8px);
   border-bottom: 2px solid var(--border-default);
+}
+
+[data-skin="animalIsland"] .skin-popover {
+  -webkit-app-region: no-drag;
+}
+
+[data-skin="animalIsland"] .skin-popover {
+  border-radius: 16px;
+  border-width: 2px;
+  box-shadow: 0 8px 24px rgba(107, 83, 68, 0.12);
+}
+
+[data-skin="animalIsland"] .skin-option.active {
+  color: #6b5344;
+}
+
+[data-skin="animalIsland"] .skin-option-check {
+  color: #6b8f71;
 }
 
 /* animal-island Modal mask defaults to z-index: 1000 — below app overlays */
