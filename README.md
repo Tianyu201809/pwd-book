@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue?style=flat-square)](package.json)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -38,7 +38,7 @@ npm run dev
 
 若你用过 KeePass、Bitwarden 离线库或 1Password 本地 vault，核心思路相同：**主密码 + 本地加密存储**。PwdBook 的差异在于开箱即用的桌面体验、恢复密钥流程，以及可选的加密邮箱灾备。
 
-应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，支持中英文界面；默认窗口 1200×760，自定义标题栏，主要面向 **Windows** 打包（NSIS 安装包）。
+应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；支持中英文界面；默认窗口 1200×760，自定义标题栏，主要面向 **Windows** 打包（NSIS 安装包）。
 
 <p align="center">
   <img src="./docs/images/main.png" alt="PwdBook 主界面：侧栏分类、搜索与条目列表" width="720" />
@@ -168,7 +168,7 @@ npm run dev
 
 #### 外观
 
-- **皮肤** — 经典保险库 或 Animal Island
+- **皮肤** — 经典保险库 或 Animal Island；标题栏 **调色板** 按钮可快速切换（无需进入设置）
 - **经典主题** — 浅色 / 深色 / 跟随系统；八种强调色
 - **语言** — 简体中文、English（`vue-i18n`）
 
@@ -222,19 +222,16 @@ npm run dev
 
 #### 导出数据（两步）
 
-**PwdBook 格式**（完整字段，含明文密码）：
+**设置 → 数据 → 导出数据** 打开统一向导弹窗，分两组选择格式：
 
-| 格式 | 用途 |
-|------|------|
-| **JSON** | 完整备份，**唯一支持导入恢复**的 PwdBook 格式；含分类与全部条目 |
-| **CSV** | 单表「密码条目」，列含标题、网址、本地程序路径、用户名、密码、备注、标签、分类、收藏、创建/更新时间 |
-| **Excel** | 工作簿含「密码条目」「分类」两表；便于人工查阅，**不可用于导入** |
+| 分组 | 格式 | 用途 |
+|------|------|------|
+| **PwdBook 备份** | **JSON** | 完整备份，**唯一支持导入恢复**；含分类与全部条目 |
+| | **CSV** | 单表「密码条目」，列含标题、网址、本地程序路径、用户名、密码、备注、标签、分类、收藏、创建/更新时间 |
+| | **Excel** | 工作簿含「密码条目」「分类」两表；便于人工查阅，**不可用于导入** |
+| **迁移到其他应用** | KeePass / Enpass / Bitwarden / 1Password / Chrome **CSV** | 按目标应用常见列名导出；确认页展示**将导出**条数、**因缺标题或密码将跳过**条数及期望列名；附各应用导入指引 |
 
-**其他应用 CSV**（便于迁移或双库并用）：
-
-KeePass、Enpass、Bitwarden、1Password、Chrome — 各按目标应用常见列名导出；确认页展示将导出条数及期望列名。
-
-> 第三方 CSV 与 JSON 备份均含**明文密码**，请离线保管，勿上传网盘或聊天工具。
+> 除 JSON 外，CSV / Excel 均含**明文密码**，请离线保管，勿上传网盘或聊天工具。
 
 #### 导入数据（三步）
 
@@ -247,6 +244,7 @@ KeePass、Enpass、Bitwarden、1Password、Chrome — 各按目标应用常见�
 ### 外观
 
 - **皮肤** — **经典保险库**（浅色 / 深色 / 跟随系统 + 八种强调色）或 **Animal Island**（基于 [animal-island-vue](https://www.npmjs.com/package/animal-island-vue) 的治愈系 UI）
+- **标题栏换肤** — 窗口右上角 **调色板** 图标弹出菜单，一键切换经典 / Animal Island；底部 **更多外观设置** 跳转设置 → 外观（深浅色、强调色等）
 - **语言** — 简体中文、English（`vue-i18n`）
 
 ### 窗口与系统集成（Windows）
@@ -318,9 +316,19 @@ npm run dev
 
 ## 版本更新
 
-### v1.3.0（当前）
+### v1.4.0（当前）
 
-完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#130---2026-06-03)**。摘要：
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#140---2026-06-04)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 外观 | 标题栏 **换肤** 菜单，快速切换经典保险库 / Animal Island |
+| 导出 | **导出数据** 统一向导：PwdBook（JSON / CSV / Excel）与第三方 CSV 同页选择；确认页展示可导出 / 跳过统计与导入指引 |
+| 体验 | 设置「数据」页合并为单一导出入口；导出卡片式格式选择 |
+
+### v1.3.0
+
+完整变更列表见 **[CHANGELOG.md#130---2026-06-03](./CHANGELOG.md#130---2026-06-03)**。摘要：
 
 | 类别 | 内容 |
 |------|------|
