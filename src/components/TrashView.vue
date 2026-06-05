@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowLeft, Trash2, RotateCcw, Undo2 } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
-import { UiButton } from '@/components/ui'
+import { UiButton, UiModal } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { TrashedEntry } from '@/types'
+
+type TrashConfirmAction = 'restoreAll' | 'deletePermanent' | 'empty'
 
 const {
   navigateTo,
@@ -21,6 +23,45 @@ const {
 const { t, locale } = useI18n()
 
 const retentionDays = computed(() => securitySettings.value.trashRetentionDays)
+
+const confirmAction = ref<TrashConfirmAction | null>(null)
+const confirmEntry = ref<TrashedEntry | null>(null)
+const showConfirm = computed({
+  get: () => confirmAction.value !== null,
+  set: (open: boolean) => {
+    if (!open) cancelConfirm()
+  },
+})
+
+const confirmTitle = computed(() => {
+  switch (confirmAction.value) {
+    case 'restoreAll':
+      return t('trash.restoreAll')
+    case 'deletePermanent':
+      return t('trash.deletePermanent')
+    case 'empty':
+      return t('trash.emptyTrash')
+    default:
+      return ''
+  }
+})
+
+const confirmMessage = computed(() => {
+  switch (confirmAction.value) {
+    case 'restoreAll':
+      return t('trash.restoreAllConfirm', { count: trashEntries.value.length })
+    case 'deletePermanent':
+      return t('trash.deletePermanentConfirm', { title: confirmEntry.value?.title ?? '' })
+    case 'empty':
+      return t('trash.emptyConfirm', { count: trashEntries.value.length })
+    default:
+      return ''
+  }
+})
+
+const confirmIsDestructive = computed(
+  () => confirmAction.value === 'deletePermanent' || confirmAction.value === 'empty',
+)
 
 function formatDeletedAt(timestamp: number): string {
   return new Date(timestamp).toLocaleString(
@@ -37,21 +78,46 @@ async function handleRestore(entry: TrashedEntry): Promise<void> {
   await restoreTrashEntry(entry.id)
 }
 
-async function handleRestoreAll(): Promise<void> {
-  if (trashEntries.value.length === 0) return
-  if (!window.confirm(t('trash.restoreAllConfirm', { count: trashEntries.value.length }))) return
-  await restoreAllTrash()
+function openConfirm(action: TrashConfirmAction, entry?: TrashedEntry): void {
+  confirmAction.value = action
+  confirmEntry.value = entry ?? null
 }
 
-async function handlePermanentDelete(entry: TrashedEntry): Promise<void> {
-  if (!window.confirm(t('trash.deletePermanentConfirm', { title: entry.title }))) return
-  await permanentlyDeleteTrash(entry.id)
+function cancelConfirm(): void {
+  confirmAction.value = null
+  confirmEntry.value = null
 }
 
-async function handleEmptyTrash(): Promise<void> {
+async function handleConfirm(): Promise<void> {
+  const action = confirmAction.value
+  const entry = confirmEntry.value
+  cancelConfirm()
+  if (!action) return
+  switch (action) {
+    case 'restoreAll':
+      await restoreAllTrash()
+      break
+    case 'deletePermanent':
+      if (entry) await permanentlyDeleteTrash(entry.id)
+      break
+    case 'empty':
+      await emptyTrash()
+      break
+  }
+}
+
+function handleRestoreAll(): void {
   if (trashEntries.value.length === 0) return
-  if (!window.confirm(t('trash.emptyConfirm', { count: trashEntries.value.length }))) return
-  await emptyTrash()
+  openConfirm('restoreAll')
+}
+
+function handlePermanentDelete(entry: TrashedEntry): void {
+  openConfirm('deletePermanent', entry)
+}
+
+function handleEmptyTrash(): void {
+  if (trashEntries.value.length === 0) return
+  openConfirm('empty')
 }
 </script>
 
@@ -155,6 +221,29 @@ async function handleEmptyTrash(): Promise<void> {
         </div>
       </main>
     </div>
+
+    <UiModal
+      v-model:open="showConfirm"
+      :title="confirmTitle"
+      :width="400"
+      :show-footer="false"
+      @close="cancelConfirm"
+    >
+      <p class="confirm-modal-body delete-confirm-text">
+        {{ confirmMessage }}
+      </p>
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton variant="default" @click="cancelConfirm">{{ t('common.cancel') }}</UiButton>
+          <UiButton
+            :variant="confirmIsDestructive ? 'danger' : 'primary'"
+            @click="handleConfirm"
+          >
+            {{ t('common.confirm') }}
+          </UiButton>
+        </div>
+      </template>
+    </UiModal>
   </div>
 </template>
 
@@ -300,5 +389,25 @@ async function handleEmptyTrash(): Promise<void> {
 .tool-hero-icon--trash {
   background: var(--accent-subtle);
   color: var(--accent-primary);
+}
+
+.delete-confirm-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.confirm-modal-actions :deep(.ui-classic-btn) {
+  min-width: 96px;
+  padding: 10px 22px;
 }
 </style>
