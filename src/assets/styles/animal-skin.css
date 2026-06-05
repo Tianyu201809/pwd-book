@@ -98,6 +98,25 @@
   z-index: var(--z-overlay-stacked) !important;
 }
 
+/* 简洁确认弹窗：缩小动森 Modal 默认大号标题/正文 */
+[data-skin="animalIsland"] .animal-modal:has(.confirm-modal-body) .animal-modal__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+[data-skin="animalIsland"] .animal-modal:has(.confirm-modal-body) .animal-modal__content {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+[data-skin="animalIsland"] .confirm-modal-actions .animal-btn {
+  min-width: 88px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
 /* 导入向导：动森 Modal 加宽（与 :width 双保险） */
 [data-skin="animalIsland"] .animal-modal:has(.import-wizard),
 [data-skin="animalIsland"] .import-data-modal {
@@ -307,13 +326,23 @@
 }
 
 [data-skin="animalIsland"] .tool-compact-btn {
-  padding: 3px 5px;
-  min-height: 26px;
+  padding: 5px 7px;
+  min-height: 32px;
 }
 
 [data-skin="animalIsland"] .tool-compact-btn__icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+}
+
+[data-skin="animalIsland"] .tool-compact-btn--gen .tool-compact-btn__icon {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.28);
+  color: #e8940a;
+}
+
+[data-skin="animalIsland"] .tool-compact-btn--gen:hover {
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 [data-skin="animalIsland"] .tool-section-label {

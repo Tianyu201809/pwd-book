@@ -5,7 +5,7 @@ import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star } from 'lu
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
-import { UiInput, UiButton } from '@/components/ui'
+import { UiInput, UiButton, UiModal } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
@@ -21,6 +21,7 @@ const {
   setListSortOrder,
   touchActivity,
   startCreateEntry,
+  removeEntry,
 } = useAppState()
 
 const { t } = useI18n()
@@ -40,6 +41,8 @@ const contextMenu = ref<{ entry: PasswordEntry; x: number; y: number } | null>(n
 const contextMenuRef = ref<HTMLElement | null>(null)
 const listPanelRef = ref<HTMLElement | null>(null)
 const isCompactList = ref(false)
+const deleteConfirmEntry = ref<PasswordEntry | null>(null)
+const showDeleteConfirm = ref(false)
 
 /** 宽度不足时隐藏次要信息，避免右侧时间戳挤占导致标题被裁切 */
 const LIST_COMPACT_WIDTH = 400
@@ -64,6 +67,24 @@ function closeMenus(): void {
   openMenuId.value = null
   showSortMenu.value = false
   contextMenu.value = null
+}
+
+function handleDeleteRequest(entry: PasswordEntry): void {
+  closeMenus()
+  deleteConfirmEntry.value = entry
+  showDeleteConfirm.value = true
+}
+
+function cancelDeleteConfirm(): void {
+  showDeleteConfirm.value = false
+  deleteConfirmEntry.value = null
+}
+
+async function confirmDeleteEntry(): Promise<void> {
+  const entry = deleteConfirmEntry.value
+  if (!entry) return
+  cancelDeleteConfirm()
+  await removeEntry(entry.id)
 }
 
 function onDocumentClick(): void {
@@ -293,7 +314,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
               <MoreHorizontal :size="16" :stroke-width="1.5" />
             </button>
             <div v-if="openMenuId === entry.id" class="action-menu menu-popover surface-card" @click.stop>
-              <EntryListMenu :entry="entry" @action="closeMenus" />
+              <EntryListMenu :entry="entry" @action="closeMenus" @delete="handleDeleteRequest" />
             </div>
           </div>
         </div>
@@ -308,9 +329,27 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
         @click.stop
       >
-        <EntryListMenu :entry="contextMenu.entry" @action="closeMenus" />
+        <EntryListMenu :entry="contextMenu.entry" @action="closeMenus" @delete="handleDeleteRequest" />
       </div>
     </Teleport>
+
+    <UiModal
+      v-model:open="showDeleteConfirm"
+      :title="t('common.delete')"
+      :width="400"
+      :show-footer="false"
+      @close="cancelDeleteConfirm"
+    >
+      <p class="confirm-modal-body delete-confirm-text">
+        {{ t('vault.deleteConfirm', { title: deleteConfirmEntry?.title ?? '' }) }}
+      </p>
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton variant="default" @click="cancelDeleteConfirm">{{ t('common.cancel') }}</UiButton>
+          <UiButton variant="primary" @click="confirmDeleteEntry">{{ t('common.confirm') }}</UiButton>
+        </div>
+      </template>
+    </UiModal>
   </main>
 </template>
 
@@ -619,5 +658,25 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   min-width: 200px;
   padding: 4px;
   overflow: visible;
+}
+
+.delete-confirm-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.confirm-modal-actions :deep(.ui-classic-btn) {
+  min-width: 96px;
+  padding: 10px 22px;
 }
 </style>

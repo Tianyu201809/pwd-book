@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Modal, Button } from 'animal-island-vue'
+import { Modal } from 'animal-island-vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useI18n } from 'vue-i18n'
 
@@ -48,7 +49,7 @@ function handleOk(): void {
     :title="title"
     :width="width"
     :mask-closable="maskClosable"
-    :show-footer="showFooter && !$slots.footer"
+    :show-footer="showFooter || !!$slots.footer"
     :typewriter="false"
     @close="handleClose"
     @ok="handleOk"
@@ -61,8 +62,10 @@ function handleOk(): void {
       <slot name="footer" />
     </template>
     <template v-else-if="showFooter && !$slots.footer" #footer>
-      <Button @click="handleClose">{{ t('common.cancel') }}</Button>
-      <Button type="primary" :loading="loading" @click="handleOk">{{ t('common.confirm') }}</Button>
+      <div class="modal-footer-actions">
+        <UiButton variant="default" @click="handleClose">{{ t('common.cancel') }}</UiButton>
+        <UiButton variant="primary" :loading="loading" @click="handleOk">{{ t('common.confirm') }}</UiButton>
+      </div>
     </template>
   </Modal>
   <Teleport v-else to="body">
@@ -85,10 +88,10 @@ function handleOk(): void {
         </div>
         <div v-if="showFooter || $slots.footer" class="modal-footer">
           <slot name="footer">
-            <button type="button" class="btn-ghost" @click="handleClose">{{ t('common.cancel') }}</button>
-            <button type="button" class="btn-primary" :disabled="loading" @click="handleOk">
-              {{ t('common.confirm') }}
-            </button>
+            <div class="modal-footer-actions">
+              <UiButton variant="default" @click="handleClose">{{ t('common.cancel') }}</UiButton>
+              <UiButton variant="primary" :loading="loading" @click="handleOk">{{ t('common.confirm') }}</UiButton>
+            </div>
           </slot>
         </div>
       </div>
@@ -148,7 +151,14 @@ function handleOk(): void {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
   padding: 12px 20px 20px;
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 </style>

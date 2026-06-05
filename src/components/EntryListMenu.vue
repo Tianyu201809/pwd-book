@@ -12,6 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   action: []
+  delete: [entry: PasswordEntry]
 }>()
 
 const { t } = useI18n()
@@ -21,7 +22,6 @@ const {
   openLocalProgramForEntry,
   copyEntryData,
   duplicateEntry,
-  removeEntry,
   moveEntryToCategory,
   toggleFavorite,
 } = useAppState()
@@ -68,11 +68,9 @@ async function handleToggleFavorite(event: MouseEvent): Promise<void> {
   await toggleFavorite(props.entry.id)
 }
 
-async function handleDelete(event: MouseEvent): Promise<void> {
+function handleDelete(event: MouseEvent): void {
   event.stopPropagation()
-  done()
-  if (!window.confirm(t('vault.deleteConfirm', { title: props.entry.title }))) return
-  await removeEntry(props.entry.id)
+  emit('delete', props.entry)
 }
 
 async function handleMove(categoryId: string, event: MouseEvent): Promise<void> {

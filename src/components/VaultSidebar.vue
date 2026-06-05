@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
                 @click="openEmailBackup"
               >
                 <span class="tool-compact-btn__icon" aria-hidden="true">
-                  <MailCheck :size="12" :stroke-width="1.5" />
+                  <MailCheck :size="13" :stroke-width="1.5" />
                 </span>
                 <span class="tool-compact-btn__label">{{ t('tools.emailBackupTitle') }}</span>
               </button>
@@ -403,7 +403,7 @@ onBeforeUnmount(() => {
                 @click="openPasswordGen()"
               >
                 <span class="tool-compact-btn__icon" aria-hidden="true">
-                  <Sparkles :size="12" :stroke-width="1.5" />
+                  <Sparkles :size="13" :stroke-width="1.5" />
                 </span>
                 <span class="tool-compact-btn__label">{{ t('tools.passwordGenTitle') }}</span>
               </button>
@@ -777,7 +777,7 @@ onBeforeUnmount(() => {
 
 .tool-row {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .tool-compact-btn {
@@ -787,10 +787,10 @@ onBeforeUnmount(() => {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 6px;
-  min-height: 28px;
-  border-radius: var(--radius-sm, 6px);
+  gap: 5px;
+  padding: 6px 8px;
+  min-height: 34px;
+  border-radius: var(--radius-md, 8px);
   border: 1px solid var(--border-default);
   background: var(--bg-elevated);
   color: var(--text-primary);
@@ -820,9 +820,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
   flex-shrink: 0;
 }
 
@@ -847,9 +847,9 @@ onBeforeUnmount(() => {
 }
 
 .tool-compact-btn__label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.2;
   text-align: center;
   max-width: 100%;
   overflow: hidden;
