@@ -18,6 +18,7 @@ import type {
   ImportCommitRequest,
   PasswordEntry,
   PasswordEntryInput,
+  TrashedEntry,
   RecoveryCreateResult,
   RecoveryResetPayload,
   RecoveryVerifyResult,
@@ -89,6 +90,12 @@ export const electronAPI = {
   updateEntry: (id: string, input: PasswordEntryInput): Promise<PasswordEntry> =>
     invoke(IPC.entriesUpdate, { id, input }),
   deleteEntry: (id: string): Promise<void> => invoke(IPC.entriesDelete, id),
+  listTrashedEntries: (): Promise<TrashedEntry[]> => invoke(IPC.trashList),
+  restoreTrashEntry: (id: string): Promise<void> => invoke(IPC.trashRestore, id),
+  restoreAllTrashEntries: (): Promise<number> => invoke(IPC.trashRestoreAll),
+  permanentlyDeleteTrashEntry: (id: string): Promise<void> =>
+    invoke(IPC.trashDeletePermanent, id),
+  emptyTrash: (): Promise<number> => invoke(IPC.trashEmpty),
   toggleFavorite: (id: string): Promise<PasswordEntry> => invoke(IPC.entriesToggleFavorite, id),
   touchEntry: (id: string): Promise<void> => invoke(IPC.entriesTouch, id),
   listQuickBarRecent: (): Promise<PasswordEntry[]> => invoke(IPC.quickBarListRecent),

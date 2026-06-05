@@ -64,7 +64,8 @@ export async function initDatabase(): Promise<Database> {
       is_favorite INTEGER NOT NULL DEFAULT 0,
       last_used_at INTEGER,
       created_at INTEGER NOT NULL,
-      updated_at INTEGER NOT NULL
+      updated_at INTEGER NOT NULL,
+      deleted_at INTEGER
     )
   `)
 
@@ -72,6 +73,7 @@ export async function initDatabase(): Promise<Database> {
 
   migrateEntryDisplayIcon(db)
   migrateEntryLocalProgramPath(db)
+  migrateEntryDeletedAt(db)
 
   persistDatabase()
   return db
@@ -115,5 +117,12 @@ function migrateEntryLocalProgramPath(db: Database): void {
   const columns = readEntryTableColumns(db)
   if (!columns.includes('local_program_path')) {
     db.run(`ALTER TABLE password_entries ADD COLUMN local_program_path TEXT NOT NULL DEFAULT ''`)
+  }
+}
+
+function migrateEntryDeletedAt(db: Database): void {
+  const columns = readEntryTableColumns(db)
+  if (!columns.includes('deleted_at')) {
+    db.run(`ALTER TABLE password_entries ADD COLUMN deleted_at INTEGER`)
   }
 }

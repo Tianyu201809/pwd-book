@@ -38,6 +38,14 @@ import {
   updateEntry,
 } from '../services/vaultService'
 import {
+  emptyTrash,
+  listTrashedEntries,
+  permanentlyDeleteTrashEntry,
+  purgeExpiredTrash,
+  restoreAllTrashEntries,
+  restoreTrashEntry,
+} from '../services/trashService'
+import {
   createCategory,
   deleteCategory,
   listCategories,
@@ -125,6 +133,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultUnlock, (_event, payload: VaultUnlockPayload) =>
     wrap(() => {
       unlockVault(payload.masterPassword)
+      purgeExpiredTrash()
       resetScheduledBackupNotification()
       checkScheduledBackupDue(true)
       return getVaultStatus()
@@ -245,6 +254,41 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       touchEntry(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.trashList, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return listTrashedEntries()
+    }),
+  )
+
+  ipcMain.handle(IPC.trashRestore, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      restoreTrashEntry(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.trashRestoreAll, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return restoreAllTrashEntries()
+    }),
+  )
+
+  ipcMain.handle(IPC.trashDeletePermanent, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      permanentlyDeleteTrashEntry(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.trashEmpty, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return emptyTrash()
     }),
   )
 

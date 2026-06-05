@@ -1,6 +1,6 @@
 export type FilterCategory = 'all' | 'favorite' | string
 
-export type AppScreen = 'lock' | 'vault' | 'settings' | 'email-backup' | 'password-gen'
+export type AppScreen = 'lock' | 'vault' | 'settings' | 'email-backup' | 'password-gen' | 'trash'
 
 export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
 
@@ -105,6 +105,12 @@ export interface PasswordEntry {
   updatedAt: number
 }
 
+export interface TrashedEntry extends PasswordEntry {
+  deletedAt: number
+  expiresAt: number
+  daysRemaining: number
+}
+
 export interface PasswordEntryInput {
   title: string
   url?: string
@@ -133,6 +139,8 @@ export interface SecuritySettings {
   mainWindowShortcutAccelerator: string
   /** 浏览器扩展自动填充（本机 Native Messaging，无出站网络） */
   browserFillEnabled: boolean
+  /** 回收站条目保留天数，过期后彻底删除 */
+  trashRetentionDays: number
 }
 
 export interface VaultStatus {
@@ -140,6 +148,7 @@ export interface VaultStatus {
   unlocked: boolean
   recoveryConfigured: boolean
   entryCount: number
+  trashCount: number
 }
 
 export interface RecoveryResetPayload {
@@ -242,6 +251,11 @@ export const IPC = {
   entriesDelete: 'entries:delete',
   entriesToggleFavorite: 'entries:toggle-favorite',
   entriesTouch: 'entries:touch',
+  trashList: 'trash:list',
+  trashRestore: 'trash:restore',
+  trashRestoreAll: 'trash:restore-all',
+  trashDeletePermanent: 'trash:delete-permanent',
+  trashEmpty: 'trash:empty',
   quickBarListRecent: 'quickbar:list-recent',
   quickBarRemoveRecent: 'quickbar:remove-recent',
   categoriesList: 'categories:list',

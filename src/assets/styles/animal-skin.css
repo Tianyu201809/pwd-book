@@ -306,18 +306,14 @@
   pointer-events: none;
 }
 
-[data-skin="animalIsland"] .tool-entry {
-  padding: 8px 10px;
-  gap: 10px;
+[data-skin="animalIsland"] .tool-compact-btn {
+  padding: 3px 5px;
+  min-height: 26px;
 }
 
-[data-skin="animalIsland"] .tool-entry-icon {
-  width: 28px;
-  height: 28px;
-}
-
-[data-skin="animalIsland"] .tool-entry-desc {
-  display: none;
+[data-skin="animalIsland"] .tool-compact-btn__icon {
+  width: 18px;
+  height: 18px;
 }
 
 [data-skin="animalIsland"] .tool-section-label {

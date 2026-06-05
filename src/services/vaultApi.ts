@@ -4,6 +4,7 @@ import type {
   ExportPayload,
   PasswordEntry,
   PasswordEntryInput,
+  TrashedEntry,
   RecoveryResetPayload,
   RecoveryVerifyResult,
   SecuritySettings,
@@ -50,6 +51,12 @@ export const vaultApi = {
   updateEntry: (id: string, input: PasswordEntryInput): Promise<PasswordEntry> =>
     getApi().updateEntry(id, input),
   deleteEntry: (id: string): Promise<void> => getApi().deleteEntry(id),
+  listTrashedEntries: (): Promise<TrashedEntry[]> => getApi().listTrashedEntries(),
+  restoreTrashEntry: (id: string): Promise<void> => getApi().restoreTrashEntry(id),
+  restoreAllTrashEntries: (): Promise<number> => getApi().restoreAllTrashEntries(),
+  permanentlyDeleteTrashEntry: (id: string): Promise<void> =>
+    getApi().permanentlyDeleteTrashEntry(id),
+  emptyTrash: (): Promise<number> => getApi().emptyTrash(),
   toggleFavorite: (id: string): Promise<PasswordEntry> => getApi().toggleFavorite(id),
   touchEntry: (id: string): Promise<void> => getApi().touchEntry(id),
   listQuickBarRecent: (): Promise<PasswordEntry[]> => getApi().listQuickBarRecent(),

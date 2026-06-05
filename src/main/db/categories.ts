@@ -112,7 +112,9 @@ export function findCategoryByName(db: Database, name: string, excludeId?: strin
 }
 
 export function countEntriesInCategory(db: Database, categoryId: string): number {
-  const stmt = db.prepare('SELECT COUNT(*) FROM password_entries WHERE category = ?')
+  const stmt = db.prepare(
+    'SELECT COUNT(*) FROM password_entries WHERE category = ? AND deleted_at IS NULL',
+  )
   stmt.bind([categoryId])
   stmt.step()
   const count = Number(stmt.get()[0])

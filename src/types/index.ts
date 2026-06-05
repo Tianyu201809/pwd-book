@@ -19,6 +19,7 @@ export type {
   VaultCategory,
   VaultTag,
   TagInput,
+  TrashedEntry,
   VaultStatus,
 } from '@/shared/types'
 

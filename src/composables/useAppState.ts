@@ -30,6 +30,7 @@ import type {
   VaultCategory,
   VaultTag,
   TagInput,
+  TrashedEntry,
   VaultStatus,
 } from '@/types'
 
@@ -40,6 +41,7 @@ const vaultStatus = ref<VaultStatus>({
   unlocked: false,
   recoveryConfigured: false,
   entryCount: 0,
+  trashCount: 0,
 })
 const securitySettings = ref<SecuritySettings>({
   autoLockMinutes: 15,
@@ -51,6 +53,7 @@ const securitySettings = ref<SecuritySettings>({
   quickBarAccelerator: 'Alt+Shift+P',
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
+  trashRetentionDays: 30,
 })
 
 const selectedCategory = ref<FilterCategory>('all')
@@ -78,6 +81,7 @@ const emailBackupSettings = ref<EmailBackupSettings>({
 })
 const scheduledBackupPromptOpen = ref(false)
 const entries = ref<PasswordEntry[]>([])
+const trashEntries = ref<TrashedEntry[]>([])
 const vaultCategories = ref<VaultCategory[]>([])
 const vaultTags = ref<VaultTag[]>([])
 const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
@@ -586,6 +590,8 @@ async function removeEntry(id: string): Promise<boolean> {
       selectedEntryId.value = null
     }
     await refreshVaultData()
+    await refreshVaultStatus()
+    showToast(i18n.global.t('vault.movedToTrash'), 'success')
     touchActivity()
     return true
   } catch (error) {
@@ -593,6 +599,79 @@ async function removeEntry(id: string): Promise<boolean> {
     return false
   } finally {
     loading.value = false
+  }
+}
+
+async function refreshTrashEntries(): Promise<void> {
+  trashEntries.value = await vaultApi.listTrashedEntries()
+  await refreshVaultStatus()
+}
+
+async function openTrash(): Promise<void> {
+  screen.value = 'trash'
+  await refreshTrashEntries()
+  touchActivity()
+}
+
+async function restoreTrashEntry(id: string): Promise<boolean> {
+  clearError()
+  try {
+    await vaultApi.restoreTrashEntry(id)
+    await refreshTrashEntries()
+    await refreshVaultData()
+    showToast(i18n.global.t('trash.restored'), 'success')
+    touchActivity()
+    return true
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    return false
+  }
+}
+
+async function restoreAllTrash(): Promise<boolean> {
+  clearError()
+  try {
+    const count = await vaultApi.restoreAllTrashEntries()
+    await refreshTrashEntries()
+    await refreshVaultData()
+    if (count > 0) {
+      showToast(i18n.global.t('trash.restoredAll', { count }), 'success')
+    }
+    touchActivity()
+    return true
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    return false
+  }
+}
+
+async function permanentlyDeleteTrash(id: string): Promise<boolean> {
+  clearError()
+  try {
+    await vaultApi.permanentlyDeleteTrashEntry(id)
+    await refreshTrashEntries()
+    showToast(i18n.global.t('trash.deletedPermanent'), 'success')
+    touchActivity()
+    return true
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    return false
+  }
+}
+
+async function emptyTrash(): Promise<boolean> {
+  clearError()
+  try {
+    const count = await vaultApi.emptyTrash()
+    await refreshTrashEntries()
+    if (count > 0) {
+      showToast(i18n.global.t('trash.emptied', { count }), 'success')
+    }
+    touchActivity()
+    return true
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+    return false
   }
 }
 
@@ -850,8 +929,10 @@ async function resetAllData(): Promise<void> {
     unlocked: false,
     recoveryConfigured: false,
     entryCount: 0,
+    trashCount: 0,
   }
   entries.value = []
+  trashEntries.value = []
   vaultCategories.value = []
   vaultTags.value = []
   selectedEntryId.value = null
@@ -880,6 +961,7 @@ export function useAppState() {
     searchQuery,
     listSortOrder,
     entries,
+    trashEntries,
     vaultCategories,
     vaultTags,
     isCreating,
@@ -935,6 +1017,12 @@ export function useAppState() {
     pendingApplyPassword,
     openPasswordGen,
     openEmailBackup,
+    openTrash,
+    refreshTrashEntries,
+    restoreTrashEntry,
+    restoreAllTrash,
+    permanentlyDeleteTrash,
+    emptyTrash,
     applyGeneratedPassword,
     consumePendingApplyPassword,
     emailBackupSettings,

@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto'
 import {
-  decryptSecret,
   deriveSessionKey,
   encryptSecret,
   hashMasterPassword,
@@ -8,40 +7,20 @@ import {
   createMasterSalt,
 } from '../crypto/vaultCrypto'
 import { resetDatabaseFile } from '../db/database'
-import { getSetting, readEntryRow, readEntryRows, setSetting } from '../db/helpers'
+import { getSetting, readActiveEntryRow, readActiveEntryRows, readEntryRow, setSetting } from '../db/helpers'
 import { getSessionKey, isUnlocked, lockSession, unlockSession } from './sessionService'
 import type { PasswordEntry, PasswordEntryInput, VaultStatus } from '../../shared/types'
-import type { EntryRow } from '../db/helpers'
 import { appError, ErrorCode } from '../../shared/errors'
 import { getDatabase, persistDatabase } from '../db/database'
-import { ensureCategoriesFromImport, resolveCategoryId, getCategoryName } from './categoryService'
+import { ensureCategoriesFromImport, resolveCategoryId } from './categoryService'
+import { rowToEntry } from './entryMapper'
 import type { VaultImportPayload } from '../../shared/types'
 import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
-import { recordQuickBarRecentEntry } from './quickBarRecentService'
+import { recordQuickBarRecentEntry, removeQuickBarRecentEntry } from './quickBarRecentService'
+import { getTrashCount, moveEntryToTrash, purgeExpiredTrash } from './trashService'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
-
-function rowToEntry(row: EntryRow): PasswordEntry {
-  const key = getSessionKey()
-  return {
-    id: row.id,
-    title: row.title,
-    url: row.url,
-    username: row.username,
-    password: decryptSecret(row.password_encrypted, key),
-    note: row.note,
-    categoryId: row.category,
-    categoryName: getCategoryName(row.category),
-    tags: JSON.parse(row.tags || '[]') as string[],
-    isFavorite: row.is_favorite === 1,
-    displayIcon: row.display_icon,
-    localProgramPath: row.local_program_path,
-    lastUsedAt: row.last_used_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }
-}
 
 export function getVaultStatus(): VaultStatus {
   return {
@@ -49,6 +28,7 @@ export function getVaultStatus(): VaultStatus {
     unlocked: isUnlocked(),
     recoveryConfigured: isRecoveryKeyConfigured(),
     entryCount: getLockedEntryCount(),
+    trashCount: getTrashCount(),
   }
 }
 
@@ -92,11 +72,12 @@ export function resetVault(): void {
 }
 
 export function listEntries(): PasswordEntry[] {
-  return readEntryRows().map(rowToEntry)
+  purgeExpiredTrash()
+  return readActiveEntryRows().map(rowToEntry)
 }
 
 export function getEntryById(id: string): PasswordEntry | null {
-  const row = readEntryRow(id)
+  const row = readActiveEntryRow(id)
   if (!row) return null
   return rowToEntry(row)
 }
@@ -138,7 +119,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
   const key = getSessionKey()
   const db = getDatabase()
   const now = Date.now()
-  const existing = readEntryRow(id)
+  const existing = readActiveEntryRow(id)
   if (!existing) throw appError(ErrorCode.ENTRY_NOT_FOUND)
 
   db.run(
@@ -167,14 +148,13 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
 }
 
 export function deleteEntry(id: string): void {
-  const db = getDatabase()
-  db.run('DELETE FROM password_entries WHERE id = ?', [id])
-  persistDatabase()
+  moveEntryToTrash(id)
+  removeQuickBarRecentEntry(id)
 }
 
 export function toggleFavorite(id: string): PasswordEntry {
   const db = getDatabase()
-  const row = readEntryRow(id)
+  const row = readActiveEntryRow(id)
   if (!row) throw appError(ErrorCode.ENTRY_NOT_FOUND)
   const next = row.is_favorite === 1 ? 0 : 1
   db.run('UPDATE password_entries SET is_favorite = ?, updated_at = ? WHERE id = ?', [
@@ -183,15 +163,19 @@ export function toggleFavorite(id: string): PasswordEntry {
     id,
   ])
   persistDatabase()
-  const updated = readEntryRow(id)
+  const updated = readActiveEntryRow(id)
   if (!updated) throw appError(ErrorCode.FAVORITE_UPDATE_FAILED)
   return rowToEntry(updated)
 }
 
 export function touchEntry(id: string): void {
+  if (!readActiveEntryRow(id)) throw appError(ErrorCode.ENTRY_NOT_FOUND)
   const db = getDatabase()
   const now = Date.now()
-  db.run('UPDATE password_entries SET last_used_at = ?, updated_at = ? WHERE id = ?', [now, now, id])
+  db.run(
+    'UPDATE password_entries SET last_used_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL',
+    [now, now, id],
+  )
   persistDatabase()
   recordQuickBarRecentEntry(id)
 }

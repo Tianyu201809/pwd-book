@@ -8,7 +8,13 @@ import {
   verifyMasterPassword,
 } from '../crypto/vaultCrypto'
 import { getDatabase, persistDatabase } from '../db/database'
-import { getSetting, readEntryRows, setSetting } from '../db/helpers'
+import {
+  countActiveEntries,
+  getSetting,
+  readActiveEntryRows,
+  readTrashedEntryRows,
+  setSetting,
+} from '../db/helpers'
 import { getSessionKey, isUnlocked, unlockSession } from './sessionService'
 import { appError, ErrorCode } from '../../shared/errors'
 
@@ -141,7 +147,7 @@ export function resetMasterPasswordWithRecovery(
   }
 
   const oldKey = unwrapSessionKey(recoveryKey)
-  const rows = readEntryRows()
+  const rows = [...readActiveEntryRows(), ...readTrashedEntryRows()]
   const decryptedPasswords = rows.map((row) => ({
     id: row.id,
     password: decryptSecret(row.password_encrypted, oldKey),
@@ -169,7 +175,7 @@ export function resetMasterPasswordWithRecovery(
 }
 
 export function getLockedEntryCount(): number {
-  return readEntryRows().length
+  return countActiveEntries()
 }
 
 export function clearRecoveryKeyData(): void {

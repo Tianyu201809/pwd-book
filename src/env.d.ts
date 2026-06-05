@@ -4,6 +4,7 @@ import type {
   ExportPayload,
   PasswordEntry,
   PasswordEntryInput,
+  TrashedEntry,
   RecoveryResetPayload,
   RecoveryVerifyResult,
   SecuritySettings,
@@ -47,6 +48,11 @@ declare global {
       createEntry: (input: PasswordEntryInput) => Promise<PasswordEntry>
       updateEntry: (id: string, input: PasswordEntryInput) => Promise<PasswordEntry>
       deleteEntry: (id: string) => Promise<void>
+      listTrashedEntries: () => Promise<TrashedEntry[]>
+      restoreTrashEntry: (id: string) => Promise<void>
+      restoreAllTrashEntries: () => Promise<number>
+      permanentlyDeleteTrashEntry: (id: string) => Promise<void>
+      emptyTrash: () => Promise<number>
       toggleFavorite: (id: string) => Promise<PasswordEntry>
       touchEntry: (id: string) => Promise<void>
       listQuickBarRecent: () => Promise<PasswordEntry[]>

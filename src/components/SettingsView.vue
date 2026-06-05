@@ -62,11 +62,19 @@ const tabs = computed(() => [
 const activeTab = computed(() => settingsTab.value)
 
 const autoLockOptions = [5, 15, 30, 60]
+const trashRetentionOptions = [7, 14, 30, 60, 90]
 
 const autoLockSelectOptions = computed(() =>
   autoLockOptions.map((minutes) => ({
     value: String(minutes),
     label: t('common.minutes', { n: minutes }),
+  })),
+)
+
+const trashRetentionSelectOptions = computed(() =>
+  trashRetentionOptions.map((days) => ({
+    value: String(days),
+    label: t('common.days', { n: days }),
   })),
 )
 
@@ -86,6 +94,10 @@ async function onClipboardClearChange(enabled: boolean): Promise<void> {
 
 async function onCloseWindowChange(value: string): Promise<void> {
   await updateSecuritySettings({ closeWindowAction: value as 'ask' | 'tray' | 'quit' })
+}
+
+async function onTrashRetentionChange(value: string): Promise<void> {
+  await updateSecuritySettings({ trashRetentionDays: Number(value) })
 }
 
 async function onQuickBarEnabledChange(enabled: boolean): Promise<void> {
@@ -276,6 +288,18 @@ async function handleReset(): Promise<void> {
                 class="settings-select"
                 :options="closeWindowOptions"
                 @update:model-value="onCloseWindowChange"
+              />
+            </div>
+            <div class="row">
+              <div>
+                <p class="row-title">{{ t('settings.trashRetention') }}</p>
+                <p class="row-desc">{{ t('settings.trashRetentionDesc') }}</p>
+              </div>
+              <UiSelect
+                :model-value="String(securitySettings.trashRetentionDays)"
+                class="settings-select"
+                :options="trashRetentionSelectOptions"
+                @update:model-value="onTrashRetentionChange"
               />
             </div>
             <div class="row quickbar-row">
