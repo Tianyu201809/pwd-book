@@ -168,7 +168,7 @@ function useLetterAvatar(): void {
   pointer-events: none;
 }
 
-.search-input {
+.search-wrap :deep(.input-field) {
   width: 100%;
   padding: 10px 12px 10px 36px;
   border: 1px solid var(--border-default);
@@ -178,7 +178,7 @@ function useLetterAvatar(): void {
   font-size: 14px;
 }
 
-.search-input:focus {
+.search-wrap :deep(.input-field:focus) {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px var(--accent-subtle);

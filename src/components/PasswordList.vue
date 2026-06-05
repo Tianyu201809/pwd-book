@@ -386,12 +386,12 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   color: var(--text-muted);
 }
 
-.search-input {
+.search-wrap :deep(.input-field) {
   padding: 10px 16px 10px 40px;
   font-size: 14px;
 }
 
-.search-input--animal {
+.search-wrap :deep(.search-input--animal) {
   width: 100%;
   padding: 0;
   font-size: 14px;

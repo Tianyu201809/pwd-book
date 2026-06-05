@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import { Input } from 'animal-island-vue'
@@ -33,6 +33,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
+const attrs = useAttrs()
+
+const passthroughAttrs = computed(() => {
+  const { class: _class, style: _style, ...rest } = attrs
+  return rest
+})
 
 const showClear = computed(
   () => props.allowClear && !props.disabled && !props.readonly && model.value.length > 0,
@@ -47,6 +53,8 @@ function clearInput(): void {
   <Input
     v-if="isAnimalIsland"
     v-model="model"
+    :class="$attrs.class"
+    :style="$attrs.style"
     :type="type"
     :placeholder="placeholder"
     :disabled="disabled"
@@ -67,12 +75,15 @@ function clearInput(): void {
   <div
     v-else
     class="ui-input-classic-wrap"
-    :class="[$attrs.class, { 'ui-input-classic-wrap--has-clear': showClear }]"
+    :class="{ 'ui-input-classic-wrap--has-clear': showClear }"
   >
     <input
       v-model="model"
+      v-bind="passthroughAttrs"
       :type="type"
       class="input-field"
+      :class="$attrs.class"
+      :style="$attrs.style"
       :placeholder="placeholder"
       :disabled="disabled"
       :readonly="readonly"
