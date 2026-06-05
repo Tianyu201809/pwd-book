@@ -144,7 +144,7 @@ export default {
     sortCreated: '创建时间',
     sortBy: '排序方式',
     searchPlaceholder: '搜索网站、账号、标签或拼音首字母…',
-    categorySearchPlaceholder: '搜索分类…',
+    categorySearchPlaceholder: '搜索分类或拼音首字母…',
     expandUtilities: '展开工具与设置',
     collapseUtilities: '收起工具与设置',
     noAccount: '未填写账号',
@@ -546,7 +546,7 @@ export default {
     empty: '还没有自定义分类',
     createFirst: '创建第一个',
     createHint: '创建后可在侧边栏拖拽调整顺序',
-    searchPlaceholder: '搜索分类名称…',
+    searchPlaceholder: '搜索分类名称或拼音首字母…',
     noSearchResults: '未找到匹配的分类',
   },
   recovery: {

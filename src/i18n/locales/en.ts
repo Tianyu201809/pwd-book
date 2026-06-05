@@ -145,7 +145,7 @@ export default {
     sortCreated: 'Date created',
     sortBy: 'Sort by',
     searchPlaceholder: 'Search sites, accounts, tags, or pinyin initials…',
-    categorySearchPlaceholder: 'Search categories…',
+    categorySearchPlaceholder: 'Search categories or pinyin initials…',
     expandUtilities: 'Expand tools & settings',
     collapseUtilities: 'Collapse tools & settings',
     noAccount: 'No account',
@@ -550,7 +550,7 @@ export default {
     empty: 'No custom categories yet',
     createFirst: 'Create the first one',
     createHint: 'After creating, drag categories in the sidebar to reorder',
-    searchPlaceholder: 'Search category name…',
+    searchPlaceholder: 'Search category name or pinyin initials…',
     noSearchResults: 'No matching categories',
   },
   recovery: {

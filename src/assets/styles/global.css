@@ -195,11 +195,27 @@ textarea.input-field {
   min-height: 36px;
 }
 
-.search-field-wrap .search-field-input--animal {
+.search-field-wrap .search-field-input--animal,
+.search-wrap .search-input--animal {
+  /* animal-island-vue Input root is inline-flex <span>; block flex avoids prefix icon drift */
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 0;
+  padding: 0 18px;
   min-height: unset;
+}
+
+.search-field-wrap .search-field-input--animal {
   font-size: 13px;
+}
+
+.search-wrap .search-input--animal {
+  font-size: 14px;
+}
+
+.search-field-wrap .search-field-input--animal .animal-input__prefix svg,
+.search-wrap .search-input--animal .animal-input__prefix svg {
+  display: block;
 }
 
 .surface-card {

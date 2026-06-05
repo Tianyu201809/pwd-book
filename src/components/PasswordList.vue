@@ -391,12 +391,6 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   font-size: 14px;
 }
 
-.search-wrap :deep(.search-input--animal) {
-  width: 100%;
-  padding: 0;
-  font-size: 14px;
-}
-
 .new-entry-btn {
   flex-shrink: 0;
   padding: 10px 16px;

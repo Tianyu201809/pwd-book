@@ -11,6 +11,7 @@ import { UiInput } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
+import { textMatchesQuery } from '@/shared/searchMatch'
 import { parseErrorMessage } from '@/shared/utils'
 import type { FilterCategory } from '@/types'
 
@@ -150,9 +151,9 @@ const displayCategories = computed(() => {
     items.splice(to, 0, moved)
   }
 
-  const q = categorySearchQuery.value.trim().toLowerCase()
+  const q = categorySearchQuery.value.trim()
   if (!q) return items
-  return items.filter((cat) => cat.label.toLowerCase().includes(q))
+  return items.filter((cat) => textMatchesQuery(cat.label, q))
 })
 
 function cleanupDrag(): void {

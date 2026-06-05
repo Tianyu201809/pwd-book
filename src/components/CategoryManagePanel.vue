@@ -15,6 +15,7 @@ import { useAppState } from '@/composables/useAppState'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiButton } from '@/components/ui'
+import { textMatchesQuery } from '@/shared/searchMatch'
 
 const { createCategory, updateCategory, deleteCategory, customCategories, loading, errorMessage, clearError } =
   useAppState()
@@ -40,9 +41,9 @@ const nameInputRef = ref<HTMLInputElement | null>(null)
 const categoryCount = computed(() => customCategories.value.length)
 
 const filteredManageCategories = computed(() => {
-  const q = manageSearchQuery.value.trim().toLowerCase()
+  const q = manageSearchQuery.value.trim()
   if (!q) return customCategories.value
-  return customCategories.value.filter((category) => category.label.toLowerCase().includes(q))
+  return customCategories.value.filter((category) => textMatchesQuery(category.label, q))
 })
 
 const editIconPickerSelected = computed(() => {
