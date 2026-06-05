@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
+import { entryMatchesSearch } from '@/shared/entrySearch'
 import {
   normalizeExternalUrl,
   cloneForIpc,
@@ -155,13 +156,7 @@ const filteredEntries = computed(() => {
       (selectedCategory.value === 'favorite'
         ? entry.isFavorite
         : entry.categoryId === selectedCategory.value)
-    const matchSearch =
-      !q ||
-      entry.title.toLowerCase().includes(q) ||
-      entry.username.toLowerCase().includes(q) ||
-      entry.url.toLowerCase().includes(q) ||
-      entry.categoryName.toLowerCase().includes(q) ||
-      entry.tags.some((tag) => tag.toLowerCase().includes(q))
+    const matchSearch = !q || entryMatchesSearch(entry, q)
     return matchCategory && matchSearch
   })
 })

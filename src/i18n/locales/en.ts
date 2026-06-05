@@ -141,7 +141,7 @@ export default {
     sortTitle: 'Title A-Z',
     sortCreated: 'Date created',
     sortBy: 'Sort by',
-    searchPlaceholder: 'Search sites, accounts, or tags…',
+    searchPlaceholder: 'Search sites, accounts, tags, or pinyin initials…',
     categorySearchPlaceholder: 'Search categories…',
     expandUtilities: 'Expand tools & settings',
     collapseUtilities: 'Collapse tools & settings',

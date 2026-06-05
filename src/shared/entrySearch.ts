@@ -1,15 +1,20 @@
+import { textMatchesQuery } from './searchMatch'
 import type { PasswordEntry } from './types'
 
+export function entrySearchFields(entry: PasswordEntry): string[] {
+  return [
+    entry.title,
+    entry.username,
+    entry.url,
+    entry.categoryName,
+    ...entry.tags,
+  ]
+}
+
 export function entryMatchesSearch(entry: PasswordEntry, query: string): boolean {
-  const q = query.trim().toLowerCase()
+  const q = query.trim()
   if (!q) return false
-  return (
-    entry.title.toLowerCase().includes(q) ||
-    entry.username.toLowerCase().includes(q) ||
-    entry.url.toLowerCase().includes(q) ||
-    entry.categoryName.toLowerCase().includes(q) ||
-    entry.tags.some((tag) => tag.toLowerCase().includes(q))
-  )
+  return entrySearchFields(entry).some((field) => textMatchesQuery(field, q))
 }
 
 export function filterEntriesBySearch(

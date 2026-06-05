@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
+import SearchHighlightText from '@/components/SearchHighlightText.vue'
 import { UiInput, UiButton } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
@@ -30,6 +31,8 @@ const sortOptions = computed(() => [
   { id: 'title' as ListSortOrder, label: t('vault.sortTitle') },
   { id: 'created' as ListSortOrder, label: t('vault.sortCreated') },
 ])
+
+const activeSearchQuery = computed(() => searchQuery.value.trim())
 
 const openMenuId = ref<string | null>(null)
 const showSortMenu = ref(false)
@@ -235,13 +238,34 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           </div>
           <div class="meta">
             <div class="title-row">
-              <span class="entry-title">{{ entry.title }}</span>
+              <span class="entry-title">
+                <SearchHighlightText
+                  v-if="activeSearchQuery"
+                  :text="entry.title"
+                  :query="activeSearchQuery"
+                />
+                <template v-else>{{ entry.title }}</template>
+              </span>
               <div v-if="entry.tags.length" class="entry-tags">
-                <span v-for="(tag, index) in entry.tags" :key="`${entry.id}-tag-${index}`" class="tag">{{ tag }}</span>
+                <span v-for="(tag, index) in entry.tags" :key="`${entry.id}-tag-${index}`" class="tag">
+                  <SearchHighlightText
+                    v-if="activeSearchQuery"
+                    :text="tag"
+                    :query="activeSearchQuery"
+                  />
+                  <template v-else>{{ tag }}</template>
+                </span>
               </div>
             </div>
             <div class="meta-secondary">
-              <p class="username">{{ entry.username || entry.url || t('vault.noAccount') }}</p>
+              <p class="username">
+                <SearchHighlightText
+                  v-if="activeSearchQuery && (entry.username || entry.url)"
+                  :text="entry.username || entry.url"
+                  :query="activeSearchQuery"
+                />
+                <template v-else>{{ entry.username || entry.url || t('vault.noAccount') }}</template>
+              </p>
               <span
                 v-if="!isCompactList"
                 class="time"

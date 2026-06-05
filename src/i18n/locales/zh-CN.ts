@@ -140,7 +140,7 @@ export default {
     sortTitle: '标题 A-Z',
     sortCreated: '创建时间',
     sortBy: '排序方式',
-    searchPlaceholder: '搜索网站、账号或标签…',
+    searchPlaceholder: '搜索网站、账号、标签或拼音首字母…',
     categorySearchPlaceholder: '搜索分类…',
     expandUtilities: '展开工具与设置',
     collapseUtilities: '收起工具与设置',

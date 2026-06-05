@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, Lock, X } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import SearchHighlightText from '@/components/SearchHighlightText.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import { syncLocaleFromStorage } from '@/composables/useLocale'
 import { showToast } from '@/composables/useToast'
@@ -229,10 +230,30 @@ onUnmounted(() => {
           </span>
         </span>
         <span class="quickbar-result-main">
-          <span class="quickbar-result-title">{{ entry.title }}</span>
+          <span class="quickbar-result-title">
+            <SearchHighlightText
+              v-if="query.trim()"
+              :text="entry.title"
+              :query="query"
+            />
+            <template v-else>{{ entry.title }}</template>
+          </span>
           <span class="quickbar-result-meta">
-            {{ entry.username || t('vault.noAccount') }}
-            <template v-if="entry.categoryName"> · {{ entry.categoryName }}</template>
+            <SearchHighlightText
+              v-if="query.trim() && entry.username"
+              :text="entry.username"
+              :query="query"
+            />
+            <template v-else>{{ entry.username || t('vault.noAccount') }}</template>
+            <template v-if="entry.categoryName">
+              ·
+              <SearchHighlightText
+                v-if="query.trim()"
+                :text="entry.categoryName"
+                :query="query"
+              />
+              <template v-else>{{ entry.categoryName }}</template>
+            </template>
           </span>
         </span>
         <button

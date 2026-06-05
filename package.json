@@ -49,12 +49,16 @@
       {
         "from": "native-host",
         "to": "native-host",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "extension",
         "to": "extension",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
@@ -89,6 +93,7 @@
     "archiver-zip-encrypted": "^2.0.0",
     "lucide-vue-next": "^0.511.0",
     "nodemailer": "^8.0.10",
+    "pinyin-pro": "^3.28.1",
     "sql.js": "^1.14.1",
     "vue": "^3.5.13",
     "vue-i18n": "^10.0.7",
