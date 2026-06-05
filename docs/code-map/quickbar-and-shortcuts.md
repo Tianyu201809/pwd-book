@@ -57,6 +57,14 @@
 - 主列表排序字段 `last_used_at` 仍在 `touchEntry` 时更新，**不受**快捷条移除影响。
 - 快捷条移除仅改 `quick_bar_recent_ids`，不清除 `last_used_at`。
 
+### 搜索匹配（v1.7.0）
+
+快捷条与主列表共用 `entryMatchesSearch()`（`src/shared/entrySearch.ts`）与 `textMatchesQuery()`（`src/shared/searchMatch.ts`）：
+
+- 字段：标题、用户名、网址、分类名、标签。
+- 除原文子串外，纯字母数字查询可匹配中文的**拼音首字母**（依赖 `pinyin-pro`）。
+- 主列表搜索高亮仅对原文子串生效（`SearchHighlightText.vue`）。
+
 ## 用户可见行为
 
 1. **最多 5 条**最近打开；分类子菜单（主列表右键「移动到」）同样最多展示 5 条，超出滚动。

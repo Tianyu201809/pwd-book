@@ -21,8 +21,11 @@
 | `last_used_at` | INTEGER | Unix ms，可空 |
 | `created_at` | INTEGER | Unix ms |
 | `updated_at` | INTEGER | Unix ms |
+| `deleted_at` | INTEGER | Unix ms，可空；**非空表示在回收站**（v1.7.0 迁移添加） |
 
-应用层类型：`PasswordEntry`（`shared/types.ts`），列表/详情中 `password` 为解密后的明文。
+应用层类型：`PasswordEntry`（`shared/types.ts`），列表/详情中 `password` 为解密后的明文。`deleted_at IS NULL` 为活跃条目；回收站列表见 `TrashedEntry`（含 `deletedAt`、`expiresAt`、`daysRemaining`）。
+
+**软删除（v1.7.0）**：删除条目写入 `deleted_at`；还原清空该列；彻底删除或超保留期则 `DELETE` 行。活跃列表、分类计数、浏览器填充等查询均过滤 `deleted_at IS NULL`。
 
 ## 表：app_settings
 
@@ -52,7 +55,7 @@
 | `clipboard_clear_enabled` | 剪贴板定时清除 |
 | `clipboard_clear_seconds` | 清除延迟秒数 |
 | `close_window_action` | `ask` / `tray` / `quit` |
-| `open_url_with_credentials` | 打开网址是否附带 user/pwd |
+| `trash_retention_days` | 回收站保留天数，默认 `30`（v1.7.0） |
 | `quick_bar_enabled` | 快捷搜索条开关 |
 | `quick_bar_accelerator` | 快捷条快捷键，默认 `Alt+Shift+P` |
 | `main_window_shortcut_enabled` | 主窗口全局快捷键开关 |
