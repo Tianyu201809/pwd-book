@@ -29,6 +29,7 @@ import {
   setupScreenshotFixture,
 } from './screenshotMode'
 import { destroyBrowserBridge, syncBrowserBridge } from './services/browserBridgeService'
+import { registerSystemAutoLock } from './autoLock'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -124,6 +125,7 @@ if (gotSingleInstanceLock) {
     registerQuickBarIpc()
     registerQuickBarShortcut()
     registerMainWindowShortcut()
+    registerSystemAutoLock()
     syncBrowserBridge()
 
     ipcMain.on('window-minimize', () => hideToTray())

@@ -109,4 +109,5 @@ export const vaultApi = {
   sendEmailBackup: (payload: EmailBackupSendPayload): Promise<EmailBackupSettings> =>
     getApi().sendEmailBackup(payload),
   onScheduledBackupDue: (handler: () => void): (() => void) => getApi().onScheduledBackupDue(handler),
+  onSystemLockScreen: (handler: () => void): (() => void) => getApi().onSystemLockScreen(handler),
 }

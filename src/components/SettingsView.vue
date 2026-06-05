@@ -27,6 +27,7 @@ import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '@/shared/b
 import { parseErrorMessage } from '@/shared/utils'
 import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
+import { AUTO_LOCK_FOLLOW_SYSTEM } from '@/shared/types'
 import { useToast } from '@/composables/useToast'
 
 const {
@@ -61,15 +62,19 @@ const tabs = computed(() => [
 
 const activeTab = computed(() => settingsTab.value)
 
-const autoLockOptions = [5, 15, 30, 60]
+const autoLockOptions = [5, 15, 30, 60, 120]
 const trashRetentionOptions = [7, 14, 30, 60, 90]
 
-const autoLockSelectOptions = computed(() =>
-  autoLockOptions.map((minutes) => ({
+const autoLockSelectOptions = computed(() => [
+  ...autoLockOptions.map((minutes) => ({
     value: String(minutes),
     label: t('common.minutes', { n: minutes }),
   })),
-)
+  {
+    value: String(AUTO_LOCK_FOLLOW_SYSTEM),
+    label: t('settings.autoLockFollowSystem'),
+  },
+])
 
 const trashRetentionSelectOptions = computed(() =>
   trashRetentionOptions.map((days) => ({

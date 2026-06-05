@@ -298,6 +298,7 @@ export default {
     about: '关于',
     autoLock: '自动锁定',
     autoLockDesc: '无操作后自动锁定应用',
+    autoLockFollowSystem: '跟随系统锁屏',
     clipboardClear: '剪贴板自动清除',
     clipboardClearDesc: '复制密码后 {seconds} 秒清除',
     trashRetention: '回收站保留期限',

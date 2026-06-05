@@ -89,6 +89,7 @@ declare global {
       testEmailBackupConnection: () => Promise<void>
       sendEmailBackup: (payload: EmailBackupSendPayload) => Promise<EmailBackupSettings>
       onScheduledBackupDue: (handler: () => void) => () => void
+      onSystemLockScreen: (handler: () => void) => () => void
       hideQuickBar?: () => void
       showQuickBar?: () => void
       quickBarShowMain?: () => void

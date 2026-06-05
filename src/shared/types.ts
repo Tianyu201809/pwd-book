@@ -124,7 +124,11 @@ export interface PasswordEntryInput {
   localProgramPath?: string
 }
 
+/** 跟随系统锁屏时存入 auto_lock_minutes 的哨兵值 */
+export const AUTO_LOCK_FOLLOW_SYSTEM = -1
+
 export interface SecuritySettings {
+  /** 空闲锁定分钟数；{@link AUTO_LOCK_FOLLOW_SYSTEM} 表示跟随系统锁屏 */
   autoLockMinutes: number
   clipboardClearEnabled: boolean
   clipboardClearSeconds: number
@@ -295,6 +299,7 @@ export const IPC_EVENTS = {
   scheduledBackupDue: 'email-backup:scheduled-due',
   quickBarShown: 'quickbar:shown',
   themeChanged: 'theme:changed',
+  systemLockScreen: 'session:system-lock',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

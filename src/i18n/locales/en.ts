@@ -299,6 +299,7 @@ export default {
     about: 'About',
     autoLock: 'Auto-lock',
     autoLockDesc: 'Lock the app after inactivity',
+    autoLockFollowSystem: 'Follow system lock screen',
     clipboardClear: 'Clear clipboard',
     clipboardClearDesc: 'Clear copied password after {seconds}s',
     trashRetention: 'Recycle bin retention',

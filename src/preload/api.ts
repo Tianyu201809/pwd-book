@@ -160,6 +160,11 @@ export const electronAPI = {
     ipcRenderer.on(IPC_EVENTS.scheduledBackupDue, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.scheduledBackupDue, listener)
   },
+  onSystemLockScreen: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.systemLockScreen, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.systemLockScreen, listener)
+  },
 
   hideQuickBar: (): void => ipcRenderer.send(QUICKBAR_CHANNELS.hide),
   showQuickBar: (): void => ipcRenderer.send(QUICKBAR_CHANNELS.show),
