@@ -103,6 +103,7 @@ export default {
     skinMenu: 'Change skin',
     skinMenuTitle: 'Interface skin',
     openAppearanceSettings: 'More appearance settings',
+    quickLock: 'Lock vault',
   },
   lock: {
     createMasterPassword: 'Create master password',
@@ -153,7 +154,6 @@ export default {
     noOtherCategory: 'No other categories',
     movedToCategory: 'Moved to 「{name}」',
     openUrl: 'Open URL',
-    openWithCredentials: 'Open URL with credentials',
     openLocalProgram: 'Open program',
     noUrlToOpen: 'Add a URL first',
     emptyCreating: 'Fill in the form on the right to create your first entry',
@@ -278,9 +278,6 @@ export default {
     autoLockDesc: 'Lock the app after inactivity',
     clipboardClear: 'Clear clipboard',
     clipboardClearDesc: 'Clear copied password after {seconds}s',
-    openUrlWithCredentials: 'Append credentials to opened URLs',
-    openUrlWithCredentialsDesc:
-      'When enabled, “Open URL” adds user and pwd query parameters to the link; when off, opens the plain URL',
     closeWindow: 'When closing the window',
     closeWindowDesc: 'Default action for the title bar close button or Alt+F4',
     closeWindowAsk: 'Ask every time',

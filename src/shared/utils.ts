@@ -65,18 +65,6 @@ export function normalizeExternalUrl(rawUrl: string): string {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
-/** Append `user` and `pwd` query params for sites that read credentials from the URL. */
-export function buildUrlWithCredentialParams(
-  rawUrl: string,
-  username: string,
-  password: string,
-): string {
-  const url = new URL(normalizeExternalUrl(rawUrl))
-  url.searchParams.set('user', username)
-  url.searchParams.set('pwd', password)
-  return url.toString()
-}
-
 export function formatEntryForClipboard(entry: PasswordEntry): string {
   const t = i18n.global.t
   const lines = [

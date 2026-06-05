@@ -16,7 +16,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const {
-  securitySettings,
   customCategories,
   openEntryInBrowser,
   openLocalProgramForEntry,
@@ -86,11 +85,7 @@ function canOpenInBrowser(): boolean {
   return Boolean(props.entry.url.trim())
 }
 
-const openBrowserLabel = computed(() =>
-  securitySettings.value.openUrlWithCredentials
-    ? t('vault.openWithCredentials')
-    : t('vault.openUrl'),
-)
+const openBrowserLabel = computed(() => t('vault.openUrl'))
 
 const moveSubmenuOpen = ref(false)
 const moveSubmenuWrapRef = ref<HTMLElement | null>(null)

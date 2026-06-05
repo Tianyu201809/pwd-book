@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.6.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.7.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -160,7 +160,6 @@ npm run dev
 |----|------|
 | 自动锁定 | 空闲 5 / 15 / 30 / 60 分钟后锁定（清除内存中的会话密钥） |
 | 剪贴板自动清除 | 复制密码等文本后，若剪贴板内容未被改写，约 30 秒后清空 |
-| 打开网址携带账号密码 | 默认关闭；开启后列表菜单与快捷条在 URL 上附加 `user`、`pwd` 查询参数 |
 | 关闭窗口 | 每次询问 / 默认最小化到托盘 / 直接退出；标题栏关闭对话框可「记住选择」 |
 | 快捷搜索条 | 开关 +「打开快捷条」；默认全局快捷键 `Alt+Shift+P` |
 | 快捷键唤起主窗口 | 开关；默认 `Alt+Shift+M` |
@@ -324,12 +323,20 @@ npm run dev
 - **剪贴板**：可选在复制后 N 秒清空剪贴板（若内容未被用户改写）。
 - **导出文件**：JSON、CSV、Excel 等导出均可能包含**明文密码**，勿上传至网盘或聊天工具。
 - **邮箱备份**：ZIP 使用 AES-256 加密，解压密码为主密码；SMTP 凭据经会话密钥加密后存于本地设置。
-- **打开网址（携带参数）**：在 **设置 → 安全** 开启后，列表菜单打开网址时会附加 `user` / `pwd`；快捷搜索条 `Enter` 遵循同一设置。请勿对不可信站点使用。
 - **浏览器自动填充**：扩展仅在保险库解锁时经本机桥接取密；`getCredential` 校验条目网址与当前页域名一致。详见 [浏览器扩展](#浏览器扩展chrome--edge)。
 
 ## 版本更新
 
-### v1.6.0（当前）
+### v1.7.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#170---2026-06-05)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 标题栏 | 换肤按钮右侧新增**快捷锁定** |
+| 移除 | 打开网址携带 `user` / `pwd` 参数的设置与逻辑 |
+
+### v1.6.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#160---2026-06-06)**。摘要：
 
@@ -451,9 +458,6 @@ Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%
 
 **重复打开安装包或快捷方式？**  
 应用为单实例；第二次启动会激活已有进程并提示，不会打开第二个数据目录实例。
-
-**「打开网址（携带账号密码）」安全吗？**  
-在 **设置 → 安全** 中默认关闭；开启后，列表菜单与快捷搜索条打开网址时会写入 `user` / `pwd` 查询参数。仅适合你自己信任、且确实从 URL 读取凭据的页面；对普通 HTTPS 登录页无帮助，且 URL 可能留在浏览器历史记录中，请谨慎使用。
 
 **快捷搜索条怎么用？**  
 解锁后按 `Alt+Shift+P`（或在设置中点击「打开快捷条」）。无输入时显示**最近打开**（最多 5 条，悬停可 × 移除）；输入关键词后 ↑↓ 选择条目，`Enter` 启动本地程序或打开网址（优先程序路径）。失焦后快捷条自动隐藏。移除最近打开**不会**删除条目，也不会清除主列表的「最近使用时间」；全部移除后列表保持为空，直到再次打开条目。详见 [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md)。

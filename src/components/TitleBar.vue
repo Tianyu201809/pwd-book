@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles } from 'lucide-vue-next'
+import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { useTheme } from '@/composables/useTheme'
@@ -9,7 +9,7 @@ import type { CloseWindowAction } from '@/shared/types'
 import type { ThemeSkin } from '@/types'
 
 const { t } = useI18n()
-const { securitySettings, updateSecuritySettings, screen, navigateTo } = useAppState()
+const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, lock } = useAppState()
 const { skin, skinOptions, setSkin, isAnimalIsland } = useTheme()
 
 const showCloseDialog = ref(false)
@@ -20,6 +20,7 @@ const skinTriggerRef = ref<HTMLButtonElement | null>(null)
 const popoverStyle = ref<Record<string, string>>({})
 
 const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
+const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
 
 let removeClosePromptListener: (() => void) | undefined
 
@@ -212,6 +213,15 @@ onUnmounted(() => {
           </Transition>
         </Teleport>
       </div>
+      <button
+        v-if="canQuickLock"
+        type="button"
+        class="win-btn lock-btn"
+        :aria-label="t('titlebar.quickLock')"
+        @click="lock"
+      >
+        <Lock :size="14" :stroke-width="1.5" />
+      </button>
       <span class="titlebar-divider" aria-hidden="true" />
       <button type="button" class="win-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
         <Minus :size="14" :stroke-width="1.5" />
@@ -432,6 +442,10 @@ onUnmounted(() => {
 .win-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.lock-btn:hover {
+  color: var(--accent-primary);
 }
 
 .close-btn:hover {

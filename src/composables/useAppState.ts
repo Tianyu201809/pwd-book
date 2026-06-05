@@ -2,7 +2,6 @@ import { ref, computed } from 'vue'
 import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import {
-  buildUrlWithCredentialParams,
   normalizeExternalUrl,
   cloneForIpc,
   formatEntryForClipboard,
@@ -46,7 +45,6 @@ const securitySettings = ref<SecuritySettings>({
   clipboardClearEnabled: true,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
-  openUrlWithCredentials: false,
   browserFillEnabled: false,
   quickBarEnabled: true,
   quickBarAccelerator: 'Alt+Shift+P',
@@ -765,9 +763,7 @@ async function openEntryInBrowser(entry: PasswordEntry): Promise<void> {
   }
   clearError()
   try {
-    const target = securitySettings.value.openUrlWithCredentials
-      ? buildUrlWithCredentialParams(entry.url, entry.username ?? '', entry.password ?? '')
-      : normalizeExternalUrl(entry.url)
+    const target = normalizeExternalUrl(entry.url)
     await vaultApi.openExternal(target)
     await vaultApi.touchEntry(entry.id)
     await refreshEntries()

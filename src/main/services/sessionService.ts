@@ -6,7 +6,6 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   clipboardClearEnabled: true,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
-  openUrlWithCredentials: false,
   quickBarEnabled: true,
   quickBarAccelerator: 'Alt+Shift+P',
   mainWindowShortcutEnabled: true,

@@ -89,12 +89,7 @@ async function activateEntry(entry: PasswordEntry): Promise<void> {
   const api = window.electronAPI
   if (!api) return
   try {
-    const settings = await api.getSettings()
-    const kind = await launchEntry(
-      entry,
-      { openUrlWithCredentials: settings.openUrlWithCredentials },
-      api,
-    )
+    const kind = await launchEntry(entry, api)
     if (kind === 'none') {
       showToast(t('quickBar.noLaunchTarget'), 'error')
       return
