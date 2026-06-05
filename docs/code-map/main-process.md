@@ -72,6 +72,16 @@
 - `src/main/quickBar.ts` — 快捷条窗口与 `Alt+Shift+P` 注册
 - `src/main/mainWindowShortcut.ts` — 主窗口 `Alt+Shift+M` 注册，调用 `showFromTray()`
 
+### autoLock（v1.8.0）
+
+`src/main/autoLock.ts` — 当 `auto_lock_minutes === -1`（跟随系统锁屏）且保险库已解锁时：
+
+1. 监听 `powerMonitor` 的 `lock-screen` 事件
+2. 调用 `lockVault()` 清除内存会话密钥
+3. 向主窗口发送 `session:system-lock`（`IPC_EVENTS.systemLockScreen`），由渲染进程 `useAutoLock` 切换至锁定页
+
+在 `main/index.ts` 的 `app.whenReady()` 中调用 `registerSystemAutoLock()`。
+
 ## 加密模块 (`src/main/crypto/vaultCrypto.ts`)
 
 | 函数 | 算法/说明 |

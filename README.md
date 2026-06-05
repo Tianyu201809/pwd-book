@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.7.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.8.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -159,7 +159,7 @@ npm run dev
 
 | 项 | 说明 |
 |----|------|
-| 自动锁定 | 空闲 5 / 15 / 30 / 60 分钟后锁定（清除内存中的会话密钥） |
+| 自动锁定 | 空闲 5 / 15 / 30 / 60 / **120** 分钟后锁定，或 **跟随系统锁屏**（清除内存中的会话密钥） |
 | 回收站保留期限 | 7 / 14 / 30 / 60 / 90 天（默认 30）；超期条目自动彻底删除 |
 | 剪贴板自动清除 | 复制密码等文本后，若剪贴板内容未被改写，约 30 秒后清空 |
 | 关闭窗口 | 每次询问 / 默认最小化到托盘 / 直接退出；标题栏关闭对话框可「记住选择」 |
@@ -192,7 +192,7 @@ npm run dev
 |------|------|
 | **首次使用** | 锁定页创建主密码 → 引导保存 **恢复密钥**（可跳过，会二次警告）→ 进入保险库 |
 | **再次启动** | 已有本地库时显示「解锁」表单 |
-| **日常使用** | 主密码解锁；标题栏或空闲 **自动锁定**；锁定后需重新输入主密码 |
+| **日常使用** | 主密码解锁；标题栏、空闲 **自动锁定** 或 **系统锁屏**（若已选跟随系统锁屏）；锁定后需重新输入主密码 |
 | **忘记主密码** | 锁定页 →「使用恢复密钥」→ 选择路径（见下） |
 
 **无法解锁时的三条路径**（`recovery-menu`）：
@@ -329,7 +329,15 @@ npm run dev
 
 ## 版本更新
 
-### v1.7.0（当前）
+### v1.8.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#180---2026-06-05)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 安全 | **设置 → 安全** 自动锁定新增 **120 分钟** 与 **跟随系统锁屏** |
+
+### v1.7.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#170---2026-06-05)**。摘要：
 

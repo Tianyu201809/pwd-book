@@ -67,7 +67,14 @@ App.vue
 
 ### useAutoLock (`src/composables/useAutoLock.ts`)
 
-监听用户活动（`lastActivityAt`），超时调用 `lockVault()`。
+两种锁定策略（**设置 → 安全 → 自动锁定**，v1.8.0 起支持 120 分钟与跟随系统锁屏）：
+
+| `autoLockMinutes` | 行为 |
+|-------------------|------|
+| `> 0` | 在 `vault` / `settings` 屏监听 `lastActivityAt`，超时调用 `lock()` |
+| `-1`（`AUTO_LOCK_FOLLOW_SYSTEM`） | 不启空闲计时；订阅主进程 `session:system-lock` 事件，系统锁屏时调用 `lock()` |
+
+空闲计时每秒轮询一次；系统锁屏由主进程 `powerMonitor.on('lock-screen')` 触发（见 [main-process.md](./main-process.md)）。
 
 ### useTheme (`src/composables/useTheme.ts`)
 

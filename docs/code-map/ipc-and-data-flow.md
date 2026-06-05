@@ -88,6 +88,15 @@
 | `window-close` | send | |
 | `theme-set-native` | send | dark / light / system |
 
+### 主进程 → 渲染进程事件（`IPC_EVENTS`）
+
+| 事件 | 方向 | 说明 |
+|------|------|------|
+| `email-backup:scheduled-due` | send | 定时邮箱备份到期，弹出主密码确认 |
+| `quickbar:shown` | send | 快捷条已显示 |
+| `theme:changed` | send | 主题变更通知 |
+| `session:system-lock` | send | **v1.8.0** 系统锁屏且已选「跟随系统锁屏」；主进程已 `lockVault()`，渲染进程同步 UI |
+
 ## 解锁流程
 
 ```mermaid

@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.7.0**（`package.json`）— 回收站、拼音首字母搜索、删除确认弹窗与默认 A–Z 排序等。
+**当前版本：v1.8.0**（`package.json`）— 自动锁定 120 分钟、跟随系统锁屏等。
 
 ## 文档索引
 
@@ -37,4 +37,5 @@
 | 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |
 | 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
+| 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |
 | 改类型定义 | `src/shared/types.ts`、`src/shared/browserBridgeProtocol.ts` |

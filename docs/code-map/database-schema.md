@@ -51,7 +51,7 @@
 
 | Key | 说明 |
 |-----|------|
-| `auto_lock_minutes` | 自动锁定分钟数 |
+| `auto_lock_minutes` | 自动锁定分钟数；正整数为空闲锁定分钟；`-1` 表示跟随系统锁屏（v1.8.0，`AUTO_LOCK_FOLLOW_SYSTEM`） |
 | `clipboard_clear_enabled` | 剪贴板定时清除 |
 | `clipboard_clear_seconds` | 清除延迟秒数 |
 | `close_window_action` | `ask` / `tray` / `quit` |
