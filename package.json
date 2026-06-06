@@ -15,11 +15,13 @@
     "predist": "npm run icons",
     "predist:win": "npm run icons",
     "predist:win:dir": "npm run icons",
+    "predist:mac": "npm run icons",
+    "predist:mac:dir": "npm run icons",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
     "dist:win:dir": "npm run build && electron-builder --win --dir",
-    "screenshots:animal": "node scripts/capture-animal-screenshots.mjs",
-    "register-native-host": "node scripts/register-native-host.mjs"
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:mac:dir": "npm run build && electron-builder --mac --dir"
   },
   "build": {
     "appId": "com.pwdbook.app",
@@ -87,6 +89,23 @@
       "createStartMenuShortcut": true,
       "shortcutName": "PwdBook",
       "include": "deps/installer.nsh"
+    },
+    "mac": {
+      "icon": "icon.png",
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "${productName} ${version}"
     }
   },
   "dependencies": {
