@@ -13,17 +13,20 @@ App.vue
 │   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
 │   └── PasswordDetail.vue    # 条目编辑、图标选择
-├── SettingsView.vue          # 设置页 Tab 容器
+├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口）
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
+├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全）
+├── PasswordGenView.vue       # 随机密码（侧栏工具区入口）
 ├── WifiSyncView.vue          # 局域网同步（v1.9.0，设置 → 数据 → 同步）
 │   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
 ├── TagManagePanel.vue        # 标签管理
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
 ├── export/ExportDataModal.vue  # 导出到其他应用 CSV
-├── IconPickerModal.vue       # 条目/分类图标选择
-├── CategoryIconView.vue      # 彩色图标渲染
+├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母 Tab、搜索）
+├── IconBadge.vue             # 侧栏/设置页彩色图标徽章（v1.11.0）
+├── CategoryIconView.vue      # 彩色图标或字母渲染
 └── ToastHost.vue             # 全局 Toast 容器
 
 # 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
@@ -39,6 +42,12 @@ App.vue
 
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
 - HTML5 拖拽排序，`reorderSidebarCategories` 持久化。
+- **工具与设置** 折叠区（v1.11.0）：**随机密码** 为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
+
+### SettingsView.vue
+
+- 四个 Tab（安全 / 外观 / 数据 / 关于）；Tab 图标使用 `IconBadge`（v1.11.0）。
+- **安全** Tab 含 **打开邮箱备份** 按钮（`openEmailBackup`）；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
 
 ### EntryListMenu.vue
 
@@ -114,8 +123,11 @@ App.vue
 
 ## 分类与图标
 
-- `categoryIcons.ts` — 30+ 图标 id → 颜色/符号映射
-- `IconPickerModal.vue` — 搜索过滤、选中回调
+- `categoryIcons.ts` — **60** 个 Lucide 图形图标 + **26** 个字母图标（`LetterA`–`LetterZ`）；`BASE_CATEGORY_ICON_OPTIONS` / `LETTER_ICON_OPTIONS`；`isLetterIcon()` / `getLetterFromIcon()`
+- `navIconStyles.ts` — 侧栏与设置 Tab 的 pastel 徽章配色（v1.11.0）
+- `IconPickerModal.vue` — **图标 / 字母** 双 Tab、搜索过滤；动森皮肤下搜索图标走 `UiInput` `#prefix` 插槽
+- `IconBadge.vue` — 通用彩色圆角徽章容器
+- `CategoryIconView.vue` — 图形图标或字母渲染；字母图标在徽章内显示加粗字符
 - `VaultSidebar.vue` — HTML5 拖拽排序、分类右键菜单，`reorderSidebarCategories` 持久化
 - `CategoryManagePanel.vue` — 新建/编辑/删除分类，复用 IconPicker；可由侧栏右键「编辑」唤起
 
