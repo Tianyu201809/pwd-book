@@ -10,6 +10,7 @@ import {
   Info,
   Download,
   Upload,
+  RefreshCw,
   AlertTriangle,
   ChevronRight,
   PanelTop,
@@ -37,6 +38,7 @@ const {
   securitySettings,
   updateSecuritySettings,
   resetAllData,
+  openWifiSync,
   errorMessage,
   clearError,
 } = useAppState()
@@ -421,6 +423,10 @@ async function handleReset(): Promise<void> {
               <ChevronRight :size="16" :stroke-width="1.5" />
             </button>
             <ImportDataModal v-model:open="importModalOpen" @imported="onImportCompleted" />
+            <button type="button" class="link-row" @click="openWifiSync">
+              <span><RefreshCw :size="16" :stroke-width="1.5" /> {{ t('settings.sync') }}</span>
+              <ChevronRight :size="16" :stroke-width="1.5" />
+            </button>
             <button type="button" class="link-row danger-row" @click="handleReset">
               <span><AlertTriangle :size="16" :stroke-width="1.5" /> {{ t('settings.clearAllData') }}</span>
               <ChevronRight :size="16" :stroke-width="1.5" />

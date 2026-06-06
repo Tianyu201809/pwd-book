@@ -208,8 +208,6 @@ export default {
     sectionLabel: 'Tools',
     emailBackupTitle: 'Email backup',
     emailBackupDesc: 'Send encrypted copy to your inbox',
-    wifiSyncTitle: 'Wi-Fi sync',
-    wifiSyncDesc: 'Sync vault over local network',
     passwordGenTitle: 'Password generator',
     passwordGenDesc: 'Create strong random passwords',
     backToVault: 'Back to vault',
@@ -273,7 +271,7 @@ export default {
       scheduledPromptDesc: 'It is time for your scheduled backup. Enter your master password to send the encrypted email.',
     },
     wifiSync: {
-      title: 'Wi-Fi sync',
+      title: 'Sync',
       subtitle: 'Sync your vault on the local network without using the internet. Master password must match on all devices.',
       serverMode: 'Server (desktop)',
       clientMode: 'Client (phone/other device)',
@@ -376,6 +374,8 @@ export default {
     browserFillHostMissing: 'Native Host files missing. Check your installation.',
     exportData: 'Export data',
     importData: 'Import data',
+    sync: 'Sync',
+    backToSettings: 'Back to settings',
     importFromApps: 'Import from other apps',
     clearAllData: 'Clear all data',
     clearAllConfirm:

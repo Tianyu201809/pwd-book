@@ -77,7 +77,7 @@ onUnmounted(() => {
 })
 
 function goBack(): void {
-  navigateTo('vault')
+  navigateTo('settings', 'data')
 }
 
 async function toggleServer(): Promise<void> {
@@ -201,13 +201,13 @@ async function confirmSync(masterPassword: string): Promise<void> {
       <aside class="tool-page-sidebar">
         <button type="button" class="tool-back-btn" @click="goBack">
           <ArrowLeft :size="16" :stroke-width="1.5" />
-          {{ t('tools.backToVault') }}
+          {{ t('settings.backToSettings') }}
         </button>
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--wifi">
             <Wifi :size="24" :stroke-width="1.5" />
           </div>
-          <h2 class="tool-sidebar-title font-display">{{ t('tools.wifiSync.title') }}</h2>
+          <h2 class="tool-sidebar-title font-display">{{ t('settings.sync') }}</h2>
           <p class="tool-sidebar-desc">{{ t('tools.wifiSync.subtitle') }}</p>
         </div>
       </aside>
