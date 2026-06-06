@@ -1,4 +1,5 @@
 import { createI18n } from 'vue-i18n'
+import { getLetterFromIcon, isLetterIcon } from '@/shared/categoryIcons'
 import zhCN from './locales/zh-CN'
 import en from './locales/en'
 
@@ -59,6 +60,36 @@ const ICON_LABEL_KEYS: Record<string, string> = {
   Gift: 'icons.gift',
   Star: 'icons.star',
   LayoutGrid: 'icons.layoutGrid',
+  KeyRound: 'icons.keyRound',
+  Lock: 'icons.lock',
+  Fingerprint: 'icons.fingerprint',
+  Server: 'icons.server',
+  Database: 'icons.database',
+  HardDrive: 'icons.hardDrive',
+  Monitor: 'icons.monitor',
+  Laptop: 'icons.laptop',
+  Wifi: 'icons.wifi',
+  Terminal: 'icons.terminal',
+  MessageCircle: 'icons.messageCircle',
+  Phone: 'icons.phone',
+  Video: 'icons.video',
+  Tv: 'icons.tv',
+  Headphones: 'icons.headphones',
+  Calendar: 'icons.calendar',
+  MapPin: 'icons.mapPin',
+  Rocket: 'icons.rocket',
+  Bookmark: 'icons.bookmark',
+  Banknote: 'icons.banknote',
+  Store: 'icons.store',
+  Wrench: 'icons.wrench',
+  Link2: 'icons.link2',
+  Bot: 'icons.bot',
+  FileText: 'icons.fileText',
+  UserCircle: 'icons.userCircle',
+  Sparkles: 'icons.sparkles',
+  Layers: 'icons.layers',
+  Hash: 'icons.hash',
+  Settings: 'icons.settings',
 }
 
 export function readStoredLocale(): AppLocale {
@@ -103,6 +134,9 @@ export function translateModeLabel(modeId: string): string {
 }
 
 export function translateIconLabel(iconValue: string): string {
+  if (isLetterIcon(iconValue)) {
+    return getLetterFromIcon(iconValue)
+  }
   const key = ICON_LABEL_KEYS[iconValue]
   return key ? i18n.global.t(key) : iconValue
 }

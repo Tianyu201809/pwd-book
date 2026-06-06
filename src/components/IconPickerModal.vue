@@ -4,8 +4,15 @@ import { useI18n } from 'vue-i18n'
 import { Search } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { translateIconLabel } from '@/i18n'
-import { CATEGORY_ICON_OPTIONS } from '@/shared/categoryIcons'
+import {
+  BASE_CATEGORY_ICON_OPTIONS,
+  LETTER_ICON_OPTIONS,
+  isLetterIcon,
+} from '@/shared/categoryIcons'
 import { UiModal, UiInput, UiButton } from '@/components/ui'
+import { useTheme } from '@/composables/useTheme'
+
+type PickerTab = 'icons' | 'letters'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -26,17 +33,30 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { isAnimalIsland } = useTheme()
 
 const query = ref('')
+const activeTab = ref<PickerTab>('icons')
+
+const tabItems = computed(() => [
+  { key: 'icons' as const, label: t('icons.tabIcons') },
+  { key: 'letters' as const, label: t('icons.tabLetters') },
+])
+
+const sourceIcons = computed(() =>
+  activeTab.value === 'letters' ? LETTER_ICON_OPTIONS : BASE_CATEGORY_ICON_OPTIONS,
+)
 
 watch(open, (isOpen) => {
-  if (isOpen) query.value = ''
+  if (!isOpen) return
+  query.value = ''
+  activeTab.value = props.selected && isLetterIcon(props.selected) ? 'letters' : 'icons'
 })
 
 const filteredIcons = computed(() => {
   const keyword = query.value.trim().toLowerCase()
-  if (!keyword) return CATEGORY_ICON_OPTIONS
-  return CATEGORY_ICON_OPTIONS.filter(
+  if (!keyword) return sourceIcons.value
+  return sourceIcons.value.filter(
     (icon) =>
       translateIconLabel(icon.value).toLowerCase().includes(keyword) ||
       icon.value.toLowerCase().includes(keyword),
@@ -62,31 +82,60 @@ function useLetterAvatar(): void {
   <UiModal v-model:open="open" :title="title ?? t('icons.pickIcon')" :width="480" :show-footer="false" @close="close">
     <div class="picker-inner">
       <div class="search-wrap">
-        <Search :size="16" :stroke-width="1.5" class="search-icon" />
-        <UiInput v-model="query" class="search-input" :placeholder="t('common.search')" allow-clear />
+        <Search v-if="!isAnimalIsland" :size="16" :stroke-width="1.5" class="search-icon" />
+        <UiInput
+          v-model="query"
+          class="search-input"
+          :class="{ 'search-input--animal': isAnimalIsland }"
+          :placeholder="t('common.search')"
+          allow-clear
+        >
+          <template v-if="isAnimalIsland" #prefix>
+            <Search :size="16" :stroke-width="1.5" />
+          </template>
+        </UiInput>
       </div>
 
-          <div class="picker-body">
-            <p v-if="filteredIcons.length === 0" class="empty-text">{{ t('icons.noMatch') }}</p>
-            <div v-else class="icon-grid">
-              <button
-                v-for="icon in filteredIcons"
-                :key="icon.value"
-                type="button"
-                class="icon-cell"
-                :class="{ selected: selected === icon.value }"
-                :title="translateIconLabel(icon.value)"
-                :style="
-                  selected === icon.value
-                    ? { borderColor: icon.color, background: icon.bg }
-                    : undefined
-                "
-                @click="choose(icon.value)"
-              >
-                <CategoryIconView :name="icon.value" :badge-size="40" :size="20" />
-              </button>
-            </div>
-          </div>
+      <div class="picker-tabs" role="tablist" :aria-label="t('icons.pickIcon')">
+        <button
+          v-for="tab in tabItems"
+          :key="tab.key"
+          type="button"
+          role="tab"
+          class="picker-tab"
+          :class="{ active: activeTab === tab.key }"
+          :aria-selected="activeTab === tab.key"
+          @click="activeTab = tab.key"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <div class="picker-body">
+        <p v-if="filteredIcons.length === 0" class="empty-text">{{ t('icons.noMatch') }}</p>
+        <div
+          v-else
+          class="icon-grid"
+          :class="{ 'icon-grid--letters': activeTab === 'letters' }"
+        >
+          <button
+            v-for="icon in filteredIcons"
+            :key="icon.value"
+            type="button"
+            class="icon-cell"
+            :class="{ selected: selected === icon.value }"
+            :title="translateIconLabel(icon.value)"
+            :style="
+              selected === icon.value
+                ? { borderColor: icon.color, background: icon.bg }
+                : undefined
+            "
+            @click="choose(icon.value)"
+          >
+            <CategoryIconView :name="icon.value" :badge-size="40" :size="20" />
+          </button>
+        </div>
+      </div>
 
       <footer v-if="allowClear" class="picker-footer">
         <UiButton variant="text" @click="useLetterAvatar">{{ t('icons.useInitial') }}</UiButton>
@@ -96,61 +145,10 @@ function useLetterAvatar(): void {
 </template>
 
 <style scoped>
-.picker-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-}
-
-.picker-panel {
-  width: min(420px, calc(100vw - 32px));
-  max-height: min(640px, calc(100vh - 32px));
+.picker-inner {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-}
-
-.picker-header {
-  display: grid;
-  grid-template-columns: 40px 1fr 40px;
-  align-items: center;
-  padding: 12px 12px 8px;
-  border-bottom: 1px solid var(--border-default);
-}
-
-.header-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.header-btn:hover {
-  background: var(--bg-hover);
-}
-
-.picker-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  letter-spacing: -0.02em;
-}
-
-.header-spacer {
-  width: 36px;
+  min-height: 0;
 }
 
 .search-wrap {
@@ -184,9 +182,41 @@ function useLetterAvatar(): void {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
+.picker-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 16px 0;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.picker-tab {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.picker-tab:hover {
+  color: var(--text-primary);
+}
+
+.picker-tab.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+  font-weight: 600;
+}
+
 .picker-body {
   flex: 1;
-  min-height: 0;
+  min-height: 240px;
+  max-height: min(360px, calc(100vh - 280px));
   overflow-y: auto;
   padding: 12px 16px 8px;
 }
@@ -195,6 +225,10 @@ function useLetterAvatar(): void {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
+}
+
+.icon-grid--letters {
+  grid-template-columns: repeat(6, 1fr);
 }
 
 .icon-cell {
@@ -228,41 +262,5 @@ function useLetterAvatar(): void {
 .picker-footer {
   padding: 10px 16px 14px;
   border-top: 1px solid var(--border-default);
-}
-
-.reset-btn {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.reset-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
-
-.picker-fade-enter-active,
-.picker-fade-leave-active {
-  transition: opacity 0.18s ease;
-}
-
-.picker-fade-enter-active .picker-panel,
-.picker-fade-leave-active .picker-panel {
-  transition: transform 0.18s ease;
-}
-
-.picker-fade-enter-from,
-.picker-fade-leave-to {
-  opacity: 0;
-}
-
-.picker-fade-enter-from .picker-panel,
-.picker-fade-leave-to .picker-panel {
-  transform: scale(0.98) translateY(6px);
 }
 </style>
