@@ -100,10 +100,12 @@ import {
   getWifiSyncServerStatus,
   getWifiSyncSettings,
   regenerateAccessPassword,
+  restoreWifiSyncServerIfNeeded,
   startWifiSyncServer,
   stopWifiSyncServer,
   updateWifiSyncSettings,
 } from '../services/wifiSyncService'
+import { getClientVerificationCode } from '../services/syncClientService'
 import type { WifiSyncClientPullPayload, WifiSyncSettings } from '../../shared/syncTypes'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 
@@ -154,6 +156,7 @@ export function registerIpcHandlers(): void {
       purgeExpiredTrash()
       resetScheduledBackupNotification()
       checkScheduledBackupDue(true)
+      void restoreWifiSyncServerIfNeeded()
       return getVaultStatus()
     }),
   )
@@ -612,6 +615,10 @@ export function registerIpcHandlers(): void {
       throw new Error(message)
     }
   })
+
+  ipcMain.handle(IPC.wifiSyncGetVerificationCode, (_event, fingerprint: string) =>
+    wrap(() => getClientVerificationCode(fingerprint)),
+  )
 
   ipcMain.handle(IPC.wifiSyncDiscover, async () => {
     try {

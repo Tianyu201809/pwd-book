@@ -184,6 +184,8 @@ export const electronAPI = {
     invoke(IPC.wifiSyncRegenerateAccessPassword),
   startWifiSyncServer: (): Promise<WifiSyncServerStatus> => invoke(IPC.wifiSyncStartServer),
   stopWifiSyncServer: (): Promise<WifiSyncServerStatus> => invoke(IPC.wifiSyncStopServer),
+  getWifiSyncVerificationCode: (fingerprint: string): Promise<string> =>
+    invoke(IPC.wifiSyncGetVerificationCode, fingerprint),
   discoverWifiSyncServers: (): Promise<WifiSyncDiscoveredServer[]> => invoke(IPC.wifiSyncDiscover),
   pullWifiSyncMerge: (payload: WifiSyncClientPullPayload): Promise<SyncMergeResult> =>
     invoke(IPC.wifiSyncPullMerge, payload),

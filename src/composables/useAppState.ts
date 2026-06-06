@@ -35,6 +35,7 @@ import type {
 } from '@/types'
 import type {
   SyncMergeResult,
+  SyncStatus,
   WifiSyncClientPullPayload,
   WifiSyncPairingInfo,
   WifiSyncServerStatus,
@@ -74,6 +75,12 @@ const wifiSyncSettings = ref<WifiSyncSettings>({
   accessPassword: '',
   port: 8765,
   pairedDevices: [],
+})
+const syncStatus = ref<SyncStatus>({
+  deviceId: '',
+  revision: 0,
+  lastSyncedAt: null,
+  lastSyncError: null,
 })
 const wifiSyncServerStatus = ref<WifiSyncServerStatus>({
   running: false,
@@ -455,6 +462,13 @@ function openWifiSync(): void {
 async function loadWifiSyncState(): Promise<void> {
   wifiSyncSettings.value = await vaultApi.getWifiSyncSettings()
   wifiSyncServerStatus.value = await vaultApi.getWifiSyncServerStatus()
+  if (vaultStatus.value.unlocked) {
+    syncStatus.value = await vaultApi.getSyncStatus()
+  }
+}
+
+async function getWifiSyncVerificationCode(fingerprint: string): Promise<string> {
+  return vaultApi.getWifiSyncVerificationCode(fingerprint)
 }
 
 async function startWifiSyncServer(): Promise<WifiSyncServerStatus> {
@@ -489,6 +503,7 @@ async function discoverWifiSyncServers() {
 async function pullWifiSyncMerge(payload: WifiSyncClientPullPayload): Promise<SyncMergeResult> {
   const result = await vaultApi.pullWifiSyncMerge(payload)
   await refreshVaultData()
+  await loadWifiSyncState()
   touchActivity()
   return result
 }
@@ -500,6 +515,7 @@ async function pullWifiSyncMergeQr(
 ): Promise<SyncMergeResult> {
   const result = await vaultApi.pullWifiSyncMergeQr({ qrPayload, masterPassword, deviceName })
   await refreshVaultData()
+  await loadWifiSyncState()
   touchActivity()
   return result
 }
@@ -1102,7 +1118,9 @@ export function useAppState() {
     openWifiSync,
     wifiSyncSettings,
     wifiSyncServerStatus,
+    syncStatus,
     loadWifiSyncState,
+    getWifiSyncVerificationCode,
     startWifiSyncServer,
     stopWifiSyncServer,
     refreshWifiSyncPairing,

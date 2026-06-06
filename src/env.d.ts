@@ -112,6 +112,7 @@ declare global {
       regenerateWifiSyncAccessPassword: () => Promise<string>
       startWifiSyncServer: () => Promise<WifiSyncServerStatus>
       stopWifiSyncServer: () => Promise<WifiSyncServerStatus>
+      getWifiSyncVerificationCode: (fingerprint: string) => Promise<string>
       discoverWifiSyncServers: () => Promise<WifiSyncDiscoveredServer[]>
       pullWifiSyncMerge: (payload: WifiSyncClientPullPayload) => Promise<SyncMergeResult>
       pullWifiSyncMergeQr: (payload: {

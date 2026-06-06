@@ -21,6 +21,7 @@ export function parsePairingPayload(raw: string): SyncPairingConfig {
     port: parsed.port,
     accessPassword: parsed.accessPassword,
     fingerprint: parsed.fingerprint,
+    verificationCode: parsed.verificationCode,
     secure: parsed.secure !== false,
   }
 }

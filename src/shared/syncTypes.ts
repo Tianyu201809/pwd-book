@@ -116,5 +116,6 @@ export interface SyncPairingConfig {
   port: number
   accessPassword: string
   fingerprint: string
+  verificationCode?: string
   secure?: boolean
 }

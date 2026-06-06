@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
@@ -24,6 +24,7 @@ import {
 } from './syncBundleService'
 import { isUnlocked } from './sessionService'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
+import { getSyncVerificationCode } from '../../shared/syncVerification'
 
 const SETTINGS_KEY = 'wifi_sync_settings'
 const SERVICE_TYPE = 'pwdbook-sync'
@@ -119,12 +120,7 @@ function ensureTlsMaterials(): https.ServerOptions {
 }
 
 export function getVerificationCode(fingerprint = certificateFingerprint): string {
-  const window = Math.floor(Date.now() / 30_000)
-  return createHmac('sha256', fingerprint)
-    .update(String(window))
-    .digest('hex')
-    .slice(0, 6)
-    .toUpperCase()
+  return getSyncVerificationCode(fingerprint)
 }
 
 function getLanHost(): string {
@@ -361,6 +357,12 @@ export async function startWifiSyncServer(): Promise<WifiSyncServerStatus> {
   }
 
   return getWifiSyncServerStatus()
+}
+
+export async function restoreWifiSyncServerIfNeeded(): Promise<void> {
+  const settings = readSettings()
+  if (!settings.serverEnabled || httpServer || !isUnlocked()) return
+  await startWifiSyncServer()
 }
 
 export async function stopWifiSyncServer(): Promise<WifiSyncServerStatus> {

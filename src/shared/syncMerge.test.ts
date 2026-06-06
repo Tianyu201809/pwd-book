@@ -104,6 +104,44 @@ describe('mergeSyncBundles', () => {
     expect(merged.entries[0]?.title).toBe('Local')
   })
 
+  it('skips remote category when name already exists with different id', () => {
+    const local = makeBundle('local', 1, [], [
+      {
+        id: 'cat-work',
+        name: '工作',
+        icon: 'Briefcase',
+        sortOrder: 1,
+        createdAt: 1000,
+      },
+    ])
+    const remote = makeBundle('remote', 2, [], [
+      {
+        id: 'cat-remote-work',
+        name: '工作',
+        icon: 'Folder',
+        sortOrder: 2,
+        createdAt: 2000,
+      },
+    ])
+
+    const { merged } = mergeSyncBundles(local, remote)
+    expect(merged.categories).toHaveLength(1)
+    expect(merged.categories[0]?.id).toBe('cat-work')
+  })
+
+  it('restores entry when remote undelete is newer than local delete', () => {
+    const local = makeBundle('local', 1, [
+      makeEntry({ id: 'e1', title: 'Deleted', updatedAt: 5000, deletedAt: 6000 }),
+    ])
+    const remote = makeBundle('remote', 2, [
+      makeEntry({ id: 'e1', title: 'Restored', updatedAt: 7000, deletedAt: null }),
+    ])
+
+    const { merged } = mergeSyncBundles(local, remote)
+    expect(merged.entries[0]?.deletedAt).toBeNull()
+    expect(merged.entries[0]?.title).toBe('Restored')
+  })
+
   it('unions categories by id and name', () => {
     const local = makeBundle('local', 1, [], [
       {

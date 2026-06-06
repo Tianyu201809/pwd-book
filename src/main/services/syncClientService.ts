@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { fetchRemoteEncryptedBundle, parsePairingPayload, pushRemoteEncryptedBundle } from '../../shared/syncClient'
+import { assertPairingFingerprint } from '../../shared/mobileSyncWorkflow'
 import type { SyncMergeResult, WifiSyncClientPullPayload, WifiSyncDiscoveredServer } from '../../shared/syncTypes'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 import {
@@ -31,6 +32,8 @@ export async function pullMergeAndPush(payload: WifiSyncClientPullPayload): Prom
     fingerprint: payload.certificateFingerprint,
     secure: true,
   }
+
+  assertPairingFingerprint(payload.certificateFingerprint, pairing.fingerprint)
 
   try {
     const remoteEncrypted = await fetchRemoteEncryptedBundle(pairing, { rejectUnauthorized: false })

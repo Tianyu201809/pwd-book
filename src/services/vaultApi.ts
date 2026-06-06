@@ -134,6 +134,8 @@ export const vaultApi = {
     getApi().regenerateWifiSyncAccessPassword(),
   startWifiSyncServer: (): Promise<WifiSyncServerStatus> => getApi().startWifiSyncServer(),
   stopWifiSyncServer: (): Promise<WifiSyncServerStatus> => getApi().stopWifiSyncServer(),
+  getWifiSyncVerificationCode: (fingerprint: string): Promise<string> =>
+    getApi().getWifiSyncVerificationCode(fingerprint),
   discoverWifiSyncServers: () => getApi().discoverWifiSyncServers(),
   pullWifiSyncMerge: (payload: WifiSyncClientPullPayload): Promise<SyncMergeResult> =>
     getApi().pullWifiSyncMerge(payload),

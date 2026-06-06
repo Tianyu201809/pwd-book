@@ -303,6 +303,7 @@ export const IPC = {
   wifiSyncServerStatus: 'wifi-sync:server-status',
   wifiSyncPairingInfo: 'wifi-sync:pairing-info',
   wifiSyncRegenerateAccessPassword: 'wifi-sync:regenerate-access-password',
+  wifiSyncGetVerificationCode: 'wifi-sync:get-verification-code',
   wifiSyncDiscover: 'wifi-sync:discover',
   wifiSyncPullMerge: 'wifi-sync:pull-merge',
   wifiSyncPullMergeQr: 'wifi-sync:pull-merge-qr',
