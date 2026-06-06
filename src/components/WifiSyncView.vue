@@ -116,7 +116,7 @@ async function handleDiscover(): Promise<void> {
   try {
     discoveredServers.value = await discoverWifiSyncServers()
     if (discoveredServers.value.length === 0) {
-      showToast(t('tools.wifiSync.noServersFound'), 'info')
+      showToast(t('tools.wifiSync.noServersFound'), 'success')
     }
   } catch (error) {
     showToast(parseErrorMessage(error), 'error')
@@ -131,7 +131,7 @@ function selectServer(server: WifiSyncDiscoveredServer): void {
 
 function openClientSync(): void {
   if (!selectedServer.value) {
-    showToast(t('tools.wifiSync.selectServerFirst'), 'info')
+    showToast(t('tools.wifiSync.selectServerFirst'), 'success')
     return
   }
   pendingAction.value = 'client'

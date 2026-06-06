@@ -130,9 +130,12 @@ export function mergeRemoteBundle(remote: SyncBundle): SyncMergeResult {
   }
 }
 
-export function mergeEncryptedRemoteBundle(buffer: Buffer, masterPassword: string): SyncMergeResult {
+export function mergeEncryptedRemoteBundle(
+  buffer: Buffer,
+  masterPasswordOrKey: string | Buffer,
+): SyncMergeResult {
   try {
-    const remote = decryptBundleFromTransport(buffer, masterPassword)
+    const remote = decryptBundleFromTransport(buffer, masterPasswordOrKey)
     return mergeRemoteBundle(remote)
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED

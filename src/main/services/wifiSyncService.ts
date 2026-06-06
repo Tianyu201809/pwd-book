@@ -31,8 +31,8 @@ const DEFAULT_PORT = 8765
 const CERT_DIR_NAME = 'wifi-sync-certs'
 
 let httpServer: http.Server | https.Server | null = null
-let bonjour: Bonjour | null = null
-let publishedService: ReturnType<Bonjour['publish']> | null = null
+let bonjour: InstanceType<typeof Bonjour> | null = null
+let publishedService: { stop: () => void } | null = null
 let publishTimer: NodeJS.Timeout | null = null
 let lastPublishedAt: number | null = null
 let lastPublishedRevision = 0
