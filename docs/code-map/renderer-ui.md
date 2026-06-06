@@ -16,6 +16,8 @@ App.vue
 ├── SettingsView.vue          # 设置页 Tab 容器
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
+├── WifiSyncView.vue          # 局域网同步（v1.9.0，设置 → 数据 → 同步）
+│   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
 ├── TagManagePanel.vue        # 标签管理
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
@@ -52,7 +54,7 @@ App.vue
 
 | 状态/方法 | 说明 |
 |-----------|------|
-| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'password-gen'` |
+| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'wifi-sync' \| 'password-gen' \| 'trash'` |
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
@@ -62,6 +64,8 @@ App.vue
 | `exportData` / `importData` | PwdBook JSON 备份导入 |
 | `previewImportData` / `commitImportData` | 多来源导入（含 PwdBook CSV）预览与提交 |
 | `exportDataAsCsv` | PwdBook / 第三方 CSV 导出 |
+| `openWifiSync` / `loadWifiSyncState` | 同步页导航与状态（v1.9.0） |
+| `startWifiSyncServer` / `pullWifiSyncMerge` | 服务端开关、客户端拉取合并 |
 
 错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。
 

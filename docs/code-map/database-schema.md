@@ -63,6 +63,11 @@
 | `browser_fill_enabled` | 浏览器自动填充桥接开关（v1.6.0） |
 | `browser_extension_id` | 上次注册的 Chrome 扩展 ID（32 位 a–p） |
 | `sidebar_category_order` | JSON：`string[]`，含 `all`、`favorite` 及自定义分类 id |
+| `wifi_sync_settings` | JSON：`serverEnabled`、`accessPassword`、`port`、`pairedDevices`（v1.9.0） |
+| `sync_device_id` | 本机同步设备 UUID（v1.9.0） |
+| `sync_revision` | 当前 SyncBundle 版本号（v1.9.0） |
+| `sync_last_synced_at` | 上次成功同步时间戳 ms（v1.9.0） |
+| `sync_last_sync_error` | 最近一次同步错误信息（v1.9.0） |
 
 ### 快捷条与快捷键
 
@@ -86,6 +91,15 @@
 | `{userData}/native-host/com.pwdbook.app.json` | Chrome Native Messaging 清单（设置页注册后） |
 
 详见 [browser-autofill.md](./browser-autofill.md)。
+
+## Wi-Fi 同步运行时文件（v1.9.0，非 SQLite）
+
+| 路径 | 说明 |
+|------|------|
+| `{userData}/sync-server/vault.pwdbook` | Server 对外加密 SyncBundle |
+| `{userData}/wifi-sync-certs/` | 自签 TLS 证书与私钥 |
+
+详见 [wifi-sync.md](./wifi-sync.md)。
 
 ## 备份 JSON 结构
 

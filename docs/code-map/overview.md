@@ -6,10 +6,10 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.6.0（`package.json`） |
-| 源码文件 | ~60+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
-| IPC 通道 | 35+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
-| 测试 | 暂无自动化测试套件 |
+| 版本 | 1.9.0（`package.json`） |
+| 源码文件 | ~70+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
+| IPC 通道 | 45+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
+| 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`syncVerification`、`syncClient`、`mobileSyncWorkflow` |
 
 ## 三层进程模型
 
@@ -58,7 +58,7 @@ flowchart TB
 `useAppState` 用 `screen: AppScreen` 驱动根视图切换：
 
 ```
-lock ──unlock──► vault ◄──► settings
+lock ──unlock──► vault ◄──► settings / email-backup / wifi-sync / …
   ▲                  │
   └──── lock ────────┘
 ```
@@ -66,6 +66,7 @@ lock ──unlock──► vault ◄──► settings
 - **lock**：`LockScreen.vue` — 创建/解锁/恢复密钥/清除保险库
 - **vault**：`VaultView.vue` — 侧边栏 + 列表 + 详情
 - **settings**：`SettingsView.vue` — 安全、外观、数据、关于
+- **wifi-sync**：`WifiSyncView.vue` — 局域网同步（v1.9.0，入口：设置 → 数据 → 同步）
 
 ## 目录结构
 
@@ -76,7 +77,7 @@ src/
 │   ├── ipc/handlers.ts   # IPC 路由与校验
 │   ├── crypto/           # scrypt + AES-256-GCM
 │   ├── db/               # sql.js 初始化、迁移、helpers
-│   └── services/         # vault、recovery、category、settings、browserBridge、nativeHostRegistry
+│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、browserBridge
 ├── extension/            # Chrome/Edge MV3（v1.6.0）
 ├── native-host/          # Native Messaging Host（v1.6.0）
 ├── preload/
@@ -90,6 +91,9 @@ src/
 │   └── vaultApi.ts       # 渲染层 API 门面
 ├── shared/
 │   ├── types.ts          # 共享类型 + IPC 常量
+│   ├── syncTypes.ts      # SyncBundle、Wi-Fi 同步类型（v1.9.0）
+│   ├── syncMerge.ts      # LWW 合并纯函数
+│   ├── syncClient.ts     # WebDAV 客户端传输
 │   ├── browserBridgeProtocol.ts  # 浏览器桥接协议（v1.6.0）
 │   ├── urlMatch.ts       # 条目 URL / 页面 hostname 匹配
 │   ├── utils.ts          # 格式化、错误解析、密码生成
@@ -104,7 +108,10 @@ src/
 | `electron` | 桌面壳、IPC、剪贴板 | 高 |
 | `vue` | UI 框架 | 高 |
 | `sql.js` | 本地 SQLite（WASM） | 高 |
+| `bonjour-service` | Wi-Fi 同步 mDNS（v1.9.0） | 中 |
+| `qrcode` | 配对二维码（v1.9.0） | 低 |
 | `lucide-vue-next` | 图标 | 中 |
+| `vitest` | 单元测试 | 中 |
 | Node `crypto` | scrypt、AES-GCM | 高 |
 
 ## 配置与数据路径

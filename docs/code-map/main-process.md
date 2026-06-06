@@ -82,6 +82,19 @@
 
 在 `main/index.ts` 的 `app.whenReady()` 中调用 `registerSystemAutoLock()`。
 
+### 同步服务（v1.9.0）
+
+详见 [wifi-sync.md](./wifi-sync.md)。
+
+| 模块 | 职责 |
+|------|------|
+| `syncBundleService` | 构建 `SyncBundle`、加密封包、revision / deviceId 状态 |
+| `syncMergeService` | 解密远端 bundle → `mergeSyncBundles` → 本地重加密落库 |
+| `wifiSyncService` | HTTPS WebDAV Server、mDNS、配对信息、vault 变更 debounce 发布 |
+| `syncClientService` | mDNS 发现、pull-merge-push、配对 JSON 同步 |
+
+解锁时若 `wifi_sync_settings.serverEnabled` 为 true，handlers 调用 `restoreWifiSyncServerIfNeeded()`。`database.ts` 持久化后调用 `notifyVaultChangedForSync()`。
+
 ## 加密模块 (`src/main/crypto/vaultCrypto.ts`)
 
 | 函数 | 算法/说明 |
@@ -90,6 +103,11 @@
 | `deriveSessionKey` | scrypt → 32 字节 AES 密钥 |
 | `encryptSecret` / `decryptSecret` | AES-256-GCM；payload = IV(12) + tag(16) + ciphertext |
 | `generatePassword` | 本地随机密码生成（UI 调用） |
+| `deriveSyncTransportKey` | 跨设备一致的同步传输密钥（v1.9.0） |
+
+### syncBundleCrypto (`src/main/crypto/syncBundleCrypto.ts`)
+
+SyncBundle 整包 AES-256-GCM；魔数 `PBKS`，版本字节 `1`。
 
 ## 数据库层 (`src/main/db/`)
 

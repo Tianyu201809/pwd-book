@@ -67,6 +67,22 @@
 | `data:export` | 是 | JSON 结构 `ExportPayload` |
 | `data:import` | 是 | 批量导入条目 |
 
+### 局域网同步（v1.9.0）
+
+详见 [wifi-sync.md](./wifi-sync.md)。
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `sync:status` | 是 | 同步 revision、上次同步时间 |
+| `sync:export-bundle` | 是 | 导出加密 SyncBundle |
+| `sync:import-bundle` | 是 | 从加密 buffer 合并 |
+| `wifi-sync:start-server` | 是 | 启动 HTTPS WebDAV + mDNS |
+| `wifi-sync:stop-server` | 否 | 停止服务 |
+| `wifi-sync:server-status` | 否 | 地址、校验码、运行状态 |
+| `wifi-sync:pairing-info` | 否* | 配对 JSON（服务须运行） |
+| `wifi-sync:pull-merge` | 是 | 客户端拉取、合并、回传 |
+| `wifi-sync:discover` | 否 | mDNS 浏览局域网服务 |
+
 ### 浏览器自动填充（v1.6.0）
 
 | 通道 | 需解锁 | 说明 |
@@ -167,4 +183,4 @@ sequenceDiagram
 | 主进程 | 未解锁拒绝条目/分类 mutating IPC |
 | 内存 | sessionKey 仅 `sessionService` 持有，锁定清零 |
 | 磁盘 | 条目密码仅 `password_encrypted` 字段；主密码仅存 scrypt hash |
-| 网络 | 无 outbound 业务请求 |
+| 网络 | 无 outbound 云业务；Wi-Fi 同步仅 LAN WebDAV（v1.9.0） |

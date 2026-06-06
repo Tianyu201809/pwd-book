@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.8.0**（`package.json`）— 自动锁定 120 分钟、跟随系统锁屏等。
+**当前版本：v1.9.0**（`package.json`）— Wi-Fi 局域网同步、角色化同步页等。
 
 ## 文档索引
 
@@ -15,6 +15,7 @@
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试 |
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全 |
+| [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 
 ## 相关文档
 
@@ -38,4 +39,5 @@
 | 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
 | 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |
-| 改类型定义 | `src/shared/types.ts`、`src/shared/browserBridgeProtocol.ts` |
+| 改 Wi-Fi 同步 / 合并 | [wifi-sync.md](./wifi-sync.md)、`wifiSyncService.ts`、`syncMergeService.ts`、`shared/syncMerge.ts` |
+| 改类型定义 | `src/shared/types.ts`、`src/shared/syncTypes.ts`、`src/shared/browserBridgeProtocol.ts` |

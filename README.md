@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.8.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.9.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -17,7 +17,9 @@
 ---
 
 > [!IMPORTANT]
-> **本地优先，默认不上网。** 保险库数据仅存本机 `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录；无遥测、无云端同步。
+> **本地优先，默认不上网。** 保险库数据仅存本机 `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录；无遥测、无厂商托管云同步。
+>
+> **可选局域网同步（v1.9.0）** 仅在同一 Wi-Fi / 局域网内传输**主密码加密的同步包**，不经互联网；见 [Wi-Fi 同步](#wi-fi-局域网同步-v190)。
 >
 > **可选邮箱备份** 会在你主动配置 SMTP 并发送时，向指定邮件服务器建立出站连接；备份内容为 AES-256 加密 ZIP，解压密码为主密码。
 >
@@ -121,7 +123,7 @@ npm run dev
 
 ## 功能
 
-功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [外观](#外观) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
+功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [Wi-Fi 同步](#wi-fi-局域网同步-v190) · [外观](#外观) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
 
 以下按用户可见模块整理；实现细节见 [docs/code-map](./docs/code-map/README.md)。
 
@@ -180,6 +182,7 @@ npm run dev
 |------|------|
 | **导出数据** | 两步向导：选格式 → 确认条数 → 保存文件（见 [数据导入导出](#数据导入导出)） |
 | **导入数据** | 三步向导：选来源 → 上传文件 → 预览确认（见下） |
+| **同步** | **v1.9.0** 局域网 Wi-Fi 同步（见 [Wi-Fi 同步](#wi-fi-局域网同步-v190)） |
 | **清除所有数据** | 二次确认后 wipe 本地库并重置为未初始化状态 |
 
 #### 关于
@@ -217,6 +220,16 @@ npm run dev
 - **立即发送** 或 **测试连接**；备份包为 **AES-256 密码 ZIP**（解压密码 = 主密码），内含同日的 `pwdbook-backup-YYYY-MM-DD.json`（可导入）与 `.xlsx`（只读查看）
 - 定时频率：**手动** / **每周** / **每月**；到期且应用运行时弹出提醒（须已解锁才能发送）
 - 记录上次备份时间、条目数、文件大小与状态
+
+### Wi-Fi 局域网同步（v1.9.0）
+
+在同一局域网内同步密码库，**不经互联网**；各设备**主密码须一致**。
+
+1. **桌面（服务端）** — **设置 → 数据 → 同步** → 选择 **我是服务端（桌面）** → **启动服务**。
+2. 将页面上的 **配对二维码**、访问密码或校验码交给另一台设备（校验码用于确认未遭中间人篡改）。
+3. **其他设备（客户端）** — 进入同步页选择 **我是客户端** → **发现局域网服务** 或粘贴配对 JSON → 核对校验码 → 输入访问密码 → **立即同步**（需确认主密码）。
+
+合并规则：同一条目以较新的修改为准；删除与还原按时间戳参与合并。技术细节见 [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md)。
 
 ### 数据导入导出
 
@@ -294,6 +307,7 @@ npm run dev
 | `npm run build` | 编译到 `out/`（main / preload / renderer） |
 | `npm run preview` | 预览生产构建 |
 | `npm run typecheck` | Vue + TypeScript 类型检查 |
+| `npm test` | 单元测试（含同步合并、加密封包等） |
 | `npm run icons` | 从 `icon.png` 生成应用图标资源 |
 | `npm run dist:win` | 构建并生成 Windows NSIS 安装包（输出 `release/`） |
 | `npm run dist:win:dir` | 构建未打包目录版，便于本地调试安装结果 |
@@ -320,7 +334,8 @@ npm run dev
                          └── AES-256-GCM ──► 各条目 password_encrypted
 ```
 
-- **本地存储**：默认无云端同步；安全与界面偏好写入 `app_settings` 表。
+- **本地存储**：默认无厂商云同步；安全与界面偏好写入 `app_settings` 表。
+- **局域网同步**：WebDAV 上仅为 AES 加密的 SyncBundle；Access Password 保护 LAN 读取；解锁后才合并明文。
 - **恢复密钥**：独立 scrypt 校验；用恢复密钥包装会话密钥，支持主密码重置后的条目重加密。
 - **剪贴板**：可选在复制后 N 秒清空剪贴板（若内容未被用户改写）。
 - **导出文件**：JSON、CSV、Excel 等导出均可能包含**明文密码**，勿上传至网盘或聊天工具。
@@ -329,7 +344,16 @@ npm run dev
 
 ## 版本更新
 
-### v1.8.0（当前）
+### v1.9.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#190---2026-06-06)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 同步 | **Wi-Fi 局域网同步**：服务端 WebDAV + mDNS、配对二维码、客户端发现与 LWW 合并 |
+| 体验 | 同步页按「我是服务端 / 我是客户端」展示角色专属教程与操作 |
+
+### v1.8.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#180---2026-06-05)**。摘要：
 
@@ -427,7 +451,7 @@ pwd-book/
 │   ├── components/     # UI（LockScreen、VaultView、QuickBarApp、import/、export/ 等）
 │   ├── composables/    # useAppState、useTheme、useAutoLock、useLocale 等
 │   ├── i18n/           # 中英文文案
-│   └── shared/         # 类型、IPC、导入/导出解析、launchEntry、entrySearch、urlMatch 等
+│   └── shared/         # 类型、IPC、同步合并/传输、导入/导出解析、entrySearch 等
 ├── extension/          # Chrome/Edge MV3 自动填充扩展
 ├── native-host/        # Native Messaging Host（桥接 Chrome ↔ PwdBook）
 ├── deps/               # 打包依赖脚本（NSIS 卸载时可选删除用户数据）
@@ -437,7 +461,7 @@ pwd-book/
 └── electron.vite.config.ts
 ```
 
-技术栈摘要：**Electron 35** · **Vue 3** · **vue-i18n** · **sql.js**（WASM SQLite）· **lucide-vue-next** · **animal-island-vue** · **xlsx** · **nodemailer** · Node `crypto`（scrypt / AES-GCM）
+技术栈摘要：**Electron 35** · **Vue 3** · **vue-i18n** · **sql.js**（WASM SQLite）· **lucide-vue-next** · **animal-island-vue** · **xlsx** · **nodemailer** · **bonjour-service** · **qrcode** · Node `crypto`（scrypt / AES-GCM）
 
 ## 文档
 
@@ -449,6 +473,7 @@ pwd-book/
 | [docs/code-map/database-schema.md](./docs/code-map/database-schema.md) | 表结构与 `app_settings` 键 |
 | [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md) | 快捷搜索条、最近打开与全局快捷键 |
 | [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0） |
+| [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md) | Wi-Fi 局域网同步（v1.9.0） |
 | [design/design-system.md](./design/design-system.md) | 色彩、字体与组件 Token |
 | [design/recovery-flow.md](./design/recovery-flow.md) | 恢复密钥 UX 与文案规范 |
 
@@ -458,7 +483,7 @@ pwd-book/
 Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%APPDATA%\PwdBook`）。通过 NSIS 安装程序卸载时会询问是否删除本地密码数据（见 `deps/installer.nsh`）；选择「否」则仅移除程序，数据保留。应用内覆盖安装（升级）不会弹出提示，也不会删除数据。
 
 **能否多端同步？**  
-当前版本不支持内置云同步。可自行通过「设置 → 数据 → 导出数据」导出 **JSON**（推荐）或 **CSV**，再在其他机器用「导入数据」恢复；Excel 仅便于查阅。也可使用「邮箱备份」将加密 ZIP 发到自己的邮箱作灾备。
+**v1.9.0** 起支持 **同一局域网内的 Wi-Fi 同步**（**设置 → 数据 → 同步**），桌面作服务端、其他设备作客户端；不经互联网，主密码须一致。无厂商托管云同步。亦可自行通过「导出数据」导出 **JSON** / **CSV** 拷贝恢复，或使用「邮箱备份」作灾备。
 
 **误删条目能恢复吗？**  
 可以。删除会**移至回收站**（非立即彻底删除）。侧栏底部打开 **回收站** → 单条 **还原** 或 **一键还原**。超过 **设置 → 安全 → 回收站保留期限**（默认 30 天）后条目会自动彻底删除。

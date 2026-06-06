@@ -1,6 +1,6 @@
 {
   "name": "pwd-book",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "PwdBook - local password manager desktop app",
   "author": "PwdBook",
   "main": "./out/main/index.js",
