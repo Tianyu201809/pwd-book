@@ -307,6 +307,55 @@ export default {
       masterPasswordTitle: 'Confirm master password',
       masterPasswordDesc: 'Sync bundles are encrypted with your master password. Enter it to decrypt and merge.',
       confirmSync: 'Confirm and sync',
+      advancedDetails: 'Technical details',
+      manualPairing: "Can't discover automatically? Paste pairing info",
+      operations: 'Sync actions',
+      tutorial: {
+        title: 'Sync guide',
+        subtitle: 'Understand LAN sync in about 3 minutes',
+        introShort: 'Encrypted sync on your LAN — desktop as server, other devices as clients.',
+        visualCaption: 'Encrypted data stays on your local network',
+        intro:
+          'PwdBook sync stays on your local network. Your vault is always transferred as an encrypted bundle. The diagram below walks through desktop-as-server and phone-as-client.',
+        ctaServerShort: 'I am on desktop',
+        ctaClientShort: 'I am on phone',
+        diagramDesktop: 'Desktop (server)',
+        diagramLan: 'Same Wi-Fi',
+        diagramClient: 'Phone (client)',
+        prerequisites: [
+          'Both devices on the same Wi-Fi or LAN — no internet required',
+          'Master password must match on every device',
+          'Unlock your vault before syncing',
+        ],
+        steps: [
+          {
+            title: 'Start the sync server on desktop',
+            desc: 'Switch to Server mode and tap Start server. PwdBook runs a local WebDAV service on this machine.',
+            tip: 'Keep the desktop app unlocked; the sync bundle updates when you change entries.',
+          },
+          {
+            title: 'Save the pairing details',
+            desc: 'Note the access password, verification code, and pairing JSON. Compare the verification code on both screens.',
+            tip: 'Send the pairing JSON to your phone or paste it on the client device.',
+          },
+          {
+            title: 'Open client mode on the other device',
+            desc: 'On your phone or second device, open Sync → Client, then Discover LAN servers or paste the pairing JSON.',
+          },
+          {
+            title: 'Enter the access password and sync',
+            desc: 'Select the desktop service, enter the access password shown on desktop, then tap Sync now.',
+            tip: 'If discovery fails, check firewall rules and that both devices share the same subnet.',
+          },
+          {
+            title: 'Confirm master password to merge',
+            desc: 'The client downloads the encrypted bundle, decrypts with your master password, merges entries, and pushes the result back.',
+            tip: 'Newer edits win; if both sides edited the same entry, the later update is kept.',
+          },
+        ],
+        ctaServer: 'I am on desktop — start server',
+        ctaClient: 'I am on phone — connect',
+      },
     },
   },
   trash: {
