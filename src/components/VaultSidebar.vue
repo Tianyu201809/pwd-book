@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -29,7 +29,6 @@ const {
   selectedCategory,
   selectCategory,
   navigateTo,
-  openEmailBackup,
   openPasswordGen,
   openTrash,
   vaultStatus,
@@ -386,34 +385,18 @@ onBeforeUnmount(() => {
         <div class="utilities-body" :inert="!utilitiesExpanded || undefined">
           <Divider v-if="isAnimalIsland" type="wave-yellow" class="sidebar-divider" />
 
-          <div class="tool-section">
-            <div class="tool-row">
-              <button
-                type="button"
-                class="tool-compact-btn tool-compact-btn--mail"
-                :title="t('tools.emailBackupDesc')"
-                @click="openEmailBackup"
-              >
-                <span class="tool-compact-btn__icon" aria-hidden="true">
-                  <MailCheck :size="13" :stroke-width="1.5" />
-                </span>
-                <span class="tool-compact-btn__label">{{ t('tools.emailBackupTitle') }}</span>
-              </button>
-              <button
-                type="button"
-                class="tool-compact-btn tool-compact-btn--gen"
-                :title="t('tools.passwordGenDesc')"
-                @click="openPasswordGen()"
-              >
-                <span class="tool-compact-btn__icon" aria-hidden="true">
-                  <Sparkles :size="13" :stroke-width="1.5" />
-                </span>
-                <span class="tool-compact-btn__label">{{ t('tools.passwordGenTitle') }}</span>
-              </button>
-            </div>
-          </div>
-
           <div class="sidebar-bottom">
+            <button
+              type="button"
+              class="nav-item"
+              :title="t('tools.passwordGenDesc')"
+              @click="openPasswordGen()"
+            >
+              <IconBadge v-bind="NAV_ICON_STYLES.passwordGen">
+                <Sparkles :size="14" :stroke-width="1.5" />
+              </IconBadge>
+              {{ t('tools.passwordGenTitle') }}
+            </button>
             <CategoryManagePanel ref="categoryManagePanelRef" />
             <TagManagePanel />
             <button type="button" class="nav-item" @click="openTrash">
@@ -683,10 +666,6 @@ onBeforeUnmount(() => {
   padding: 8px 12px 6px;
 }
 
-.sidebar--animal .tool-section {
-  padding: 0 12px 6px;
-}
-
 .sidebar--animal .sidebar-divider {
   margin: 0 12px 6px;
 }
@@ -775,95 +754,8 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-bottom {
-  margin-top: 4px;
   padding: 8px 12px 12px;
   border-top: 1px solid var(--border-default);
-}
-
-.tool-section {
-  padding: 0 12px 6px;
-}
-
-.tool-row {
-  display: flex;
-  gap: 6px;
-}
-
-.tool-compact-btn {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 6px 8px;
-  min-height: 34px;
-  border-radius: var(--radius-md, 8px);
-  border: 1px solid var(--border-default);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.tool-compact-btn:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-hover);
-}
-
-.tool-compact-btn:active {
-  transform: scale(0.98);
-}
-
-.tool-compact-btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-.tool-compact-btn__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  flex-shrink: 0;
-}
-
-.tool-compact-btn--mail .tool-compact-btn__icon {
-  background: rgba(45, 212, 191, 0.12);
-  border: 1px solid rgba(45, 212, 191, 0.22);
-  color: var(--status-safe);
-}
-
-.tool-compact-btn--gen .tool-compact-btn__icon {
-  background: var(--accent-subtle);
-  border: 1px solid var(--border-accent);
-  color: var(--accent-primary);
-}
-
-.tool-compact-btn--mail:hover {
-  border-color: rgba(45, 212, 191, 0.35);
-}
-
-.tool-compact-btn--gen:hover {
-  border-color: var(--border-accent);
-}
-
-.tool-compact-btn__label {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
-  text-align: center;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .nav-badge {

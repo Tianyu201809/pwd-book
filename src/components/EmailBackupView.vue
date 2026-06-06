@@ -150,7 +150,7 @@ async function confirmBackup(masterPassword: string): Promise<void> {
 }
 
 function goBack(): void {
-  navigateTo('vault')
+  navigateTo('settings', 'security')
 }
 </script>
 
@@ -160,7 +160,7 @@ function goBack(): void {
       <aside class="tool-page-sidebar">
         <button type="button" class="tool-back-btn" @click="goBack">
           <ArrowLeft :size="16" :stroke-width="1.5" />
-          {{ t('tools.backToVault') }}
+          {{ t('settings.backToSettings') }}
         </button>
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--mail">

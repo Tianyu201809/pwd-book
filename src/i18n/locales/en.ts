@@ -446,6 +446,7 @@ export default {
     quickBar: 'Floating quick search',
     quickBarDesc: 'A slim bar at the top of the screen; Enter opens the URL or launches the local program. Shortcut: {accelerator}',
     quickBarOpen: 'Open quick bar',
+    emailBackupOpen: 'Open email backup',
     mainWindowShortcut: 'Shortcut to show main window',
     mainWindowShortcutDesc: 'Global shortcut to show and focus the main window. Shortcut: {accelerator}',
     browserFill: 'Browser autofill',

@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   ChevronRight,
   PanelTop,
+  MailCheck,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
@@ -41,6 +42,7 @@ const {
   updateSecuritySettings,
   resetAllData,
   openWifiSync,
+  openEmailBackup,
   errorMessage,
   clearError,
 } = useAppState()
@@ -405,6 +407,16 @@ async function handleReset(): Promise<void> {
                 </UiButton>
               </div>
             </div>
+            <div class="row email-backup-row last">
+              <div>
+                <p class="row-title">{{ t('tools.emailBackupTitle') }}</p>
+                <p class="row-desc">{{ t('tools.emailBackupDesc') }}</p>
+                <UiButton variant="default" size="small" class="email-backup-open-btn" @click="openEmailBackup">
+                  <MailCheck :size="14" :stroke-width="1.75" />
+                  {{ t('settings.emailBackupOpen') }}
+                </UiButton>
+              </div>
+            </div>
           </UiCard>
 
           <RecoverySettingsPanel />
@@ -561,7 +573,8 @@ h3 {
 }
 
 .quickbar-open-btn,
-.bridge-regen-btn {
+.bridge-regen-btn,
+.email-backup-open-btn {
   margin-top: 10px;
 }
 
