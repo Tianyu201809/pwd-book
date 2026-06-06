@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-06-06
+
+### 新增
+
+- **macOS 打包** — `electron-builder` 增加 `mac` / `dmg` 配置，支持 **x64** 与 **arm64**；产物命名 `PwdBook-{version}-{arch}.dmg`。
+- **npm 脚本** — `npm run dist:mac`（DMG 安装包）、`npm run dist:mac:dir`（未打包目录，便于本地调试）。
+
+### 文档
+
+- README、CHANGELOG 与 code-map 同步 v1.10.0（macOS 构建说明）。
+
 ## [1.9.0] - 2026-06-06
 
 ### 新增

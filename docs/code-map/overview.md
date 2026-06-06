@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.9.0（`package.json`） |
+| 版本 | 1.10.0（`package.json`） |
 | 源码文件 | ~70+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 45+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`syncVerification`、`syncClient`、`mobileSyncWorkflow` |
@@ -118,10 +118,21 @@ src/
 
 | 来源 | 说明 |
 |------|------|
-| `app.getPath('userData')/pwdbook.db` | 数据库文件（Windows: `%APPDATA%/pwd-book/`） |
+| `app.getPath('userData')/pwdbook.db` | 数据库文件（Windows: `%APPDATA%/pwd-book/`；macOS: `~/Library/Application Support/pwd-book/`） |
 | `app_settings` 表 | 主密码哈希、恢复密钥元数据、安全设置、侧边栏排序 |
 | 无 `.env` | 应用不读取环境变量配置 |
 
 ## 构建产物
 
 `npm run build` → `out/main`、`out/preload`、`out/renderer`（electron-vite）。
+
+### 安装包（electron-builder）
+
+| 命令 | 平台 | 产物 |
+|------|------|------|
+| `npm run dist:win` | Windows x64 | `release/PwdBook-{version}-Setup.exe`（NSIS） |
+| `npm run dist:win:dir` | Windows x64 | `release/win-unpacked/` |
+| `npm run dist:mac` | macOS x64 + arm64 | `release/PwdBook-{version}-{arch}.dmg`（v1.10.0） |
+| `npm run dist:mac:dir` | macOS | `release/mac/` 或 `release/mac-arm64/` 下的 `.app` |
+
+macOS 配置见 `package.json` → `build.mac` / `build.dmg`。当前未配置代码签名（与 Windows `signAndEditExecutable: false` 类似），分发需在目标机器处理 Gatekeeper 提示。

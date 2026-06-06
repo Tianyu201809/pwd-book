@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.9.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.10.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -40,7 +40,7 @@ npm run dev
 
 若你用过 KeePass、Bitwarden 离线库或 1Password 本地 vault，核心思路相同：**主密码 + 本地加密存储**。PwdBook 的差异在于开箱即用的桌面体验、恢复密钥流程，以及可选的加密邮箱灾备。
 
-应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；支持中英文界面；默认窗口 1200×760，自定义标题栏，主要面向 **Windows** 打包（NSIS 安装包）。
+应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）与 **macOS**（DMG，x64 / arm64）。
 
 <p align="center">
   <img src="./docs/images/main.png" alt="PwdBook 主界面：侧栏分类、搜索与条目列表" width="720" />
@@ -52,7 +52,7 @@ npm run dev
 | 数据位置 | `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录 |
 | 加密 | 主密码 scrypt 校验；条目密码 AES-256-GCM |
 | 进程模型 | 主进程（业务与加密）+ Preload 桥 + Vue 渲染进程 |
-| 当前平台 | 主要面向 **Windows** 打包（NSIS 安装包） |
+| 官方打包 | **Windows**（NSIS）· **macOS**（DMG，v1.10.0 起） |
 
 ## 产品截图
 
@@ -287,7 +287,7 @@ npm run dev
 
 - [Node.js](https://nodejs.org/) **20 LTS** 或更高版本
 - npm（随 Node 安装）
-- Windows（开发与 `dist:win` 打包；其他平台未在 `electron-builder` 中配置）
+- **Windows** 或 **macOS**（开发与对应平台打包；Linux 未在 `electron-builder` 中配置）
 
 ### 安装与开发
 
@@ -310,7 +310,9 @@ npm run dev
 | `npm test` | 单元测试（含同步合并、加密封包等） |
 | `npm run icons` | 从 `icon.png` 生成应用图标资源 |
 | `npm run dist:win` | 构建并生成 Windows NSIS 安装包（输出 `release/`） |
-| `npm run dist:win:dir` | 构建未打包目录版，便于本地调试安装结果 |
+| `npm run dist:win:dir` | 构建 Windows 未打包目录版，便于本地调试 |
+| `npm run dist:mac` | 构建并生成 macOS DMG（x64 / arm64，输出 `release/`） |
+| `npm run dist:mac:dir` | 构建 macOS 未打包 `.app` 目录版，便于本地调试 |
 | `npm run screenshots:animal` | 生成 Animal Island 主题 README 截图（输出 `docs/images/animal-*.png`） |
 
 > [!TIP]
@@ -344,7 +346,15 @@ npm run dev
 
 ## 版本更新
 
-### v1.9.0（当前）
+### v1.10.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1100---2026-06-06)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 打包 | **macOS DMG** 构建脚本（`dist:mac` / `dist:mac:dir`），支持 Intel 与 Apple Silicon |
+
+### v1.9.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#190---2026-06-06)**。摘要：
 
@@ -480,7 +490,7 @@ pwd-book/
 ## 常见问题
 
 **数据存在哪里？**  
-Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 上通常为 `%APPDATA%\PwdBook`）。通过 NSIS 安装程序卸载时会询问是否删除本地密码数据（见 `deps/installer.nsh`）；选择「否」则仅移除程序，数据保留。应用内覆盖安装（升级）不会弹出提示，也不会删除数据。
+Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 通常为 `%APPDATA%\pwd-book\`；macOS 通常为 `~/Library/Application Support/pwd-book/`）。Windows 通过 NSIS 安装程序卸载时会询问是否删除本地密码数据（见 `deps/installer.nsh`）；选择「否」则仅移除程序，数据保留。应用内覆盖安装（升级）不会弹出提示，也不会删除数据。
 
 **能否多端同步？**  
 **v1.9.0** 起支持 **同一局域网内的 Wi-Fi 同步**（**设置 → 数据 → 同步**），桌面作服务端、其他设备作客户端；不经互联网，主密码须一致。无厂商托管云同步。亦可自行通过「导出数据」导出 **JSON** / **CSV** 拷贝恢复，或使用「邮箱备份」作灾备。
