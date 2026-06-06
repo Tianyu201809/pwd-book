@@ -272,8 +272,8 @@ export default {
     wifiSync: {
       title: '同步',
       subtitle: '在同一局域网内同步密码库，数据不经互联网。主密码需在各设备保持一致。',
-      serverMode: '服务端（桌面）',
-      clientMode: '客户端（手机/其他设备）',
+      serverMode: '我是服务端（桌面）',
+      clientMode: '我是客户端（手机/其他设备）',
       serverCardTitle: '启动局域网同步服务',
       serverCardDesc: '在本机运行 WebDAV 服务，供同 Wi-Fi 下的设备拉取并合并加密同步包。',
       clientCardTitle: '连接局域网服务',
@@ -293,7 +293,8 @@ export default {
       regeneratePassword: '重新生成访问密码',
       passwordRegenerated: '访问密码已更新',
       qrPayloadTitle: '配对信息（可扫码）',
-      qrPayloadHint: '在另一台设备上粘贴此 JSON，或扫描后使用客户端模式同步。',
+      qrPayloadHint: '用手机扫描下方二维码，或在另一台设备粘贴配对 JSON。',
+      qrPayloadRaw: '查看配对 JSON',
       discover: '发现局域网服务',
       noServersFound: '未发现 PwdBook 同步服务',
       selectServerFirst: '请先选择一台局域网服务',
@@ -317,9 +318,19 @@ export default {
       clientVerificationHint: '请与桌面端显示的校验码对照，确认连接安全',
       clientVerificationCode: '本机校验码',
       operations: '同步操作',
+      serverRoleTitle: '桌面端（服务端）',
+      serverRoleDesc: '在本机开启同步服务，生成配对信息，等待其他设备连接。',
+      clientRoleTitle: '手机 / 其他设备（客户端）',
+      clientRoleDesc: '发现或扫描桌面端服务，拉取加密数据并与本机合并。',
       tutorial: {
         title: '同步教程',
         subtitle: '3 分钟看懂局域网同步全流程',
+        serverTitle: '桌面端操作指引',
+        serverSubtitle: '启动服务并分享配对信息',
+        serverIntro: '保持应用解锁，启动服务后把二维码或访问密码交给另一台设备。',
+        clientTitle: '客户端操作指引',
+        clientSubtitle: '连接桌面并完成同步',
+        clientIntro: '确保与桌面在同一 Wi-Fi，主密码需与桌面端一致。',
         introShort: '局域网内加密同步，桌面做服务端、其他设备做客户端。',
         visualCaption: '加密数据仅在局域网内传输',
         intro:
@@ -333,6 +344,34 @@ export default {
           '两台设备连接同一 Wi-Fi 或局域网，无需互联网',
           '各设备主密码必须一致，否则无法解密合并',
           '同步前请先解锁保险库',
+        ],
+        serverSteps: [
+          {
+            title: '启动局域网同步服务',
+            desc: '点击下方「启动服务」。PwdBook 会在本机开启加密 WebDAV 服务。',
+          },
+          {
+            title: '分享配对信息',
+            desc: '把二维码、访问密码和校验码展示给另一台设备。校验码用于确认连接未被篡改。',
+          },
+          {
+            title: '等待设备连接',
+            desc: '保持应用解锁。其他设备同步后，会出现在「已配对设备」列表中。',
+          },
+        ],
+        clientSteps: [
+          {
+            title: '发现桌面端服务',
+            desc: '点击「发现局域网服务」，或扫描 / 粘贴桌面端提供的配对信息。',
+          },
+          {
+            title: '核对校验码并输入访问密码',
+            desc: '对照桌面端校验码确认安全，再输入桌面显示的访问密码。',
+          },
+          {
+            title: '立即同步并输入主密码',
+            desc: '点击「立即同步」，输入主密码完成解密、合并，结果会自动回传桌面。',
+          },
         ],
         steps: [
           {

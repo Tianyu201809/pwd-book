@@ -11,6 +11,7 @@ import {
 } from 'lucide-vue-next'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import SyncTutorialPanel from '@/components/sync/SyncTutorialPanel.vue'
+import SyncPairingQr from '@/components/sync/SyncPairingQr.vue'
 import { UiButton, UiInput } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
@@ -269,7 +270,22 @@ async function confirmSync(masterPassword: string): Promise<void> {
 
       <main class="tool-page-main">
         <div class="tool-page-content">
-          <SyncTutorialPanel />
+          <header class="role-header">
+            <div class="role-header__icon" :class="`role-header__icon--${mode}`">
+              <Server v-if="mode === 'server'" :size="20" :stroke-width="1.5" />
+              <Smartphone v-else :size="20" :stroke-width="1.5" />
+            </div>
+            <div>
+              <h3 class="role-header__title">
+                {{ mode === 'server' ? t('tools.wifiSync.serverRoleTitle') : t('tools.wifiSync.clientRoleTitle') }}
+              </h3>
+              <p class="role-header__desc">
+                {{ mode === 'server' ? t('tools.wifiSync.serverRoleDesc') : t('tools.wifiSync.clientRoleDesc') }}
+              </p>
+            </div>
+          </header>
+
+          <SyncTutorialPanel :role="mode" />
 
           <div class="sync-status-bar surface-card">
             <p class="sync-status-title">{{ t('tools.wifiSync.syncStatusTitle') }}</p>
@@ -326,13 +342,17 @@ async function confirmSync(masterPassword: string): Promise<void> {
                 </div>
               </details>
 
-              <details v-if="pairingInfo" class="sync-details">
-                <summary>{{ t('tools.wifiSync.qrPayloadTitle') }}</summary>
-                <div class="sync-details-body">
-                  <p class="sync-hint">{{ t('tools.wifiSync.qrPayloadHint') }}</p>
-                  <textarea class="qr-payload" readonly :value="pairingInfo.qrPayload" rows="3" />
-                </div>
-              </details>
+              <div v-if="pairingInfo" class="pairing-qr-section">
+                <p class="pairing-qr-title">{{ t('tools.wifiSync.qrPayloadTitle') }}</p>
+                <p class="sync-hint">{{ t('tools.wifiSync.qrPayloadHint') }}</p>
+                <SyncPairingQr :payload="pairingInfo.qrPayload" />
+                <details class="sync-details sync-details--nested">
+                  <summary>{{ t('tools.wifiSync.qrPayloadRaw') }}</summary>
+                  <div class="sync-details-body">
+                    <textarea class="qr-payload" readonly :value="pairingInfo.qrPayload" rows="3" />
+                  </div>
+                </details>
+              </div>
 
               <div v-if="pairedDevices.length" class="paired-devices">
                 <p class="paired-devices-title">{{ t('tools.wifiSync.pairedDevices') }}</p>
@@ -461,6 +481,39 @@ async function confirmSync(masterPassword: string): Promise<void> {
   color: var(--accent-primary);
 }
 
+.role-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.role-header__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+.role-header__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.role-header__desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
 .sync-status-bar {
   margin-bottom: 14px;
   padding: 12px 14px;
@@ -578,6 +631,24 @@ async function confirmSync(masterPassword: string): Promise<void> {
 
 .sync-details summary:hover {
   color: var(--text-primary);
+}
+
+.sync-details--nested {
+  border-top: none;
+  padding-top: 0;
+}
+
+.pairing-qr-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.pairing-qr-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .sync-details-body {

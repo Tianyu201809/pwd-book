@@ -273,8 +273,8 @@ export default {
     wifiSync: {
       title: 'Sync',
       subtitle: 'Sync your vault on the local network without using the internet. Master password must match on all devices.',
-      serverMode: 'Server (desktop)',
-      clientMode: 'Client (phone/other device)',
+      serverMode: 'I am the server (desktop)',
+      clientMode: 'I am the client (phone/other device)',
       serverCardTitle: 'Start LAN sync server',
       serverCardDesc: 'Run a local WebDAV service so devices on the same Wi-Fi can pull and merge encrypted sync bundles.',
       clientCardTitle: 'Connect to LAN server',
@@ -293,8 +293,9 @@ export default {
       neverPublished: 'Not published yet',
       regeneratePassword: 'Regenerate access password',
       passwordRegenerated: 'Access password updated',
-      qrPayloadTitle: 'Pairing payload (scan or paste)',
-      qrPayloadHint: 'Paste this JSON on another device or scan it in client mode.',
+      qrPayloadTitle: 'Pairing info (scan QR)',
+      qrPayloadHint: 'Scan the QR code on your phone, or paste the pairing JSON on another device.',
+      qrPayloadRaw: 'View pairing JSON',
       discover: 'Discover LAN servers',
       noServersFound: 'No PwdBook sync servers found',
       selectServerFirst: 'Select a LAN server first',
@@ -318,9 +319,19 @@ export default {
       clientVerificationHint: 'Compare with the verification code shown on desktop',
       clientVerificationCode: 'Local verification code',
       operations: 'Sync actions',
+      serverRoleTitle: 'Desktop (server)',
+      serverRoleDesc: 'Run the sync service on this machine and share pairing details with other devices.',
+      clientRoleTitle: 'Phone / other device (client)',
+      clientRoleDesc: 'Find or scan the desktop service, then pull and merge encrypted vault data.',
       tutorial: {
         title: 'Sync guide',
         subtitle: 'Understand LAN sync in about 3 minutes',
+        serverTitle: 'Desktop setup',
+        serverSubtitle: 'Start the service and share pairing info',
+        serverIntro: 'Keep the app unlocked. After starting the server, share the QR code or access password.',
+        clientTitle: 'Client setup',
+        clientSubtitle: 'Connect to desktop and sync',
+        clientIntro: 'Use the same Wi-Fi as desktop. Your master password must match.',
         introShort: 'Encrypted sync on your LAN — desktop as server, other devices as clients.',
         visualCaption: 'Encrypted data stays on your local network',
         intro:
@@ -334,6 +345,34 @@ export default {
           'Both devices on the same Wi-Fi or LAN — no internet required',
           'Master password must match on every device',
           'Unlock your vault before syncing',
+        ],
+        serverSteps: [
+          {
+            title: 'Start the LAN sync service',
+            desc: 'Tap Start server below. PwdBook runs an encrypted WebDAV service on this machine.',
+          },
+          {
+            title: 'Share pairing details',
+            desc: 'Show the QR code, access password, and verification code to the other device.',
+          },
+          {
+            title: 'Wait for devices to connect',
+            desc: 'Keep the app unlocked. Synced devices appear under Paired devices.',
+          },
+        ],
+        clientSteps: [
+          {
+            title: 'Discover the desktop service',
+            desc: 'Tap Discover LAN servers, or scan / paste the pairing info from desktop.',
+          },
+          {
+            title: 'Verify code and enter access password',
+            desc: 'Compare the verification code with desktop, then enter the access password shown there.',
+          },
+          {
+            title: 'Sync now and confirm master password',
+            desc: 'Tap Sync now and enter your master password to decrypt, merge, and push results back.',
+          },
         ],
         steps: [
           {

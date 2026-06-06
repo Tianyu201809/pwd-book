@@ -7,8 +7,9 @@ import { Lock, Monitor, Shield, Smartphone, Wifi } from 'lucide-vue-next'
 const props = withDefaults(
   defineProps<{
     size?: 'default' | 'large'
+    highlight?: 'server' | 'client'
   }>(),
-  { size: 'default' },
+  { size: 'default', highlight: undefined },
 )
 
 const { t } = useI18n()
@@ -94,10 +95,17 @@ onUnmounted(() => {
   <div
     ref="rootRef"
     class="tutorial-diagram"
-    :class="{ 'tutorial-diagram--large': size === 'large' }"
+    :class="{
+      'tutorial-diagram--large': size === 'large',
+      'tutorial-diagram--server': highlight === 'server',
+      'tutorial-diagram--client': highlight === 'client',
+    }"
     aria-hidden="true"
   >
-    <div class="diagram-node diagram-node--desktop">
+    <div
+      class="diagram-node diagram-node--desktop"
+      :class="{ 'diagram-node--active': highlight === 'server' }"
+    >
       <div class="diagram-node__icon">
         <Monitor :size="size === 'large' ? 28 : 22" :stroke-width="1.5" />
       </div>
@@ -124,7 +132,10 @@ onUnmounted(() => {
       </span>
     </div>
 
-    <div class="diagram-node diagram-node--phone">
+    <div
+      class="diagram-node diagram-node--phone"
+      :class="{ 'diagram-node--active': highlight === 'client' }"
+    >
       <div class="diagram-node__icon">
         <Smartphone :size="size === 'large' ? 28 : 22" :stroke-width="1.5" />
       </div>
@@ -213,6 +224,22 @@ onUnmounted(() => {
   border: 1px solid var(--border-default);
   color: var(--accent-primary);
   box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  transition: opacity 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.tutorial-diagram--server .diagram-node--phone:not(.diagram-node--active),
+.tutorial-diagram--client .diagram-node--desktop:not(.diagram-node--active) {
+  opacity: 0.45;
+}
+
+.diagram-node--active {
+  color: var(--text-primary);
+}
+
+.diagram-node--active .diagram-node__icon {
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--accent-primary) 28%, transparent);
 }
 
 .diagram-link {

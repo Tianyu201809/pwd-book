@@ -4,15 +4,38 @@ import { useI18n } from 'vue-i18n'
 import { BookOpen, ChevronDown, ChevronUp } from 'lucide-vue-next'
 import SyncTutorialDiagram from '@/components/sync/SyncTutorialDiagram.vue'
 
+const props = defineProps<{
+  role: 'server' | 'client'
+}>()
+
 const { t, tm } = useI18n()
 
-const expanded = ref(false)
+const expanded = ref(true)
+
+const title = computed(() =>
+  props.role === 'server'
+    ? t('tools.wifiSync.tutorial.serverTitle')
+    : t('tools.wifiSync.tutorial.clientTitle'),
+)
+
+const subtitle = computed(() =>
+  props.role === 'server'
+    ? t('tools.wifiSync.tutorial.serverSubtitle')
+    : t('tools.wifiSync.tutorial.clientSubtitle'),
+)
+
+const intro = computed(() =>
+  props.role === 'server'
+    ? t('tools.wifiSync.tutorial.serverIntro')
+    : t('tools.wifiSync.tutorial.clientIntro'),
+)
 
 const steps = computed(() => {
-  const raw = tm('tools.wifiSync.tutorial.steps') as Array<{
-    title: string
-    desc: string
-  }>
+  const key =
+    props.role === 'server'
+      ? 'tools.wifiSync.tutorial.serverSteps'
+      : 'tools.wifiSync.tutorial.clientSteps'
+  const raw = tm(key) as Array<{ title: string; desc: string }>
   return Array.isArray(raw) ? raw : []
 })
 </script>
@@ -23,17 +46,17 @@ const steps = computed(() => {
       <span class="sync-help-toggle__left">
         <BookOpen :size="16" :stroke-width="1.5" />
         <span>
-          <strong>{{ t('tools.wifiSync.tutorial.title') }}</strong>
-          <small>{{ t('tools.wifiSync.tutorial.subtitle') }}</small>
+          <strong>{{ title }}</strong>
+          <small>{{ subtitle }}</small>
         </span>
       </span>
       <component :is="expanded ? ChevronUp : ChevronDown" :size="16" :stroke-width="1.5" />
     </button>
 
     <div v-show="expanded" class="sync-help-body">
-      <p class="sync-help-intro">{{ t('tools.wifiSync.tutorial.introShort') }}</p>
+      <p class="sync-help-intro">{{ intro }}</p>
 
-      <SyncTutorialDiagram />
+      <SyncTutorialDiagram :highlight="role" />
 
       <ol class="sync-help-steps">
         <li v-for="(step, index) in steps" :key="index">
