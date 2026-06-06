@@ -16,6 +16,8 @@ import {
   PanelTop,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
+import IconBadge from '@/components/IconBadge.vue'
+import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 import { UiSelect, UiSwitch, UiCard, UiButton, UiInput } from '@/components/ui'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
@@ -56,10 +58,10 @@ const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 
 const tabs = computed(() => [
-  { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield },
-  { id: 'appearance' as SettingsTab, label: t('settings.appearance'), icon: Palette },
-  { id: 'data' as SettingsTab, label: t('settings.data'), icon: Database },
-  { id: 'about' as SettingsTab, label: t('settings.about'), icon: Info },
+  { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
+  { id: 'appearance' as SettingsTab, label: t('settings.appearance'), icon: Palette, iconStyle: NAV_ICON_STYLES.palette },
+  { id: 'data' as SettingsTab, label: t('settings.data'), icon: Database, iconStyle: NAV_ICON_STYLES.database },
+  { id: 'about' as SettingsTab, label: t('settings.about'), icon: Info, iconStyle: NAV_ICON_STYLES.info },
 ])
 
 const activeTab = computed(() => settingsTab.value)
@@ -251,7 +253,9 @@ async function handleReset(): Promise<void> {
             :class="{ active: activeTab === tab.id }"
             @click="switchSettingsTab(tab.id)"
           >
-            <component :is="tab.icon" :size="16" :stroke-width="1.5" />
+            <IconBadge v-bind="tab.iconStyle">
+              <component :is="tab.icon" :size="14" :stroke-width="1.5" />
+            </IconBadge>
             {{ tab.label }}
           </button>
         </nav>

@@ -5,6 +5,8 @@ import { ArrowLeft, Hash, Plus, Search, Trash2, X } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { UiInput, UiButton } from '@/components/ui'
+import IconBadge from '@/components/IconBadge.vue'
+import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 
 const { vaultTags, createTag, updateTag, deleteTag, loading, errorMessage, clearError } = useAppState()
 
@@ -132,7 +134,9 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
 
 <template>
   <button type="button" class="nav-item manage-trigger" @click="openManageDialog">
-    <Hash :size="16" :stroke-width="1.5" />
+    <IconBadge v-bind="NAV_ICON_STYLES.hash">
+      <Hash :size="14" :stroke-width="1.5" />
+    </IconBadge>
     {{ t('tag.manage') }}
     <span v-if="tagCount" class="trigger-count">{{ tagCount }}</span>
   </button>

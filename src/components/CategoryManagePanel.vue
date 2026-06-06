@@ -13,6 +13,8 @@ import {
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import IconBadge from '@/components/IconBadge.vue'
+import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiButton } from '@/components/ui'
 import { textMatchesQuery } from '@/shared/searchMatch'
@@ -228,7 +230,9 @@ defineExpose({
 
 <template>
   <button type="button" class="nav-item manage-trigger" @click="openManageDialog">
-    <Layers :size="16" :stroke-width="1.5" />
+    <IconBadge v-bind="NAV_ICON_STYLES.layers">
+      <Layers :size="14" :stroke-width="1.5" />
+    </IconBadge>
     {{ t('category.manage') }}
     <span v-if="categoryCount" class="trigger-count">{{ categoryCount }}</span>
   </button>

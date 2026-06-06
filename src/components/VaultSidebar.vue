@@ -5,6 +5,8 @@ import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronDown, Search,
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
+import IconBadge from '@/components/IconBadge.vue'
+import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 import { Divider } from 'animal-island-vue'
 import VaultClock from '@/components/VaultClock.vue'
 import { UiInput } from '@/components/ui'
@@ -415,16 +417,22 @@ onBeforeUnmount(() => {
             <CategoryManagePanel ref="categoryManagePanelRef" />
             <TagManagePanel />
             <button type="button" class="nav-item" @click="openTrash">
-              <ArchiveRestore :size="16" :stroke-width="1.5" />
+              <IconBadge v-bind="NAV_ICON_STYLES.trash">
+                <ArchiveRestore :size="14" :stroke-width="1.5" />
+              </IconBadge>
               {{ t('vault.trash') }}
               <span v-if="vaultStatus.trashCount > 0" class="nav-badge">{{ vaultStatus.trashCount }}</span>
             </button>
             <button type="button" class="nav-item" @click="navigateTo('settings')">
-              <Settings :size="16" :stroke-width="1.5" />
+              <IconBadge v-bind="NAV_ICON_STYLES.settings">
+                <Settings :size="14" :stroke-width="1.5" />
+              </IconBadge>
               {{ t('vault.settings') }}
             </button>
             <button type="button" class="nav-item lock-btn" @click="lock">
-              <Lock :size="16" :stroke-width="1.5" />
+              <IconBadge v-bind="NAV_ICON_STYLES.lock">
+                <Lock :size="14" :stroke-width="1.5" />
+              </IconBadge>
               {{ t('vault.lock') }}
             </button>
           </div>
