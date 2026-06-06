@@ -33,6 +33,15 @@ import type {
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
 } from '../shared/types'
+import type {
+  SyncMergeResult,
+  SyncStatus,
+  WifiSyncClientPullPayload,
+  WifiSyncDiscoveredServer,
+  WifiSyncPairingInfo,
+  WifiSyncServerStatus,
+  WifiSyncSettings,
+} from '../shared/syncTypes'
 
 export type ThemeNativeMode = 'dark' | 'light' | 'system'
 
@@ -155,6 +164,34 @@ export const electronAPI = {
   testEmailBackupConnection: (): Promise<void> => invoke(IPC.emailBackupTest),
   sendEmailBackup: (payload: EmailBackupSendPayload): Promise<EmailBackupSettings> =>
     invoke(IPC.emailBackupSend, payload),
+
+  getSyncStatus: (): Promise<SyncStatus> => invoke(IPC.syncStatus),
+  exportSyncBundle: (
+    masterPassword: string,
+  ): Promise<{ buffer: Uint8Array; revision: number; sizeBytes: number }> =>
+    invoke(IPC.syncExportBundle, masterPassword),
+  importSyncBundle: (payload: {
+    masterPassword: string
+    buffer: Uint8Array
+  }): Promise<SyncMergeResult> => invoke(IPC.syncImportBundle, payload),
+  getWifiSyncSettings: (): Promise<WifiSyncSettings> => invoke(IPC.wifiSyncGetSettings),
+  updateWifiSyncSettings: (partial: Partial<WifiSyncSettings>): Promise<WifiSyncSettings> =>
+    invoke(IPC.wifiSyncUpdateSettings, partial),
+  getWifiSyncServerStatus: (): Promise<WifiSyncServerStatus> =>
+    invoke(IPC.wifiSyncServerStatus),
+  getWifiSyncPairingInfo: (): Promise<WifiSyncPairingInfo> => invoke(IPC.wifiSyncPairingInfo),
+  regenerateWifiSyncAccessPassword: (): Promise<string> =>
+    invoke(IPC.wifiSyncRegenerateAccessPassword),
+  startWifiSyncServer: (): Promise<WifiSyncServerStatus> => invoke(IPC.wifiSyncStartServer),
+  stopWifiSyncServer: (): Promise<WifiSyncServerStatus> => invoke(IPC.wifiSyncStopServer),
+  discoverWifiSyncServers: (): Promise<WifiSyncDiscoveredServer[]> => invoke(IPC.wifiSyncDiscover),
+  pullWifiSyncMerge: (payload: WifiSyncClientPullPayload): Promise<SyncMergeResult> =>
+    invoke(IPC.wifiSyncPullMerge, payload),
+  pullWifiSyncMergeQr: (payload: {
+    qrPayload: string
+    masterPassword: string
+    deviceName?: string
+  }): Promise<SyncMergeResult> => invoke(IPC.wifiSyncPullMergeQr, payload),
   onScheduledBackupDue: (handler: () => void): (() => void) => {
     const listener = (): void => handler()
     ipcRenderer.on(IPC_EVENTS.scheduledBackupDue, listener)

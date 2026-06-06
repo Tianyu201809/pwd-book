@@ -22,6 +22,13 @@ import type {
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
 } from '@/shared/types'
+import type {
+  SyncMergeResult,
+  WifiSyncClientPullPayload,
+  WifiSyncPairingInfo,
+  WifiSyncServerStatus,
+  WifiSyncSettings,
+} from '@/shared/syncTypes'
 
 function getApi() {
   if (!window.electronAPI) {
@@ -110,4 +117,29 @@ export const vaultApi = {
     getApi().sendEmailBackup(payload),
   onScheduledBackupDue: (handler: () => void): (() => void) => getApi().onScheduledBackupDue(handler),
   onSystemLockScreen: (handler: () => void): (() => void) => getApi().onSystemLockScreen(handler),
+
+  getSyncStatus: () => getApi().getSyncStatus(),
+  exportSyncBundle: (masterPassword: string) => getApi().exportSyncBundle(masterPassword),
+  importSyncBundle: (payload: {
+    masterPassword: string
+    buffer: Uint8Array
+  }): Promise<SyncMergeResult> => getApi().importSyncBundle(payload),
+  getWifiSyncSettings: (): Promise<WifiSyncSettings> => getApi().getWifiSyncSettings(),
+  updateWifiSyncSettings: (partial: Partial<WifiSyncSettings>): Promise<WifiSyncSettings> =>
+    getApi().updateWifiSyncSettings(partial),
+  getWifiSyncServerStatus: (): Promise<WifiSyncServerStatus> =>
+    getApi().getWifiSyncServerStatus(),
+  getWifiSyncPairingInfo: (): Promise<WifiSyncPairingInfo> => getApi().getWifiSyncPairingInfo(),
+  regenerateWifiSyncAccessPassword: (): Promise<string> =>
+    getApi().regenerateWifiSyncAccessPassword(),
+  startWifiSyncServer: (): Promise<WifiSyncServerStatus> => getApi().startWifiSyncServer(),
+  stopWifiSyncServer: (): Promise<WifiSyncServerStatus> => getApi().stopWifiSyncServer(),
+  discoverWifiSyncServers: () => getApi().discoverWifiSyncServers(),
+  pullWifiSyncMerge: (payload: WifiSyncClientPullPayload): Promise<SyncMergeResult> =>
+    getApi().pullWifiSyncMerge(payload),
+  pullWifiSyncMergeQr: (payload: {
+    qrPayload: string
+    masterPassword: string
+    deviceName?: string
+  }): Promise<SyncMergeResult> => getApi().pullWifiSyncMergeQr(payload),
 }

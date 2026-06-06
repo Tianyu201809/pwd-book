@@ -88,6 +88,24 @@ import {
   getNativeHostRegistrationInfo,
   registerNativeHost,
 } from '../services/nativeHostRegistryService'
+import { getSyncStatus, publishEncryptedBundle } from '../services/syncBundleService'
+import {
+  discoverSyncServers,
+  mergeFromEncryptedBuffer,
+  pullMergeAndPush,
+  pullMergeFromPairingQr,
+} from '../services/syncClientService'
+import {
+  getWifiSyncPairingInfo,
+  getWifiSyncServerStatus,
+  getWifiSyncSettings,
+  regenerateAccessPassword,
+  startWifiSyncServer,
+  stopWifiSyncServer,
+  updateWifiSyncSettings,
+} from '../services/wifiSyncService'
+import type { WifiSyncClientPullPayload, WifiSyncSettings } from '../../shared/syncTypes'
+import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 
 let clipboardTimer: NodeJS.Timeout | null = null
 
@@ -523,6 +541,113 @@ export function registerIpcHandlers(): void {
       throw new Error(message)
     }
   })
+
+  ipcMain.handle(IPC.syncStatus, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return getSyncStatus()
+    }),
+  )
+
+  ipcMain.handle(IPC.syncExportBundle, (_event, masterPassword: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      const transportKey = deriveSyncTransportKey(masterPassword)
+      const result = publishEncryptedBundle(transportKey)
+      return {
+        buffer: Uint8Array.from(result.buffer),
+        revision: result.revision,
+        sizeBytes: result.sizeBytes,
+      }
+    }),
+  )
+
+  ipcMain.handle(
+    IPC.syncImportBundle,
+    (_event, payload: { masterPassword: string; buffer: Uint8Array }) =>
+      wrap(() => {
+        ensureUnlocked()
+        const buffer = Buffer.from(payload.buffer)
+        return mergeFromEncryptedBuffer(buffer, payload.masterPassword)
+      }),
+  )
+
+  ipcMain.handle(IPC.wifiSyncGetSettings, () => wrap(() => getWifiSyncSettings()))
+
+  ipcMain.handle(IPC.wifiSyncUpdateSettings, (_event, partial: Partial<WifiSyncSettings>) =>
+    wrap(() => updateWifiSyncSettings(partial)),
+  )
+
+  ipcMain.handle(IPC.wifiSyncServerStatus, () => wrap(() => getWifiSyncServerStatus()))
+
+  ipcMain.handle(IPC.wifiSyncPairingInfo, () =>
+    wrap(() => {
+      const status = getWifiSyncServerStatus()
+      if (!status.running) {
+        throw appError(ErrorCode.OPERATION_FAILED)
+      }
+      return getWifiSyncPairingInfo()
+    }),
+  )
+
+  ipcMain.handle(IPC.wifiSyncRegenerateAccessPassword, () =>
+    wrap(() => regenerateAccessPassword()),
+  )
+
+  ipcMain.handle(IPC.wifiSyncStartServer, async () => {
+    try {
+      ensureUnlocked()
+      return await startWifiSyncServer()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
+  })
+
+  ipcMain.handle(IPC.wifiSyncStopServer, async () => {
+    try {
+      return await stopWifiSyncServer()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
+  })
+
+  ipcMain.handle(IPC.wifiSyncDiscover, async () => {
+    try {
+      return await discoverSyncServers()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
+  })
+
+  ipcMain.handle(IPC.wifiSyncPullMerge, async (_event, payload: WifiSyncClientPullPayload) => {
+    try {
+      ensureUnlocked()
+      return await pullMergeAndPush(payload)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message)
+    }
+  })
+
+  ipcMain.handle(
+    IPC.wifiSyncPullMergeQr,
+    async (_event, payload: { qrPayload: string; masterPassword: string; deviceName?: string }) => {
+      try {
+        ensureUnlocked()
+        return await pullMergeFromPairingQr(
+          payload.qrPayload,
+          payload.masterPassword,
+          payload.deviceName,
+        )
+      } catch (error) {
+        const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+        throw new Error(message)
+      }
+    },
+  )
 
   startBackupScheduler()
 }

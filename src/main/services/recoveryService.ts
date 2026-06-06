@@ -3,6 +3,7 @@ import {
   createMasterSalt,
   decryptSecret,
   deriveSessionKey,
+  deriveSyncTransportKey,
   encryptSecret,
   hashMasterPassword,
   verifyMasterPassword,
@@ -171,7 +172,7 @@ export function resetMasterPasswordWithRecovery(
   persistDatabase()
 
   wrapSessionKey(newKey, recoveryKey)
-  unlockSession(newKey)
+  unlockSession(newKey, deriveSyncTransportKey(newMasterPassword))
 }
 
 export function getLockedEntryCount(): number {

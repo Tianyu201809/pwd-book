@@ -29,6 +29,9 @@ export function persistDatabase(): void {
   if (!db) return
   const data = db.export()
   fs.writeFileSync(dbPath, Buffer.from(data))
+  void import('../services/wifiSyncService')
+    .then((module) => module.notifyVaultChangedForSync())
+    .catch(() => {})
 }
 
 export async function initDatabase(): Promise<Database> {

@@ -32,6 +32,11 @@ export function deriveSessionKey(password: string, saltHex: string): Buffer {
   return scryptSync(password, Buffer.from(saltHex, 'hex'), KEY_LENGTH)
 }
 
+/** 跨设备同步传输密钥（与设备 master_salt 无关，主密码一致即可互解） */
+export function deriveSyncTransportKey(password: string): Buffer {
+  return scryptSync(password, 'pwdbook-sync-transport-v1', KEY_LENGTH)
+}
+
 export function encryptSecret(plaintext: string, key: Buffer): string {
   const iv = randomBytes(IV_LENGTH)
   const cipher = createCipheriv(ALGORITHM, key, iv)

@@ -1,6 +1,6 @@
 export type FilterCategory = 'all' | 'favorite' | string
 
-export type AppScreen = 'lock' | 'vault' | 'settings' | 'email-backup' | 'password-gen' | 'trash'
+export type AppScreen = 'lock' | 'vault' | 'settings' | 'email-backup' | 'wifi-sync' | 'password-gen' | 'trash'
 
 export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
 
@@ -293,6 +293,19 @@ export const IPC = {
   browserNativeHostInfo: 'browser:native-host-info',
   browserRegisterNativeHost: 'browser:register-native-host',
   shellOpenExtensionsPage: 'shell:open-extensions-page',
+  syncStatus: 'sync:status',
+  syncExportBundle: 'sync:export-bundle',
+  syncImportBundle: 'sync:import-bundle',
+  wifiSyncGetSettings: 'wifi-sync:get-settings',
+  wifiSyncUpdateSettings: 'wifi-sync:update-settings',
+  wifiSyncStartServer: 'wifi-sync:start-server',
+  wifiSyncStopServer: 'wifi-sync:stop-server',
+  wifiSyncServerStatus: 'wifi-sync:server-status',
+  wifiSyncPairingInfo: 'wifi-sync:pairing-info',
+  wifiSyncRegenerateAccessPassword: 'wifi-sync:regenerate-access-password',
+  wifiSyncDiscover: 'wifi-sync:discover',
+  wifiSyncPullMerge: 'wifi-sync:pull-merge',
+  wifiSyncPullMergeQr: 'wifi-sync:pull-merge-qr',
 } as const
 
 export const IPC_EVENTS = {

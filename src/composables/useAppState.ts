@@ -33,6 +33,13 @@ import type {
   TrashedEntry,
   VaultStatus,
 } from '@/types'
+import type {
+  SyncMergeResult,
+  WifiSyncClientPullPayload,
+  WifiSyncPairingInfo,
+  WifiSyncServerStatus,
+  WifiSyncSettings,
+} from '@/shared/syncTypes'
 
 const screen = ref<AppScreen>('lock')
 const settingsTab = ref<SettingsTab>('security')
@@ -62,6 +69,24 @@ const searchQuery = ref('')
 const listSortOrder = ref<ListSortOrder>('title')
 const passwordGenApplyMode = ref(false)
 const pendingApplyPassword = ref<string | null>(null)
+const wifiSyncSettings = ref<WifiSyncSettings>({
+  serverEnabled: false,
+  accessPassword: '',
+  port: 8765,
+  pairedDevices: [],
+})
+const wifiSyncServerStatus = ref<WifiSyncServerStatus>({
+  running: false,
+  port: null,
+  host: null,
+  accessPassword: '',
+  certificateFingerprint: '',
+  verificationCode: '',
+  lastPublishedAt: null,
+  lastPublishedRevision: 0,
+  bundleSizeBytes: 0,
+})
+
 const emailBackupSettings = ref<EmailBackupSettings>({
   recipientEmail: '',
   frequency: 'manual',
@@ -420,6 +445,63 @@ function navigateTo(next: AppScreen, tab: SettingsTab = 'security'): void {
 function openEmailBackup(): void {
   navigateTo('email-backup')
   void loadEmailBackupSettings()
+}
+
+function openWifiSync(): void {
+  navigateTo('wifi-sync')
+  void loadWifiSyncState()
+}
+
+async function loadWifiSyncState(): Promise<void> {
+  wifiSyncSettings.value = await vaultApi.getWifiSyncSettings()
+  wifiSyncServerStatus.value = await vaultApi.getWifiSyncServerStatus()
+}
+
+async function startWifiSyncServer(): Promise<WifiSyncServerStatus> {
+  wifiSyncServerStatus.value = await vaultApi.startWifiSyncServer()
+  wifiSyncSettings.value = await vaultApi.getWifiSyncSettings()
+  touchActivity()
+  return wifiSyncServerStatus.value
+}
+
+async function stopWifiSyncServer(): Promise<WifiSyncServerStatus> {
+  wifiSyncServerStatus.value = await vaultApi.stopWifiSyncServer()
+  wifiSyncSettings.value = await vaultApi.getWifiSyncSettings()
+  touchActivity()
+  return wifiSyncServerStatus.value
+}
+
+async function refreshWifiSyncPairing(): Promise<WifiSyncPairingInfo> {
+  return vaultApi.getWifiSyncPairingInfo()
+}
+
+async function regenerateWifiSyncAccessPassword(): Promise<string> {
+  const password = await vaultApi.regenerateWifiSyncAccessPassword()
+  await loadWifiSyncState()
+  touchActivity()
+  return password
+}
+
+async function discoverWifiSyncServers() {
+  return vaultApi.discoverWifiSyncServers()
+}
+
+async function pullWifiSyncMerge(payload: WifiSyncClientPullPayload): Promise<SyncMergeResult> {
+  const result = await vaultApi.pullWifiSyncMerge(payload)
+  await refreshVaultData()
+  touchActivity()
+  return result
+}
+
+async function pullWifiSyncMergeQr(
+  qrPayload: string,
+  masterPassword: string,
+  deviceName?: string,
+): Promise<SyncMergeResult> {
+  const result = await vaultApi.pullWifiSyncMergeQr({ qrPayload, masterPassword, deviceName })
+  await refreshVaultData()
+  touchActivity()
+  return result
 }
 
 function openPasswordGen(apply = false): void {
@@ -1017,6 +1099,17 @@ export function useAppState() {
     pendingApplyPassword,
     openPasswordGen,
     openEmailBackup,
+    openWifiSync,
+    wifiSyncSettings,
+    wifiSyncServerStatus,
+    loadWifiSyncState,
+    startWifiSyncServer,
+    stopWifiSyncServer,
+    refreshWifiSyncPairing,
+    regenerateWifiSyncAccessPassword,
+    discoverWifiSyncServers,
+    pullWifiSyncMerge,
+    pullWifiSyncMergeQr,
     openTrash,
     refreshTrashEntries,
     restoreTrashEntry,

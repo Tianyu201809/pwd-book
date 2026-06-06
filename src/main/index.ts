@@ -29,6 +29,7 @@ import {
   setupScreenshotFixture,
 } from './screenshotMode'
 import { destroyBrowserBridge, syncBrowserBridge } from './services/browserBridgeService'
+import { stopWifiSyncServer } from './services/wifiSyncService'
 import { registerSystemAutoLock } from './autoLock'
 
 let mainWindow: BrowserWindow | null = null
@@ -174,5 +175,6 @@ if (gotSingleInstanceLock) {
     destroyQuickBar()
     destroyTray()
     destroyBrowserBridge()
+    void stopWifiSyncServer()
   })
 }

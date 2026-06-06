@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
 import {
   deriveSessionKey,
+  deriveSyncTransportKey,
   encryptSecret,
   hashMasterPassword,
   verifyMasterPassword,
@@ -47,7 +48,10 @@ export function setupVault(masterPassword: string, confirmPassword: string): voi
   const hash = hashMasterPassword(masterPassword, salt)
   setSetting(MASTER_SALT_KEY, salt)
   setSetting(MASTER_HASH_KEY, hash)
-  unlockSession(deriveSessionKey(masterPassword, salt))
+  unlockSession(
+    deriveSessionKey(masterPassword, salt),
+    deriveSyncTransportKey(masterPassword),
+  )
 }
 
 export function unlockVault(masterPassword: string): void {
@@ -59,7 +63,10 @@ export function unlockVault(masterPassword: string): void {
   if (!verifyMasterPassword(masterPassword, salt, hash)) {
     throw appError(ErrorCode.WRONG_MASTER_PASSWORD)
   }
-  unlockSession(deriveSessionKey(masterPassword, salt))
+  unlockSession(
+    deriveSessionKey(masterPassword, salt),
+    deriveSyncTransportKey(masterPassword),
+  )
 }
 
 export function lockVault(): void {

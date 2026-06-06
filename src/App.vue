@@ -12,6 +12,7 @@ import LockScreen from '@/components/LockScreen.vue'
 import VaultView from '@/components/VaultView.vue'
 import SettingsView from '@/components/SettingsView.vue'
 import EmailBackupView from '@/components/EmailBackupView.vue'
+import WifiSyncView from '@/components/WifiSyncView.vue'
 import PasswordGenView from '@/components/PasswordGenView.vue'
 import TrashView from '@/components/TrashView.vue'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
@@ -82,6 +83,7 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
         <VaultView v-else-if="screen === 'vault'" />
         <SettingsView v-else-if="screen === 'settings'" />
         <EmailBackupView v-else-if="screen === 'email-backup'" />
+        <WifiSyncView v-else-if="screen === 'wifi-sync'" />
         <PasswordGenView v-else-if="screen === 'password-gen'" />
         <TrashView v-else-if="screen === 'trash'" />
       </main>
@@ -105,6 +107,7 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
       <VaultView v-else-if="screen === 'vault'" />
       <SettingsView v-else-if="screen === 'settings'" />
       <EmailBackupView v-else-if="screen === 'email-backup'" />
+      <WifiSyncView v-else-if="screen === 'wifi-sync'" />
       <PasswordGenView v-else-if="screen === 'password-gen'" />
       <TrashView v-else-if="screen === 'trash'" />
     </main>

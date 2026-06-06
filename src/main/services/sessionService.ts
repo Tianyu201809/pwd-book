@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
 }
 
 let sessionKey: Buffer | null = null
+let syncTransportKey: Buffer | null = null
 
 export function isUnlocked(): boolean {
   return sessionKey !== null
@@ -27,12 +28,21 @@ export function getSessionKey(): Buffer {
   return sessionKey
 }
 
-export function unlockSession(key: Buffer): void {
+export function getSyncTransportKey(): Buffer {
+  if (!syncTransportKey) {
+    throw appError(ErrorCode.VAULT_LOCKED)
+  }
+  return syncTransportKey
+}
+
+export function unlockSession(key: Buffer, transportKey?: Buffer): void {
   sessionKey = key
+  syncTransportKey = transportKey ?? null
 }
 
 export function lockSession(): void {
   sessionKey = null
+  syncTransportKey = null
 }
 
 export function getDefaultSettings(): SecuritySettings {

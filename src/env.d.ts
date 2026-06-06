@@ -22,6 +22,15 @@ import type {
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
 } from '@/shared/types'
+import type {
+  SyncMergeResult,
+  SyncStatus,
+  WifiSyncClientPullPayload,
+  WifiSyncDiscoveredServer,
+  WifiSyncPairingInfo,
+  WifiSyncServerStatus,
+  WifiSyncSettings,
+} from '@/shared/syncTypes'
 import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '@/shared/browserBridgeProtocol'
 
 declare global {
@@ -88,6 +97,28 @@ declare global {
       updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate) => Promise<EmailBackupSettings>
       testEmailBackupConnection: () => Promise<void>
       sendEmailBackup: (payload: EmailBackupSendPayload) => Promise<EmailBackupSettings>
+      getSyncStatus: () => Promise<SyncStatus>
+      exportSyncBundle: (
+        masterPassword: string,
+      ) => Promise<{ buffer: Uint8Array; revision: number; sizeBytes: number }>
+      importSyncBundle: (payload: {
+        masterPassword: string
+        buffer: Uint8Array
+      }) => Promise<SyncMergeResult>
+      getWifiSyncSettings: () => Promise<WifiSyncSettings>
+      updateWifiSyncSettings: (partial: Partial<WifiSyncSettings>) => Promise<WifiSyncSettings>
+      getWifiSyncServerStatus: () => Promise<WifiSyncServerStatus>
+      getWifiSyncPairingInfo: () => Promise<WifiSyncPairingInfo>
+      regenerateWifiSyncAccessPassword: () => Promise<string>
+      startWifiSyncServer: () => Promise<WifiSyncServerStatus>
+      stopWifiSyncServer: () => Promise<WifiSyncServerStatus>
+      discoverWifiSyncServers: () => Promise<WifiSyncDiscoveredServer[]>
+      pullWifiSyncMerge: (payload: WifiSyncClientPullPayload) => Promise<SyncMergeResult>
+      pullWifiSyncMergeQr: (payload: {
+        qrPayload: string
+        masterPassword: string
+        deviceName?: string
+      }) => Promise<SyncMergeResult>
       onScheduledBackupDue: (handler: () => void) => () => void
       onSystemLockScreen: (handler: () => void) => () => void
       hideQuickBar?: () => void

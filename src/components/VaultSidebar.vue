@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, MailCheck, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, Wifi } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -28,6 +28,7 @@ const {
   selectCategory,
   navigateTo,
   openEmailBackup,
+  openWifiSync,
   openPasswordGen,
   openTrash,
   vaultStatus,
@@ -396,6 +397,17 @@ onBeforeUnmount(() => {
                   <MailCheck :size="13" :stroke-width="1.5" />
                 </span>
                 <span class="tool-compact-btn__label">{{ t('tools.emailBackupTitle') }}</span>
+              </button>
+              <button
+                type="button"
+                class="tool-compact-btn tool-compact-btn--wifi"
+                :title="t('tools.wifiSyncDesc')"
+                @click="openWifiSync"
+              >
+                <span class="tool-compact-btn__icon" aria-hidden="true">
+                  <Wifi :size="13" :stroke-width="1.5" />
+                </span>
+                <span class="tool-compact-btn__label">{{ t('tools.wifiSyncTitle') }}</span>
               </button>
               <button
                 type="button"
