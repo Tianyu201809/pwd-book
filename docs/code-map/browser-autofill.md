@@ -10,7 +10,7 @@ Chrome / Edge 扩展 + Native Messaging Host + 主进程本地桥接。全程本
 | Native Host | [`native-host/`](../../native-host/) | Chrome 子进程：stdio ↔ `127.0.0.1` 桥接（`index.mjs` + `pwdbook-native-host.cmd`） |
 | 桥接服务 | [`browserBridgeService.ts`](../../src/main/services/browserBridgeService.ts) | `127.0.0.1` TCP，校验 token / 解锁 / URL |
 | URL 匹配 | [`browserMatchService.ts`](../../src/main/services/browserMatchService.ts) | 按页面 hostname 匹配条目 |
-| 注册 | [`nativeHostRegistryService.ts`](../../src/main/services/nativeHostRegistryService.ts) | 写清单 + Windows 注册表 |
+| 注册 | [`nativeHostRegistryService.ts`](../../src/main/services/nativeHostRegistryService.ts) | 写清单 + Windows 注册表 / macOS NativeMessagingHosts（v1.12.0） |
 | 协议类型 | [`browserBridgeProtocol.ts`](../../src/shared/browserBridgeProtocol.ts) | Bridge 请求/响应、注册状态 |
 | URL 工具 | [`urlMatch.ts`](../../src/shared/urlMatch.ts) | `entryUrlMatchesPage`、`normalizeUrl` |
 
@@ -58,20 +58,30 @@ sequenceDiagram
 
 | 文件 | 说明 |
 |------|------|
-| `pwdbook-native-host.cmd` | Chrome 注册表 `path` 指向的入口，执行 `node index.mjs` |
+| `pwdbook-native-host.cmd` | **Windows**：Chrome 注册表 `path` 指向的入口，执行 `node index.mjs` |
+| `pwdbook-native-host.sh` | **macOS**（v1.12.0）：Chrome Native Messaging `path` 指向的 shell 入口 |
 | `index.mjs` | 读 4 字节长度 + JSON（Chrome 协议）→ 连 Bridge → 写回响应 |
 | `com.pwdbook.app.json` | **仓库内仅为模板**（`REPLACE_EXTENSION_ID`），勿直接给浏览器用 |
 
-**运行时有效清单**（注册后）：
+**运行时有效清单**（注册后，用户目录副本）：
 
 ```
+# Windows
 %APPDATA%\pwd-book\native-host\com.pwdbook.app.json
+
+# macOS
+~/Library/Application Support/pwd-book/native-host/com.pwdbook.app.json
 ```
 
-注册表（当前用户）：
+**浏览器侧注册位置**：
 
-- `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.pwdbook.app`
-- `HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.pwdbook.app`
+- **Windows** — 注册表（当前用户）：
+  - `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.pwdbook.app`
+  - `HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.pwdbook.app`
+- **macOS**（v1.12.0）— 写入各浏览器 `NativeMessagingHosts` 目录：
+  - `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/com.pwdbook.app.json`
+  - `~/Library/Application Support/Microsoft Edge/NativeMessagingHosts/com.pwdbook.app.json`
+  - `~/Library/Application Support/Chromium/NativeMessagingHosts/com.pwdbook.app.json`
 
 ## 扩展（extension/）
 

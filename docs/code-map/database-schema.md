@@ -18,6 +18,8 @@
 | `tags` | TEXT | JSON 数组字符串 |
 | `is_favorite` | INTEGER | 0/1 |
 | `display_icon` | TEXT | 条目图标 id（迁移添加） |
+| `local_program_path` | TEXT | 本地程序路径（迁移添加） |
+| `totp_secret_encrypted` | TEXT | TOTP Base32 密钥 AES-256-GCM base64（v1.12.0 迁移添加） |
 | `last_used_at` | INTEGER | Unix ms，可空 |
 | `created_at` | INTEGER | Unix ms |
 | `updated_at` | INTEGER | Unix ms |
@@ -68,6 +70,7 @@
 | `sync_revision` | 当前 SyncBundle 版本号（v1.9.0） |
 | `sync_last_synced_at` | 上次成功同步时间戳 ms（v1.9.0） |
 | `sync_last_sync_error` | 最近一次同步错误信息（v1.9.0） |
+| `ui_locale` | 界面语言 `zh-CN` / `en`；托盘菜单文案同步（v1.12.0） |
 
 ### 快捷条与快捷键
 

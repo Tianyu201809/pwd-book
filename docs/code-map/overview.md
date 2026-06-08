@@ -6,10 +6,10 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.11.0（`package.json`） |
+| 版本 | 1.12.0（`package.json`） |
 | 源码文件 | ~70+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 45+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
-| 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`syncVerification`、`syncClient`、`mobileSyncWorkflow` |
+| 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch` 等 |
 
 ## 三层进程模型
 
@@ -67,6 +67,7 @@ lock ──unlock──► vault ◄──► settings / email-backup / wifi-syn
 - **vault**：`VaultView.vue` — 侧边栏 + 列表 + 详情
 - **settings**：`SettingsView.vue` — 安全、外观、数据、关于
 - **wifi-sync**：`WifiSyncView.vue` — 局域网同步（v1.9.0，入口：设置 → 数据 → 同步）
+- **password-health**：`PasswordHealthView.vue` — 密码健康分析（v1.12.0，入口：侧栏工具与设置）
 
 ## 目录结构
 
@@ -93,6 +94,10 @@ src/
 │   ├── types.ts          # 共享类型 + IPC 常量
 │   ├── syncTypes.ts      # SyncBundle、Wi-Fi 同步类型（v1.9.0）
 │   ├── syncMerge.ts      # LWW 合并纯函数
+│   ├── totp.ts           # TOTP 生成与 Base32 校验（v1.12.0）
+│   ├── passwordHealth.ts # 弱密码 / 重复密码分析（v1.12.0）
+│   ├── recoveryKey.ts    # 恢复密钥格式校验（v1.12.0）
+│   ├── trayLabels.ts     # 托盘菜单文案（v1.12.0）
 │   ├── syncClient.ts     # WebDAV 客户端传输
 │   ├── browserBridgeProtocol.ts  # 浏览器桥接协议（v1.6.0）
 │   ├── urlMatch.ts       # 条目 URL / 页面 hostname 匹配

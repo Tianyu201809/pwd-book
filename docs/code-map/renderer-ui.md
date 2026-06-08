@@ -10,16 +10,18 @@ App.vue
 ├── LockScreen.vue            # 锁定页状态机
 │   └── recovery/*            # 恢复流程子组件
 ├── VaultView.vue             # 主工作区
-│   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单
+│   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单、标签筛选（v1.12.0）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
-│   └── PasswordDetail.vue    # 条目编辑、图标选择
+│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）
 ├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口）
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
 ├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全）
 ├── PasswordGenView.vue       # 随机密码（侧栏工具区入口）
+├── PasswordHealthView.vue    # 密码健康（v1.12.0，侧栏工具区入口）
 ├── WifiSyncView.vue          # 局域网同步（v1.9.0，设置 → 数据 → 同步）
-│   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram
+│   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram、SyncConflictModal（v1.12.0）
+├── TagFilterPanel.vue        # 侧栏按标签筛选（v1.12.0，VaultSidebar 内嵌）
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
 ├── TagManagePanel.vue        # 标签管理
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
@@ -35,14 +37,15 @@ App.vue
 ### QuickBarApp.vue
 
 - 无搜索词时展示「最近打开」（`listQuickBarRecent`），最多 5 条，可手动移除。
-- 有搜索词时 `filterEntriesBySearch` 过滤；↑↓ / Enter 选择并 `launchEntry`。
+- 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**）；↑↓ / Enter 选择并 `launchEntry`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 
 ### VaultSidebar.vue
 
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
 - HTML5 拖拽排序，`reorderSidebarCategories` 持久化。
-- **工具与设置** 折叠区（v1.11.0）：**随机密码** 为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
+- **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
+- **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`。
 
 ### SettingsView.vue
 
@@ -63,7 +66,7 @@ App.vue
 
 | 状态/方法 | 说明 |
 |-----------|------|
-| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'wifi-sync' \| 'password-gen' \| 'trash'` |
+| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'wifi-sync' \| 'password-gen' \| 'password-health' \| 'trash'` |
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
@@ -75,6 +78,8 @@ App.vue
 | `exportDataAsCsv` | PwdBook / 第三方 CSV 导出 |
 | `openWifiSync` / `loadWifiSyncState` | 同步页导航与状态（v1.9.0） |
 | `startWifiSyncServer` / `pullWifiSyncMerge` | 服务端开关、客户端拉取合并 |
+| `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 侧栏标签多选筛选（v1.12.0，AND 逻辑） |
+| `openPasswordHealth` | 密码健康页导航（v1.12.0） |
 
 错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。
 

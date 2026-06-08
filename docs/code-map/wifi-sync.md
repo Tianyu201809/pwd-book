@@ -118,6 +118,9 @@ sequenceDiagram
 | `sync/SyncTutorialPanel.vue` | 按角色展示 3 步指引 + 示意图高亮 |
 | `sync/SyncTutorialDiagram.vue` | GSAP 动画拓扑图 |
 | `sync/SyncPairingQr.vue` | 配对 JSON 二维码 |
+| `sync/SyncConflictModal.vue` | 同步冲突列表弹窗（v1.12.0；LWW 时间戳相同时保留本地） |
+
+**冲突检测**（v1.12.0）：`mergeSyncBundles` 在本地与远端 `updated_at` 相同且内容不一致时记入 `conflicts[]`；`WifiSyncView` 在 `pullWifiSyncMerge` 成功后若有冲突则打开 `SyncConflictModal`。
 
 `useAppState`：`openWifiSync`、`loadWifiSyncState`、`startWifiSyncServer`、`pullWifiSyncMerge` 等。
 
