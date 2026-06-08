@@ -12,11 +12,12 @@ import {
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import SyncTutorialPanel from '@/components/sync/SyncTutorialPanel.vue'
 import SyncPairingQr from '@/components/sync/SyncPairingQr.vue'
+import SyncConflictModal from '@/components/sync/SyncConflictModal.vue'
 import { UiButton, UiInput } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { parseErrorMessage } from '@/shared/utils'
-import type { WifiSyncDiscoveredServer } from '@/shared/syncTypes'
+import type { SyncConflict, SyncMergeResult, WifiSyncDiscoveredServer } from '@/shared/syncTypes'
 
 const {
   navigateTo,
@@ -49,6 +50,8 @@ const showMasterModal = ref(false)
 const masterModalRef = ref<InstanceType<typeof MasterPasswordConfirmModal> | null>(null)
 const pendingAction = ref<'client' | 'qr' | null>(null)
 const clientVerificationCode = ref('')
+const syncConflicts = ref<SyncConflict[]>([])
+const showConflictModal = ref(false)
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 let verificationTimer: ReturnType<typeof setInterval> | null = null
@@ -185,18 +188,35 @@ function openQrSync(): void {
   showMasterModal.value = true
 }
 
+function handleSyncResult(result: SyncMergeResult): void {
+  if (result.conflicts.length > 0) {
+    syncConflicts.value = result.conflicts
+    showConflictModal.value = true
+    showToast(
+      t('tools.wifiSync.syncSuccessWithConflicts', {
+        added: result.added,
+        updated: result.updated,
+        conflicts: result.conflicts.length,
+      }),
+      'success',
+    )
+    return
+  }
+  showToast(
+    t('tools.wifiSync.syncSuccess', {
+      added: result.added,
+      updated: result.updated,
+    }),
+    'success',
+  )
+}
+
 async function confirmSync(masterPassword: string): Promise<void> {
   syncLoading.value = true
   try {
     if (pendingAction.value === 'qr') {
       const result = await pullWifiSyncMergeQr(qrPayload.value.trim(), masterPassword)
-      showToast(
-        t('tools.wifiSync.syncSuccess', {
-          added: result.added,
-          updated: result.updated,
-        }),
-        'success',
-      )
+      handleSyncResult(result)
     } else if (pendingAction.value === 'client' && selectedServer.value) {
       if (!clientAccessPassword.value.trim()) {
         showToast(t('tools.wifiSync.accessPasswordRequired'), 'success')
@@ -209,13 +229,7 @@ async function confirmSync(masterPassword: string): Promise<void> {
         certificateFingerprint: selectedServer.value.fingerprint,
         masterPassword,
       })
-      showToast(
-        t('tools.wifiSync.syncSuccess', {
-          added: result.added,
-          updated: result.updated,
-        }),
-        'success',
-      )
+      handleSyncResult(result)
     }
     masterModalRef.value?.resetPassword()
     showMasterModal.value = false
@@ -440,6 +454,12 @@ async function confirmSync(masterPassword: string): Promise<void> {
       :confirm-label="t('tools.wifiSync.confirmSync')"
       :loading="syncLoading"
       @confirm="confirmSync"
+    />
+
+    <SyncConflictModal
+      :open="showConflictModal"
+      :conflicts="syncConflicts"
+      @close="showConflictModal = false"
     />
   </div>
 </template>

@@ -16,6 +16,7 @@ function makeEntry(overrides: Partial<SyncEntry> & { id: string }): SyncEntry {
     isFavorite: overrides.isFavorite ?? false,
     displayIcon: overrides.displayIcon ?? '',
     localProgramPath: overrides.localProgramPath ?? '',
+    totpSecret: overrides.totpSecret ?? '',
     lastUsedAt: overrides.lastUsedAt ?? null,
     createdAt: overrides.createdAt ?? 1000,
     updatedAt: overrides.updatedAt ?? 1000,
@@ -101,6 +102,7 @@ describe('mergeSyncBundles', () => {
     const { merged, conflicts } = mergeSyncBundles(local, remote)
     expect(conflicts).toHaveLength(1)
     expect(conflicts[0]?.entryId).toBe('e1')
+    expect(conflicts[0]?.title).toBe('Local')
     expect(merged.entries[0]?.title).toBe('Local')
   })
 

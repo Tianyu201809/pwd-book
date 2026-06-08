@@ -102,6 +102,21 @@ function onClassicChange(event: Event): void {
   margin-bottom: 0 !important;
   transform: none !important;
   min-width: 100%;
+  max-height: min(220px, 40vh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 200;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--scrollbar-thumb) 42%, transparent) transparent;
+}
+
+.ui-animal-select :deep(.animal-select__dropdown)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ui-animal-select :deep(.animal-select__dropdown)::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--scrollbar-thumb) 50%, transparent);
+  border-radius: 99px;
 }
 </style>

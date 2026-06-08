@@ -28,10 +28,11 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
   const mappedCategoryId = categoryRemap.get(entry.categoryId) ?? entry.categoryId
 
   if (!existing) {
+    const totpSecret = entry.totpSecret?.trim() ?? ''
     db.run(
       `INSERT INTO password_entries
-        (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, last_used_at, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, totp_secret_encrypted, last_used_at, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         entry.id,
         entry.title.trim(),
@@ -44,6 +45,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
         entry.isFavorite ? 1 : 0,
         entry.displayIcon?.trim() ?? '',
         entry.localProgramPath?.trim() ?? '',
+        totpSecret ? encryptSecret(totpSecret, key) : '',
         entry.lastUsedAt,
         entry.createdAt,
         entry.updatedAt,
@@ -60,11 +62,12 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
   const wasActive = existing.deleted_at == null
   const willBeActive = nextDeletedAt == null
 
+  const totpSecret = entry.totpSecret?.trim() ?? ''
   db.run(
     `UPDATE password_entries
      SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?,
-         is_favorite = ?, display_icon = ?, local_program_path = ?, last_used_at = ?, created_at = ?,
-         updated_at = ?, deleted_at = ?
+         is_favorite = ?, display_icon = ?, local_program_path = ?, totp_secret_encrypted = ?,
+         last_used_at = ?, created_at = ?, updated_at = ?, deleted_at = ?
      WHERE id = ?`,
     [
       entry.title.trim(),
@@ -77,6 +80,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
       entry.isFavorite ? 1 : 0,
       entry.displayIcon?.trim() ?? '',
       entry.localProgramPath?.trim() ?? '',
+      totpSecret ? encryptSecret(totpSecret, key) : '',
       entry.lastUsedAt,
       entry.createdAt,
       entry.updatedAt,

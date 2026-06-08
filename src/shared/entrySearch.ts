@@ -6,6 +6,7 @@ export function entrySearchFields(entry: PasswordEntry): string[] {
     entry.title,
     entry.username,
     entry.url,
+    entry.note,
     entry.categoryName,
     ...entry.tags,
   ]

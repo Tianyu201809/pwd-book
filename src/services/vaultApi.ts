@@ -89,6 +89,7 @@ export const vaultApi = {
   getSettings: (): Promise<SecuritySettings> => getApi().getSettings(),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>
     getApi().updateSettings(partial),
+  setUiLocale: (locale: 'zh-CN' | 'en'): Promise<'zh-CN' | 'en'> => getApi().setUiLocale(locale),
   getBrowserBridgeStatus: () => getApi().getBrowserBridgeStatus(),
   regenerateBrowserBridgeToken: () => getApi().regenerateBrowserBridgeToken(),
   getNativeHostRegistrationInfo: () => getApi().getNativeHostRegistrationInfo(),

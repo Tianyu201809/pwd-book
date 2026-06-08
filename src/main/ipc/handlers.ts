@@ -1,4 +1,7 @@
 import { clipboard, ipcMain, shell } from 'electron'
+import { rebuildTrayMenu } from '../tray'
+import { setSetting } from '../db/helpers'
+import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
 import { IPC } from '../../shared/types'
@@ -413,6 +416,13 @@ export function registerIpcHandlers(): void {
     registerQuickBarShortcut()
     registerMainWindowShortcut()
     syncBrowserBridge()
+    return next
+  })
+
+  ipcMain.handle(IPC.settingsSetUiLocale, (_event, locale: TrayLocale) => {
+    const next = locale === 'en' ? 'en' : 'zh-CN'
+    setSetting(UI_LOCALE_SETTING_KEY, next)
+    rebuildTrayMenu()
     return next
   })
 

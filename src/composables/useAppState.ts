@@ -65,6 +65,7 @@ const securitySettings = ref<SecuritySettings>({
 })
 
 const selectedCategory = ref<FilterCategory>('all')
+const selectedTagFilters = ref<string[]>([])
 const selectedEntryId = ref<string | null>(null)
 const searchQuery = ref('')
 const listSortOrder = ref<ListSortOrder>('title')
@@ -192,8 +193,14 @@ const filteredEntries = computed(() => {
       (selectedCategory.value === 'favorite'
         ? entry.isFavorite
         : entry.categoryId === selectedCategory.value)
+    const matchTag =
+      selectedTagFilters.value.length === 0 ||
+      selectedTagFilters.value.every((filterTag) => {
+        const normalized = filterTag.trim().toLowerCase()
+        return entry.tags.some((tag) => tag.trim().toLowerCase() === normalized)
+      })
     const matchSearch = !q || entryMatchesSearch(entry, q)
-    return matchCategory && matchSearch
+    return matchCategory && matchTag && matchSearch
   })
 })
 
@@ -549,8 +556,42 @@ function closeScheduledBackupPrompt(): void {
 
 function selectCategory(id: FilterCategory): void {
   selectedCategory.value = id
+  selectedTagFilters.value = []
   isCreating.value = false
   selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  touchActivity()
+}
+
+function toggleTagFilter(tag: string): void {
+  const normalized = tag.trim()
+  if (!normalized) return
+
+  const lower = normalized.toLowerCase()
+  const index = selectedTagFilters.value.findIndex(
+    (item) => item.trim().toLowerCase() === lower,
+  )
+
+  if (index >= 0) {
+    selectedTagFilters.value = selectedTagFilters.value.filter((_, i) => i !== index)
+  } else {
+    selectedTagFilters.value = [...selectedTagFilters.value, normalized]
+  }
+
+  isCreating.value = false
+  selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  touchActivity()
+}
+
+function clearTagFilters(): void {
+  if (selectedTagFilters.value.length === 0) return
+  selectedTagFilters.value = []
+  isCreating.value = false
+  selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  touchActivity()
+}
+
+function openPasswordHealth(): void {
+  screen.value = 'password-health'
   touchActivity()
 }
 
@@ -625,6 +666,7 @@ function entryToInput(entry: PasswordEntry): PasswordEntryInput {
     isFavorite: entry.isFavorite,
     displayIcon: entry.displayIcon ?? '',
     localProgramPath: entry.localProgramPath ?? '',
+    totpSecret: entry.totpSecret ?? '',
   }
 }
 
@@ -1055,6 +1097,7 @@ export function useAppState() {
     vaultStatus,
     securitySettings,
     selectedCategory,
+    selectedTagFilters,
     selectedEntryId,
     searchQuery,
     listSortOrder,
@@ -1089,6 +1132,8 @@ export function useAppState() {
     resetVaultFromLock,
     navigateTo,
     selectCategory,
+    toggleTagFilter,
+    clearTagFilters,
     selectEntry,
     startCreateEntry,
     cancelCreateEntry,
@@ -1114,6 +1159,7 @@ export function useAppState() {
     passwordGenApplyMode,
     pendingApplyPassword,
     openPasswordGen,
+    openPasswordHealth,
     openEmailBackup,
     openWifiSync,
     wifiSyncSettings,

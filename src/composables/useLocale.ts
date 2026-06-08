@@ -7,6 +7,7 @@ import {
   readStoredLocale,
   type AppLocale,
 } from '@/i18n'
+import { vaultApi } from '@/services/vaultApi'
 
 const locale = ref<AppLocale>(readStoredLocale())
 
@@ -16,6 +17,7 @@ watch(
     i18n.global.locale.value = next
     localStorage.setItem(LOCALE_STORAGE_KEY, next)
     applyDocumentLocale(next)
+    void vaultApi.setUiLocale(next).catch(() => {})
   },
   { immediate: true },
 )

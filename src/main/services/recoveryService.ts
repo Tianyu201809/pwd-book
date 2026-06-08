@@ -8,6 +8,12 @@ import {
   hashMasterPassword,
   verifyMasterPassword,
 } from '../crypto/vaultCrypto'
+import {
+  formatRecoveryKey,
+  isRecoveryKeyFormatValid,
+  normalizeRecoveryKey,
+  RECOVERY_CHARSET,
+} from '../../shared/recoveryKey'
 import { getDatabase, persistDatabase } from '../db/database'
 import {
   countActiveEntries,
@@ -24,22 +30,9 @@ const RECOVERY_HASH_KEY = 'recovery_hash'
 const RECOVERY_WRAP_SALT_KEY = 'recovery_wrap_salt'
 const RECOVERY_WRAP_KEY = 'recovery_wrap'
 
-const RECOVERY_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+export { formatRecoveryKey, normalizeRecoveryKey } from '../../shared/recoveryKey'
 
-export function normalizeRecoveryKey(input: string): string {
-  return input.replace(/[-\s]/g, '').toUpperCase()
-}
-
-export function formatRecoveryKey(raw: string): string {
-  const normalized = normalizeRecoveryKey(raw)
-  const parts: string[] = []
-  for (let i = 0; i < normalized.length; i += 4) {
-    parts.push(normalized.slice(i, i + 4))
-  }
-  return parts.join('-')
-}
-
-export function generateRecoveryKeyValue(): string {
+function generateRecoveryKeyValue(): string {
   const chars: string[] = []
   for (let i = 0; i < 20; i += 1) {
     chars.push(RECOVERY_CHARSET[randomBytes(1)[0] % RECOVERY_CHARSET.length])
@@ -56,7 +49,7 @@ export function getRecoveryStatus(): { configured: boolean } {
 }
 
 function assertRecoveryKeyFormat(normalized: string): void {
-  if (!/^[A-Z2-9]{20}$/.test(normalized)) {
+  if (!isRecoveryKeyFormatValid(normalized)) {
     throw appError(ErrorCode.RECOVERY_KEY_INVALID_FORMAT)
   }
 }
@@ -149,9 +142,12 @@ export function resetMasterPasswordWithRecovery(
 
   const oldKey = unwrapSessionKey(recoveryKey)
   const rows = [...readActiveEntryRows(), ...readTrashedEntryRows()]
-  const decryptedPasswords = rows.map((row) => ({
+  const decryptedSecrets = rows.map((row) => ({
     id: row.id,
     password: decryptSecret(row.password_encrypted, oldKey),
+    totpSecret: row.totp_secret_encrypted
+      ? decryptSecret(row.totp_secret_encrypted, oldKey)
+      : '',
   }))
 
   const masterSalt = createMasterSalt()
@@ -162,12 +158,16 @@ export function resetMasterPasswordWithRecovery(
   setSetting('master_hash', masterHash)
 
   const db = getDatabase()
-  decryptedPasswords.forEach(({ id, password }) => {
-    db.run('UPDATE password_entries SET password_encrypted = ?, updated_at = ? WHERE id = ?', [
-      encryptSecret(password, newKey),
-      Date.now(),
-      id,
-    ])
+  decryptedSecrets.forEach(({ id, password, totpSecret }) => {
+    db.run(
+      'UPDATE password_entries SET password_encrypted = ?, totp_secret_encrypted = ?, updated_at = ? WHERE id = ?',
+      [
+        encryptSecret(password, newKey),
+        totpSecret ? encryptSecret(totpSecret, newKey) : '',
+        Date.now(),
+        id,
+      ],
+    )
   })
   persistDatabase()
 

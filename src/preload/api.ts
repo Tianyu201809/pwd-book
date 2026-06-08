@@ -132,6 +132,8 @@ export const electronAPI = {
   getSettings: (): Promise<SecuritySettings> => invoke(IPC.settingsGet),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>
     invoke(IPC.settingsUpdate, partial),
+  setUiLocale: (locale: 'zh-CN' | 'en'): Promise<'zh-CN' | 'en'> =>
+    invoke(IPC.settingsSetUiLocale, locale),
 
   getBrowserBridgeStatus: (): Promise<BrowserBridgeStatus> => invoke(IPC.browserBridgeStatus),
   regenerateBrowserBridgeToken: (): Promise<BrowserBridgeStatus> =>

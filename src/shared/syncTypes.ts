@@ -17,6 +17,7 @@ export interface SyncEntry {
   isFavorite: boolean
   displayIcon: string
   localProgramPath: string
+  totpSecret: string
   lastUsedAt: number | null
   createdAt: number
   updatedAt: number
@@ -40,6 +41,7 @@ export interface SyncBundle {
 
 export interface SyncConflict {
   entryId: string
+  title: string
   localUpdatedAt: number
   remoteUpdatedAt: number
 }

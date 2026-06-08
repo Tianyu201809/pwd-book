@@ -22,6 +22,7 @@ function makeEntry(overrides: Partial<SyncEntry> & { id: string }): SyncEntry {
     isFavorite: overrides.isFavorite ?? false,
     displayIcon: overrides.displayIcon ?? '',
     localProgramPath: overrides.localProgramPath ?? '',
+    totpSecret: overrides.totpSecret ?? '',
     lastUsedAt: overrides.lastUsedAt ?? null,
     createdAt: overrides.createdAt ?? 1000,
     updatedAt: overrides.updatedAt ?? 1000,

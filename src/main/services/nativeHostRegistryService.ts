@@ -30,6 +30,16 @@ export function getUserManifestPath(): string {
   return path.join(getUserNativeHostDir(), `${HOST_NAME}.json`)
 }
 
+function resolveHostEntryPath(hostDir: string): string {
+  if (process.platform === 'win32') {
+    return path.join(hostDir, 'pwdbook-native-host.cmd')
+  }
+  if (process.platform === 'darwin') {
+    return path.join(hostDir, 'pwdbook-native-host.sh')
+  }
+  return ''
+}
+
 function readExtensionIdFromManifest(manifestPath: string): string {
   if (!fs.existsSync(manifestPath)) return ''
   try {
@@ -48,8 +58,8 @@ function readExtensionIdFromManifest(manifestPath: string): string {
 export function getNativeHostRegistrationInfo(): NativeHostRegistrationInfo {
   const manifestPath = getUserManifestPath()
   const hostDir = resolveBundledNativeHostDir()
-  const hostCmdPath = path.join(hostDir, 'pwdbook-native-host.cmd')
-  const hostCmdExists = fs.existsSync(hostCmdPath)
+  const hostEntryPath = resolveHostEntryPath(hostDir)
+  const hostCmdExists = Boolean(hostEntryPath && fs.existsSync(hostEntryPath))
   const manifestExists = fs.existsSync(manifestPath)
   const fromManifest = readExtensionIdFromManifest(manifestPath)
   const fromSettings = getSavedExtensionId()
@@ -59,40 +69,21 @@ export function getNativeHostRegistrationInfo(): NativeHostRegistrationInfo {
     extensionId,
     registered: manifestExists && Boolean(extensionId) && hostCmdExists,
     manifestPath: manifestExists ? manifestPath : '',
-    hostCmdPath: hostCmdExists ? hostCmdPath : '',
+    hostCmdPath: hostCmdExists ? hostEntryPath : '',
     hostCmdExists,
   }
 }
 
-export function registerNativeHost(extensionId: string): NativeHostRegistrationInfo {
-  const id = extensionId.trim().toLowerCase()
-  if (!EXTENSION_ID_RE.test(id)) {
-    throw appError(ErrorCode.INVALID_EXTENSION_ID)
-  }
-  if (process.platform !== 'win32') {
-    throw appError(ErrorCode.PLATFORM_UNSUPPORTED)
-  }
-
-  const hostDir = resolveBundledNativeHostDir()
-  const hostCmdPath = path.join(hostDir, 'pwdbook-native-host.cmd')
-  if (!fs.existsSync(hostCmdPath)) {
-    throw appError(ErrorCode.NATIVE_HOST_NOT_FOUND)
-  }
-
-  const manifestDir = getUserNativeHostDir()
-  fs.mkdirSync(manifestDir, { recursive: true })
-  const manifestPath = getUserManifestPath()
-
+function registerNativeHostWindows(id: string, hostEntryPath: string, manifestPath: string): void {
   const manifest = {
     name: HOST_NAME,
     description: 'PwdBook Native Messaging Host',
-    path: hostCmdPath.replace(/\//g, '\\'),
+    path: hostEntryPath.replace(/\//g, '\\'),
     type: 'stdio',
     allowed_origins: [`chrome-extension://${id}/`],
   }
 
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
-  setSetting(SETTINGS_KEY_EXTENSION_ID, id)
 
   const regValue = manifestPath.replace(/\//g, '\\')
   const registryKeys = [
@@ -107,6 +98,68 @@ export function registerNativeHost(extensionId: string): NativeHostRegistrationI
   } catch {
     throw appError(ErrorCode.NATIVE_HOST_REGISTRY_FAILED)
   }
+}
 
+function registerNativeHostMac(id: string, hostEntryPath: string, manifestPath: string): void {
+  try {
+    fs.chmodSync(hostEntryPath, 0o755)
+  } catch {
+    /* ignore chmod errors on dev FS */
+  }
+
+  const manifest = {
+    name: HOST_NAME,
+    description: 'PwdBook Native Messaging Host',
+    path: hostEntryPath,
+    type: 'stdio',
+    allowed_origins: [`chrome-extension://${id}/`],
+  }
+
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+
+  const home = app.getPath('home')
+  const browserDirs = [
+    path.join(home, 'Library/Application Support/Google/Chrome/NativeMessagingHosts'),
+    path.join(home, 'Library/Application Support/Microsoft Edge/NativeMessagingHosts'),
+    path.join(home, 'Library/Application Support/Chromium/NativeMessagingHosts'),
+  ]
+
+  try {
+    for (const dir of browserDirs) {
+      fs.mkdirSync(dir, { recursive: true })
+      const target = path.join(dir, `${HOST_NAME}.json`)
+      fs.writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+    }
+  } catch {
+    throw appError(ErrorCode.NATIVE_HOST_REGISTRY_FAILED)
+  }
+}
+
+export function registerNativeHost(extensionId: string): NativeHostRegistrationInfo {
+  const id = extensionId.trim().toLowerCase()
+  if (!EXTENSION_ID_RE.test(id)) {
+    throw appError(ErrorCode.INVALID_EXTENSION_ID)
+  }
+  if (process.platform !== 'win32' && process.platform !== 'darwin') {
+    throw appError(ErrorCode.PLATFORM_UNSUPPORTED)
+  }
+
+  const hostDir = resolveBundledNativeHostDir()
+  const hostEntryPath = resolveHostEntryPath(hostDir)
+  if (!hostEntryPath || !fs.existsSync(hostEntryPath)) {
+    throw appError(ErrorCode.NATIVE_HOST_NOT_FOUND)
+  }
+
+  const manifestDir = getUserNativeHostDir()
+  fs.mkdirSync(manifestDir, { recursive: true })
+  const manifestPath = getUserManifestPath()
+
+  if (process.platform === 'win32') {
+    registerNativeHostWindows(id, hostEntryPath, manifestPath)
+  } else {
+    registerNativeHostMac(id, hostEntryPath, manifestPath)
+  }
+
+  setSetting(SETTINGS_KEY_EXTENSION_ID, id)
   return getNativeHostRegistrationInfo()
 }

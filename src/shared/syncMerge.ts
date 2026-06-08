@@ -17,6 +17,7 @@ function entriesContentEqual(a: SyncEntry, b: SyncEntry): boolean {
     a.isFavorite === b.isFavorite &&
     a.displayIcon === b.displayIcon &&
     a.localProgramPath === b.localProgramPath &&
+    a.totpSecret === b.totpSecret &&
     JSON.stringify(a.tags) === JSON.stringify(b.tags) &&
     a.deletedAt === b.deletedAt
   )
@@ -89,6 +90,7 @@ export function mergeSyncBundles(
     } else {
       conflicts.push({
         entryId: id,
+        title: localEntry.title || remoteEntry.title,
         localUpdatedAt: localTime,
         remoteUpdatedAt: remoteTime,
       })

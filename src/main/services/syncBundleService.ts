@@ -83,6 +83,7 @@ function rowToSyncEntry(row: EntryRow): SyncEntry {
     isFavorite: entry.isFavorite,
     displayIcon: entry.displayIcon,
     localProgramPath: entry.localProgramPath,
+    totpSecret: entry.totpSecret,
     lastUsedAt: entry.lastUsedAt,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,

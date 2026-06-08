@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Tags, X } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Tags, X, Shield } from 'lucide-vue-next'
+import {
+  generateTotpCode,
+  getTotpRemainingSeconds,
+  isValidTotpSecret,
+  normalizeTotpSecret,
+} from '@/shared/totp'
+import { showToast } from '@/composables/useToast'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
@@ -105,7 +112,29 @@ const draft = ref<PasswordEntryInput>({
   isFavorite: false,
   displayIcon: '',
   localProgramPath: '',
+  totpSecret: '',
 })
+
+const totpCode = ref('')
+const totpRemaining = ref(30)
+let totpTimer: ReturnType<typeof setInterval> | null = null
+
+async function refreshTotpDisplay(): Promise<void> {
+  const secret = normalizeTotpSecret(draft.value.totpSecret ?? '')
+  if (!secret || !isValidTotpSecret(secret)) {
+    totpCode.value = ''
+    totpRemaining.value = 30
+    return
+  }
+  try {
+    totpCode.value = await generateTotpCode(secret)
+    totpRemaining.value = getTotpRemainingSeconds()
+  } catch {
+    totpCode.value = ''
+  }
+}
+
+const hasValidTotp = computed(() => isValidTotpSecret(draft.value.totpSecret ?? ''))
 
 const categoryOptions = computed(() =>
   vaultCategories.value.map((category) => ({
@@ -172,8 +201,10 @@ function resetDraftFromEntry(): void {
       isFavorite: false,
       displayIcon: '',
       localProgramPath: '',
+      totpSecret: '',
     }
     closeTagPicker()
+    refreshTotpDisplay()
     return
   }
 
@@ -188,8 +219,10 @@ function resetDraftFromEntry(): void {
     isFavorite: selectedEntry.value.isFavorite,
     displayIcon: selectedEntry.value.displayIcon ?? '',
     localProgramPath: selectedEntry.value.localProgramPath ?? '',
+    totpSecret: selectedEntry.value.totpSecret ?? '',
   }
   closeTagPicker()
+  refreshTotpDisplay()
 }
 
 watch([selectedEntry, isCreating], () => {
@@ -211,7 +244,14 @@ function buildInput(): PasswordEntryInput {
   return {
     ...draft.value,
     tags: [...draftTags.value],
+    totpSecret: normalizeTotpSecret(draft.value.totpSecret ?? ''),
   }
+}
+
+async function handleCopyTotp(): Promise<void> {
+  if (!totpCode.value) return
+  await window.electronAPI?.copySecret(totpCode.value, 0)
+  showToast(t('detail.totpCopied'), 'success')
 }
 
 async function handleSave(): Promise<void> {
@@ -403,12 +443,17 @@ function onVaultLayoutResize(): void {
   if (showTagPicker.value) updateTagPickerPosition()
 }
 
+watch(() => draft.value.totpSecret, refreshTotpDisplay)
+
 onMounted(() => {
   clampPanelWidth()
   window.addEventListener('resize', onVaultLayoutResize)
+  refreshTotpDisplay()
+  totpTimer = setInterval(refreshTotpDisplay, 1000)
 })
 
 onUnmounted(() => {
+  if (totpTimer) clearInterval(totpTimer)
   stopResize()
   unbindTagPickerOutsideClose()
   window.removeEventListener('resize', onWindowResize)
@@ -609,6 +654,33 @@ watch(detailCollapsed, () => {
               <span v-for="i in 4" :key="i" class="bar" :class="{ filled: i <= strengthLevel.bars }" />
             </div>
             <span class="strength-label">{{ strengthLevel.label }}</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>{{ t('detail.totpSecret') }}</label>
+          <div class="field-row">
+            <UiInput
+              v-model="draft.totpSecret"
+              class="detail-field font-mono"
+              :placeholder="t('detail.totpSecretPlaceholder')"
+              :readonly="!formEditable"
+            />
+            <button
+              v-if="hasValidTotp"
+              type="button"
+              class="icon-btn square"
+              :title="t('detail.copyTotp')"
+              @click="handleCopyTotp"
+            >
+              <Copy :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
+          <p class="field-hint">{{ t('detail.totpSecretHint') }}</p>
+          <div v-if="hasValidTotp && totpCode" class="totp-live">
+            <Shield :size="14" :stroke-width="1.5" />
+            <span class="totp-code font-mono">{{ totpCode }}</span>
+            <span class="totp-remaining">{{ t('detail.totpRemaining', { seconds: totpRemaining }) }}</span>
           </div>
         </div>
 
@@ -1150,6 +1222,29 @@ watch(detailCollapsed, () => {
   margin: 6px 0 0;
   font-size: 11px;
   line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.totp-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+.totp-code {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.totp-remaining {
+  margin-left: auto;
+  font-size: 11px;
   color: var(--text-muted);
 }
 

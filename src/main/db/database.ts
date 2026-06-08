@@ -77,6 +77,7 @@ export async function initDatabase(): Promise<Database> {
   migrateEntryDisplayIcon(db)
   migrateEntryLocalProgramPath(db)
   migrateEntryDeletedAt(db)
+  migrateEntryTotpSecret(db)
 
   persistDatabase()
   return db
@@ -127,5 +128,12 @@ function migrateEntryDeletedAt(db: Database): void {
   const columns = readEntryTableColumns(db)
   if (!columns.includes('deleted_at')) {
     db.run(`ALTER TABLE password_entries ADD COLUMN deleted_at INTEGER`)
+  }
+}
+
+function migrateEntryTotpSecret(db: Database): void {
+  const columns = readEntryTableColumns(db)
+  if (!columns.includes('totp_secret_encrypted')) {
+    db.run(`ALTER TABLE password_entries ADD COLUMN totp_secret_encrypted TEXT NOT NULL DEFAULT ''`)
   }
 }

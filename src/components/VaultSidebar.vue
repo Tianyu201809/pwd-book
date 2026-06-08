@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
+import TagFilterPanel from '@/components/TagFilterPanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconBadge from '@/components/IconBadge.vue'
 import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
@@ -26,10 +27,13 @@ type SidebarCategoryItem = {
 
 const {
   categories,
+  vaultTags,
   selectedCategory,
+  selectedTagFilters,
   selectCategory,
   navigateTo,
   openPasswordGen,
+  openPasswordHealth,
   openTrash,
   vaultStatus,
   lock,
@@ -57,6 +61,7 @@ const contextMenuRef = ref<HTMLElement | null>(null)
 const BODY_DRAG_CLASS = 'category-drag-active'
 const VIEWPORT_MENU_PADDING = 8
 const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
+const TAG_FILTER_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-tag-filter-expanded'
 
 function isCustomCategory(id: string): boolean {
   return id !== 'all' && id !== 'favorite'
@@ -137,7 +142,13 @@ function readUtilitiesExpanded(): boolean {
   return stored === null ? false : stored === 'true'
 }
 
+function readTagFilterExpanded(): boolean {
+  const stored = localStorage.getItem(TAG_FILTER_EXPANDED_STORAGE_KEY)
+  return stored === null ? true : stored === 'true'
+}
+
 const utilitiesExpanded = ref(readUtilitiesExpanded())
+const tagFilterExpanded = ref(readTagFilterExpanded())
 
 const isDragging = computed(() => dragFromIndex.value !== null)
 
@@ -274,6 +285,11 @@ function toggleUtilities(): void {
   localStorage.setItem(UTILITIES_EXPANDED_STORAGE_KEY, String(utilitiesExpanded.value))
 }
 
+function toggleTagFilter(): void {
+  tagFilterExpanded.value = !tagFilterExpanded.value
+  localStorage.setItem(TAG_FILTER_EXPANDED_STORAGE_KEY, String(tagFilterExpanded.value))
+}
+
 onMounted(() => {
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
@@ -356,6 +372,43 @@ onBeforeUnmount(() => {
       </TransitionGroup>
     </nav>
 
+    <div v-if="vaultTags.length" class="sidebar-tags">
+      <button
+        type="button"
+        class="utilities-toggle tag-filter-toggle"
+        :aria-expanded="tagFilterExpanded"
+        :title="tagFilterExpanded ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
+        @click="toggleTagFilter"
+      >
+        <span class="utilities-toggle-leading">
+          <span class="utilities-toggle-icon-wrap" aria-hidden="true">
+            <Hash class="utilities-toggle-icon" :size="15" :stroke-width="1.5" />
+          </span>
+          <span class="utilities-toggle-label">
+            {{ t('vault.tagFilterTitle') }}
+            <span v-if="selectedTagFilters.length" class="tag-filter-active-badge">
+              {{ selectedTagFilters.length }}
+            </span>
+          </span>
+        </span>
+        <ChevronDown
+          class="utilities-chevron"
+          :class="{ open: tagFilterExpanded }"
+          :size="14"
+          :stroke-width="1.5"
+        />
+      </button>
+
+      <div
+        class="utilities-collapse"
+        :class="{ 'utilities-collapse--open': tagFilterExpanded }"
+      >
+        <div class="utilities-body tag-filter-body" :inert="!tagFilterExpanded || undefined">
+          <TagFilterPanel />
+        </div>
+      </div>
+    </div>
+
     <div class="sidebar-utilities">
       <button
         type="button"
@@ -396,6 +449,17 @@ onBeforeUnmount(() => {
                 <Sparkles :size="14" :stroke-width="1.5" />
               </IconBadge>
               {{ t('tools.passwordGenTitle') }}
+            </button>
+            <button
+              type="button"
+              class="nav-item"
+              :title="t('tools.passwordHealth.desc')"
+              @click="openPasswordHealth()"
+            >
+              <IconBadge v-bind="NAV_ICON_STYLES.shield">
+                <ShieldAlert :size="14" :stroke-width="1.5" />
+              </IconBadge>
+              {{ t('tools.passwordHealth.title') }}
             </button>
             <CategoryManagePanel ref="categoryManagePanelRef" />
             <TagManagePanel />
@@ -566,6 +630,41 @@ onBeforeUnmount(() => {
 .sidebar-utilities,
 .sidebar-divider {
   flex-shrink: 0;
+}
+
+.sidebar-tags {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid var(--border-default);
+}
+
+.tag-filter-body {
+  padding: 0 12px 10px;
+  overflow: visible;
+}
+
+.utilities-collapse:not(.utilities-collapse--open) .tag-filter-body {
+  overflow: hidden;
+}
+
+.tag-filter-active-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-on-accent, #fff);
+  background: var(--accent-primary);
+  vertical-align: middle;
 }
 
 .sidebar-utilities {

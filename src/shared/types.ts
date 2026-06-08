@@ -1,6 +1,14 @@
 export type FilterCategory = 'all' | 'favorite' | string
 
-export type AppScreen = 'lock' | 'vault' | 'settings' | 'email-backup' | 'wifi-sync' | 'password-gen' | 'trash'
+export type AppScreen =
+  | 'lock'
+  | 'vault'
+  | 'settings'
+  | 'email-backup'
+  | 'wifi-sync'
+  | 'password-gen'
+  | 'password-health'
+  | 'trash'
 
 export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
 
@@ -100,6 +108,8 @@ export interface PasswordEntry {
   displayIcon: string
   /** 可选：本地可执行程序路径，用于右键启动 */
   localProgramPath: string
+  /** TOTP 密钥（Base32），空字符串表示未配置 */
+  totpSecret: string
   lastUsedAt: number | null
   createdAt: number
   updatedAt: number
@@ -122,6 +132,7 @@ export interface PasswordEntryInput {
   isFavorite?: boolean
   displayIcon?: string
   localProgramPath?: string
+  totpSecret?: string
 }
 
 /** 跟随系统锁屏时存入 auto_lock_minutes 的哨兵值 */
@@ -275,6 +286,7 @@ export const IPC = {
   tagsDelete: 'tags:delete',
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
+  settingsSetUiLocale: 'settings:set-ui-locale',
   clipboardCopy: 'clipboard:copy-secret',
   shellOpenExternal: 'shell:open-external',
   shellOpenLocalProgram: 'shell:open-local-program',

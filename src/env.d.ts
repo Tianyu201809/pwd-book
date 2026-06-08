@@ -79,6 +79,7 @@ declare global {
       deleteTag: (name: string) => Promise<void>
       getSettings: () => Promise<SecuritySettings>
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
+      setUiLocale: (locale: 'zh-CN' | 'en') => Promise<'zh-CN' | 'en'>
       getBrowserBridgeStatus: () => Promise<BrowserBridgeStatus>
       regenerateBrowserBridgeToken: () => Promise<BrowserBridgeStatus>
       getNativeHostRegistrationInfo: () => Promise<NativeHostRegistrationInfo>

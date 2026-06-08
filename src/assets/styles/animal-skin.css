@@ -262,6 +262,19 @@
   overflow: visible;
 }
 
+/* Sidebar tag filter — dropdown must paint over utilities section below */
+[data-skin="animalIsland"] .sidebar-tags {
+  z-index: 5;
+}
+
+[data-skin="animalIsland"] .sidebar-tags .utilities-collapse--open {
+  overflow: visible;
+}
+
+[data-skin="animalIsland"] .tag-filter-body {
+  overflow: visible;
+}
+
 [data-skin="animalIsland"] .settings-card .row {
   overflow: visible;
 }

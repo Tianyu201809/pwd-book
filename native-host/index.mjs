@@ -20,6 +20,11 @@ function bridgeConfigCandidates() {
     list.push(path.join(appData, 'pwd-book', 'native-bridge.json'))
     list.push(path.join(appData, 'PwdBook', 'native-bridge.json'))
   }
+  const home = process.env.HOME
+  if (home) {
+    list.push(path.join(home, 'Library/Application Support/pwd-book/native-bridge.json'))
+    list.push(path.join(home, 'Library/Application Support/PwdBook/native-bridge.json'))
+  }
   return list
 }
 

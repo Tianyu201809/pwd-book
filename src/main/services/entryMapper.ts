@@ -19,6 +19,9 @@ export function rowToEntry(row: EntryRow): PasswordEntry {
     isFavorite: row.is_favorite === 1,
     displayIcon: row.display_icon,
     localProgramPath: row.local_program_path,
+    totpSecret: row.totp_secret_encrypted
+      ? decryptSecret(row.totp_secret_encrypted, key)
+      : '',
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

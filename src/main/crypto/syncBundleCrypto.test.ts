@@ -23,6 +23,7 @@ const sampleBundle: SyncBundle = {
       isFavorite: false,
       displayIcon: '',
       localProgramPath: '',
+      totpSecret: '',
       lastUsedAt: null,
       createdAt: 1,
       updatedAt: 2,

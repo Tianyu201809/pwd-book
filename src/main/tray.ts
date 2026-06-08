@@ -1,8 +1,10 @@
 import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
+import { getSetting } from './db/helpers'
 import { getSecuritySettings } from './services/settingsService'
 import { showQuickBar } from './quickBar'
+import { getTrayLabels, UI_LOCALE_SETTING_KEY, type TrayLocale } from '../shared/trayLabels'
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -24,6 +26,11 @@ export function requestQuit(): void {
   isQuitting = true
   destroyTray()
   app.quit()
+}
+
+function readTrayLocale(): TrayLocale {
+  const stored = getSetting(UI_LOCALE_SETTING_KEY)
+  return stored === 'en' ? 'en' : 'zh-CN'
 }
 
 function resolveTrayIconPath(): string | undefined {
@@ -54,25 +61,34 @@ function buildTrayImage(): Electron.NativeImage | null {
   return image
 }
 
+export function rebuildTrayMenu(): void {
+  if (!tray) return
+
+  const labels = getTrayLabels(readTrayLocale())
+  const quickBarEnabled = getSecuritySettings().quickBarEnabled
+  const contextMenu = Menu.buildFromTemplate([
+    { label: labels.showMain, click: () => showFromTray() },
+    ...(quickBarEnabled
+      ? [{ label: labels.quickSearch, click: () => showQuickBar() } as Electron.MenuItemConstructorOptions]
+      : []),
+    { type: 'separator' },
+    { label: labels.quit, click: () => requestQuit() },
+  ])
+  tray.setContextMenu(contextMenu)
+}
+
 function ensureTray(): void {
-  if (tray) return
+  if (tray) {
+    rebuildTrayMenu()
+    return
+  }
 
   const image = buildTrayImage()
   if (!image) return
 
   tray = new Tray(image)
   tray.setToolTip('PwdBook')
-
-  const quickBarEnabled = getSecuritySettings().quickBarEnabled
-  const contextMenu = Menu.buildFromTemplate([
-    { label: '显示主窗口', click: () => showFromTray() },
-    ...(quickBarEnabled
-      ? [{ label: '快捷搜索', click: () => showQuickBar() } as Electron.MenuItemConstructorOptions]
-      : []),
-    { type: 'separator' },
-    { label: '退出 PwdBook', click: () => requestQuit() },
-  ])
-  tray.setContextMenu(contextMenu)
+  rebuildTrayMenu()
   tray.on('click', () => showFromTray())
 }
 
@@ -83,7 +99,7 @@ export function hideToTray(): void {
 }
 
 export function showFromTray(): void {
-  if (!mainWindow) return
+  if (!mainWindow || mainWindow.isDestroyed()) return
   if (mainWindow.isMinimized()) {
     mainWindow.restore()
   }

@@ -19,6 +19,7 @@ import type { VaultImportPayload } from '../../shared/types'
 import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
 import { recordQuickBarRecentEntry, removeQuickBarRecentEntry } from './quickBarRecentService'
 import { getTrashCount, moveEntryToTrash, purgeExpiredTrash } from './trashService'
+import { validateMasterPasswordSetup } from '../../shared/vaultValidation'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
@@ -34,11 +35,9 @@ export function getVaultStatus(): VaultStatus {
 }
 
 export function setupVault(masterPassword: string, confirmPassword: string): void {
-  if (masterPassword.length < 4) {
-    throw appError(ErrorCode.MASTER_PASSWORD_TOO_SHORT)
-  }
-  if (masterPassword !== confirmPassword) {
-    throw appError(ErrorCode.MASTER_PASSWORD_MISMATCH)
+  const validationError = validateMasterPasswordSetup(masterPassword, confirmPassword)
+  if (validationError) {
+    throw appError(validationError)
   }
   if (getSetting(MASTER_HASH_KEY)) {
     throw appError(ErrorCode.VAULT_ALREADY_INITIALIZED)
@@ -95,10 +94,11 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
   const id = randomUUID()
   const db = getDatabase()
 
+  const totpSecret = input.totpSecret?.trim() ?? ''
   db.run(
     `INSERT INTO password_entries
-      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, last_used_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, totp_secret_encrypted, last_used_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.title.trim(),
@@ -111,6 +111,7 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
       input.isFavorite ? 1 : 0,
       input.displayIcon?.trim() ?? '',
       input.localProgramPath?.trim() ?? '',
+      totpSecret ? encryptSecret(totpSecret, key) : '',
       null,
       now,
       now,
@@ -129,9 +130,10 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
   const existing = readActiveEntryRow(id)
   if (!existing) throw appError(ErrorCode.ENTRY_NOT_FOUND)
 
+  const totpSecret = input.totpSecret?.trim() ?? ''
   db.run(
     `UPDATE password_entries
-     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, local_program_path = ?, updated_at = ?
+     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, local_program_path = ?, totp_secret_encrypted = ?, updated_at = ?
      WHERE id = ?`,
     [
       input.title.trim(),
@@ -144,6 +146,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
       input.isFavorite ? 1 : 0,
       input.displayIcon?.trim() ?? existing.display_icon,
       input.localProgramPath?.trim() ?? existing.local_program_path,
+      totpSecret ? encryptSecret(totpSecret, key) : '',
       now,
       id,
     ],
