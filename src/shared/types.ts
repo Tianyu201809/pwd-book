@@ -319,6 +319,11 @@ export const IPC = {
   wifiSyncDiscover: 'wifi-sync:discover',
   wifiSyncPullMerge: 'wifi-sync:pull-merge',
   wifiSyncPullMergeQr: 'wifi-sync:pull-merge-qr',
+  detailWindowOpen: 'detail-window:open',
+  detailWindowClose: 'detail-window:close',
+  detailWindowReady: 'detail-window:ready',
+  detailWindowSelectEntry: 'detail-window:select-entry',
+  vaultDataNotifyChanged: 'vault-data:notify-changed',
 } as const
 
 export const IPC_EVENTS = {
@@ -326,6 +331,10 @@ export const IPC_EVENTS = {
   quickBarShown: 'quickbar:shown',
   themeChanged: 'theme:changed',
   systemLockScreen: 'session:system-lock',
+  detailWindowSelectEntry: 'detail-window:select-entry',
+  detailWindowOpened: 'detail-window:opened',
+  detailWindowClosed: 'detail-window:closed',
+  vaultDataChanged: 'vault-data:changed',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

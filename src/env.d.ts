@@ -131,6 +131,15 @@ declare global {
       notifyThemeChanged?: () => void
       onThemeChanged?: (handler: () => void) => () => void
       setQuickBarBackground?: (color: string) => void
+      openDetailWindow?: (entryId: string) => Promise<boolean>
+      closeDetailWindow?: () => void
+      notifyDetailWindowReady?: () => void
+      detailWindowSelectEntry?: (entryId: string) => void
+      notifyVaultDataChanged?: () => void
+      onDetailWindowSelectEntry?: (handler: (entryId: string) => void) => () => void
+      onDetailWindowOpened?: (handler: () => void) => () => void
+      onDetailWindowClosed?: (handler: () => void) => () => void
+      onVaultDataChanged?: (handler: () => void) => () => void
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }

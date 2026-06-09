@@ -21,6 +21,7 @@ export default defineConfig({
         input: {
           index: resolve('src/renderer/index.html'),
           quickbar: resolve('src/renderer/quickbar.html'),
+          detail: resolve('src/renderer/detail.html'),
         },
       },
     },

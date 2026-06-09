@@ -8,6 +8,15 @@ import { useTheme } from '@/composables/useTheme'
 import type { CloseWindowAction } from '@/shared/types'
 import type { ThemeSkin } from '@/types'
 
+const props = withDefaults(
+  defineProps<{
+    detailWindow?: boolean
+  }>(),
+  {
+    detailWindow: false,
+  },
+)
+
 const { t } = useI18n()
 const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, lock } = useAppState()
 const { skin, skinOptions, setSkin, isAnimalIsland } = useTheme()
@@ -42,7 +51,15 @@ function applyCloseAction(action: CloseWindowAction): void {
   }
 }
 
+function closeDetailWindow(): void {
+  window.electronAPI?.closeDetailWindow?.()
+}
+
 function openCloseDialog(): void {
+  if (props.detailWindow) {
+    closeDetailWindow()
+    return
+  }
   const saved = securitySettings.value.closeWindowAction
   if (saved !== 'ask') {
     applyCloseAction(saved)
@@ -146,6 +163,7 @@ watch(showSkinMenu, (open) => {
 })
 
 onMounted(() => {
+  if (props.detailWindow) return
   removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
 })
 
@@ -163,7 +181,7 @@ onUnmounted(() => {
       <ShieldCheck class="icon-accent titlebar-no-drag" :size="14" :stroke-width="1.5" />
       <span class="title">{{ t('common.appName') }}</span>
     </div>
-    <div class="titlebar-actions titlebar-no-drag">
+    <div class="titlebar-actions titlebar-no-drag" :class="{ 'titlebar-actions--detail': detailWindow }">
       <div class="skin-menu-wrap">
         <button
           ref="skinTriggerRef"
@@ -214,7 +232,7 @@ onUnmounted(() => {
         </Teleport>
       </div>
       <button
-        v-if="canQuickLock"
+        v-if="!detailWindow && canQuickLock"
         type="button"
         class="win-btn lock-btn"
         :aria-label="t('titlebar.quickLock')"
@@ -222,11 +240,17 @@ onUnmounted(() => {
       >
         <Lock :size="14" :stroke-width="1.5" />
       </button>
-      <span class="titlebar-divider" aria-hidden="true" />
-      <button type="button" class="win-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
+      <span v-if="!detailWindow && canQuickLock" class="titlebar-divider" aria-hidden="true" />
+      <button type="button" class="win-btn titlebar-minimize-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
         <Minus :size="14" :stroke-width="1.5" />
       </button>
-      <button type="button" class="win-btn" :aria-label="t('titlebar.maximize')" @click="maximize">
+      <button
+        v-if="!detailWindow"
+        type="button"
+        class="win-btn"
+        :aria-label="t('titlebar.maximize')"
+        @click="maximize"
+      >
         <Square :size="12" :stroke-width="1.5" />
       </button>
       <button type="button" class="win-btn close-btn" :aria-label="t('common.close')" @click="openCloseDialog">
@@ -236,6 +260,7 @@ onUnmounted(() => {
   </header>
 
   <UiModal
+    v-if="!detailWindow"
     v-model:open="showCloseDialog"
     class="close-app-modal"
     :title="t('titlebar.closeApp')"
@@ -291,6 +316,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.titlebar-actions--detail .titlebar-minimize-btn {
+  order: 1;
+}
+
+.titlebar-actions--detail .skin-menu-wrap {
+  order: 2;
+}
+
+.titlebar-actions--detail .close-btn {
+  order: 3;
 }
 
 .skin-menu-wrap {

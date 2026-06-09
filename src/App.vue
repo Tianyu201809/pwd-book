@@ -30,12 +30,18 @@ const {
   openScheduledBackupPrompt,
   closeScheduledBackupPrompt,
   sendEmailBackup,
+  handleDetailWindowOpened,
+  handleDetailWindowClosed,
+  refreshVaultData,
 } = useAppState()
 
 useAutoLock()
 
 let removeAlreadyRunningListener: (() => void) | undefined
 let removeScheduledBackupListener: (() => void) | undefined
+let removeDetailWindowOpenedListener: (() => void) | undefined
+let removeDetailWindowClosedListener: (() => void) | undefined
+let removeVaultDataListener: (() => void) | undefined
 const scheduledBackupLoading = ref(false)
 const scheduledMasterModalRef = ref<InstanceType<typeof MasterPasswordConfirmModal> | null>(null)
 
@@ -50,6 +56,15 @@ onMounted(async () => {
   removeScheduledBackupListener = window.electronAPI?.onScheduledBackupDue(() => {
     openScheduledBackupPrompt()
   })
+  removeDetailWindowOpenedListener = window.electronAPI?.onDetailWindowOpened?.(() => {
+    handleDetailWindowOpened()
+  })
+  removeDetailWindowClosedListener = window.electronAPI?.onDetailWindowClosed?.(() => {
+    handleDetailWindowClosed()
+  })
+  removeVaultDataListener = window.electronAPI?.onVaultDataChanged?.(() => {
+    void refreshVaultData()
+  })
   await bootstrap()
 })
 
@@ -57,6 +72,9 @@ onUnmounted(() => {
   unbindSystemThemeListener()
   removeAlreadyRunningListener?.()
   removeScheduledBackupListener?.()
+  removeDetailWindowOpenedListener?.()
+  removeDetailWindowClosedListener?.()
+  removeVaultDataListener?.()
 })
 
 async function confirmScheduledBackup(masterPassword: string): Promise<void> {

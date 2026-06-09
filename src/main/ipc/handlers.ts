@@ -3,6 +3,7 @@ import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
+import { hideDetailWindowOnLock } from '../detailWindow'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
 import { IPC } from '../../shared/types'
 import type {
@@ -168,6 +169,7 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       lockVault()
       hideQuickBarOnLock()
+      hideDetailWindowOnLock()
       resetScheduledBackupNotification()
       return getVaultStatus()
     }),

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Tags, X, Shield } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Tags, X, Shield, SquareArrowOutUpRight } from 'lucide-vue-next'
 import {
   generateTotpCode,
   getTotpRemainingSeconds,
@@ -16,6 +16,15 @@ import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
 import type { PasswordEntryInput } from '@/types'
+
+const props = withDefaults(
+  defineProps<{
+    detached?: boolean
+  }>(),
+  {
+    detached: false,
+  },
+)
 
 const WIDTH_STORAGE_KEY = 'pwdbook-detail-width'
 const DETAIL_DEFAULT_WIDTH = 360
@@ -54,6 +63,9 @@ const {
   setDetailCollapsed,
   createGeneratedPassword,
   vaultTags,
+  openDetachedDetail,
+  detachedDetailOpen,
+  consumeSkipDetailAutoCollapse,
 } = useAppState()
 
 const { t } = useI18n()
@@ -81,8 +93,11 @@ function clampPanelWidth(): void {
   if (detailCollapsed.value) return
   const minW = readDetailMinWidth()
   const max = getMaxPanelWidth()
+  const skipAutoCollapse = consumeSkipDetailAutoCollapse()
   if (max < minW) {
-    setDetailCollapsed(true)
+    if (!skipAutoCollapse) {
+      setDetailCollapsed(true)
+    }
     return
   }
   panelWidth.value = Math.min(max, Math.max(minW, panelWidth.value))
@@ -399,6 +414,10 @@ function toggleCollapse(): void {
   setDetailCollapsed(!detailCollapsed.value)
 }
 
+async function handleOpenDetached(): Promise<void> {
+  await openDetachedDetail()
+}
+
 function stopResize(): void {
   isResizing.value = false
   localStorage.setItem(WIDTH_STORAGE_KEY, String(panelWidth.value))
@@ -449,8 +468,10 @@ function onVaultLayoutResize(): void {
 watch(() => draft.value.totpSecret, refreshTotpDisplay)
 
 onMounted(() => {
-  clampPanelWidth()
-  window.addEventListener('resize', onVaultLayoutResize)
+  if (!props.detached) {
+    clampPanelWidth()
+    window.addEventListener('resize', onVaultLayoutResize)
+  }
   refreshTotpDisplay()
   totpTimer = setInterval(refreshTotpDisplay, 1000)
 })
@@ -464,29 +485,47 @@ onUnmounted(() => {
   detailBodyRef.value?.removeEventListener('scroll', onDetailBodyScroll)
 })
 
-const showPanel = computed(() => isCreating.value || Boolean(selectedEntry.value))
+const showPanel = computed(() => props.detached || isCreating.value || Boolean(selectedEntry.value))
 
 watch(showPanel, (visible) => {
-  if (visible) nextTick(() => clampPanelWidth())
+  if (visible && !props.detached) nextTick(() => clampPanelWidth())
 })
 
 watch(detailCollapsed, () => {
-  nextTick(() => clampPanelWidth())
+  if (!props.detached) nextTick(() => clampPanelWidth())
 })
 </script>
 
 <template>
-  <aside v-if="showPanel" class="detail-shell" :class="{ collapsed: detailCollapsed, resizing: isResizing }"
-    :style="shellStyle">
-    <div class="panel-edge" :class="{ collapsed: detailCollapsed }" @mousedown="onResizeStart">
-      <button type="button" class="edge-toggle" :title="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
-        :aria-label="detailCollapsed ? t('detail.expand') : t('detail.collapse')" @click.stop="toggleCollapse">
+  <aside
+    v-if="showPanel"
+    class="detail-shell"
+    :class="{
+      detached: props.detached,
+      collapsed: !props.detached && detailCollapsed,
+      resizing: isResizing,
+    }"
+    :style="props.detached ? undefined : shellStyle"
+  >
+    <div
+      v-if="!props.detached"
+      class="panel-edge"
+      :class="{ collapsed: detailCollapsed }"
+      @mousedown="onResizeStart"
+    >
+      <button
+        type="button"
+        class="edge-toggle"
+        :title="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
+        :aria-label="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
+        @click.stop="toggleCollapse"
+      >
         <ChevronRight v-if="!detailCollapsed" :size="16" :stroke-width="2" />
         <ChevronLeft v-else :size="16" :stroke-width="2" />
       </button>
     </div>
 
-    <div v-if="!detailCollapsed" class="detail-main">
+    <div v-if="props.detached || !detailCollapsed" class="detail-main">
       <div class="detail-header">
         <div class="header-main">
           <button type="button" class="avatar avatar-btn" :class="{ 'avatar-btn--readonly': !formEditable }"
@@ -507,6 +546,16 @@ watch(detailCollapsed, () => {
           </div>
         </div>
         <div class="header-actions">
+          <button
+            v-if="!props.detached && !isCreating && selectedEntry && !detachedDetailOpen"
+            type="button"
+            class="icon-btn"
+            :title="t('detail.openInNewWindow')"
+            :aria-label="t('detail.openInNewWindow')"
+            @click="handleOpenDetached"
+          >
+            <SquareArrowOutUpRight :size="16" :stroke-width="1.5" />
+          </button>
           <button v-if="!isCreating && selectedEntry" type="button" class="icon-btn favorite-btn"
             :class="{ active: selectedEntry.isFavorite }"
             :title="selectedEntry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite')"
@@ -697,6 +746,14 @@ watch(detailCollapsed, () => {
 </template>
 
 <style scoped>
+.detail-shell.detached {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  border-left: none;
+  transition: none;
+}
+
 .detail-shell {
   flex-shrink: 0;
   align-self: stretch;

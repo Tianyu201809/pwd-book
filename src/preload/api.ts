@@ -224,4 +224,31 @@ export const electronAPI = {
   },
   setQuickBarBackground: (color: string): void =>
     ipcRenderer.send('quickbar:set-background', color),
+
+  openDetailWindow: (entryId: string): Promise<boolean> => invoke(IPC.detailWindowOpen, entryId),
+  closeDetailWindow: (): void => ipcRenderer.send(IPC.detailWindowClose),
+  notifyDetailWindowReady: (): void => ipcRenderer.send(IPC.detailWindowReady),
+  detailWindowSelectEntry: (entryId: string): void =>
+    ipcRenderer.send(IPC.detailWindowSelectEntry, entryId),
+  notifyVaultDataChanged: (): void => ipcRenderer.send(IPC.vaultDataNotifyChanged),
+  onDetailWindowSelectEntry: (handler: (entryId: string) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, entryId: string): void => handler(entryId)
+    ipcRenderer.on(IPC_EVENTS.detailWindowSelectEntry, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.detailWindowSelectEntry, listener)
+  },
+  onDetailWindowOpened: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.detailWindowOpened, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.detailWindowOpened, listener)
+  },
+  onDetailWindowClosed: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.detailWindowClosed, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.detailWindowClosed, listener)
+  },
+  onVaultDataChanged: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.vaultDataChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.vaultDataChanged, listener)
+  },
 }

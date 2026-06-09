@@ -183,6 +183,7 @@ export default {
     noUrl: 'No URL',
     expand: 'Expand details',
     collapse: 'Collapse details',
+    openInNewWindow: 'Open in new window',
     pickIcon: 'Choose icon',
     addFavorite: 'Add to favorites',
     removeFavorite: 'Remove from favorites',

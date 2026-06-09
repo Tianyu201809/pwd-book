@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import { entryMatchesSearch } from '@/shared/entrySearch'
@@ -121,6 +121,8 @@ const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
 const isCreating = ref(false)
 const DETAIL_COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
 const detailCollapsed = ref(localStorage.getItem(DETAIL_COLLAPSED_STORAGE_KEY) === 'true')
+const detachedDetailOpen = ref(false)
+let skipDetailAutoCollapseOnce = false
 const loading = ref(false)
 const errorMessage = ref('')
 const lastActivityAt = ref(Date.now())
@@ -279,6 +281,10 @@ async function refreshEntries(): Promise<void> {
 
 async function refreshTags(): Promise<void> {
   vaultTags.value = await vaultApi.listTags()
+}
+
+function notifyOtherWindowsVaultChanged(): void {
+  window.electronAPI?.notifyVaultDataChanged?.()
 }
 
 async function refreshVaultData(): Promise<void> {
@@ -598,8 +604,42 @@ function openPasswordHealth(): void {
 function selectEntry(id: string): void {
   isCreating.value = false
   selectedEntryId.value = id
-  expandDetailPanel()
+  window.electronAPI?.detailWindowSelectEntry?.(id)
+  if (!detachedDetailOpen.value) {
+    expandDetailPanel()
+  }
   touchActivity()
+}
+
+async function openDetachedDetail(): Promise<boolean> {
+  const id = selectedEntryId.value
+  if (!id) return false
+  const ok = await window.electronAPI?.openDetailWindow?.(id)
+  if (ok) {
+    skipDetailAutoCollapseOnce = true
+    expandDetailPanel()
+    detachedDetailOpen.value = true
+  }
+  return ok ?? false
+}
+
+function handleDetailWindowOpened(): void {
+  detachedDetailOpen.value = true
+}
+
+function handleDetailWindowClosed(): void {
+  detachedDetailOpen.value = false
+  skipDetailAutoCollapseOnce = true
+  expandDetailPanel()
+  void nextTick(() => {
+    expandDetailPanel()
+  })
+}
+
+function consumeSkipDetailAutoCollapse(): boolean {
+  if (!skipDetailAutoCollapseOnce) return false
+  skipDetailAutoCollapseOnce = false
+  return true
 }
 
 function expandDetailPanel(): void {
@@ -613,6 +653,10 @@ function setDetailCollapsed(collapsed: boolean): void {
 }
 
 function startCreateEntry(): void {
+  if (detachedDetailOpen.value) {
+    window.electronAPI?.closeDetailWindow?.()
+    detachedDetailOpen.value = false
+  }
   isCreating.value = true
   selectedEntryId.value = null
   expandDetailPanel()
@@ -643,6 +687,7 @@ async function saveEntry(id: string | null, input: PasswordEntryInput): Promise<
     isCreating.value = false
     selectedEntryId.value = saved.id
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     showToast(id ? i18n.global.t('vault.saved') : i18n.global.t('vault.created'), 'success')
     return true
@@ -682,6 +727,7 @@ async function duplicateEntry(entry: PasswordEntry): Promise<boolean> {
     selectedEntryId.value = saved.id
     expandDetailPanel()
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     showToast(i18n.global.t('vault.duplicated'), 'success')
     return true
@@ -705,6 +751,7 @@ async function moveEntryToCategory(entryId: string, categoryId: string): Promise
   try {
     await vaultApi.updateEntry(entryId, { ...entryToInput(entry), categoryId })
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     showToast(
       categoryName
@@ -731,6 +778,7 @@ async function removeEntry(id: string): Promise<boolean> {
     }
     await refreshVaultData()
     await refreshVaultStatus()
+    notifyOtherWindowsVaultChanged()
     showToast(i18n.global.t('vault.movedToTrash'), 'success')
     touchActivity()
     return true
@@ -820,6 +868,7 @@ async function toggleFavorite(id: string): Promise<void> {
   try {
     await vaultApi.toggleFavorite(id)
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
   } catch (error) {
     setError(error)
@@ -849,6 +898,7 @@ async function updateCategory(id: string, input: CategoryInput): Promise<boolean
   try {
     await vaultApi.updateCategory(id, input)
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     return true
   } catch (error) {
@@ -868,6 +918,7 @@ async function deleteCategory(id: string): Promise<boolean> {
       selectedCategory.value = 'all'
     }
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     return true
   } catch (error) {
@@ -884,6 +935,7 @@ async function createTag(input: TagInput): Promise<boolean> {
   try {
     await vaultApi.createTag(input)
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     return true
   } catch (error) {
@@ -900,6 +952,7 @@ async function updateTag(oldName: string, input: TagInput): Promise<boolean> {
   try {
     await vaultApi.updateTag(oldName, input)
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     return true
   } catch (error) {
@@ -916,6 +969,7 @@ async function deleteTag(name: string): Promise<boolean> {
   try {
     await vaultApi.deleteTag(name)
     await refreshVaultData()
+    notifyOtherWindowsVaultChanged()
     touchActivity()
     return true
   } catch (error) {
@@ -1107,8 +1161,13 @@ export function useAppState() {
     vaultTags,
     isCreating,
     detailCollapsed,
+    detachedDetailOpen,
     expandDetailPanel,
     setDetailCollapsed,
+    openDetachedDetail,
+    handleDetailWindowOpened,
+    handleDetailWindowClosed,
+    consumeSkipDetailAutoCollapse,
     loading,
     errorMessage,
     lastActivityAt,
@@ -1120,6 +1179,7 @@ export function useAppState() {
     selectedEntry,
     defaultCategoryId,
     bootstrap,
+    refreshVaultData,
     setupVault,
     unlock,
     lock,

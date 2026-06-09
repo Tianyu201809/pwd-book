@@ -19,6 +19,9 @@ import {
   unregisterQuickBarShortcut,
 } from './quickBar'
 import {
+  registerDetailWindowIpc,
+} from './detailWindow'
+import {
   registerMainWindowShortcut,
   unregisterMainWindowShortcut,
 } from './mainWindowShortcut'
@@ -124,20 +127,37 @@ if (gotSingleInstanceLock) {
     }
     registerIpcHandlers()
     registerQuickBarIpc()
+    registerDetailWindowIpc()
     registerQuickBarShortcut()
     registerMainWindowShortcut()
     registerSystemAutoLock()
     syncBrowserBridge()
 
-    ipcMain.on('window-minimize', () => hideToTray())
-    ipcMain.on('window-maximize', () => {
-      if (mainWindow?.isMaximized()) {
-        mainWindow.unmaximize()
+    ipcMain.on('window-minimize', (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      if (win && win !== mainWindow) {
+        win.minimize()
+        return
+      }
+      hideToTray()
+    })
+    ipcMain.on('window-maximize', (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      const target = win && win !== mainWindow ? win : mainWindow
+      if (target?.isMaximized()) {
+        target.unmaximize()
       } else {
-        mainWindow?.maximize()
+        target?.maximize()
       }
     })
-    ipcMain.on('window-close', () => requestQuit())
+    ipcMain.on('window-close', (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      if (win && win !== mainWindow) {
+        win.close()
+        return
+      }
+      requestQuit()
+    })
 
     ipcMain.on('theme-set-native', (_event, mode: 'dark' | 'light' | 'system') => {
       nativeTheme.themeSource = mode

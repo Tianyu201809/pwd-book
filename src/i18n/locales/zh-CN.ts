@@ -182,6 +182,7 @@ export default {
     noUrl: '未填写网址',
     expand: '展开详情',
     collapse: '收起详情',
+    openInNewWindow: '在新窗口打开',
     pickIcon: '选择图标',
     addFavorite: '加入收藏',
     removeFavorite: '取消收藏',

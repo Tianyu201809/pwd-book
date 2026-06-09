@@ -4,8 +4,10 @@ import VaultSidebar from '@/components/VaultSidebar.vue'
 import PasswordList from '@/components/PasswordList.vue'
 import PasswordDetail from '@/components/PasswordDetail.vue'
 import { useTheme } from '@/composables/useTheme'
+import { useAppState } from '@/composables/useAppState'
 
 const { isAnimalIsland } = useTheme()
+const { detachedDetailOpen } = useAppState()
 </script>
 
 <template>
@@ -18,7 +20,9 @@ const { isAnimalIsland } = useTheme()
           <Footer type="tree" class="vault-footer-tree" />
         </div>
       </div>
-      <PasswordDetail />
+      <div class="vault-detail-slot" :class="{ 'is-detached': detachedDetailOpen }">
+        <PasswordDetail />
+      </div>
     </div>
   </div>
 </template>
@@ -48,6 +52,23 @@ const { isAnimalIsland } = useTheme()
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.vault-detail-slot {
+  flex-shrink: 0;
+  display: flex;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.vault-detail-slot.is-detached {
+  flex: 0 0 0;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .vault-password-list {
