@@ -187,6 +187,7 @@ textarea.input-field {
   z-index: 1;
 }
 
+.search-field-wrap .search-field-input .input-field,
 .search-field-wrap .search-field-input.input-field {
   width: 100%;
   box-sizing: border-box;

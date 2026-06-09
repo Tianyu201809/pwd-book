@@ -36,7 +36,28 @@ const smtpPort = ref(465)
 const smtpSecure = ref(true)
 const smtpUsername = ref('')
 const smtpPassword = ref('')
+const smtpPasswordEdited = ref(false)
+const SAVED_SMTP_PASSWORD_MASK = '********'
 const smtpExpanded = ref(true)
+
+const smtpPasswordModel = computed({
+  get() {
+    if (smtpPasswordEdited.value || smtpPassword.value) return smtpPassword.value
+    if (emailBackupSettings.value.smtp.hasPassword) return SAVED_SMTP_PASSWORD_MASK
+    return ''
+  },
+  set(value: string) {
+    if (
+      !smtpPasswordEdited.value &&
+      emailBackupSettings.value.smtp.hasPassword &&
+      value === SAVED_SMTP_PASSWORD_MASK
+    ) {
+      return
+    }
+    smtpPasswordEdited.value = true
+    smtpPassword.value = value
+  },
+})
 
 const saving = ref(false)
 const testing = ref(false)
@@ -79,6 +100,18 @@ function syncFromSettings(): void {
   smtpSecure.value = settings.smtp.secure
   smtpUsername.value = settings.smtp.username
   smtpPassword.value = ''
+  smtpPasswordEdited.value = false
+}
+
+function onSmtpPasswordFocus(): void {
+  if (!smtpPasswordEdited.value && emailBackupSettings.value.smtp.hasPassword) {
+    smtpPasswordEdited.value = true
+    smtpPassword.value = ''
+  }
+}
+
+function onSmtpPasswordBlur(): void {
+  if (!smtpPassword.value) smtpPasswordEdited.value = false
 }
 
 watch(emailBackupSettings, syncFromSettings, { deep: true })
@@ -103,6 +136,7 @@ async function saveSettings(): Promise<boolean> {
       },
     })
     smtpPassword.value = ''
+    smtpPasswordEdited.value = false
     showToast(t('tools.emailBackup.settingsSaved'), 'success')
     return true
   } catch {
@@ -225,10 +259,10 @@ function goBack(): void {
                   <label>{{ t('tools.emailBackup.smtpUsername') }}</label>
                   <UiInput v-model="smtpUsername" type="email" />
                 </div>
-                <div class="field">
+                <div class="field" @focusin="onSmtpPasswordFocus" @focusout="onSmtpPasswordBlur">
                   <label>{{ t('tools.emailBackup.smtpPassword') }}</label>
                   <UiInput
-                    v-model="smtpPassword"
+                    v-model="smtpPasswordModel"
                     type="password"
                     :placeholder="t('tools.emailBackup.smtpPasswordPlaceholder')"
                   />
