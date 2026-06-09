@@ -147,9 +147,23 @@ function createPrimaryButton(label, onClick) {
 let scanTimer = null
 let lastMatchSignature = ''
 
+function isVisibleFillInput(el) {
+  if (!el || !(el instanceof HTMLInputElement)) return false
+  if (el.disabled || el.readOnly || el.type === 'hidden') return false
+  const style = window.getComputedStyle(el)
+  if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+    return false
+  }
+  const rect = el.getBoundingClientRect()
+  return rect.width > 0 && rect.height > 0
+}
+
 function findPasswordField() {
   const fields = document.querySelectorAll('input[type="password"]')
-  return fields.length ? fields[0] : null
+  for (const field of fields) {
+    if (isVisibleFillInput(field)) return field
+  }
+  return null
 }
 
 function findUsernameField(passwordField) {
@@ -160,7 +174,7 @@ function findUsernameField(passwordField) {
   )
   let best = null
   for (const input of candidates) {
-    if (input === passwordField) continue
+    if (input === passwordField || !isVisibleFillInput(input)) continue
     const name = (input.name || input.id || '').toLowerCase()
     if (name.includes('user') || name.includes('email') || name.includes('login')) {
       return input
@@ -173,7 +187,12 @@ function findUsernameField(passwordField) {
 function fillInput(el, value) {
   if (!el || value == null) return
   el.focus()
-  el.value = value
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+  if (setter) {
+    setter.call(el, value)
+  } else {
+    el.value = value
+  }
   el.dispatchEvent(new Event('input', { bubbles: true }))
   el.dispatchEvent(new Event('change', { bubbles: true }))
 }
