@@ -100,6 +100,7 @@ const panelWidth = ref(loadPanelWidth())
 const isResizing = ref(false)
 const isEditing = ref(false)
 const showPassword = ref(false)
+const showTotpSecret = ref(false)
 const showIconPicker = ref(false)
 const draft = ref<PasswordEntryInput>({
   title: '',
@@ -189,6 +190,7 @@ const shellStyle = computed(() => ({
 const formEditable = computed(() => isCreating.value || isEditing.value)
 
 function resetDraftFromEntry(): void {
+  showTotpSecret.value = false
   if (isCreating.value || !selectedEntry.value) {
     draft.value = {
       title: '',
@@ -237,6 +239,7 @@ function startEditing(): void {
 function cancelEditing(): void {
   isEditing.value = false
   showPassword.value = false
+  showTotpSecret.value = false
   resetDraftFromEntry()
 }
 
@@ -473,24 +476,11 @@ watch(detailCollapsed, () => {
 </script>
 
 <template>
-  <aside
-    v-if="showPanel"
-    class="detail-shell"
-    :class="{ collapsed: detailCollapsed, resizing: isResizing }"
-    :style="shellStyle"
-  >
-    <div
-      class="panel-edge"
-      :class="{ collapsed: detailCollapsed }"
-      @mousedown="onResizeStart"
-    >
-      <button
-        type="button"
-        class="edge-toggle"
-        :title="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
-        :aria-label="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
-        @click.stop="toggleCollapse"
-      >
+  <aside v-if="showPanel" class="detail-shell" :class="{ collapsed: detailCollapsed, resizing: isResizing }"
+    :style="shellStyle">
+    <div class="panel-edge" :class="{ collapsed: detailCollapsed }" @mousedown="onResizeStart">
+      <button type="button" class="edge-toggle" :title="detailCollapsed ? t('detail.expand') : t('detail.collapse')"
+        :aria-label="detailCollapsed ? t('detail.expand') : t('detail.collapse')" @click.stop="toggleCollapse">
         <ChevronRight v-if="!detailCollapsed" :size="16" :stroke-width="2" />
         <ChevronLeft v-else :size="16" :stroke-width="2" />
       </button>
@@ -499,21 +489,10 @@ watch(detailCollapsed, () => {
     <div v-if="!detailCollapsed" class="detail-main">
       <div class="detail-header">
         <div class="header-main">
-          <button
-            type="button"
-            class="avatar avatar-btn"
-            :class="{ 'avatar-btn--readonly': !formEditable }"
-            :title="formEditable ? t('detail.pickIcon') : undefined"
-            :aria-label="t('detail.pickIcon')"
-            :disabled="!formEditable"
-            @click="showIconPicker = true"
-          >
-            <CategoryIconView
-              v-if="draft.displayIcon"
-              :name="draft.displayIcon"
-              :badge-size="48"
-              :size="22"
-            />
+          <button type="button" class="avatar avatar-btn" :class="{ 'avatar-btn--readonly': !formEditable }"
+            :title="formEditable ? t('detail.pickIcon') : undefined" :aria-label="t('detail.pickIcon')"
+            :disabled="!formEditable" @click="showIconPicker = true">
+            <CategoryIconView v-if="draft.displayIcon" :name="draft.displayIcon" :badge-size="48" :size="22" />
             <span v-else class="avatar-letter" :style="{ background: avatar.color }">
               {{ avatar.text }}
             </span>
@@ -528,26 +507,13 @@ watch(detailCollapsed, () => {
           </div>
         </div>
         <div class="header-actions">
-          <button
-            v-if="!isCreating && selectedEntry"
-            type="button"
-            class="icon-btn favorite-btn"
+          <button v-if="!isCreating && selectedEntry" type="button" class="icon-btn favorite-btn"
             :class="{ active: selectedEntry.isFavorite }"
             :title="selectedEntry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite')"
-            @click="handleToggleFavorite"
-          >
-            <Star
-              :size="16"
-              :stroke-width="1.5"
-              :fill="selectedEntry.isFavorite ? 'currentColor' : 'none'"
-            />
+            @click="handleToggleFavorite">
+            <Star :size="16" :stroke-width="1.5" :fill="selectedEntry.isFavorite ? 'currentColor' : 'none'" />
           </button>
-          <button
-            v-if="!isCreating && selectedEntry"
-            type="button"
-            class="icon-btn danger"
-            @click="handleDelete"
-          >
+          <button v-if="!isCreating && selectedEntry" type="button" class="icon-btn danger" @click="handleDelete">
             <Trash2 :size="16" :stroke-width="1.5" />
           </button>
         </div>
@@ -556,23 +522,15 @@ watch(detailCollapsed, () => {
       <div ref="detailBodyRef" class="detail-body">
         <div class="field">
           <label>{{ t('detail.title') }}</label>
-          <UiInput
-            v-model="draft.title"
-            class="detail-field"
-            :placeholder="t('detail.titlePlaceholder')"
-            :readonly="!formEditable"
-          />
+          <UiInput v-model="draft.title" class="detail-field" :placeholder="t('detail.titlePlaceholder')"
+            :readonly="!formEditable" />
         </div>
 
         <div class="field">
           <label>{{ t('detail.url') }}</label>
           <div class="field-row">
-            <UiInput
-              v-model="draft.url"
-              class="detail-field"
-              :placeholder="t('detail.urlPlaceholder')"
-              :readonly="!formEditable"
-            />
+            <UiInput v-model="draft.url" class="detail-field" :placeholder="t('detail.urlPlaceholder')"
+              :readonly="!formEditable" />
             <button type="button" class="icon-btn square" @click="handleCopyUrl">
               <Copy :size="16" :stroke-width="1.5" />
             </button>
@@ -581,35 +539,22 @@ watch(detailCollapsed, () => {
 
         <div class="field">
           <label>{{ t('detail.localProgramPath') }}</label>
-          <UiInput
-            v-model="draft.localProgramPath"
-            class="detail-field"
-            :placeholder="t('detail.localProgramPathPlaceholder')"
-            :readonly="!formEditable"
-          />
+          <UiInput v-model="draft.localProgramPath" class="detail-field"
+            :placeholder="t('detail.localProgramPathPlaceholder')" :readonly="!formEditable" />
           <p v-if="formEditable" class="field-hint">{{ t('detail.localProgramPathHint') }}</p>
         </div>
 
         <div class="field">
           <label>{{ t('detail.category') }}</label>
-          <UiSelect
-            :model-value="draft.categoryId ?? ''"
-            class="detail-field"
-            :options="categoryOptions"
-            :disabled="!formEditable"
-            @update:model-value="(v) => (draft.categoryId = v)"
-          />
+          <UiSelect :model-value="draft.categoryId ?? ''" class="detail-field" :options="categoryOptions"
+            :disabled="!formEditable" @update:model-value="(v) => (draft.categoryId = v)" />
         </div>
 
         <div class="field">
           <label>{{ t('detail.username') }}</label>
           <div class="field-row">
-            <UiInput
-              v-model="draft.username"
-              class="detail-field"
-              :placeholder="t('detail.usernamePlaceholder')"
-              :readonly="!formEditable"
-            />
+            <UiInput v-model="draft.username" class="detail-field" :placeholder="t('detail.usernamePlaceholder')"
+              :readonly="!formEditable" />
             <button type="button" class="icon-btn square" @click="handleCopyUsername">
               <Copy :size="16" :stroke-width="1.5" />
             </button>
@@ -619,33 +564,18 @@ watch(detailCollapsed, () => {
         <div class="field">
           <label>{{ t('detail.password') }}</label>
           <div class="field-row">
-            <UiInput
-              v-model="draft.password"
-              :type="showPassword ? 'text' : 'password'"
-              class="detail-field font-mono"
-              :class="{ 'password-mask': !showPassword }"
-              :readonly="!formEditable"
-            />
-            <button
-              v-if="formEditable"
-              type="button"
-              class="icon-btn square"
-              :title="t('detail.generatePassword')"
-              :aria-label="t('detail.generatePassword')"
-              @click="handleGeneratePassword"
-            >
+            <UiInput v-model="draft.password" :type="showPassword ? 'text' : 'password'" class="detail-field font-mono"
+              :class="{ 'password-mask': !showPassword }" :readonly="!formEditable" />
+            <button v-if="formEditable" type="button" class="icon-btn square" :title="t('detail.generatePassword')"
+              :aria-label="t('detail.generatePassword')" @click="handleGeneratePassword">
               <Sparkles :size="16" :stroke-width="1.5" />
             </button>
             <button type="button" class="icon-btn square" @click="showPassword = !showPassword">
               <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
               <Eye v-else :size="16" :stroke-width="1.5" />
             </button>
-            <button
-              v-if="!isCreating && selectedEntry"
-              type="button"
-              class="icon-btn square"
-              @click="handleCopyPassword"
-            >
+            <button v-if="!isCreating && selectedEntry" type="button" class="icon-btn square"
+              @click="handleCopyPassword">
               <Copy :size="16" :stroke-width="1.5" />
             </button>
           </div>
@@ -660,19 +590,15 @@ watch(detailCollapsed, () => {
         <div class="field">
           <label>{{ t('detail.totpSecret') }}</label>
           <div class="field-row">
-            <UiInput
-              v-model="draft.totpSecret"
-              class="detail-field font-mono"
-              :placeholder="t('detail.totpSecretPlaceholder')"
-              :readonly="!formEditable"
-            />
-            <button
-              v-if="hasValidTotp"
-              type="button"
-              class="icon-btn square"
-              :title="t('detail.copyTotp')"
-              @click="handleCopyTotp"
-            >
+            <UiInput v-model="draft.totpSecret" :type="showTotpSecret ? 'text' : 'password'"
+              class="detail-field font-mono" :class="{ 'password-mask': !showTotpSecret }"
+              :placeholder="t('detail.totpSecretPlaceholder')" :readonly="!formEditable" />
+            <button type="button" class="icon-btn square" @click="showTotpSecret = !showTotpSecret">
+              <EyeOff v-if="showTotpSecret" :size="16" :stroke-width="1.5" />
+              <Eye v-else :size="16" :stroke-width="1.5" />
+            </button>
+            <button v-if="hasValidTotp" type="button" class="icon-btn square" :title="t('detail.copyTotp')"
+              @click="handleCopyTotp">
               <Copy :size="16" :stroke-width="1.5" />
             </button>
           </div>
@@ -680,19 +606,17 @@ watch(detailCollapsed, () => {
           <div v-if="hasValidTotp && totpCode" class="totp-live">
             <Shield :size="14" :stroke-width="1.5" />
             <span class="totp-code font-mono">{{ totpCode }}</span>
+            <button type="button" class="totp-copy-btn" :title="t('detail.copyTotp')" @click="handleCopyTotp">
+              <Copy :size="14" :stroke-width="1.5" />
+            </button>
             <span class="totp-remaining">{{ t('detail.totpRemaining', { seconds: totpRemaining }) }}</span>
           </div>
         </div>
 
         <div class="field">
           <label>{{ t('detail.note') }}</label>
-          <textarea
-            v-model="draft.note"
-            class="input-field note"
-            rows="3"
-            :placeholder="t('detail.notePlaceholder')"
-            :readonly="!formEditable"
-          />
+          <textarea v-model="draft.note" class="input-field note" rows="3" :placeholder="t('detail.notePlaceholder')"
+            :readonly="!formEditable" />
         </div>
 
         <div class="field">
@@ -702,130 +626,68 @@ watch(detailCollapsed, () => {
               <span v-if="draftTags.length === 0" class="tags-placeholder">
                 {{ formEditable ? t('detail.tagsPickHint') : t('detail.noTags') }}
               </span>
-              <span
-                v-for="(tag, index) in draftTags"
-                :key="`${tag}-${index}`"
-                class="selected-tag"
-              >
+              <span v-for="(tag, index) in draftTags" :key="`${tag}-${index}`" class="selected-tag">
                 {{ tag }}
-                <button
-                  v-if="formEditable"
-                  type="button"
-                  class="selected-tag-remove"
-                  :title="t('detail.removeTag', { name: tag })"
-                  :aria-label="t('detail.removeTag', { name: tag })"
-                  @click.stop="removeTag(index)"
-                >
+                <button v-if="formEditable" type="button" class="selected-tag-remove"
+                  :title="t('detail.removeTag', { name: tag })" :aria-label="t('detail.removeTag', { name: tag })"
+                  @click.stop="removeTag(index)">
                   <X :size="16" :stroke-width="2" />
                 </button>
               </span>
             </div>
-            <button
-              v-if="formEditable"
-              ref="tagPickerTriggerRef"
-              type="button"
-              class="icon-btn square tag-picker-trigger"
-              :title="t('detail.pickExistingTags')"
-              :aria-label="t('detail.pickExistingTags')"
-              :aria-expanded="showTagPicker"
-              @click.stop="toggleTagPicker"
-            >
+            <button v-if="formEditable" ref="tagPickerTriggerRef" type="button"
+              class="icon-btn square tag-picker-trigger" :title="t('detail.pickExistingTags')"
+              :aria-label="t('detail.pickExistingTags')" :aria-expanded="showTagPicker" @click.stop="toggleTagPicker">
               <Tags :size="16" :stroke-width="1.5" />
             </button>
           </div>
         </div>
 
-        <UiCheckbox
-          v-model="draft.isFavorite"
-          :label="t('detail.addFavorite')"
-          class="favorite-row"
-          :disabled="!formEditable"
-        />
+        <UiCheckbox v-model="draft.isFavorite" :label="t('detail.addFavorite')" class="favorite-row"
+          :disabled="!formEditable" />
       </div>
 
       <div class="detail-footer">
         <template v-if="isCreating">
-          <UiButton
-            :variant="isAnimalIsland ? 'primary' : 'ghost'"
-            class="vault-footer-btn"
-            :class="{ 'footer-btn': !isAnimalIsland }"
-            :block="isAnimalIsland"
-            @click="cancelCreateEntry"
-          >
+          <UiButton :variant="isAnimalIsland ? 'primary' : 'ghost'" class="vault-footer-btn"
+            :class="{ 'footer-btn': !isAnimalIsland }" :block="isAnimalIsland" @click="cancelCreateEntry">
             {{ t('common.cancel') }}
           </UiButton>
-          <UiButton
-            variant="primary"
-            class="vault-footer-btn"
-            :class="{ 'footer-btn save': !isAnimalIsland }"
-            :block="isAnimalIsland"
-            :disabled="loading"
-            :loading="loading"
-            @click="handleSave"
-          >
+          <UiButton variant="primary" class="vault-footer-btn" :class="{ 'footer-btn save': !isAnimalIsland }"
+            :block="isAnimalIsland" :disabled="loading" :loading="loading" @click="handleSave">
             {{ loading ? t('common.saving') : t('common.save') }}
           </UiButton>
         </template>
         <template v-else-if="!isEditing">
-          <UiButton
-            variant="primary"
-            class="vault-footer-btn"
-            :class="{ 'footer-btn save': !isAnimalIsland }"
-            :block="isAnimalIsland"
-            @click="startEditing"
-          >
+          <UiButton variant="primary" class="vault-footer-btn" :class="{ 'footer-btn save': !isAnimalIsland }"
+            :block="isAnimalIsland" @click="startEditing">
             {{ t('detail.edit') }}
           </UiButton>
         </template>
         <template v-else>
-          <UiButton
-            :variant="isAnimalIsland ? 'primary' : 'ghost'"
-            class="vault-footer-btn"
-            :class="{ 'footer-btn': !isAnimalIsland }"
-            :block="isAnimalIsland"
-            @click="cancelEditing"
-          >
+          <UiButton :variant="isAnimalIsland ? 'primary' : 'ghost'" class="vault-footer-btn"
+            :class="{ 'footer-btn': !isAnimalIsland }" :block="isAnimalIsland" @click="cancelEditing">
             {{ t('common.cancel') }}
           </UiButton>
-          <UiButton
-            variant="primary"
-            class="vault-footer-btn"
-            :class="{ 'footer-btn save': !isAnimalIsland }"
-            :block="isAnimalIsland"
-            :disabled="loading"
-            :loading="loading"
-            @click="handleSave"
-          >
+          <UiButton variant="primary" class="vault-footer-btn" :class="{ 'footer-btn save': !isAnimalIsland }"
+            :block="isAnimalIsland" :disabled="loading" :loading="loading" @click="handleSave">
             {{ loading ? t('common.saving') : t('common.save') }}
           </UiButton>
         </template>
       </div>
     </div>
 
-    <IconPickerModal
-      v-model:open="showIconPicker"
-      :selected="draft.displayIcon"
-      @select="handleIconSelect"
-      @clear="handleIconClear"
-    />
+    <IconPickerModal v-model:open="showIconPicker" :selected="draft.displayIcon" @select="handleIconSelect"
+      @clear="handleIconClear" />
 
     <Teleport to="body">
-      <div
-        v-if="showTagPicker"
-        class="tag-picker-menu tag-picker-menu--portal surface-card"
-        :style="tagPickerMenuStyle"
-        @click.stop
-      >
+      <div v-if="showTagPicker" class="tag-picker-menu tag-picker-menu--portal surface-card" :style="tagPickerMenuStyle"
+        @click.stop>
         <p v-if="availableVaultTags.length === 0" class="tag-picker-empty">
           {{ t('detail.noTagsAvailable') }}
         </p>
-        <button
-          v-for="tag in availableVaultTags"
-          :key="tag.name"
-          type="button"
-          class="tag-picker-item"
-          @click="addTagFromVault(tag.name)"
-        >
+        <button v-for="tag in availableVaultTags" :key="tag.name" type="button" class="tag-picker-item"
+          @click="addTagFromVault(tag.name)">
           <span class="tag-picker-label">{{ tag.name }}</span>
           <span class="tag-picker-count">{{ t('tag.entryCount', { count: tag.entryCount }) }}</span>
         </button>
@@ -1242,6 +1104,24 @@ watch(detailCollapsed, () => {
   letter-spacing: 0.12em;
 }
 
+.totp-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.totp-copy-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .totp-remaining {
   margin-left: auto;
   font-size: 11px;
@@ -1309,8 +1189,8 @@ watch(detailCollapsed, () => {
   max-width: 100%;
 }
 
-/* 仅 field-row 的直接 input 子项参与 flex；经典 UiInput 的 input 在 wrap 内，须保持 width:100% */
-.field-row > .input-field {
+/* 经典 UiInput 的 input 在 wrap 内：flex 须加在 wrap 上，input 保持 width:100% */
+.field-row>.input-field {
   flex: 1 1 0;
   width: auto;
 }

@@ -144,7 +144,7 @@ function readUtilitiesExpanded(): boolean {
 
 function readTagFilterExpanded(): boolean {
   const stored = localStorage.getItem(TAG_FILTER_EXPANDED_STORAGE_KEY)
-  return stored === null ? true : stored === 'true'
+  return stored === null ? false : stored === 'true'
 }
 
 const utilitiesExpanded = ref(readUtilitiesExpanded())
