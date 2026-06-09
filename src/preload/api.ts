@@ -251,4 +251,8 @@ export const electronAPI = {
     ipcRenderer.on(IPC_EVENTS.vaultDataChanged, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.vaultDataChanged, listener)
   },
+  getDetailWindowAlwaysOnTop: (): Promise<boolean> =>
+    invoke(IPC.detailWindowGetAlwaysOnTop),
+  toggleDetailWindowAlwaysOnTop: (): Promise<boolean> =>
+    invoke(IPC.detailWindowToggleAlwaysOnTop),
 }

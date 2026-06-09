@@ -105,6 +105,8 @@ export default {
     skinMenuTitle: 'Interface skin',
     openAppearanceSettings: 'More appearance settings',
     quickLock: 'Lock vault',
+    pinAlwaysOnTop: 'Keep window on top',
+    unpinAlwaysOnTop: 'Stop keeping window on top',
   },
   lock: {
     createMasterPassword: 'Create master password',

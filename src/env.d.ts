@@ -140,6 +140,8 @@ declare global {
       onDetailWindowOpened?: (handler: () => void) => () => void
       onDetailWindowClosed?: (handler: () => void) => () => void
       onVaultDataChanged?: (handler: () => void) => () => void
+      getDetailWindowAlwaysOnTop?: () => Promise<boolean>
+      toggleDetailWindowAlwaysOnTop?: () => Promise<boolean>
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }

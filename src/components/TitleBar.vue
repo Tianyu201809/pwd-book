@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock } from 'lucide-vue-next'
+import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { useTheme } from '@/composables/useTheme'
@@ -27,6 +27,7 @@ const showSkinMenu = ref(false)
 const skinMenuRef = ref<HTMLElement | null>(null)
 const skinTriggerRef = ref<HTMLButtonElement | null>(null)
 const popoverStyle = ref<Record<string, string>>({})
+const alwaysOnTop = ref(false)
 
 const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
@@ -53,6 +54,14 @@ function applyCloseAction(action: CloseWindowAction): void {
 
 function closeDetailWindow(): void {
   window.electronAPI?.closeDetailWindow?.()
+}
+
+async function syncAlwaysOnTop(): Promise<void> {
+  alwaysOnTop.value = (await window.electronAPI?.getDetailWindowAlwaysOnTop?.()) ?? false
+}
+
+async function toggleAlwaysOnTop(): Promise<void> {
+  alwaysOnTop.value = (await window.electronAPI?.toggleDetailWindowAlwaysOnTop?.()) ?? false
 }
 
 function openCloseDialog(): void {
@@ -163,7 +172,10 @@ watch(showSkinMenu, (open) => {
 })
 
 onMounted(() => {
-  if (props.detailWindow) return
+  if (props.detailWindow) {
+    void syncAlwaysOnTop()
+    return
+  }
   removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
 })
 
@@ -241,6 +253,17 @@ onUnmounted(() => {
         <Lock :size="14" :stroke-width="1.5" />
       </button>
       <span v-if="!detailWindow && canQuickLock" class="titlebar-divider" aria-hidden="true" />
+      <button
+        v-if="detailWindow"
+        type="button"
+        class="win-btn titlebar-always-on-top-btn"
+        :class="{ 'always-on-top-btn--active': alwaysOnTop }"
+        :aria-label="alwaysOnTop ? t('titlebar.unpinAlwaysOnTop') : t('titlebar.pinAlwaysOnTop')"
+        :aria-pressed="alwaysOnTop"
+        @click="toggleAlwaysOnTop"
+      >
+        <Pin :size="14" :stroke-width="1.5" />
+      </button>
       <button type="button" class="win-btn titlebar-minimize-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
         <Minus :size="14" :stroke-width="1.5" />
       </button>
@@ -316,6 +339,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.titlebar-actions--detail .titlebar-always-on-top-btn {
+  order: 0;
 }
 
 .titlebar-actions--detail .titlebar-minimize-btn {
@@ -483,6 +510,12 @@ onUnmounted(() => {
 
 .lock-btn:hover {
   color: var(--accent-primary);
+}
+
+.always-on-top-btn--active,
+.always-on-top-btn--active:hover {
+  color: var(--accent-primary);
+  background: var(--accent-subtle);
 }
 
 .close-btn:hover {

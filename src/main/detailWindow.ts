@@ -112,6 +112,10 @@ function broadcastVaultDataChanged(source: Electron.WebContents): void {
   }
 }
 
+function isDetailWindowSender(contents: Electron.WebContents): boolean {
+  return detailWindow !== null && !detailWindow.isDestroyed() && detailWindow.webContents === contents
+}
+
 export function registerDetailWindowIpc(): void {
   ipcMain.handle(IPC.detailWindowOpen, (_event, entryId: string) => openDetailWindow(entryId))
 
@@ -130,6 +134,18 @@ export function registerDetailWindowIpc(): void {
     if (!main || event.sender !== main.webContents) return
     if (!entryId || !isDetailWindowOpen()) return
     sendSelectEntry(entryId)
+  })
+
+  ipcMain.handle(IPC.detailWindowGetAlwaysOnTop, (event) => {
+    if (!isDetailWindowSender(event.sender)) return false
+    return detailWindow!.isAlwaysOnTop()
+  })
+
+  ipcMain.handle(IPC.detailWindowToggleAlwaysOnTop, (event) => {
+    if (!isDetailWindowSender(event.sender)) return false
+    const next = !detailWindow!.isAlwaysOnTop()
+    detailWindow!.setAlwaysOnTop(next, 'floating')
+    return next
   })
 
   ipcMain.on(IPC.vaultDataNotifyChanged, (event) => {

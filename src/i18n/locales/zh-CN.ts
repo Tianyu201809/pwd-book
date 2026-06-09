@@ -104,6 +104,8 @@ export default {
     skinMenuTitle: '界面皮肤',
     openAppearanceSettings: '更多外观设置',
     quickLock: '锁定保险库',
+    pinAlwaysOnTop: '窗口置顶',
+    unpinAlwaysOnTop: '取消窗口置顶',
   },
   lock: {
     createMasterPassword: '创建主密码',
