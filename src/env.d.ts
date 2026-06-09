@@ -84,7 +84,7 @@ declare global {
       regenerateBrowserBridgeToken: () => Promise<BrowserBridgeStatus>
       getNativeHostRegistrationInfo: () => Promise<NativeHostRegistrationInfo>
       registerNativeHost: (extensionId: string) => Promise<NativeHostRegistrationInfo>
-      openExtensionsPage: () => Promise<void>
+      openExtensionsPage: () => Promise<{ copiedUrl: string }>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
       openExternal: (url: string) => Promise<void>
       openLocalProgram: (programPath: string) => Promise<void>

@@ -21,7 +21,7 @@ import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
 import { commitImport, previewImport } from '../services/importService'
 import { buildExportCsv } from '../services/exportCsvService'
-import { openLocalProgram } from '../services/localProgramService'
+import { openBrowserExtensionsPage } from '../services/browserLaunchService'
 import {
   removeQuickBarRecentEntry,
   resolveQuickBarRecentEntries,
@@ -443,9 +443,7 @@ export function registerIpcHandlers(): void {
     wrap(() => registerNativeHost(extensionId)),
   )
 
-  ipcMain.handle(IPC.shellOpenExtensionsPage, async () => {
-    await shell.openExternal('chrome://extensions/')
-  })
+  ipcMain.handle(IPC.shellOpenExtensionsPage, () => wrap(() => openBrowserExtensionsPage()))
 
   ipcMain.handle(IPC.clipboardCopy, (_event, payload: { text: string; clearAfterMs?: number }) =>
     wrap(() => {

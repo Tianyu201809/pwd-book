@@ -15,6 +15,7 @@ import {
   ChevronRight,
   PanelTop,
   MailCheck,
+  BookOpen,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
@@ -23,6 +24,7 @@ import { UiSelect, UiSwitch, UiCard, UiButton, UiInput } from '@/components/ui'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
+import BrowserExtensionGuideModal from '@/components/browser/BrowserExtensionGuideModal.vue'
 import ImportDataModal from '@/components/import/ImportDataModal.vue'
 import ExportDataModal from '@/components/export/ExportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
@@ -56,6 +58,8 @@ const bridgeStatus = ref<BrowserBridgeStatus | null>(null)
 const nativeHostInfo = ref<NativeHostRegistrationInfo | null>(null)
 const extensionIdInput = ref('')
 const registerLoading = ref(false)
+const browserGuideOpen = ref(false)
+const extensionsPageHint = ref('')
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 
@@ -159,7 +163,8 @@ async function registerNativeHost(): Promise<void> {
 
 async function openExtensionsPage(): Promise<void> {
   try {
-    await vaultApi.openExtensionsPage()
+    const { copiedUrl } = await vaultApi.openExtensionsPage()
+    extensionsPageHint.value = t('settings.browserFillOpenExtensionsDone', { url: copiedUrl })
   } catch (error) {
     showToast(parseErrorMessage(error), 'error')
   }
@@ -360,21 +365,37 @@ async function handleReset(): Promise<void> {
                 <p v-if="securitySettings.browserFillEnabled && bridgeStatusText" class="row-desc bridge-status">
                   {{ bridgeStatusText }}
                 </p>
-                <UiButton
-                  v-if="securitySettings.browserFillEnabled"
-                  variant="default"
-                  size="small"
-                  class="bridge-regen-btn"
-                  @click="regenerateBridgeToken"
-                >
-                  {{ t('settings.browserFillRegenerateToken') }}
-                </UiButton>
+                <div class="browser-fill-actions">
+                  <UiButton
+                    v-if="securitySettings.browserFillEnabled"
+                    variant="default"
+                    size="small"
+                    @click="regenerateBridgeToken"
+                  >
+                    {{ t('settings.browserFillRegenerateToken') }}
+                  </UiButton>
+                  <UiButton variant="default" size="small" @click="browserGuideOpen = true">
+                    <BookOpen :size="14" :stroke-width="1.75" />
+                    {{ t('settings.browserFillGuide.openButton') }}
+                  </UiButton>
+                </div>
               </div>
               <UiSwitch
                 :model-value="securitySettings.browserFillEnabled"
                 @update:model-value="onBrowserFillEnabledChange"
               />
             </div>
+            <BrowserExtensionGuideModal
+              v-model:open="browserGuideOpen"
+              :extension-id="extensionIdInput"
+              :registered="!!nativeHostInfo?.registered"
+              :bridge-enabled="securitySettings.browserFillEnabled"
+              :register-loading="registerLoading"
+              :extensions-page-hint="extensionsPageHint"
+              @update:extension-id="extensionIdInput = $event"
+              @open-extensions="openExtensionsPage"
+              @register="registerNativeHost"
+            />
             <div v-if="securitySettings.browserFillEnabled" class="browser-fill-setup">
               <p class="setup-title">{{ t('settings.browserFillSetupTitle') }}</p>
               <p class="row-desc">{{ t('settings.browserFillSetupStep1') }}</p>
@@ -406,6 +427,7 @@ async function handleReset(): Promise<void> {
                   {{ t('settings.browserFillOpenExtensions') }}
                 </UiButton>
               </div>
+              <p v-if="extensionsPageHint" class="extensions-page-hint">{{ extensionsPageHint }}</p>
             </div>
             <div class="row email-backup-row last">
               <div>
@@ -571,8 +593,14 @@ h3 {
   color: var(--text-muted);
 }
 
+.browser-fill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .quickbar-open-btn,
-.bridge-regen-btn,
 .email-backup-open-btn {
   margin-top: 10px;
 }
@@ -616,6 +644,17 @@ h3 {
 
 .browser-fill-setup .setup-warn {
   color: var(--status-danger);
+}
+
+.extensions-page-hint {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--status-success);
+  background: color-mix(in srgb, var(--status-success) 10%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--status-success) 25%, transparent);
 }
 
 .select {

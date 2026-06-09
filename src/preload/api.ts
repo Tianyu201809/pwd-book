@@ -142,7 +142,7 @@ export const electronAPI = {
     invoke(IPC.browserNativeHostInfo),
   registerNativeHost: (extensionId: string): Promise<NativeHostRegistrationInfo> =>
     invoke(IPC.browserRegisterNativeHost, extensionId),
-  openExtensionsPage: (): Promise<void> => invoke(IPC.shellOpenExtensionsPage),
+  openExtensionsPage: (): Promise<{ copiedUrl: string }> => invoke(IPC.shellOpenExtensionsPage),
 
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     invoke(IPC.clipboardCopy, { text, clearAfterMs }),
