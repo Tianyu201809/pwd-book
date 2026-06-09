@@ -6,6 +6,9 @@
   --z-toast: 10100;
 
   --sidebar-width: 240px;
+  --sidebar-min-width: 180px;
+  --sidebar-max-width: 360px;
+  --sidebar-width-collapsed: 40px;
   --list-column-min-width: 240px;
   --detail-width: 360px;
   --detail-min-width: 400px;

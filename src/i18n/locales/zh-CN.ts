@@ -155,6 +155,8 @@ export default {
     categorySearchPlaceholder: '搜索分类或拼音首字母…',
     expandUtilities: '展开工具与设置',
     collapseUtilities: '收起工具与设置',
+    expandSidebar: '展开侧边栏',
+    collapseSidebar: '收起侧边栏',
     noAccount: '未填写账号',
     copyData: '复制到剪贴板',
     duplicateEntry: '创建副本',

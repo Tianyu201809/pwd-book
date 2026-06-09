@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, Sparkles, ChevronDown, ChevronLeft, ChevronRight, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import TagFilterPanel from '@/components/TagFilterPanel.vue'
@@ -17,6 +17,84 @@ import { showToast } from '@/composables/useToast'
 import { textMatchesQuery } from '@/shared/searchMatch'
 import { parseErrorMessage } from '@/shared/utils'
 import type { FilterCategory } from '@/types'
+
+const WIDTH_STORAGE_KEY = 'pwdbook-sidebar-width'
+const COLLAPSED_STORAGE_KEY = 'pwdbook-sidebar-collapsed'
+const PANEL_EDGE_WIDTH = 20
+const SIDEBAR_CONTENT_WIDTH_FALLBACK = 240
+const SIDEBAR_COLLAPSED_WIDTH = 40
+const SIDEBAR_MIN_WIDTH_FALLBACK = 180
+const SIDEBAR_MAX_WIDTH_FALLBACK = 360
+const LIST_COLUMN_MIN_WIDTH_FALLBACK = 240
+
+function readCssPxVar(name: string, fallback: number): number {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  const parsed = Number.parseFloat(raw)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function readSidebarContentDefaultWidth(): number {
+  return readCssPxVar('--sidebar-width', SIDEBAR_CONTENT_WIDTH_FALLBACK)
+}
+
+function readSidebarDefaultShellWidth(): number {
+  return readSidebarContentDefaultWidth() + PANEL_EDGE_WIDTH
+}
+
+function readSidebarMinWidth(): number {
+  return readCssPxVar('--sidebar-min-width', SIDEBAR_MIN_WIDTH_FALLBACK) + PANEL_EDGE_WIDTH
+}
+
+function readSidebarMaxWidth(): number {
+  return readCssPxVar('--sidebar-max-width', SIDEBAR_MAX_WIDTH_FALLBACK) + PANEL_EDGE_WIDTH
+}
+
+function readListColumnMinWidth(): number {
+  return readCssPxVar('--list-column-min-width', LIST_COLUMN_MIN_WIDTH_FALLBACK)
+}
+
+function readSidebarCollapsed(): boolean {
+  return localStorage.getItem(COLLAPSED_STORAGE_KEY) === 'true'
+}
+
+function loadSidebarWidth(): number {
+  const stored = Number(localStorage.getItem(WIDTH_STORAGE_KEY))
+  const defaultShell = readSidebarDefaultShellWidth()
+  let base = Number.isFinite(stored) ? stored : defaultShell
+  // 兼容旧版：总宽 240 实为未计入拖拽条的内容宽度
+  if (base === readSidebarContentDefaultWidth()) {
+    base = defaultShell
+  }
+  const minW = readSidebarMinWidth()
+  const maxW = readSidebarMaxWidth()
+  return Math.min(maxW, Math.max(minW, base))
+}
+
+function getMaxSidebarWidth(): number {
+  const body = document.querySelector('.vault-body')
+  if (!body) return readSidebarMaxWidth()
+  const detail = document.querySelector('.detail-shell')
+  const detailWidth = detail?.getBoundingClientRect().width ?? 0
+  const reserved = readListColumnMinWidth() + detailWidth
+  const available = body.getBoundingClientRect().width - reserved
+  return Math.min(readSidebarMaxWidth(), Math.max(0, Math.floor(available)))
+}
+
+function clampSidebarWidth(): void {
+  if (sidebarCollapsed.value) return
+  const minW = readSidebarMinWidth()
+  const max = getMaxSidebarWidth()
+  if (max < minW) {
+    setSidebarCollapsed(true)
+    return
+  }
+  panelWidth.value = Math.min(max, Math.max(minW, panelWidth.value))
+}
+
+function setSidebarCollapsed(collapsed: boolean): void {
+  sidebarCollapsed.value = collapsed
+  localStorage.setItem(COLLAPSED_STORAGE_KEY, String(collapsed))
+}
 
 type SidebarCategoryItem = {
   id: string
@@ -62,6 +140,61 @@ const BODY_DRAG_CLASS = 'category-drag-active'
 const VIEWPORT_MENU_PADDING = 8
 const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
 const TAG_FILTER_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-tag-filter-expanded'
+
+const sidebarCollapsed = ref(readSidebarCollapsed())
+const panelWidth = ref(loadSidebarWidth())
+const isResizing = ref(false)
+
+const shellWidth = computed(() =>
+  sidebarCollapsed.value ? `${SIDEBAR_COLLAPSED_WIDTH}px` : `${panelWidth.value}px`,
+)
+
+const shellStyle = computed(() => ({
+  width: shellWidth.value,
+  maxWidth: shellWidth.value,
+  flexBasis: shellWidth.value,
+}))
+
+function toggleSidebarCollapse(): void {
+  setSidebarCollapsed(!sidebarCollapsed.value)
+}
+
+function stopResize(): void {
+  isResizing.value = false
+  localStorage.setItem(WIDTH_STORAGE_KEY, String(panelWidth.value))
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+  window.removeEventListener('mousemove', onResizeMove)
+  window.removeEventListener('mouseup', stopResize)
+  window.dispatchEvent(new Event('resize'))
+}
+
+function onResizeMove(event: MouseEvent): void {
+  const shell = document.querySelector('.sidebar-shell') as HTMLElement | null
+  if (!shell) return
+  const rect = shell.getBoundingClientRect()
+  const next = Math.round(event.clientX - rect.left)
+  const minW = readSidebarMinWidth()
+  const max = getMaxSidebarWidth()
+  if (max < minW) return
+  panelWidth.value = Math.min(max, Math.max(minW, next))
+  window.dispatchEvent(new Event('resize'))
+}
+
+function onResizeStart(event: MouseEvent): void {
+  if (sidebarCollapsed.value || event.button !== 0) return
+  const target = event.target as HTMLElement | null
+  if (target?.closest('.edge-toggle')) return
+  isResizing.value = true
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  window.addEventListener('mousemove', onResizeMove)
+  window.addEventListener('mouseup', stopResize)
+}
+
+function onVaultLayoutResize(): void {
+  clampSidebarWidth()
+}
 
 function isCustomCategory(id: string): boolean {
   return id !== 'all' && id !== 'favorite'
@@ -290,13 +423,24 @@ function toggleTagFilter(): void {
   localStorage.setItem(TAG_FILTER_EXPANDED_STORAGE_KEY, String(tagFilterExpanded.value))
 }
 
+watch(sidebarCollapsed, () => {
+  nextTick(() => {
+    clampSidebarWidth()
+    window.dispatchEvent(new Event('resize'))
+  })
+})
+
 onMounted(() => {
+  clampSidebarWidth()
+  window.addEventListener('resize', onVaultLayoutResize)
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
 })
 
 onBeforeUnmount(() => {
   cleanupDrag()
+  stopResize()
+  window.removeEventListener('resize', onVaultLayoutResize)
   document.removeEventListener('click', onDocumentClick)
   document.removeEventListener('keydown', onDocumentKeydown)
 })
@@ -304,9 +448,16 @@ onBeforeUnmount(() => {
 
 <template>
   <aside
-    class="sidebar"
-    :class="{ 'is-sorting': isDragging, 'sidebar--animal': isAnimalIsland }"
+    class="sidebar sidebar-shell"
+    :class="{
+      collapsed: sidebarCollapsed,
+      resizing: isResizing,
+      'is-sorting': isDragging,
+      'sidebar--animal': isAnimalIsland,
+    }"
+    :style="shellStyle"
   >
+    <div v-if="!sidebarCollapsed" class="sidebar-main">
     <div class="sidebar-top">
       <VaultClock />
     </div>
@@ -486,6 +637,24 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+    </div>
+
+    <div
+      class="panel-edge sidebar-edge"
+      :class="{ collapsed: sidebarCollapsed }"
+      @mousedown="onResizeStart"
+    >
+      <button
+        type="button"
+        class="edge-toggle"
+        :title="sidebarCollapsed ? t('vault.expandSidebar') : t('vault.collapseSidebar')"
+        :aria-label="sidebarCollapsed ? t('vault.expandSidebar') : t('vault.collapseSidebar')"
+        @click.stop="toggleSidebarCollapse"
+      >
+        <ChevronLeft v-if="!sidebarCollapsed" :size="16" :stroke-width="2" />
+        <ChevronRight v-else :size="16" :stroke-width="2" />
+      </button>
+    </div>
   </aside>
 
   <Teleport to="body">
@@ -538,13 +707,78 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.sidebar {
-  width: var(--sidebar-width);
+.sidebar-shell {
   flex-shrink: 0;
+  align-self: stretch;
+  height: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  min-width: 0;
+  overflow: hidden;
+  transition: width 0.2s ease;
   background: var(--bg-surface);
   border-right: 1px solid var(--border-default);
+}
+
+.sidebar-shell:not(.collapsed) {
+  min-width: min(calc(var(--sidebar-min-width) + 20px), 100%);
+}
+
+.sidebar-shell.resizing {
+  transition: none;
+}
+
+.sidebar-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-edge {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--border-default);
+  background: var(--bg-app);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.panel-edge.collapsed {
+  width: 100%;
+  border-left: none;
+  cursor: default;
+}
+
+.edge-toggle {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.edge-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
 }
 
 .sidebar.is-sorting {

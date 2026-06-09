@@ -156,6 +156,8 @@ export default {
     categorySearchPlaceholder: 'Search categories or pinyin initials…',
     expandUtilities: 'Expand tools & settings',
     collapseUtilities: 'Collapse tools & settings',
+    expandSidebar: 'Expand sidebar',
+    collapseSidebar: 'Collapse sidebar',
     noAccount: 'No account',
     copyData: 'Copy to clipboard',
     duplicateEntry: 'Duplicate',
