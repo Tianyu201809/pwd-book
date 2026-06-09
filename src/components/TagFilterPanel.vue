@@ -102,6 +102,21 @@ function onTagRowClick(name: string): void {
   width: 100%;
 }
 
+.tag-filter-search-input :deep(.input-field) {
+  padding: 8px 12px;
+  font-size: 13px;
+  min-height: 36px;
+}
+
+.tag-filter-search-input--animal {
+  font-size: 13px;
+  min-height: 36px;
+}
+
+.tag-filter-search-input--animal :deep(.animal-input__inner) {
+  min-height: 36px;
+}
+
 .tag-filter-hint {
   margin: 0;
   font-size: 11px;
