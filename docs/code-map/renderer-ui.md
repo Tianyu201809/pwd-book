@@ -12,16 +12,16 @@ App.vue
 ├── VaultView.vue             # 主工作区
 │   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单、标签筛选（v1.12.0）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
-│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）
+│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏）
 ├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口）
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
-├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全）
+├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全；v1.13.0 SMTP 密码占位/显隐）
 ├── PasswordGenView.vue       # 随机密码（侧栏工具区入口）
 ├── PasswordHealthView.vue    # 密码健康（v1.12.0，侧栏工具区入口）
 ├── WifiSyncView.vue          # 局域网同步（v1.9.0，设置 → 数据 → 同步）
 │   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram、SyncConflictModal（v1.12.0）
-├── TagFilterPanel.vue        # 侧栏按标签筛选（v1.12.0，VaultSidebar 内嵌）
+├── TagFilterPanel.vue        # 侧栏按标签筛选（v1.12.0，VaultSidebar 内嵌；v1.13.0 搜索框尺寸）
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
 ├── TagManagePanel.vue        # 标签管理
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
@@ -45,12 +45,16 @@ App.vue
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
 - HTML5 拖拽排序，`reorderSidebarCategories` 持久化。
 - **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
-- **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`。
+- **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`（**v1.13.0** 起默认 **收起**）。
 
 ### SettingsView.vue
 
 - 四个 Tab（安全 / 外观 / 数据 / 关于）；Tab 图标使用 `IconBadge`（v1.11.0）。
 - **安全** Tab 含 **打开邮箱备份** 按钮（`openEmailBackup`）；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
+
+### UiInput.vue（`components/ui/`）
+
+- 经典模式（v1.13.0）：`$attrs.class` / `$attrs.style` 绑定在外层 `.ui-input-classic-wrap`，避免 `field-row` 等场景下 flex 宽度只作用于内部 `<input>` 导致布局异常。
 
 ### EntryListMenu.vue
 
