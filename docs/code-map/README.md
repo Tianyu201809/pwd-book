@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.13.0**（`package.json`）— TOTP 密钥显示切换、邮箱备份 SMTP 密码 UX、标签筛选默认收起、经典 UiInput 布局修正等。
+**当前版本：v1.14.0**（`package.json`）— 左侧侧栏收缩、详情小窗口（独立 `detail.html`）、小窗口置顶、主/小窗口数据同步等。
 
 ## 文档索引
 
@@ -44,6 +44,8 @@
 | 改 TOTP / 密码健康 / 标签筛选 | `shared/totp.ts`、`shared/passwordHealth.ts`、`PasswordDetail.vue`、`PasswordHealthView.vue`、`TagFilterPanel.vue`、`VaultSidebar.vue`、`useAppState.ts` |
 | 改邮箱备份 SMTP 密码 UX | `EmailBackupView.vue`（`smtpPasswordModel`、显隐按钮） |
 | 改经典输入框布局 | `components/ui/UiInput.vue`（`ui-input-classic-wrap` 承载 class/style） |
+| 改详情小窗口 / 置顶 / 主窗同步 | `main/detailWindow.ts`、`DetailWindowApp.vue`、`renderer/detail.ts`、`TitleBar.vue`（`detail-window`）、`useAppState.ts`（`openDetachedDetail`、`detachedDetailOpen`） |
+| 改侧栏收缩 | `VaultSidebar.vue`（`pwdbook-sidebar-collapsed`） |
 | 改 Wi-Fi 同步 / 合并 | [wifi-sync.md](./wifi-sync.md)、`wifiSyncService.ts`、`syncMergeService.ts`、`shared/syncMerge.ts` |
 | 改 Wi-Fi 同步冲突 UI | `WifiSyncView.vue`、`sync/SyncConflictModal.vue`、`shared/syncMerge.ts` |
 | 改托盘文案 / 语言 | `shared/trayLabels.ts`、`main/tray.ts`；`app_settings.ui_locale` |

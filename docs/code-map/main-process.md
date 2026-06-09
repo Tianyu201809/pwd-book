@@ -72,6 +72,20 @@
 - `src/main/quickBar.ts` — 快捷条窗口与 `Alt+Shift+P` 注册
 - `src/main/mainWindowShortcut.ts` — 主窗口 `Alt+Shift+M` 注册，调用 `showFromTray()`
 
+### detailWindow（v1.14.0）
+
+`src/main/detailWindow.ts` — 条目详情独立小窗口。
+
+| 函数 / 行为 | 说明 |
+|-------------|------|
+| `openDetailWindow(entryId)` | 创建/显示无边框小窗口（默认 480×720，最小 400×520），加载 `detail.html`；须已解锁 |
+| `closeDetailWindow` | 关闭小窗口 |
+| `hideDetailWindowOnLock` | 锁定时由 handlers 调用，关闭小窗口 |
+| `notifyDetailWindowThemeSync` | 主窗口换肤后向小窗口广播 `theme:changed` |
+| `registerDetailWindowIpc` | 注册 open/close/ready/select-entry/always-on-top IPC；`vault-data:notify-changed` 广播至其它窗口 |
+
+小窗口 `setAlwaysOnTop` 经 `detail-window:toggle-always-on-top` / `detail-window:get-always-on-top` 暴露给 `TitleBar.vue`（`detail-window` 模式）。
+
 ### autoLock（v1.8.0）
 
 `src/main/autoLock.ts` — 当 `auto_lock_minutes === -1`（跟随系统锁屏）且保险库已解锁时：

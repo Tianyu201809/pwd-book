@@ -95,6 +95,18 @@
 
 扩展与主进程不经上述 IPC 直连，而是 **Native Host → TCP 桥接**。详见 [browser-autofill.md](./browser-autofill.md)。
 
+### 详情小窗口（v1.14.0）
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `detail-window:open` | 是 | 打开/聚焦小窗口并选中条目 id |
+| `detail-window:close` | 否 | 关闭小窗口 |
+| `detail-window:ready` | 否 | 小窗口渲染就绪；主进程下发待选条目 |
+| `detail-window:select-entry` | 是* | 主窗口切换选中时同步至已打开的小窗口（sender 须为主窗口） |
+| `detail-window:get-always-on-top` | 否* | 查询小窗口置顶状态（sender 须为小窗口） |
+| `detail-window:toggle-always-on-top` | 否* | 切换小窗口置顶（sender 须为小窗口） |
+| `vault-data:notify-changed` | 否 | 任一侧保存后通知主进程广播 `vault-data:changed` |
+
 ### 窗口（非 IPC handle）
 
 | 事件 | 方向 | 说明 |
@@ -112,6 +124,10 @@
 | `quickbar:shown` | send | 快捷条已显示 |
 | `theme:changed` | send | 主题变更通知 |
 | `session:system-lock` | send | **v1.8.0** 系统锁屏且已选「跟随系统锁屏」；主进程已 `lockVault()`，渲染进程同步 UI |
+| `detail-window:select-entry` | send | **v1.14.0** 主/小窗口切换选中条目 |
+| `detail-window:opened` | send | **v1.14.0** 小窗口已打开（主窗口收起内联详情位） |
+| `detail-window:closed` | send | **v1.14.0** 小窗口已关闭（主窗口恢复内联详情） |
+| `vault-data:changed` | send | **v1.14.0** 保险库数据变更，各窗口 `refreshVaultData` |
 
 ## 解锁流程
 

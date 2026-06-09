@@ -6,9 +6,9 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.13.0（`package.json`） |
-| 源码文件 | ~70+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
-| IPC 通道 | 45+ 个（`src/shared/types.ts` → `IPC` + 快捷条事件） |
+| 版本 | 1.14.0（`package.json`） |
+| 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
+| IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch` 等 |
 
 ## 三层进程模型
@@ -50,6 +50,7 @@ flowchart TB
 | 主进程 bootstrap | `src/main/index.ts:35` | 初始化 DB、注册 IPC、创建无边框窗口 |
 | Preload 暴露 | `src/preload/index.ts` | 将 `electronAPI` 挂到 `window` |
 | 渲染入口 | `src/renderer/app.ts` | 挂载 Vue 根组件 `App.vue` |
+| 详情小窗口入口 | `src/renderer/detail.ts` | 挂载 `DetailWindowApp.vue`（`detail.html`，v1.14.0） |
 | 应用状态中枢 | `src/composables/useAppState.ts` | 屏幕路由、保险库 CRUD、分类、设置 |
 | IPC 注册 | `src/main/ipc/handlers.ts:77` | 全部 `ipcMain.handle` |
 

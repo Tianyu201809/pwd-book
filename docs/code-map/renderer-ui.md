@@ -6,13 +6,13 @@
 
 ```
 App.vue
-├── TitleBar.vue              # 自定义标题栏、窗口控制
+├── TitleBar.vue              # 自定义标题栏、窗口控制（v1.14.0：详情小窗口模式含置顶）
 ├── LockScreen.vue            # 锁定页状态机
 │   └── recovery/*            # 恢复流程子组件
-├── VaultView.vue             # 主工作区
-│   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单、标签筛选（v1.12.0）
+├── VaultView.vue             # 主工作区（v1.14.0：detached 时隐藏内联详情位）
+│   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
-│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏）
+│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏；v1.14.0 弹出小窗口）
 ├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口）
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
@@ -32,7 +32,20 @@ App.vue
 └── ToastHost.vue             # 全局 Toast 容器
 
 # 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
+# 独立渲染入口 detail.html → DetailWindowApp.vue（v1.14.0 详情小窗口，见下文）
 ```
+
+### DetailWindowApp.vue（v1.14.0）
+
+- 第二渲染入口 `detail.html` → `detail.ts`；仅含 `TitleBar`（`detail-window`）、`PasswordDetail`（`detached`）、`ToastHost`。
+- `onMounted`：`bootstrap()` + `notifyDetailWindowReady()`；订阅 `detail-window:select-entry` 更新 `selectedEntryId` 并 `refreshVaultData`。
+- 订阅 `vault-data:changed` 与主窗口保持数据一致；选中清空且非新建时自动 `closeDetailWindow`。
+- 动森皮肤下同样包裹 `Cursor` + `AnimalBackdrop`。
+
+### TitleBar.vue（详情小窗口模式）
+
+- `detailWindow` prop 为 true 时：隐藏最大化与快速锁定；关闭按钮直接 `closeDetailWindow`；新增 **置顶** 图钉（`getDetailWindowAlwaysOnTop` / `toggleDetailWindowAlwaysOnTop`）。
+- 详情小窗口按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
 
 ### QuickBarApp.vue
 
@@ -46,6 +59,13 @@ App.vue
 - HTML5 拖拽排序，`reorderSidebarCategories` 持久化。
 - **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
 - **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`（**v1.13.0** 起默认 **收起**）。
+- **侧栏收缩**（v1.14.0）：右缘按钮收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
+
+### PasswordDetail.vue（内联 / detached）
+
+- 内联模式：左缘收起/展开（`pwdbook-detail-collapsed`）、拖拽调宽；选中或新建时 `expandDetailPanel`。
+- **在新窗口打开**（v1.14.0）：标题栏 `SquareArrowOutUpRight` → `openDetachedDetail`；小窗口打开后主窗口 `detachedDetailOpen` 隐藏 `.vault-detail-slot`。
+- `detached` prop：全宽展示、无收起边缘；与小窗口共用编辑/保存/TOTP 等逻辑。
 
 ### SettingsView.vue
 
@@ -75,7 +95,11 @@ App.vue
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
 | `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
-| `loadEntries` / `selectEntry` | 列表与选中项 |
+| `loadEntries` / `selectEntry` | 列表与选中项；`selectEntry` 同步 `detail-window:select-entry` |
+| `openDetachedDetail` / `detachedDetailOpen` | 弹出详情小窗口；主窗口是否隐藏内联详情位（v1.14.0） |
+| `detailCollapsed` / `setDetailCollapsed` / `expandDetailPanel` | 内联详情收起状态（`pwdbook-detail-collapsed`） |
+| `handleDetailWindowOpened` / `handleDetailWindowClosed` | 响应小窗口开/关，恢复内联详情展开 |
+| `refreshVaultData` | 重载条目；小窗口订阅 `vault-data:changed` |
 | 分类 | `createCategory`、`reorderSidebarCategories` 等 |
 | `exportData` / `importData` | PwdBook JSON 备份导入 |
 | `previewImportData` / `commitImportData` | 多来源导入（含 PwdBook CSV）预览与提交 |
