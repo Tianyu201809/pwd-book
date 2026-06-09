@@ -1,10 +1,113 @@
 const ROOT_ID = 'pwdbook-fill-root'
 const SCAN_DEBOUNCE_MS = 250
+const UI_STORAGE = {
+  collapsed: 'pwdbook-ui-collapsed',
+  x: 'pwdbook-ui-x',
+  y: 'pwdbook-ui-y',
+}
 
 const KEY_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11.5 11.5 21 2"/><path d="M16 2h5v5"/></svg>`
 const CHEVRON_SVG = `<svg class="pwdbook-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>`
+const COLLAPSE_SVG = `<svg class="pwdbook-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`
+const EXPAND_SVG = `<svg class="pwdbook-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>`
 
-function createBrand() {
+function readUiCollapsed() {
+  return localStorage.getItem(UI_STORAGE.collapsed) === '1'
+}
+
+function saveUiCollapsed(collapsed) {
+  localStorage.setItem(UI_STORAGE.collapsed, collapsed ? '1' : '0')
+}
+
+function saveUiPosition(root) {
+  const rect = root.getBoundingClientRect()
+  localStorage.setItem(UI_STORAGE.x, String(Math.round(rect.left)))
+  localStorage.setItem(UI_STORAGE.y, String(Math.round(rect.top)))
+}
+
+function applyUiPreferences(root) {
+  if (readUiCollapsed()) {
+    root.classList.add('is-collapsed')
+  }
+
+  const x = localStorage.getItem(UI_STORAGE.x)
+  const y = localStorage.getItem(UI_STORAGE.y)
+  if (x == null || y == null) return
+
+  root.style.right = 'auto'
+  root.style.left = `${x}px`
+  root.style.top = `${y}px`
+}
+
+function clampUiPosition(root) {
+  const rect = root.getBoundingClientRect()
+  const maxLeft = Math.max(0, window.innerWidth - root.offsetWidth)
+  const maxTop = Math.max(0, window.innerHeight - root.offsetHeight)
+  const left = Math.max(0, Math.min(rect.left, maxLeft))
+  const top = Math.max(0, Math.min(rect.top, maxTop))
+  root.style.right = 'auto'
+  root.style.left = `${left}px`
+  root.style.top = `${top}px`
+  saveUiPosition(root)
+}
+
+function syncCollapseButton(root, collapseBtn) {
+  const collapsed = root.classList.contains('is-collapsed')
+  collapseBtn.innerHTML = collapsed ? EXPAND_SVG : COLLAPSE_SVG
+  collapseBtn.title = collapsed ? '展开' : '收起'
+  collapseBtn.setAttribute('aria-expanded', String(!collapsed))
+  collapseBtn.setAttribute('aria-label', collapsed ? '展开' : '收起')
+}
+
+function toggleCollapse(root, collapseBtn) {
+  root.classList.toggle('is-collapsed')
+  syncCollapseButton(root, collapseBtn)
+  saveUiCollapsed(root.classList.contains('is-collapsed'))
+  clampUiPosition(root)
+}
+
+function setupDrag(root, handle) {
+  handle.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return
+    if (e.target.closest('.pwdbook-collapse-btn')) return
+
+    const rect = root.getBoundingClientRect()
+    const startX = e.clientX
+    const startY = e.clientY
+    const startLeft = rect.left
+    const startTop = rect.top
+
+    root.style.right = 'auto'
+    root.style.left = `${startLeft}px`
+    root.style.top = `${startTop}px`
+    root.classList.add('is-dragging')
+    e.preventDefault()
+
+    const onMove = (ev) => {
+      const maxLeft = Math.max(0, window.innerWidth - root.offsetWidth)
+      const maxTop = Math.max(0, window.innerHeight - root.offsetHeight)
+      const left = Math.max(0, Math.min(startLeft + ev.clientX - startX, maxLeft))
+      const top = Math.max(0, Math.min(startTop + ev.clientY - startY, maxTop))
+      root.style.left = `${left}px`
+      root.style.top = `${top}px`
+    }
+
+    const onUp = () => {
+      root.classList.remove('is-dragging')
+      saveUiPosition(root)
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  })
+}
+
+function createHeader(root) {
+  const header = document.createElement('div')
+  header.className = 'pwdbook-header'
+
   const brand = document.createElement('div')
   brand.className = 'pwdbook-brand'
   const mark = document.createElement('span')
@@ -14,7 +117,19 @@ function createBrand() {
   title.className = 'pwdbook-title'
   title.textContent = 'PwdBook'
   brand.append(mark, title)
-  return brand
+
+  const collapseBtn = document.createElement('button')
+  collapseBtn.type = 'button'
+  collapseBtn.className = 'pwdbook-collapse-btn'
+  collapseBtn.addEventListener('mousedown', (e) => e.stopPropagation())
+  collapseBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    toggleCollapse(root, collapseBtn)
+  })
+
+  header.append(brand, collapseBtn)
+  setupDrag(root, header)
+  return header
 }
 
 function createPrimaryButton(label, onClick) {
@@ -114,7 +229,7 @@ function createUi(matches, pageUrl) {
   const actions = document.createElement('div')
   actions.className = 'pwdbook-actions'
 
-  root.appendChild(createBrand())
+  root.appendChild(createHeader(root))
   root.appendChild(actions)
 
   const fillOne = async (entryId) => {
@@ -207,6 +322,10 @@ function createUi(matches, pageUrl) {
   }
 
   document.documentElement.appendChild(root)
+  applyUiPreferences(root)
+  const collapseBtn = root.querySelector('.pwdbook-collapse-btn')
+  if (collapseBtn) syncCollapseButton(root, collapseBtn)
+  clampUiPosition(root)
 }
 
 function formatMatchTitle(m) {
