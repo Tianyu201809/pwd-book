@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.14.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.15.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -284,7 +284,7 @@ npm run dev
 1. **桌面端** — **设置 → 安全** 开启「浏览器自动填充」，并保持 PwdBook 运行且保险库已解锁。
 2. **安装扩展** — Chrome/Edge 打开 `chrome://extensions`，开启开发者模式，**加载已解压的扩展程序**，选择仓库中的 `extension/` 目录。
 3. **注册 Native Host** — 在 PwdBook **设置 → 安全 → 浏览器自动填充** 展开区域，粘贴扩展 **ID**，点击 **「注册到 Chrome / Edge」**（也可使用 `npm run register-native-host -- <扩展ID>`）。**v1.12.0** 起支持 **macOS**（写入 `~/Library/Application Support/.../NativeMessagingHosts/`；入口 `pwdbook-native-host.sh`）。
-4. **使用** — 完全退出并重新打开浏览器；打开带登录表单的 HTTPS 页面，若库中有同域名条目，右上角出现 **PwdBook** 填充条；点击后写入用户名与密码。
+4. **使用** — 完全退出并重新打开浏览器；打开带登录表单的 HTTPS 页面，若库中有同域名条目，右上角出现 **PwdBook** 填充条；点击后写入用户名与密码。**v1.15.0** 起填充条标题栏可 **拖拽** 移动位置，**收起** 按钮可折叠为紧凑图标条（偏好写入页面 `localStorage`，同站点跨页保持）。
 
 安装版可在 `%INSTDIR%\resources\extension\` 找到扩展源文件。断网时仍可填充（仅访问目标网站本身可能需要网络）。
 
@@ -361,7 +361,15 @@ npm run dev
 
 ## 版本更新
 
-### v1.14.0（当前）
+### v1.15.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1150---2026-06-09)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 浏览器扩展 | 登录页填充条可 **拖拽** 移动；**收起/展开** 为紧凑图标条（`localStorage` 跨页保持） |
+
+### v1.14.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1140---2026-06-09)**。摘要：
 
@@ -541,7 +549,7 @@ pwd-book/
 | [docs/code-map/overview.md](./docs/code-map/overview.md) | 三层进程模型与目录说明 |
 | [docs/code-map/database-schema.md](./docs/code-map/database-schema.md) | 表结构与 `app_settings` 键 |
 | [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md) | 快捷搜索条、最近打开与全局快捷键 |
-| [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0） |
+| [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0；**v1.15.0** 填充条拖拽/收起） |
 | [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md) | Wi-Fi 局域网同步（v1.9.0） |
 | [design/design-system.md](./design/design-system.md) | 色彩、字体与组件 Token |
 | [design/recovery-flow.md](./design/recovery-flow.md) | 恢复密钥 UX 与文案规范 |

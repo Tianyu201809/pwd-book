@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.14.0**（`package.json`）— 左侧侧栏收缩、详情小窗口（独立 `detail.html`）、小窗口置顶、主/小窗口数据同步等。
+**当前版本：v1.15.0**（`package.json`）— 浏览器填充条拖拽与收起（`extension/content.js`）等。
 
 ## 文档索引
 
@@ -14,7 +14,7 @@
 | [ipc-and-data-flow.md](./ipc-and-data-flow.md) | IPC 通道表、解锁/保存/恢复流程图 |
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试 |
-| [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全 |
+| [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 
 ## 相关文档
@@ -38,6 +38,7 @@
 | 改邮箱备份入口 / 返回导航 | `SettingsView.vue`、`EmailBackupView.vue`、`useAppState.ts`（`openEmailBackup`） |
 | 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue` |
 | 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |
+| 改浏览器填充条 UI（拖拽/收起） | `extension/content.js`、`extension/content.css`（`pwdbook-ui-x` / `pwdbook-ui-y` / `pwdbook-ui-collapsed`） |
 | 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
 | 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |
