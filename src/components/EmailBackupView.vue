@@ -10,6 +10,8 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Eye,
+  EyeOff,
 } from 'lucide-vue-next'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import { UiInput, UiButton, UiCheckbox } from '@/components/ui'
@@ -37,6 +39,7 @@ const smtpSecure = ref(true)
 const smtpUsername = ref('')
 const smtpPassword = ref('')
 const smtpPasswordEdited = ref(false)
+const showSmtpPassword = ref(false)
 const SAVED_SMTP_PASSWORD_MASK = '********'
 const smtpExpanded = ref(true)
 
@@ -101,6 +104,7 @@ function syncFromSettings(): void {
   smtpUsername.value = settings.smtp.username
   smtpPassword.value = ''
   smtpPasswordEdited.value = false
+  showSmtpPassword.value = false
 }
 
 function onSmtpPasswordFocus(): void {
@@ -137,6 +141,7 @@ async function saveSettings(): Promise<boolean> {
     })
     smtpPassword.value = ''
     smtpPasswordEdited.value = false
+    showSmtpPassword.value = false
     showToast(t('tools.emailBackup.settingsSaved'), 'success')
     return true
   } catch {
@@ -261,12 +266,24 @@ function goBack(): void {
                 </div>
                 <div class="field" @focusin="onSmtpPasswordFocus" @focusout="onSmtpPasswordBlur">
                   <label>{{ t('tools.emailBackup.smtpPassword') }}</label>
-                  <UiInput
-                    v-model="smtpPasswordModel"
-                    type="password"
-                    :placeholder="t('tools.emailBackup.smtpPasswordPlaceholder')"
-                  />
-                  <p class="field-hint">{{ t('tools.emailBackup.smtpPasswordHint') }}</p>
+                  <div class="password-input-wrap">
+                    <UiInput
+                      v-model="smtpPasswordModel"
+                      :type="showSmtpPassword ? 'text' : 'password'"
+                      class="password-input"
+                      :placeholder="t('tools.emailBackup.smtpPasswordPlaceholder')"
+                    />
+                    <button
+                      type="button"
+                      class="eye-btn"
+                      :title="showSmtpPassword ? t('common.hide') : t('common.show')"
+                      :aria-label="showSmtpPassword ? t('common.hide') : t('common.show')"
+                      @click="showSmtpPassword = !showSmtpPassword"
+                    >
+                      <EyeOff v-if="showSmtpPassword" :size="16" :stroke-width="1.5" />
+                      <Eye v-else :size="16" :stroke-width="1.5" />
+                    </button>
+                  </div>
                 </div>
                 <p class="smtp-hint">{{ t('tools.emailBackup.smtpHint') }}</p>
               </div>
@@ -421,10 +438,30 @@ function goBack(): void {
   gap: 16px;
 }
 
-.field-hint {
-  margin: 6px 0 0;
-  font-size: 11px;
-  color: var(--text-muted);
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap :deep(.input-field),
+.password-input-wrap :deep(input) {
+  padding-right: 40px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.eye-btn:hover {
+  color: var(--text-primary);
 }
 
 .smtp-hint {

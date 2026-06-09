@@ -456,7 +456,6 @@ async function handleReset(): Promise<void> {
             <p class="font-display about-title">{{ t('common.appName') }}</p>
             <p class="about-version">{{ t('settings.version', { version: packageJson.version }) }}</p>
             <p class="about-desc">{{ t('settings.aboutDesc') }}</p>
-            <p class="about-credit">{{ t('settings.animalIslandCredit') }}</p>
           </UiCard>
           <Footer v-if="isAnimalIsland" type="tree" class="about-footer" />
         </div>
@@ -715,13 +714,6 @@ h3 {
   margin: 0 0 16px;
   font-size: 12px;
   color: var(--text-muted);
-}
-
-.about-credit {
-  margin: 16px 0 0;
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
 }
 
 .about-footer {

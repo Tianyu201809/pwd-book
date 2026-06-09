@@ -515,8 +515,6 @@ export default {
     dataCleared: '所有数据已清除，请重新创建主密码',
     aboutDesc:
       '本地优先的密码管理工具。密码字段 AES-256 加密存储，元数据保存在本地 SQLite 数据库中。',
-    animalIslandCredit:
-      '「动物森友会」高级皮肤 UI 组件来自 animal-island-vue（MIT，仅限个人学习与非商业展示）。',
     version: '版本 {version} · Electron + Vue 3 + SQLite',
   },
   export: {
