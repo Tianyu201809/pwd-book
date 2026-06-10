@@ -340,7 +340,13 @@ function hasExceededDragThreshold(clientX: number, clientY: number): boolean {
 }
 
 function onItemPointerDown(categoryId: FilterCategory, event: PointerEvent): void {
-  if (isCategorySearchActive.value || event.button !== 0) return
+  if (event.button !== 0) return
+
+  if (selectedCategory.value !== categoryId) {
+    selectCategory(categoryId)
+  }
+
+  if (isCategorySearchActive.value) return
 
   dragStartPoint.value = { x: event.clientX, y: event.clientY }
   beginCategoryDrag(categoryId, event.pointerId, event.currentTarget as HTMLElement)

@@ -207,12 +207,8 @@ const filteredEntries = computed(() => {
 })
 
 const selectedEntry = computed(() => {
-  if (isCreating.value) return null
-  return (
-    entries.value.find((entry) => entry.id === selectedEntryId.value) ??
-    filteredEntries.value[0] ??
-    null
-  )
+  if (isCreating.value || !selectedEntryId.value) return null
+  return entries.value.find((entry) => entry.id === selectedEntryId.value) ?? null
 })
 
 function sortEntries(list: PasswordEntry[]): PasswordEntry[] {
@@ -564,7 +560,7 @@ function selectCategory(id: FilterCategory): void {
   selectedCategory.value = id
   selectedTagFilters.value = []
   isCreating.value = false
-  selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  selectedEntryId.value = null
   touchActivity()
 }
 
