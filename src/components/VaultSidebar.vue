@@ -313,6 +313,26 @@ function cleanupDrag(): void {
   activePointerId.value = null
 }
 
+const AUTO_SCROLL_EDGE_PX = 36
+const AUTO_SCROLL_MIN_STEP = 4
+const AUTO_SCROLL_MAX_STEP = 18
+
+function autoScrollNav(clientY: number): void {
+  const nav = sidebarNavRef.value
+  if (!nav) return
+
+  const rect = nav.getBoundingClientRect()
+  if (clientY < rect.top + AUTO_SCROLL_EDGE_PX) {
+    const intensity = 1 - Math.max(0, clientY - rect.top) / AUTO_SCROLL_EDGE_PX
+    nav.scrollTop -= Math.ceil(AUTO_SCROLL_MIN_STEP + intensity * AUTO_SCROLL_MAX_STEP)
+    return
+  }
+  if (clientY > rect.bottom - AUTO_SCROLL_EDGE_PX) {
+    const intensity = 1 - Math.max(0, rect.bottom - clientY) / AUTO_SCROLL_EDGE_PX
+    nav.scrollTop += Math.ceil(AUTO_SCROLL_MIN_STEP + intensity * AUTO_SCROLL_MAX_STEP)
+  }
+}
+
 function updateDragTarget(clientY: number): void {
   const nav = sidebarNavRef.value
   if (!nav || dragFromIndex.value === null) return
@@ -372,6 +392,7 @@ function onDocumentPointerMove(event: PointerEvent): void {
 
   event.preventDefault()
   dragMoved.value = true
+  autoScrollNav(event.clientY)
   updateDragTarget(event.clientY)
 }
 
@@ -740,8 +761,9 @@ onBeforeUnmount(() => {
   cursor: grabbing;
 }
 
-.sidebar.is-sorting .nav-item.sortable:not(.is-dragging) {
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+.sidebar.is-sorting .nav-item.sortable:not(.is-dragging),
+.sidebar.is-sorting .sort-move {
+  transition: none;
 }
 
 .sidebar-top {
@@ -801,7 +823,9 @@ onBeforeUnmount(() => {
   flex: 1 1 auto;
   min-height: 0;
   padding: 0 12px;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -949,6 +973,8 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .sort-move {
@@ -960,17 +986,16 @@ onBeforeUnmount(() => {
   user-select: none;
   -webkit-user-select: none;
   position: relative;
-  will-change: transform;
+  max-width: 100%;
 }
 
 .nav-item.is-dragging {
   z-index: 2;
   opacity: 0.96;
-  transform: scale(1.015);
   background: var(--bg-elevated);
   box-shadow:
-    0 10px 24px rgba(15, 23, 42, 0.12),
-    0 0 0 1px var(--border-accent);
+    inset 0 0 0 1px var(--border-accent),
+    0 8px 20px rgba(15, 23, 42, 0.1);
 }
 
 .nav-item.is-dragging.active {
