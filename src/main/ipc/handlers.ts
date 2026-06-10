@@ -22,6 +22,7 @@ import { initDatabase } from '../db/database'
 import { commitImport, previewImport } from '../services/importService'
 import { buildExportCsv } from '../services/exportCsvService'
 import { openBrowserExtensionsPage } from '../services/browserLaunchService'
+import { openLocalProgram } from '../services/localProgramService'
 import {
   removeQuickBarRecentEntry,
   resolveQuickBarRecentEntries,
