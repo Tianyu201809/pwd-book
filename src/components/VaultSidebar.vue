@@ -133,9 +133,11 @@ const draggingId = ref<string | null>(null)
 const dragMoved = ref(false)
 const suppressNextClick = ref(false)
 const activePointerId = ref<number | null>(null)
+const dragStartPoint = ref<{ x: number; y: number } | null>(null)
 const contextMenu = ref<{ category: SidebarCategoryItem; x: number; y: number; confirmDelete: boolean } | null>(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
 const BODY_DRAG_CLASS = 'category-drag-active'
+const DRAG_ACTIVATION_PX = 15
 const VIEWPORT_MENU_PADDING = 8
 const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
 const TAG_FILTER_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-tag-filter-expanded'
@@ -310,6 +312,7 @@ function cleanupDrag(): void {
   draggingId.value = null
   dragMoved.value = false
   activePointerId.value = null
+  dragStartPoint.value = null
 }
 
 function beginCategoryDrag(categoryId: FilterCategory, pointerId: number, captureTarget: HTMLElement): void {
@@ -330,10 +333,16 @@ function beginCategoryDrag(categoryId: FilterCategory, pointerId: number, captur
   document.addEventListener('pointercancel', onDocumentPointerUp)
 }
 
+function hasExceededDragThreshold(clientX: number, clientY: number): boolean {
+  const start = dragStartPoint.value
+  if (!start) return false
+  return Math.abs(clientY - start.y) >= DRAG_ACTIVATION_PX
+}
+
 function onItemPointerDown(categoryId: FilterCategory, event: PointerEvent): void {
   if (isCategorySearchActive.value || event.button !== 0) return
 
-  event.preventDefault()
+  dragStartPoint.value = { x: event.clientX, y: event.clientY }
   beginCategoryDrag(categoryId, event.pointerId, event.currentTarget as HTMLElement)
 }
 
@@ -389,6 +398,7 @@ function updateDragTarget(clientY: number): void {
 function onDocumentPointerMove(event: PointerEvent): void {
   if (dragFromIndex.value === null) return
   if (activePointerId.value !== null && event.pointerId !== activePointerId.value) return
+  if (!dragMoved.value && !hasExceededDragThreshold(event.clientX, event.clientY)) return
 
   event.preventDefault()
   if (!dragMoved.value) {
@@ -415,7 +425,7 @@ async function onDocumentPointerUp(event: PointerEvent): Promise<void> {
     newOrder = reordered.map((category) => category.id)
   }
 
-  suppressNextClick.value = Boolean(newOrder) || moved
+  suppressNextClick.value = Boolean(newOrder)
   cleanupDrag()
 
   if (newOrder) {
