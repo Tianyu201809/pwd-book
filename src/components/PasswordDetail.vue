@@ -747,6 +747,8 @@ watch(detailCollapsed, () => {
 }
 
 .detail-shell {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   align-self: stretch;
   height: 100%;
@@ -754,7 +756,7 @@ watch(detailCollapsed, () => {
   flex-direction: row;
   min-width: 0;
   background: var(--bg-surface);
-  overflow: hidden;
+  overflow: visible;
   transition: width 0.2s ease;
 }
 

@@ -373,8 +373,9 @@
   opacity: 1;
 }
 
-[data-skin="animalIsland"] .sidebar {
-  overflow: hidden;
+/* 侧栏内容在 .sidebar-main 内裁剪；外壳需 visible，否则 PanelEdge 折叠钮会被裁切 */
+[data-skin="animalIsland"] .sidebar-shell {
+  overflow: visible;
 }
 
 [data-skin="animalIsland"] .list-panel,

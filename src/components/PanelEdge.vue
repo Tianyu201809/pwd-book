@@ -26,8 +26,13 @@ const emit = defineEmits<{
 }>()
 
 const hovered = ref(false)
+const toggleHovered = ref(false)
 
-const showToggle = computed(() => props.collapsed || hovered.value || props.resizing)
+const edgeActive = computed(
+  () => props.collapsed || hovered.value || toggleHovered.value || props.resizing,
+)
+
+const showToggle = computed(() => edgeActive.value)
 
 const toggleTitle = computed(() =>
   props.collapsed ? props.expandLabel : props.collapseLabel,
@@ -39,6 +44,27 @@ function onMouseDown(event: MouseEvent): void {
   if (target?.closest('.panel-edge-toggle')) return
   emit('resize-start', event)
 }
+
+function onEdgeMouseLeave(event: MouseEvent): void {
+  const related = event.relatedTarget
+  const current = event.currentTarget
+  if (
+    related instanceof Node
+    && current instanceof HTMLElement
+    && current.contains(related)
+  ) {
+    return
+  }
+  hovered.value = false
+}
+
+function onToggleMouseEnter(): void {
+  toggleHovered.value = true
+}
+
+function onToggleMouseLeave(): void {
+  toggleHovered.value = false
+}
 </script>
 
 <template>
@@ -46,10 +72,10 @@ function onMouseDown(event: MouseEvent): void {
     class="panel-edge"
     :class="[
       `panel-edge--${placement}`,
-      { collapsed, resizing, hovered: hovered || resizing },
+      { collapsed, resizing, hovered: edgeActive },
     ]"
     @mouseenter="hovered = true"
-    @mouseleave="hovered = false"
+    @mouseleave="onEdgeMouseLeave"
     @mousedown="onMouseDown"
   >
     <div class="panel-edge-sash" aria-hidden="true" />
@@ -59,15 +85,17 @@ function onMouseDown(event: MouseEvent): void {
       :class="{ visible: showToggle }"
       :title="toggleTitle"
       :aria-label="toggleTitle"
+      @mouseenter="onToggleMouseEnter"
+      @mouseleave="onToggleMouseLeave"
       @click.stop="emit('toggle')"
     >
       <template v-if="placement === 'after'">
-        <ChevronLeft v-if="!collapsed" :size="14" :stroke-width="2" />
-        <ChevronRight v-else :size="14" :stroke-width="2" />
+        <ChevronLeft v-if="!collapsed" :size="13" :stroke-width="2.5" />
+        <ChevronRight v-else :size="13" :stroke-width="2.5" />
       </template>
       <template v-else>
-        <ChevronRight v-if="!collapsed" :size="14" :stroke-width="2" />
-        <ChevronLeft v-else :size="14" :stroke-width="2" />
+        <ChevronRight v-if="!collapsed" :size="13" :stroke-width="2.5" />
+        <ChevronLeft v-else :size="13" :stroke-width="2.5" />
       </template>
     </button>
   </div>
@@ -110,6 +138,14 @@ function onMouseDown(event: MouseEvent): void {
     box-shadow 0.12s ease;
 }
 
+.panel-edge.hovered::before,
+.panel-edge.resizing::before,
+.panel-edge.collapsed::before,
+.panel-edge:has(.panel-edge-toggle.visible)::before {
+  left: -14px;
+  right: -14px;
+}
+
 .panel-edge.hovered .panel-edge-sash,
 .panel-edge.resizing .panel-edge-sash {
   width: 2px;
@@ -117,26 +153,56 @@ function onMouseDown(event: MouseEvent): void {
   box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.35);
 }
 
+.panel-edge:has(.panel-edge-toggle.visible) .panel-edge-sash {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(50% - 14px),
+    transparent calc(50% - 14px),
+    transparent calc(50% + 14px),
+    #000 calc(50% + 14px),
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(50% - 14px),
+    transparent calc(50% - 14px),
+    transparent calc(50% + 14px),
+    #000 calc(50% + 14px),
+    #000 100%
+  );
+}
+
+.panel-edge.hovered,
+.panel-edge.resizing,
+.panel-edge.collapsed {
+  z-index: 10;
+}
+
 .panel-edge-toggle {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 3;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  background: var(--bg-surface);
-  color: var(--text-secondary);
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 50%;
+  appearance: none;
+  background-color: var(--bg-surface);
+  background-image: none;
+  color: var(--accent-primary);
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%);
-  box-shadow: var(--shadow-popover);
+  box-shadow: none;
+  isolation: isolate;
   transition:
     opacity 0.15s ease,
     color 0.15s ease,
@@ -149,10 +215,17 @@ function onMouseDown(event: MouseEvent): void {
   pointer-events: auto;
 }
 
-.panel-edge-toggle:hover {
-  color: var(--text-primary);
-  border-color: var(--border-accent);
-  background: var(--bg-elevated);
+.panel-edge-toggle:hover,
+.panel-edge-toggle:focus-visible {
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  background-color: color-mix(in srgb, var(--accent-primary) 14%, var(--bg-surface));
+}
+
+.panel-edge-toggle :deep(svg) {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 .panel-edge.collapsed {

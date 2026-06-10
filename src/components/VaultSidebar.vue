@@ -700,13 +700,15 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .sidebar-shell {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   align-self: stretch;
   height: 100%;
   display: flex;
   flex-direction: row;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   transition: width 0.2s ease;
   background: var(--bg-surface);
 }

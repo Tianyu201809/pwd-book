@@ -46,6 +46,8 @@ const { detachedDetailOpen } = useAppState()
 }
 
 .vault-list-column {
+  position: relative;
+  z-index: 1;
   flex: 1 1 0%;
   min-width: var(--list-column-min-width);
   min-height: 0;
@@ -55,6 +57,8 @@ const { detachedDetailOpen } = useAppState()
 }
 
 .vault-detail-slot {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   display: flex;
   align-self: stretch;
