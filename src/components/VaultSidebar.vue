@@ -819,12 +819,13 @@ onBeforeUnmount(() => {
 }
 
 .tag-filter-body {
-  padding: 0 12px 10px;
-  overflow: visible;
+  padding: 0 12px;
+  overflow: hidden;
 }
 
-.utilities-collapse:not(.utilities-collapse--open) .tag-filter-body {
-  overflow: hidden;
+.utilities-collapse--open .tag-filter-body {
+  padding-bottom: 10px;
+  overflow: visible;
 }
 
 .tag-filter-active-badge {

@@ -264,7 +264,7 @@
   overflow: visible;
 }
 
-[data-skin="animalIsland"] .tag-filter-body {
+[data-skin="animalIsland"] .sidebar-tags .utilities-collapse--open .tag-filter-body {
   overflow: visible;
 }
 
