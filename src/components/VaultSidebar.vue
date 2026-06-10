@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, Sparkles, ChevronDown, ChevronLeft, ChevronRight, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
+import { Settings, Lock, GripVertical, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
+import PanelEdge from '@/components/PanelEdge.vue'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import TagFilterPanel from '@/components/TagFilterPanel.vue'
@@ -20,7 +21,7 @@ import type { FilterCategory } from '@/types'
 
 const WIDTH_STORAGE_KEY = 'pwdbook-sidebar-width'
 const COLLAPSED_STORAGE_KEY = 'pwdbook-sidebar-collapsed'
-const PANEL_EDGE_WIDTH = 20
+const PANEL_EDGE_WIDTH = 4
 const SIDEBAR_CONTENT_WIDTH_FALLBACK = 240
 const SIDEBAR_COLLAPSED_WIDTH = 40
 const SIDEBAR_MIN_WIDTH_FALLBACK = 180
@@ -183,8 +184,6 @@ function onResizeMove(event: MouseEvent): void {
 
 function onResizeStart(event: MouseEvent): void {
   if (sidebarCollapsed.value || event.button !== 0) return
-  const target = event.target as HTMLElement | null
-  if (target?.closest('.edge-toggle')) return
   isResizing.value = true
   document.body.style.cursor = 'col-resize'
   document.body.style.userSelect = 'none'
@@ -639,22 +638,15 @@ onBeforeUnmount(() => {
     </div>
     </div>
 
-    <div
-      class="panel-edge sidebar-edge"
-      :class="{ collapsed: sidebarCollapsed }"
-      @mousedown="onResizeStart"
-    >
-      <button
-        type="button"
-        class="edge-toggle"
-        :title="sidebarCollapsed ? t('vault.expandSidebar') : t('vault.collapseSidebar')"
-        :aria-label="sidebarCollapsed ? t('vault.expandSidebar') : t('vault.collapseSidebar')"
-        @click.stop="toggleSidebarCollapse"
-      >
-        <ChevronLeft v-if="!sidebarCollapsed" :size="16" :stroke-width="2" />
-        <ChevronRight v-else :size="16" :stroke-width="2" />
-      </button>
-    </div>
+    <PanelEdge
+      placement="after"
+      :collapsed="sidebarCollapsed"
+      :resizing="isResizing"
+      :expand-label="t('vault.expandSidebar')"
+      :collapse-label="t('vault.collapseSidebar')"
+      @toggle="toggleSidebarCollapse"
+      @resize-start="onResizeStart"
+    />
   </aside>
 
   <Teleport to="body">
@@ -717,11 +709,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
   transition: width 0.2s ease;
   background: var(--bg-surface);
-  border-right: 1px solid var(--border-default);
 }
 
 .sidebar-shell:not(.collapsed) {
-  min-width: min(calc(var(--sidebar-min-width) + 20px), 100%);
+  min-width: min(calc(var(--sidebar-min-width) + var(--panel-edge-width, 4px)), 100%);
 }
 
 .sidebar-shell.resizing {
@@ -734,51 +725,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.panel-edge {
-  position: relative;
-  z-index: 2;
-  flex-shrink: 0;
-  align-self: stretch;
-  width: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-left: 1px solid var(--border-default);
-  background: var(--bg-app);
-  cursor: col-resize;
-  touch-action: none;
-}
-
-.panel-edge.collapsed {
-  width: 100%;
-  border-left: none;
-  cursor: default;
-}
-
-.edge-toggle {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid var(--border-default);
-  border-radius: 6px;
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.edge-toggle:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border-color: var(--accent-primary);
 }
 
 .sidebar.is-sorting {
