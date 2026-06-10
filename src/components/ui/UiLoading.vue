@@ -15,8 +15,14 @@ const { isAnimalIsland } = useTheme()
 </script>
 
 <template>
-  <Loading v-if="isAnimalIsland" :active="active" />
-  <div v-else-if="active" class="ui-loading-classic">
+  <Loading
+    v-if="isAnimalIsland"
+    :active="active"
+  />
+  <div
+    v-else-if="active"
+    class="ui-loading-classic"
+  >
     <div class="ui-loading-spinner" />
   </div>
 </template>

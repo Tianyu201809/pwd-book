@@ -42,24 +42,43 @@ const steps = computed(() => {
 
 <template>
   <section class="sync-help surface-card">
-    <button type="button" class="sync-help-toggle" @click="expanded = !expanded">
+    <button
+      type="button"
+      class="sync-help-toggle"
+      @click="expanded = !expanded"
+    >
       <span class="sync-help-toggle__left">
-        <BookOpen :size="16" :stroke-width="1.5" />
+        <BookOpen
+          :size="16"
+          :stroke-width="1.5"
+        />
         <span>
           <strong>{{ title }}</strong>
           <small>{{ subtitle }}</small>
         </span>
       </span>
-      <component :is="expanded ? ChevronUp : ChevronDown" :size="16" :stroke-width="1.5" />
+      <component
+        :is="expanded ? ChevronUp : ChevronDown"
+        :size="16"
+        :stroke-width="1.5"
+      />
     </button>
 
-    <div v-show="expanded" class="sync-help-body">
-      <p class="sync-help-intro">{{ intro }}</p>
+    <div
+      v-show="expanded"
+      class="sync-help-body"
+    >
+      <p class="sync-help-intro">
+        {{ intro }}
+      </p>
 
       <SyncTutorialDiagram :highlight="role" />
 
       <ol class="sync-help-steps">
-        <li v-for="(step, index) in steps" :key="index">
+        <li
+          v-for="(step, index) in steps"
+          :key="index"
+        >
           <span class="sync-help-step-num">{{ index + 1 }}</span>
           <div>
             <strong>{{ step.title }}</strong>

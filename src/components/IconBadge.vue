@@ -21,7 +21,10 @@ const badgeStyle = computed(() => ({
 </script>
 
 <template>
-  <span class="icon-badge" :style="badgeStyle">
+  <span
+    class="icon-badge"
+    :style="badgeStyle"
+  >
     <slot />
   </span>
 </template>

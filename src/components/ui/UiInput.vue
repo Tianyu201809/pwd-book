@@ -24,6 +24,9 @@ const props = withDefaults(
     type: 'text',
     allowClear: false,
     size: 'middle',
+    placeholder: undefined,
+    status: undefined,
+    maxlength: undefined,
   },
 )
 
@@ -65,10 +68,16 @@ function clearInput(): void {
     :maxlength="maxlength"
     @keydown="emit('keydown', $event)"
   >
-    <template v-if="$slots.prefix" #prefix>
+    <template
+      v-if="$slots.prefix"
+      #prefix
+    >
       <slot name="prefix" />
     </template>
-    <template v-if="$slots.suffix" #suffix>
+    <template
+      v-if="$slots.suffix"
+      #suffix
+    >
       <slot name="suffix" />
     </template>
   </Input>
@@ -88,7 +97,7 @@ function clearInput(): void {
       :readonly="readonly"
       :maxlength="maxlength"
       @keydown="emit('keydown', $event)"
-    />
+    >
     <button
       v-if="showClear"
       type="button"
@@ -97,7 +106,10 @@ function clearInput(): void {
       :aria-label="t('common.clear')"
       @click="clearInput"
     >
-      <X :size="14" :stroke-width="1.5" />
+      <X
+        :size="14"
+        :stroke-width="1.5"
+      />
     </button>
   </div>
 </template>

@@ -197,16 +197,30 @@ function goBack(): void {
   <div class="tool-page-view">
     <div class="tool-page-body">
       <aside class="tool-page-sidebar">
-        <button type="button" class="tool-back-btn" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="tool-back-btn"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('settings.backToSettings') }}
         </button>
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--mail">
-            <MailCheck :size="24" :stroke-width="1.5" />
+            <MailCheck
+              :size="24"
+              :stroke-width="1.5"
+            />
           </div>
-          <h2 class="tool-sidebar-title font-display">{{ t('tools.emailBackup.title') }}</h2>
-          <p class="tool-sidebar-desc">{{ t('tools.emailBackup.subtitle') }}</p>
+          <h2 class="tool-sidebar-title font-display">
+            {{ t('tools.emailBackup.title') }}
+          </h2>
+          <p class="tool-sidebar-desc">
+            {{ t('tools.emailBackup.subtitle') }}
+          </p>
         </div>
       </aside>
 
@@ -239,15 +253,33 @@ function goBack(): void {
             </div>
 
             <div class="smtp-section">
-              <button type="button" class="smtp-toggle" @click="smtpExpanded = !smtpExpanded">
+              <button
+                type="button"
+                class="smtp-toggle"
+                @click="smtpExpanded = !smtpExpanded"
+              >
                 <span>{{ t('tools.emailBackup.smtpSection') }}</span>
-                <ChevronUp v-if="smtpExpanded" :size="16" :stroke-width="1.5" />
-                <ChevronDown v-else :size="16" :stroke-width="1.5" />
+                <ChevronUp
+                  v-if="smtpExpanded"
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+                <ChevronDown
+                  v-else
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
-              <div v-show="smtpExpanded" class="smtp-fields">
+              <div
+                v-show="smtpExpanded"
+                class="smtp-fields"
+              >
                 <div class="field">
                   <label>{{ t('tools.emailBackup.smtpHost') }}</label>
-                  <UiInput v-model="smtpHost" placeholder="smtp.example.com" />
+                  <UiInput
+                    v-model="smtpHost"
+                    placeholder="smtp.example.com"
+                  />
                 </div>
                 <div class="field-row">
                   <div class="field flex-1">
@@ -258,13 +290,24 @@ function goBack(): void {
                       @update:model-value="(v) => (smtpPort = Number(v) || 465)"
                     />
                   </div>
-                  <UiCheckbox v-model="smtpSecure" :label="t('tools.emailBackup.smtpSecure')" class="secure-toggle" />
+                  <UiCheckbox
+                    v-model="smtpSecure"
+                    :label="t('tools.emailBackup.smtpSecure')"
+                    class="secure-toggle"
+                  />
                 </div>
                 <div class="field">
                   <label>{{ t('tools.emailBackup.smtpUsername') }}</label>
-                  <UiInput v-model="smtpUsername" type="email" />
+                  <UiInput
+                    v-model="smtpUsername"
+                    type="email"
+                  />
                 </div>
-                <div class="field" @focusin="onSmtpPasswordFocus" @focusout="onSmtpPasswordBlur">
+                <div
+                  class="field"
+                  @focusin="onSmtpPasswordFocus"
+                  @focusout="onSmtpPasswordBlur"
+                >
                   <label>{{ t('tools.emailBackup.smtpPassword') }}</label>
                   <div class="password-input-wrap">
                     <UiInput
@@ -280,32 +323,61 @@ function goBack(): void {
                       :aria-label="showSmtpPassword ? t('common.hide') : t('common.show')"
                       @click="showSmtpPassword = !showSmtpPassword"
                     >
-                      <EyeOff v-if="showSmtpPassword" :size="16" :stroke-width="1.5" />
-                      <Eye v-else :size="16" :stroke-width="1.5" />
+                      <EyeOff
+                        v-if="showSmtpPassword"
+                        :size="16"
+                        :stroke-width="1.5"
+                      />
+                      <Eye
+                        v-else
+                        :size="16"
+                        :stroke-width="1.5"
+                      />
                     </button>
                   </div>
                 </div>
-                <p class="smtp-hint">{{ t('tools.emailBackup.smtpHint') }}</p>
+                <p class="smtp-hint">
+                  {{ t('tools.emailBackup.smtpHint') }}
+                </p>
               </div>
             </div>
 
-            <UiButton variant="ghost" class="save-btn" :disabled="saving" :loading="saving" @click="saveSettings">
+            <UiButton
+              variant="ghost"
+              class="save-btn"
+              :disabled="saving"
+              :loading="saving"
+              @click="saveSettings"
+            >
               {{ t('tools.emailBackup.saveSettings') }}
             </UiButton>
 
             <div class="info-card">
-              <Shield :size="16" :stroke-width="1.5" />
+              <Shield
+                :size="16"
+                :stroke-width="1.5"
+              />
               <div>
-                <p class="info-title">{{ t('tools.emailBackup.e2eTitle') }}</p>
-                <p class="info-desc">{{ t('tools.emailBackup.e2eDesc') }}</p>
-                <p class="info-hint">{{ t('tools.emailBackup.zipExtractHint') }}</p>
+                <p class="info-title">
+                  {{ t('tools.emailBackup.e2eTitle') }}
+                </p>
+                <p class="info-desc">
+                  {{ t('tools.emailBackup.e2eDesc') }}
+                </p>
+                <p class="info-hint">
+                  {{ t('tools.emailBackup.zipExtractHint') }}
+                </p>
               </div>
             </div>
 
             <div class="last-backup-row">
               <div>
-                <p class="last-title">{{ t('tools.emailBackup.lastBackup') }}</p>
-                <p class="last-meta">{{ lastBackupText }}</p>
+                <p class="last-title">
+                  {{ t('tools.emailBackup.lastBackup') }}
+                </p>
+                <p class="last-meta">
+                  {{ lastBackupText }}
+                </p>
               </div>
               <span
                 v-if="emailBackupSettings.lastBackup.status === 'success'"
@@ -323,11 +395,30 @@ function goBack(): void {
           </section>
 
           <div class="action-row">
-            <UiButton variant="primary" class="action-btn" :disabled="backingUp" :loading="backingUp" @click="handleBackupNow">
+            <UiButton
+              variant="primary"
+              class="action-btn"
+              :disabled="backingUp"
+              :loading="backingUp"
+              @click="handleBackupNow"
+            >
               <template #icon>
-                <Loader2 v-if="backingUp" :size="16" :stroke-width="1.5" class="spin" />
-                <Check v-else-if="backupSuccess" :size="16" :stroke-width="1.5" />
-                <Send v-else :size="16" :stroke-width="1.5" />
+                <Loader2
+                  v-if="backingUp"
+                  :size="16"
+                  :stroke-width="1.5"
+                  class="spin"
+                />
+                <Check
+                  v-else-if="backupSuccess"
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+                <Send
+                  v-else
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </template>
               {{
                 backingUp
@@ -337,7 +428,13 @@ function goBack(): void {
                     : t('tools.emailBackup.backupNow')
               }}
             </UiButton>
-            <UiButton variant="ghost" class="action-btn" :disabled="testing" :loading="testing" @click="handleTestConnection">
+            <UiButton
+              variant="ghost"
+              class="action-btn"
+              :disabled="testing"
+              :loading="testing"
+              @click="handleTestConnection"
+            >
               {{ t('tools.emailBackup.testConnection') }}
             </UiButton>
           </div>

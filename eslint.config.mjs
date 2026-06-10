@@ -101,13 +101,6 @@ export default tseslint.config(
   },
 
   {
-    files: ['scripts/**/*.{js,mjs}'],
-    rules: {
-      'no-console': 'off',
-    },
-  },
-
-  {
     files: ['**/*.test.ts'],
     languageOptions: {
       globals: vitestGlobals,
@@ -128,6 +121,13 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'vue/multi-word-component-names': 'off',
       'vue/component-name-in-template-casing': ['warn', 'PascalCase'],
+    },
+  },
+
+  {
+    files: ['scripts/**/*.{js,mjs}', 'src/main/screenshotMode.ts'],
+    rules: {
+      'no-console': 'off',
     },
   },
 )

@@ -12,8 +12,14 @@ const segments = computed(() => splitHighlightSegments(props.text, props.query))
 
 <template>
   <span class="search-highlight-text">
-    <template v-for="(segment, index) in segments" :key="index">
-      <mark v-if="segment.highlight" class="search-highlight">{{ segment.text }}</mark>
+    <template
+      v-for="(segment, index) in segments"
+      :key="index"
+    >
+      <mark
+        v-if="segment.highlight"
+        class="search-highlight"
+      >{{ segment.text }}</mark>
       <template v-else>{{ segment.text }}</template>
     </template>
   </span>

@@ -35,17 +35,31 @@ async function copyEntryTitle(title: string): Promise<void> {
   <div class="tool-page-view">
     <div class="tool-page-body">
       <aside class="tool-page-sidebar">
-        <button type="button" class="tool-back-btn" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="tool-back-btn"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('tools.backToVault') }}
         </button>
 
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--health">
-            <ShieldAlert :size="22" :stroke-width="1.5" />
+            <ShieldAlert
+              :size="22"
+              :stroke-width="1.5"
+            />
           </div>
-          <h2 class="tool-sidebar-title font-display">{{ t('tools.passwordHealth.title') }}</h2>
-          <p class="tool-sidebar-desc">{{ t('tools.passwordHealth.subtitle') }}</p>
+          <h2 class="tool-sidebar-title font-display">
+            {{ t('tools.passwordHealth.title') }}
+          </h2>
+          <p class="tool-sidebar-desc">
+            {{ t('tools.passwordHealth.subtitle') }}
+          </p>
         </div>
       </aside>
 
@@ -53,16 +67,32 @@ async function copyEntryTitle(title: string): Promise<void> {
         <div class="tool-page-content">
           <div class="summary-grid">
             <div class="summary-card surface-card">
-              <p class="summary-label">{{ t('tools.passwordHealth.totalEntries') }}</p>
-              <p class="summary-value">{{ report.totalEntries }}</p>
+              <p class="summary-label">
+                {{ t('tools.passwordHealth.totalEntries') }}
+              </p>
+              <p class="summary-value">
+                {{ report.totalEntries }}
+              </p>
             </div>
             <div class="summary-card surface-card">
-              <p class="summary-label">{{ t('tools.passwordHealth.weakCount') }}</p>
-              <p class="summary-value" :class="{ danger: report.weakCount > 0 }">{{ report.weakCount }}</p>
+              <p class="summary-label">
+                {{ t('tools.passwordHealth.weakCount') }}
+              </p>
+              <p
+                class="summary-value"
+                :class="{ danger: report.weakCount > 0 }"
+              >
+                {{ report.weakCount }}
+              </p>
             </div>
             <div class="summary-card surface-card">
-              <p class="summary-label">{{ t('tools.passwordHealth.duplicateCount') }}</p>
-              <p class="summary-value" :class="{ danger: report.duplicateEntryCount > 0 }">
+              <p class="summary-label">
+                {{ t('tools.passwordHealth.duplicateCount') }}
+              </p>
+              <p
+                class="summary-value"
+                :class="{ danger: report.duplicateEntryCount > 0 }"
+              >
                 {{ report.duplicateEntryCount }}
               </p>
             </div>
@@ -70,10 +100,26 @@ async function copyEntryTitle(title: string): Promise<void> {
 
           <section class="issue-section surface-card">
             <h3>{{ t('tools.passwordHealth.weakSection', { count: weakIssues.length }) }}</h3>
-            <p v-if="weakIssues.length === 0" class="empty-hint">{{ t('tools.passwordHealth.noWeak') }}</p>
-            <ul v-else class="issue-list">
-              <li v-for="item in weakIssues" :key="`weak-${item.entryId}`" class="issue-row">
-                <button type="button" class="issue-title" @click="openEntry(item.entryId)">
+            <p
+              v-if="weakIssues.length === 0"
+              class="empty-hint"
+            >
+              {{ t('tools.passwordHealth.noWeak') }}
+            </p>
+            <ul
+              v-else
+              class="issue-list"
+            >
+              <li
+                v-for="item in weakIssues"
+                :key="`weak-${item.entryId}`"
+                class="issue-row"
+              >
+                <button
+                  type="button"
+                  class="issue-title"
+                  @click="openEntry(item.entryId)"
+                >
                   {{ item.title }}
                 </button>
                 <span class="issue-badge">{{ t('tools.passwordHealth.weakBadge') }}</span>
@@ -83,14 +129,26 @@ async function copyEntryTitle(title: string): Promise<void> {
 
           <section class="issue-section surface-card">
             <h3>{{ t('tools.passwordHealth.duplicateSection', { count: duplicateIssues.length }) }}</h3>
-            <p v-if="duplicateIssues.length === 0" class="empty-hint">{{ t('tools.passwordHealth.noDuplicate') }}</p>
-            <ul v-else class="issue-list">
+            <p
+              v-if="duplicateIssues.length === 0"
+              class="empty-hint"
+            >
+              {{ t('tools.passwordHealth.noDuplicate') }}
+            </p>
+            <ul
+              v-else
+              class="issue-list"
+            >
               <li
                 v-for="item in duplicateIssues"
                 :key="`dup-${item.entryId}-${item.duplicateGroupId}`"
                 class="issue-row"
               >
-                <button type="button" class="issue-title" @click="openEntry(item.entryId)">
+                <button
+                  type="button"
+                  class="issue-title"
+                  @click="openEntry(item.entryId)"
+                >
                   {{ item.title }}
                 </button>
                 <button
@@ -99,7 +157,10 @@ async function copyEntryTitle(title: string): Promise<void> {
                   :title="t('tools.passwordHealth.copyTitle')"
                   @click="copyEntryTitle(item.title)"
                 >
-                  <Copy :size="14" :stroke-width="1.5" />
+                  <Copy
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
                 </button>
                 <span class="issue-badge warn">{{ t('tools.passwordHealth.duplicateBadge') }}</span>
               </li>

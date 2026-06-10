@@ -20,10 +20,18 @@ const { isAnimalIsland } = useTheme()
 </script>
 
 <template>
-  <Card v-if="isAnimalIsland" :type="type" :color="color">
+  <Card
+    v-if="isAnimalIsland"
+    :type="type"
+    :color="color"
+  >
     <slot />
   </Card>
-  <div v-else class="surface-card" :class="[$attrs.class, { 'ui-card-padded': padding }]">
+  <div
+    v-else
+    class="surface-card"
+    :class="[$attrs.class, { 'ui-card-padded': padding }]"
+  >
     <slot />
   </div>
 </template>

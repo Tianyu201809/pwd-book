@@ -57,35 +57,86 @@ function handleCopy(): void {
 
 <template>
   <div class="recovery-panel">
-    <h2 class="panel-title">{{ displayTitle }}</h2>
-    <p class="panel-desc">{{ displaySubtitle }}</p>
+    <h2 class="panel-title">
+      {{ displayTitle }}
+    </h2>
+    <p class="panel-desc">
+      {{ displaySubtitle }}
+    </p>
     <RecoveryTrustNotice />
 
     <label class="label">{{ t('recovery.recoveryKey') }}</label>
-    <div class="key-box font-mono">{{ recoveryKey }}</div>
+    <div class="key-box font-mono">
+      {{ recoveryKey }}
+    </div>
 
     <div class="action-row">
-      <UiButton variant="ghost" class="action-btn" @click="handleCopy">
-        <template #icon><Copy :size="14" :stroke-width="1.5" /></template>
+      <UiButton
+        variant="ghost"
+        class="action-btn"
+        @click="handleCopy"
+      >
+        <template #icon>
+          <Copy
+            :size="14"
+            :stroke-width="1.5"
+          />
+        </template>
         {{ t('recovery.copyKey') }}
       </UiButton>
-      <UiButton variant="ghost" class="action-btn" @click="saveToFile">
-        <template #icon><Download :size="14" :stroke-width="1.5" /></template>
+      <UiButton
+        variant="ghost"
+        class="action-btn"
+        @click="saveToFile"
+      >
+        <template #icon>
+          <Download
+            :size="14"
+            :stroke-width="1.5"
+          />
+        </template>
         {{ t('recovery.downloadKey') }}
       </UiButton>
     </div>
 
-    <p v-if="copyMessage" class="success-text">{{ copyMessage }}</p>
+    <p
+      v-if="copyMessage"
+      class="success-text"
+    >
+      {{ copyMessage }}
+    </p>
 
-    <UiCheckbox v-model="confirmed" :label="t('recovery.savedKey')" class="confirm-row" />
+    <UiCheckbox
+      v-model="confirmed"
+      :label="t('recovery.savedKey')"
+      class="confirm-row"
+    />
 
-    <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+    <p
+      v-if="errorMessage"
+      class="error-text"
+    >
+      {{ errorMessage }}
+    </p>
 
-    <UiButton variant="primary" class="submit-btn" block :disabled="loading || !confirmed" :loading="loading" @click="emit('complete')">
+    <UiButton
+      variant="primary"
+      class="submit-btn"
+      block
+      :disabled="loading || !confirmed"
+      :loading="loading"
+      @click="emit('complete')"
+    >
       {{ loading ? t('common.processing') : t('lock.createAndEnter') }}
     </UiButton>
 
-    <button type="button" class="skip-link" @click="emit('skip')">{{ t('recovery.skipLater') }}</button>
+    <button
+      type="button"
+      class="skip-link"
+      @click="emit('skip')"
+    >
+      {{ t('recovery.skipLater') }}
+    </button>
   </div>
 </template>
 

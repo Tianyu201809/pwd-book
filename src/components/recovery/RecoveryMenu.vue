@@ -18,31 +18,77 @@ const emit = defineEmits<{
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.backToUnlock') }}</button>
-    <h2 class="panel-title">{{ t('recovery.cannotUnlock') }}</h2>
-    <p class="panel-desc">{{ t('recovery.chooseOption') }}</p>
+    <button
+      type="button"
+      class="back-link"
+      @click="emit('back')"
+    >
+      {{ t('recovery.backToUnlock') }}
+    </button>
+    <h2 class="panel-title">
+      {{ t('recovery.cannotUnlock') }}
+    </h2>
+    <p class="panel-desc">
+      {{ t('recovery.chooseOption') }}
+    </p>
 
-    <button type="button" class="option-card" @click="emit('recoveryKey')">
-      <KeyRound :size="20" :stroke-width="1.5" class="option-icon" />
+    <button
+      type="button"
+      class="option-card"
+      @click="emit('recoveryKey')"
+    >
+      <KeyRound
+        :size="20"
+        :stroke-width="1.5"
+        class="option-icon"
+      />
       <div>
-        <p class="option-title">{{ t('recovery.haveRecoveryKey') }}</p>
-        <p class="option-desc">{{ t('recovery.haveRecoveryKeyDesc') }}</p>
+        <p class="option-title">
+          {{ t('recovery.haveRecoveryKey') }}
+        </p>
+        <p class="option-desc">
+          {{ t('recovery.haveRecoveryKeyDesc') }}
+        </p>
       </div>
     </button>
 
-    <button type="button" class="option-card" @click="emit('backup')">
-      <FileJson :size="20" :stroke-width="1.5" class="option-icon" />
+    <button
+      type="button"
+      class="option-card"
+      @click="emit('backup')"
+    >
+      <FileJson
+        :size="20"
+        :stroke-width="1.5"
+        class="option-icon"
+      />
       <div>
-        <p class="option-title">{{ t('recovery.haveBackup') }}</p>
-        <p class="option-desc">{{ t('recovery.haveBackupDesc') }}</p>
+        <p class="option-title">
+          {{ t('recovery.haveBackup') }}
+        </p>
+        <p class="option-desc">
+          {{ t('recovery.haveBackupDesc') }}
+        </p>
       </div>
     </button>
 
-    <button type="button" class="option-card danger" @click="emit('wipe')">
-      <AlertTriangle :size="20" :stroke-width="1.5" class="option-icon danger-icon" />
+    <button
+      type="button"
+      class="option-card danger"
+      @click="emit('wipe')"
+    >
+      <AlertTriangle
+        :size="20"
+        :stroke-width="1.5"
+        class="option-icon danger-icon"
+      />
       <div>
-        <p class="option-title">{{ t('recovery.haveNothing') }}</p>
-        <p class="option-desc">{{ t('recovery.haveNothingDesc', { count: entryCount }) }}</p>
+        <p class="option-title">
+          {{ t('recovery.haveNothing') }}
+        </p>
+        <p class="option-desc">
+          {{ t('recovery.haveNothingDesc', { count: entryCount }) }}
+        </p>
       </div>
     </button>
   </div>

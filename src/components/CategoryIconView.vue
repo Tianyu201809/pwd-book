@@ -30,14 +30,37 @@ const badgeStyle = computed(() => ({
 </script>
 
 <template>
-  <span v-if="colored" class="category-icon-badge" :style="badgeStyle">
-    <span v-if="letter" class="letter-icon" :style="{ fontSize: `${letterFontSize}px` }">{{ letter }}</span>
-    <component v-else :is="Icon" :size="size" :stroke-width="1.5" />
+  <span
+    v-if="colored"
+    class="category-icon-badge"
+    :style="badgeStyle"
+  >
+    <span
+      v-if="letter"
+      class="letter-icon"
+      :style="{ fontSize: `${letterFontSize}px` }"
+    >{{ letter }}</span>
+    <component
+      :is="Icon"
+      v-else
+      :size="size"
+      :stroke-width="1.5"
+    />
   </span>
-  <span v-else-if="letter" class="plain-letter" :style="{ fontSize: `${letterFontSize}px`, color: meta.color }">
+  <span
+    v-else-if="letter"
+    class="plain-letter"
+    :style="{ fontSize: `${letterFontSize}px`, color: meta.color }"
+  >
     {{ letter }}
   </span>
-  <component v-else :is="Icon" :size="size" :stroke-width="1.5" class="plain-icon" />
+  <component
+    :is="Icon"
+    v-else
+    :size="size"
+    :stroke-width="1.5"
+    class="plain-icon"
+  />
 </template>
 
 <style scoped>

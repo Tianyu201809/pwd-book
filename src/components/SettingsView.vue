@@ -246,11 +246,20 @@ async function handleReset(): Promise<void> {
   <div class="settings-view">
     <div class="settings-body">
       <aside class="settings-sidebar">
-        <button type="button" class="back-btn" @click="navigateTo('vault')">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="back-btn"
+          @click="navigateTo('vault')"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('common.back') }}
         </button>
-        <h2 class="font-display sidebar-title">{{ t('settings.title') }}</h2>
+        <h2 class="font-display sidebar-title">
+          {{ t('settings.title') }}
+        </h2>
         <nav class="settings-nav">
           <button
             v-for="tab in tabs"
@@ -261,7 +270,11 @@ async function handleReset(): Promise<void> {
             @click="switchSettingsTab(tab.id)"
           >
             <IconBadge v-bind="tab.iconStyle">
-              <component :is="tab.icon" :size="14" :stroke-width="1.5" />
+              <component
+                :is="tab.icon"
+                :size="14"
+                :stroke-width="1.5"
+              />
             </IconBadge>
             {{ tab.label }}
           </button>
@@ -269,13 +282,20 @@ async function handleReset(): Promise<void> {
       </aside>
 
       <main class="settings-main">
-        <div v-if="activeTab === 'security'" class="panel">
+        <div
+          v-if="activeTab === 'security'"
+          class="panel"
+        >
           <h3>{{ t('settings.security') }}</h3>
           <UiCard class="settings-card">
             <div class="row">
               <div>
-                <p class="row-title">{{ t('settings.autoLock') }}</p>
-                <p class="row-desc">{{ t('settings.autoLockDesc') }}</p>
+                <p class="row-title">
+                  {{ t('settings.autoLock') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.autoLockDesc') }}
+                </p>
               </div>
               <UiSelect
                 :model-value="String(securitySettings.autoLockMinutes)"
@@ -286,7 +306,9 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row">
               <div>
-                <p class="row-title">{{ t('settings.clipboardClear') }}</p>
+                <p class="row-title">
+                  {{ t('settings.clipboardClear') }}
+                </p>
                 <p class="row-desc">
                   {{ t('settings.clipboardClearDesc', { seconds: securitySettings.clipboardClearSeconds }) }}
                 </p>
@@ -298,8 +320,12 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row">
               <div>
-                <p class="row-title">{{ t('settings.closeWindow') }}</p>
-                <p class="row-desc">{{ t('settings.closeWindowDesc') }}</p>
+                <p class="row-title">
+                  {{ t('settings.closeWindow') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.closeWindowDesc') }}
+                </p>
               </div>
               <UiSelect
                 :model-value="securitySettings.closeWindowAction"
@@ -310,8 +336,12 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row">
               <div>
-                <p class="row-title">{{ t('settings.trashRetention') }}</p>
-                <p class="row-desc">{{ t('settings.trashRetentionDesc') }}</p>
+                <p class="row-title">
+                  {{ t('settings.trashRetention') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.trashRetentionDesc') }}
+                </p>
               </div>
               <UiSelect
                 :model-value="String(securitySettings.trashRetentionDays)"
@@ -322,7 +352,9 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row quickbar-row">
               <div>
-                <p class="row-title">{{ t('settings.quickBar') }}</p>
+                <p class="row-title">
+                  {{ t('settings.quickBar') }}
+                </p>
                 <p class="row-desc">
                   {{ t('settings.quickBarDesc', { accelerator: securitySettings.quickBarAccelerator }) }}
                 </p>
@@ -333,7 +365,10 @@ async function handleReset(): Promise<void> {
                   class="quickbar-open-btn"
                   @click="openQuickBar"
                 >
-                  <PanelTop :size="14" :stroke-width="1.75" />
+                  <PanelTop
+                    :size="14"
+                    :stroke-width="1.75"
+                  />
                   {{ t('settings.quickBarOpen') }}
                 </UiButton>
               </div>
@@ -344,7 +379,9 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row">
               <div>
-                <p class="row-title">{{ t('settings.mainWindowShortcut') }}</p>
+                <p class="row-title">
+                  {{ t('settings.mainWindowShortcut') }}
+                </p>
                 <p class="row-desc">
                   {{
                     t('settings.mainWindowShortcutDesc', {
@@ -360,9 +397,16 @@ async function handleReset(): Promise<void> {
             </div>
             <div class="row browser-fill-row">
               <div>
-                <p class="row-title">{{ t('settings.browserFill') }}</p>
-                <p class="row-desc">{{ t('settings.browserFillDesc') }}</p>
-                <p v-if="securitySettings.browserFillEnabled && bridgeStatusText" class="row-desc bridge-status">
+                <p class="row-title">
+                  {{ t('settings.browserFill') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.browserFillDesc') }}
+                </p>
+                <p
+                  v-if="securitySettings.browserFillEnabled && bridgeStatusText"
+                  class="row-desc bridge-status"
+                >
                   {{ bridgeStatusText }}
                 </p>
                 <div class="browser-fill-actions">
@@ -374,8 +418,15 @@ async function handleReset(): Promise<void> {
                   >
                     {{ t('settings.browserFillRegenerateToken') }}
                   </UiButton>
-                  <UiButton variant="default" size="small" @click="browserGuideOpen = true">
-                    <BookOpen :size="14" :stroke-width="1.75" />
+                  <UiButton
+                    variant="default"
+                    size="small"
+                    @click="browserGuideOpen = true"
+                  >
+                    <BookOpen
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
                     {{ t('settings.browserFillGuide.openButton') }}
                   </UiButton>
                 </div>
@@ -396,17 +447,37 @@ async function handleReset(): Promise<void> {
               @open-extensions="openExtensionsPage"
               @register="registerNativeHost"
             />
-            <div v-if="securitySettings.browserFillEnabled" class="browser-fill-setup">
-              <p class="setup-title">{{ t('settings.browserFillSetupTitle') }}</p>
-              <p class="row-desc">{{ t('settings.browserFillSetupStep1') }}</p>
-              <p class="row-desc">{{ t('settings.browserFillSetupStep2') }}</p>
-              <p v-if="nativeHostInfo?.registered" class="row-desc setup-ok">
+            <div
+              v-if="securitySettings.browserFillEnabled"
+              class="browser-fill-setup"
+            >
+              <p class="setup-title">
+                {{ t('settings.browserFillSetupTitle') }}
+              </p>
+              <p class="row-desc">
+                {{ t('settings.browserFillSetupStep1') }}
+              </p>
+              <p class="row-desc">
+                {{ t('settings.browserFillSetupStep2') }}
+              </p>
+              <p
+                v-if="nativeHostInfo?.registered"
+                class="row-desc setup-ok"
+              >
                 {{ t('settings.browserFillRegistered', { id: nativeHostInfo.extensionId }) }}
               </p>
-              <p v-else-if="nativeHostInfo && !nativeHostInfo.hostCmdExists" class="row-desc setup-warn">
+              <p
+                v-else-if="nativeHostInfo && !nativeHostInfo.hostCmdExists"
+                class="row-desc setup-warn"
+              >
                 {{ t('settings.browserFillHostMissing') }}
               </p>
-              <p v-else class="row-desc">{{ t('settings.browserFillNotRegistered') }}</p>
+              <p
+                v-else
+                class="row-desc"
+              >
+                {{ t('settings.browserFillNotRegistered') }}
+              </p>
               <label class="setup-label">{{ t('settings.browserFillExtensionId') }}</label>
               <UiInput
                 v-model="extensionIdInput"
@@ -423,18 +494,39 @@ async function handleReset(): Promise<void> {
                 >
                   {{ t('settings.browserFillRegister') }}
                 </UiButton>
-                <UiButton variant="default" size="small" @click="openExtensionsPage">
+                <UiButton
+                  variant="default"
+                  size="small"
+                  @click="openExtensionsPage"
+                >
                   {{ t('settings.browserFillOpenExtensions') }}
                 </UiButton>
               </div>
-              <p v-if="extensionsPageHint" class="extensions-page-hint">{{ extensionsPageHint }}</p>
+              <p
+                v-if="extensionsPageHint"
+                class="extensions-page-hint"
+              >
+                {{ extensionsPageHint }}
+              </p>
             </div>
             <div class="row email-backup-row last">
               <div>
-                <p class="row-title">{{ t('tools.emailBackupTitle') }}</p>
-                <p class="row-desc">{{ t('tools.emailBackupDesc') }}</p>
-                <UiButton variant="default" size="small" class="email-backup-open-btn" @click="openEmailBackup">
-                  <MailCheck :size="14" :stroke-width="1.75" />
+                <p class="row-title">
+                  {{ t('tools.emailBackupTitle') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('tools.emailBackupDesc') }}
+                </p>
+                <UiButton
+                  variant="default"
+                  size="small"
+                  class="email-backup-open-btn"
+                  @click="openEmailBackup"
+                >
+                  <MailCheck
+                    :size="14"
+                    :stroke-width="1.75"
+                  />
                   {{ t('settings.emailBackupOpen') }}
                 </UiButton>
               </div>
@@ -446,40 +538,112 @@ async function handleReset(): Promise<void> {
 
         <AppearancePanel v-else-if="activeTab === 'appearance'" />
 
-        <div v-else-if="activeTab === 'data'" class="panel">
+        <div
+          v-else-if="activeTab === 'data'"
+          class="panel"
+        >
           <h3>{{ t('settings.data') }}</h3>
-          <p v-if="statusMessage" class="status-message">{{ statusMessage }}</p>
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+          <p
+            v-if="statusMessage"
+            class="status-message"
+          >
+            {{ statusMessage }}
+          </p>
+          <p
+            v-if="errorMessage"
+            class="error-message"
+          >
+            {{ errorMessage }}
+          </p>
           <div class="surface-card settings-card">
-            <button type="button" class="link-row" @click="openExportModal">
-              <span><Download :size="16" :stroke-width="1.5" /> {{ t('settings.exportData') }}</span>
-              <ChevronRight :size="16" :stroke-width="1.5" />
+            <button
+              type="button"
+              class="link-row"
+              @click="openExportModal"
+            >
+              <span><Download
+                :size="16"
+                :stroke-width="1.5"
+              /> {{ t('settings.exportData') }}</span>
+              <ChevronRight
+                :size="16"
+                :stroke-width="1.5"
+              />
             </button>
-            <ExportDataModal v-model:open="exportModalOpen" @exported="onExportCompleted" />
-            <button type="button" class="link-row" @click="openImportModal">
-              <span><Upload :size="16" :stroke-width="1.5" /> {{ t('settings.importData') }}</span>
-              <ChevronRight :size="16" :stroke-width="1.5" />
+            <ExportDataModal
+              v-model:open="exportModalOpen"
+              @exported="onExportCompleted"
+            />
+            <button
+              type="button"
+              class="link-row"
+              @click="openImportModal"
+            >
+              <span><Upload
+                :size="16"
+                :stroke-width="1.5"
+              /> {{ t('settings.importData') }}</span>
+              <ChevronRight
+                :size="16"
+                :stroke-width="1.5"
+              />
             </button>
-            <ImportDataModal v-model:open="importModalOpen" @imported="onImportCompleted" />
-            <button type="button" class="link-row" @click="openWifiSync">
-              <span><RefreshCw :size="16" :stroke-width="1.5" /> {{ t('settings.sync') }}</span>
-              <ChevronRight :size="16" :stroke-width="1.5" />
+            <ImportDataModal
+              v-model:open="importModalOpen"
+              @imported="onImportCompleted"
+            />
+            <button
+              type="button"
+              class="link-row"
+              @click="openWifiSync"
+            >
+              <span><RefreshCw
+                :size="16"
+                :stroke-width="1.5"
+              /> {{ t('settings.sync') }}</span>
+              <ChevronRight
+                :size="16"
+                :stroke-width="1.5"
+              />
             </button>
-            <button type="button" class="link-row danger-row" @click="handleReset">
-              <span><AlertTriangle :size="16" :stroke-width="1.5" /> {{ t('settings.clearAllData') }}</span>
-              <ChevronRight :size="16" :stroke-width="1.5" />
+            <button
+              type="button"
+              class="link-row danger-row"
+              @click="handleReset"
+            >
+              <span><AlertTriangle
+                :size="16"
+                :stroke-width="1.5"
+              /> {{ t('settings.clearAllData') }}</span>
+              <ChevronRight
+                :size="16"
+                :stroke-width="1.5"
+              />
             </button>
           </div>
         </div>
 
-        <div v-else-if="activeTab === 'about'" class="panel about-panel">
+        <div
+          v-else-if="activeTab === 'about'"
+          class="panel about-panel"
+        >
           <h3>{{ t('settings.about') }}</h3>
           <UiCard class="about-card">
-            <p class="font-display about-title">{{ t('common.appName') }}</p>
-            <p class="about-version">{{ t('settings.version', { version: packageJson.version }) }}</p>
-            <p class="about-desc">{{ t('settings.aboutDesc') }}</p>
+            <p class="font-display about-title">
+              {{ t('common.appName') }}
+            </p>
+            <p class="about-version">
+              {{ t('settings.version', { version: packageJson.version }) }}
+            </p>
+            <p class="about-desc">
+              {{ t('settings.aboutDesc') }}
+            </p>
           </UiCard>
-          <Footer v-if="isAnimalIsland" type="tree" class="about-footer" />
+          <Footer
+            v-if="isAnimalIsland"
+            type="tree"
+            class="about-footer"
+          />
         </div>
       </main>
     </div>

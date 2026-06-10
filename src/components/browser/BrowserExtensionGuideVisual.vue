@@ -175,10 +175,21 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="guide-visual" aria-hidden="true">
+  <div
+    ref="rootRef"
+    class="guide-visual"
+    aria-hidden="true"
+  >
     <!-- Step 0: Enable bridge -->
-    <div v-show="step === 0" data-step="0" class="guide-visual__scene">
-      <div class="guide-visual__app-window" data-guide-part>
+    <div
+      v-show="step === 0"
+      data-step="0"
+      class="guide-visual__scene"
+    >
+      <div
+        class="guide-visual__app-window"
+        data-guide-part
+      >
         <div class="guide-visual__app-titlebar">
           <span />
           <span />
@@ -192,21 +203,41 @@ onUnmounted(() => {
               <span class="guide-visual__switch-track">
                 <span class="guide-visual__switch-knob" />
               </span>
-              <ToggleRight :size="16" :stroke-width="1.75" class="guide-visual__switch-icon" />
+              <ToggleRight
+                :size="16"
+                :stroke-width="1.75"
+                class="guide-visual__switch-icon"
+              />
             </div>
           </div>
         </div>
       </div>
-      <Monitor class="guide-visual__scene-icon" data-guide-part :size="20" :stroke-width="1.5" />
+      <Monitor
+        class="guide-visual__scene-icon"
+        data-guide-part
+        :size="20"
+        :stroke-width="1.5"
+      />
     </div>
 
     <!-- Step 1: Install extension -->
-    <div v-show="step === 1" data-step="1" class="guide-visual__scene">
-      <div class="guide-visual__browser" data-guide-part>
+    <div
+      v-show="step === 1"
+      data-step="1"
+      class="guide-visual__scene"
+    >
+      <div
+        class="guide-visual__browser"
+        data-guide-part
+      >
         <div class="guide-visual__browser-bar" />
         <div class="guide-visual__browser-content">
           <div class="guide-visual__ext-card">
-            <Puzzle class="guide-visual__puzzle" :size="28" :stroke-width="1.5" />
+            <Puzzle
+              class="guide-visual__puzzle"
+              :size="28"
+              :stroke-width="1.5"
+            />
             <div>
               <strong>PwdBook Autofill</strong>
               <small>{{ t('settings.browserFillGuide.visual.loadUnpacked') }}</small>
@@ -214,14 +245,29 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      <Globe class="guide-visual__scene-icon" data-guide-part :size="20" :stroke-width="1.5" />
+      <Globe
+        class="guide-visual__scene-icon"
+        data-guide-part
+        :size="20"
+        :stroke-width="1.5"
+      />
     </div>
 
     <!-- Step 2: Copy ID -->
-    <div v-show="step === 2" data-step="2" class="guide-visual__scene">
-      <div class="guide-visual__id-card" data-guide-part>
+    <div
+      v-show="step === 2"
+      data-step="2"
+      class="guide-visual__scene"
+    >
+      <div
+        class="guide-visual__id-card"
+        data-guide-part
+      >
         <div class="guide-visual__id-header">
-          <Puzzle :size="18" :stroke-width="1.5" />
+          <Puzzle
+            :size="18"
+            :stroke-width="1.5"
+          />
           <span>PwdBook Autofill</span>
         </div>
         <div class="guide-visual__id-row">
@@ -231,49 +277,103 @@ onUnmounted(() => {
             abcdefghijklmnopabcdefghijklmnop
           </code>
           <span class="guide-visual__copy-badge">
-            <Copy :size="12" :stroke-width="2" />
+            <Copy
+              :size="12"
+              :stroke-width="2"
+            />
           </span>
         </div>
       </div>
     </div>
 
     <!-- Step 3: Register -->
-    <div v-show="step === 3" data-step="3" class="guide-visual__scene guide-visual__scene--link">
-      <div class="guide-visual__node guide-visual__node--browser" data-guide-part>
-        <Globe :size="22" :stroke-width="1.5" />
+    <div
+      v-show="step === 3"
+      data-step="3"
+      class="guide-visual__scene guide-visual__scene--link"
+    >
+      <div
+        class="guide-visual__node guide-visual__node--browser"
+        data-guide-part
+      >
+        <Globe
+          :size="22"
+          :stroke-width="1.5"
+        />
         <span>Chrome / Edge</span>
       </div>
-      <div class="guide-visual__link" data-guide-part>
+      <div
+        class="guide-visual__link"
+        data-guide-part
+      >
         <span class="guide-visual__link-beam" />
         <span class="guide-visual__link-pulse">
-          <Unplug :size="11" :stroke-width="2" />
+          <Unplug
+            :size="11"
+            :stroke-width="2"
+          />
         </span>
         <span class="guide-visual__lock-ring" />
-        <KeyRound :size="16" :stroke-width="1.75" class="guide-visual__link-key" />
+        <KeyRound
+          :size="16"
+          :stroke-width="1.75"
+          class="guide-visual__link-key"
+        />
       </div>
-      <div class="guide-visual__node guide-visual__node--app" data-guide-part>
-        <Monitor :size="22" :stroke-width="1.5" />
+      <div
+        class="guide-visual__node guide-visual__node--app"
+        data-guide-part
+      >
+        <Monitor
+          :size="22"
+          :stroke-width="1.5"
+        />
         <span>PwdBook</span>
       </div>
     </div>
 
     <!-- Step 4: Restart browser -->
-    <div v-show="step === 4" data-step="4" class="guide-visual__scene">
-      <div class="guide-visual__restart" data-guide-part>
-        <RefreshCw class="guide-visual__restart-arrow" :size="36" :stroke-width="1.5" />
+    <div
+      v-show="step === 4"
+      data-step="4"
+      class="guide-visual__scene"
+    >
+      <div
+        class="guide-visual__restart"
+        data-guide-part
+      >
+        <RefreshCw
+          class="guide-visual__restart-arrow"
+          :size="36"
+          :stroke-width="1.5"
+        />
         <span>{{ t('settings.browserFillGuide.visual.restartHint') }}</span>
       </div>
-      <div class="guide-visual__browser guide-visual__browser-ghost" data-guide-part>
+      <div
+        class="guide-visual__browser guide-visual__browser-ghost"
+        data-guide-part
+      >
         <div class="guide-visual__browser-bar" />
         <div class="guide-visual__browser-content guide-visual__browser-content--empty" />
       </div>
     </div>
 
     <!-- Step 5: Ready -->
-    <div v-show="step === 5" data-step="5" class="guide-visual__scene guide-visual__scene--login">
-      <div class="guide-visual__login-page" data-guide-part>
+    <div
+      v-show="step === 5"
+      data-step="5"
+      class="guide-visual__scene guide-visual__scene--login"
+    >
+      <div
+        class="guide-visual__login-page"
+        data-guide-part
+      >
         <div class="guide-visual__fill-bar">
-          <KeyRound class="guide-visual__key-icon" :size="12" :stroke-width="2" />
+          <KeyRound
+            class="guide-visual__key-icon"
+            :size="12"
+            :stroke-width="2"
+          />
           <span>PwdBook</span>
           <em>{{ t('settings.browserFillGuide.visual.fillAction') }}</em>
         </div>

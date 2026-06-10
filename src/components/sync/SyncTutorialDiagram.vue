@@ -107,14 +107,20 @@ onUnmounted(() => {
       :class="{ 'diagram-node--active': highlight === 'server' }"
     >
       <div class="diagram-node__icon">
-        <Monitor :size="size === 'large' ? 28 : 22" :stroke-width="1.5" />
+        <Monitor
+          :size="size === 'large' ? 28 : 22"
+          :stroke-width="1.5"
+        />
       </div>
       <span>{{ t('tools.wifiSync.tutorial.diagramDesktop') }}</span>
     </div>
 
     <div class="diagram-link diagram-link--left">
       <span class="diagram-packet diagram-packet--a">
-        <Lock :size="12" :stroke-width="2" />
+        <Lock
+          :size="12"
+          :stroke-width="2"
+        />
       </span>
     </div>
 
@@ -122,13 +128,19 @@ onUnmounted(() => {
       <div class="diagram-wave diagram-wave--1" />
       <div class="diagram-wave diagram-wave--2" />
       <div class="diagram-wave diagram-wave--3" />
-      <Wifi :size="size === 'large' ? 34 : 26" :stroke-width="1.5" />
+      <Wifi
+        :size="size === 'large' ? 34 : 26"
+        :stroke-width="1.5"
+      />
       <span>{{ t('tools.wifiSync.tutorial.diagramLan') }}</span>
     </div>
 
     <div class="diagram-link diagram-link--right">
       <span class="diagram-packet diagram-packet--b">
-        <Lock :size="12" :stroke-width="2" />
+        <Lock
+          :size="12"
+          :stroke-width="2"
+        />
       </span>
     </div>
 
@@ -137,13 +149,19 @@ onUnmounted(() => {
       :class="{ 'diagram-node--active': highlight === 'client' }"
     >
       <div class="diagram-node__icon">
-        <Smartphone :size="size === 'large' ? 28 : 22" :stroke-width="1.5" />
+        <Smartphone
+          :size="size === 'large' ? 28 : 22"
+          :stroke-width="1.5"
+        />
       </div>
       <span>{{ t('tools.wifiSync.tutorial.diagramClient') }}</span>
     </div>
 
     <div class="diagram-shield">
-      <Shield :size="size === 'large' ? 22 : 18" :stroke-width="1.5" />
+      <Shield
+        :size="size === 'large' ? 22 : 18"
+        :stroke-width="1.5"
+      />
       <span class="diagram-lock-ring" />
     </div>
   </div>

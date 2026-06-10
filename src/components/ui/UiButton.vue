@@ -69,7 +69,10 @@ const classicBtnClass = computed(() => [
     :html-type="htmlType"
     @click="emit('click', $event)"
   >
-    <template v-if="$slots.icon" #icon>
+    <template
+      v-if="$slots.icon"
+      #icon
+    >
       <slot name="icon" />
     </template>
     <slot />

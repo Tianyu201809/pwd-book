@@ -21,6 +21,7 @@ withDefaults(
     loading: false,
     glow: true,
     width: 520,
+    title: undefined,
   },
 )
 
@@ -55,42 +56,90 @@ function handleOk(): void {
     @ok="handleOk"
   >
     <slot />
-    <template v-if="$slots.title" #title>
+    <template
+      v-if="$slots.title"
+      #title
+    >
       <slot name="title" />
     </template>
-    <template v-if="$slots.footer" #footer>
+    <template
+      v-if="$slots.footer"
+      #footer
+    >
       <slot name="footer" />
     </template>
-    <template v-else-if="showFooter && !$slots.footer" #footer>
+    <template
+      v-else-if="showFooter && !$slots.footer"
+      #footer
+    >
       <div class="modal-footer-actions">
-        <UiButton variant="default" @click="handleClose">{{ t('common.cancel') }}</UiButton>
-        <UiButton variant="primary" :loading="loading" @click="handleOk">{{ t('common.confirm') }}</UiButton>
+        <UiButton
+          variant="default"
+          @click="handleClose"
+        >
+          {{ t('common.cancel') }}
+        </UiButton>
+        <UiButton
+          variant="primary"
+          :loading="loading"
+          @click="handleOk"
+        >
+          {{ t('common.confirm') }}
+        </UiButton>
       </div>
     </template>
   </Modal>
-  <Teleport v-else to="body">
-    <div v-if="open" class="modal-overlay" @click.self="maskClosable ? handleClose() : undefined">
+  <Teleport
+    v-else
+    to="body"
+  >
+    <div
+      v-if="open"
+      class="modal-overlay"
+      @click.self="maskClosable ? handleClose() : undefined"
+    >
       <div
         class="modal-card surface-card"
         :class="{ 'panel-glow': glow }"
         :style="{ maxWidth: typeof width === 'number' ? `${width}px` : width }"
       >
-        <div v-if="title || $slots.title" class="modal-header">
+        <div
+          v-if="title || $slots.title"
+          class="modal-header"
+        >
           <slot name="title">
             <h3>{{ title }}</h3>
           </slot>
-          <button type="button" class="close-btn titlebar-no-drag" @click="handleClose">
+          <button
+            type="button"
+            class="close-btn titlebar-no-drag"
+            @click="handleClose"
+          >
             <slot name="close-icon" />
           </button>
         </div>
         <div class="modal-body">
           <slot />
         </div>
-        <div v-if="showFooter || $slots.footer" class="modal-footer">
+        <div
+          v-if="showFooter || $slots.footer"
+          class="modal-footer"
+        >
           <slot name="footer">
             <div class="modal-footer-actions">
-              <UiButton variant="default" @click="handleClose">{{ t('common.cancel') }}</UiButton>
-              <UiButton variant="primary" :loading="loading" @click="handleOk">{{ t('common.confirm') }}</UiButton>
+              <UiButton
+                variant="default"
+                @click="handleClose"
+              >
+                {{ t('common.cancel') }}
+              </UiButton>
+              <UiButton
+                variant="primary"
+                :loading="loading"
+                @click="handleOk"
+              >
+                {{ t('common.confirm') }}
+              </UiButton>
             </div>
           </slot>
         </div>

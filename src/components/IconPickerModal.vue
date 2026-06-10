@@ -24,6 +24,8 @@ const props = withDefaults(
   }>(),
   {
     allowClear: true,
+    selected: undefined,
+    title: undefined,
   },
 )
 
@@ -79,10 +81,21 @@ function useLetterAvatar(): void {
 </script>
 
 <template>
-  <UiModal v-model:open="open" :title="title ?? t('icons.pickIcon')" :width="480" :show-footer="false" @close="close">
+  <UiModal
+    v-model:open="open"
+    :title="title ?? t('icons.pickIcon')"
+    :width="480"
+    :show-footer="false"
+    @close="close"
+  >
     <div class="picker-inner">
       <div class="search-wrap">
-        <Search v-if="!isAnimalIsland" :size="16" :stroke-width="1.5" class="search-icon" />
+        <Search
+          v-if="!isAnimalIsland"
+          :size="16"
+          :stroke-width="1.5"
+          class="search-icon"
+        />
         <UiInput
           v-model="query"
           class="search-input"
@@ -90,13 +103,23 @@ function useLetterAvatar(): void {
           :placeholder="t('common.search')"
           allow-clear
         >
-          <template v-if="isAnimalIsland" #prefix>
-            <Search :size="16" :stroke-width="1.5" />
+          <template
+            v-if="isAnimalIsland"
+            #prefix
+          >
+            <Search
+              :size="16"
+              :stroke-width="1.5"
+            />
           </template>
         </UiInput>
       </div>
 
-      <div class="picker-tabs" role="tablist" :aria-label="t('icons.pickIcon')">
+      <div
+        class="picker-tabs"
+        role="tablist"
+        :aria-label="t('icons.pickIcon')"
+      >
         <button
           v-for="tab in tabItems"
           :key="tab.key"
@@ -112,7 +135,12 @@ function useLetterAvatar(): void {
       </div>
 
       <div class="picker-body">
-        <p v-if="filteredIcons.length === 0" class="empty-text">{{ t('icons.noMatch') }}</p>
+        <p
+          v-if="filteredIcons.length === 0"
+          class="empty-text"
+        >
+          {{ t('icons.noMatch') }}
+        </p>
         <div
           v-else
           class="icon-grid"
@@ -132,13 +160,25 @@ function useLetterAvatar(): void {
             "
             @click="choose(icon.value)"
           >
-            <CategoryIconView :name="icon.value" :badge-size="40" :size="20" />
+            <CategoryIconView
+              :name="icon.value"
+              :badge-size="40"
+              :size="20"
+            />
           </button>
         </div>
       </div>
 
-      <footer v-if="allowClear" class="picker-footer">
-        <UiButton variant="text" @click="useLetterAvatar">{{ t('icons.useInitial') }}</UiButton>
+      <footer
+        v-if="allowClear"
+        class="picker-footer"
+      >
+        <UiButton
+          variant="text"
+          @click="useLetterAvatar"
+        >
+          {{ t('icons.useInitial') }}
+        </UiButton>
       </footer>
     </div>
   </UiModal>

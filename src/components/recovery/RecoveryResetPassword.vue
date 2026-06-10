@@ -35,9 +35,19 @@ function submit(): void {
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.back') }}</button>
-    <h2 class="panel-title">{{ t('recovery.setNewPassword') }}</h2>
-    <p class="panel-desc">{{ t('recovery.saveKeySubtitle') }}</p>
+    <button
+      type="button"
+      class="back-link"
+      @click="emit('back')"
+    >
+      {{ t('recovery.back') }}
+    </button>
+    <h2 class="panel-title">
+      {{ t('recovery.setNewPassword') }}
+    </h2>
+    <p class="panel-desc">
+      {{ t('recovery.saveKeySubtitle') }}
+    </p>
 
     <label class="label">{{ t('lock.masterPassword') }}</label>
     <div class="input-wrap">
@@ -48,9 +58,21 @@ function submit(): void {
         :disabled="loading"
         @keydown.enter="submit"
       />
-      <button type="button" class="eye-btn" @click="showPassword = !showPassword">
-        <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
-        <Eye v-else :size="16" :stroke-width="1.5" />
+      <button
+        type="button"
+        class="eye-btn"
+        @click="showPassword = !showPassword"
+      >
+        <EyeOff
+          v-if="showPassword"
+          :size="16"
+          :stroke-width="1.5"
+        />
+        <Eye
+          v-else
+          :size="16"
+          :stroke-width="1.5"
+        />
       </button>
     </div>
 
@@ -65,14 +87,31 @@ function submit(): void {
 
     <div class="strength">
       <div class="bars">
-        <span v-for="i in 4" :key="i" class="bar" :class="{ filled: i <= strengthLevel.bars }" />
+        <span
+          v-for="i in 4"
+          :key="i"
+          class="bar"
+          :class="{ filled: i <= strengthLevel.bars }"
+        />
       </div>
       <span class="strength-label">{{ strengthLevel.label }}</span>
     </div>
 
-    <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+    <p
+      v-if="errorMessage"
+      class="error-text"
+    >
+      {{ errorMessage }}
+    </p>
 
-    <UiButton variant="primary" class="submit-btn" block :disabled="loading" :loading="loading" @click="submit">
+    <UiButton
+      variant="primary"
+      class="submit-btn"
+      block
+      :disabled="loading"
+      :loading="loading"
+      @click="submit"
+    >
       {{ loading ? t('recovery.reEncrypting') : t('recovery.setNewPassword') }}
     </UiButton>
   </div>

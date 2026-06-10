@@ -194,7 +194,10 @@ onUnmounted(() => {
     <template #title>
       <div class="guide-modal-title">
         <span class="guide-hero__badge">
-          <Sparkles :size="14" :stroke-width="2" />
+          <Sparkles
+            :size="14"
+            :stroke-width="2"
+          />
         </span>
         <span>
           <strong>{{ t('settings.browserFillGuide.title') }}</strong>
@@ -204,13 +207,26 @@ onUnmounted(() => {
     </template>
 
     <template #close-icon>
-      <X :size="18" :stroke-width="1.75" />
+      <X
+        :size="18"
+        :stroke-width="1.75"
+      />
     </template>
 
-    <div ref="guideRootRef" class="browser-extension-guide guide-root">
-      <div ref="progressRef" class="guide-progress" aria-hidden="true">
+    <div
+      ref="guideRootRef"
+      class="browser-extension-guide guide-root"
+    >
+      <div
+        ref="progressRef"
+        class="guide-progress"
+        aria-hidden="true"
+      >
         <div class="guide-progress__track">
-          <div class="guide-progress__fill" :style="{ transform: `scaleX(${progressPercent / 100})` }" />
+          <div
+            class="guide-progress__fill"
+            :style="{ transform: `scaleX(${progressPercent / 100})` }"
+          />
         </div>
         <ol class="guide-step-dots">
           <li
@@ -219,7 +235,11 @@ onUnmounted(() => {
             class="guide-step-dot"
             :class="{ 'guide-step-dot--active': index === currentStep, 'guide-step-dot--done': index < currentStep }"
           >
-            <Check v-if="index < currentStep" :size="10" :stroke-width="2.5" />
+            <Check
+              v-if="index < currentStep"
+              :size="10"
+              :stroke-width="2.5"
+            />
             <span v-else>{{ index + 1 }}</span>
           </li>
         </ol>
@@ -231,27 +251,57 @@ onUnmounted(() => {
 
       <BrowserExtensionGuideVisual :step="currentStep" />
 
-      <div v-if="stepMeta" class="guide-step-copy">
+      <div
+        v-if="stepMeta"
+        class="guide-step-copy"
+      >
         <h4>{{ stepMeta.title }}</h4>
         <p>{{ stepMeta.desc }}</p>
-        <p v-if="stepMeta.tip" class="guide-step-tip">{{ stepMeta.tip }}</p>
+        <p
+          v-if="stepMeta.tip"
+          class="guide-step-tip"
+        >
+          {{ stepMeta.tip }}
+        </p>
 
-        <div v-if="currentStep === 0 && bridgeEnabled" class="guide-step-status guide-step-status--ok">
-          <Check :size="14" :stroke-width="2" />
+        <div
+          v-if="currentStep === 0 && bridgeEnabled"
+          class="guide-step-status guide-step-status--ok"
+        >
+          <Check
+            :size="14"
+            :stroke-width="2"
+          />
           {{ t('settings.browserFillGuide.alreadyEnabled') }}
         </div>
 
-        <div v-if="currentStep === 1" class="guide-step-actions">
-          <UiButton variant="default" size="small" @click="onOpenExtensionsClick">
+        <div
+          v-if="currentStep === 1"
+          class="guide-step-actions"
+        >
+          <UiButton
+            variant="default"
+            size="small"
+            @click="onOpenExtensionsClick"
+          >
             {{ t('settings.browserFillOpenExtensions') }}
           </UiButton>
-          <p v-if="extensionsPageHint" class="guide-step-status guide-step-status--ok extensions-page-hint">
-            <Check :size="14" :stroke-width="2" />
+          <p
+            v-if="extensionsPageHint"
+            class="guide-step-status guide-step-status--ok extensions-page-hint"
+          >
+            <Check
+              :size="14"
+              :stroke-width="2"
+            />
             {{ extensionsPageHint }}
           </p>
         </div>
 
-        <div v-if="currentStep === 3" class="guide-step-register">
+        <div
+          v-if="currentStep === 3"
+          class="guide-step-register"
+        >
           <label>{{ t('settings.browserFillExtensionId') }}</label>
           <UiInput
             :model-value="extensionId"
@@ -270,14 +320,26 @@ onUnmounted(() => {
               {{ t('settings.browserFillRegister') }}
             </UiButton>
           </div>
-          <p v-if="registered" class="guide-step-status guide-step-status--ok">
-            <Check :size="14" :stroke-width="2" />
+          <p
+            v-if="registered"
+            class="guide-step-status guide-step-status--ok"
+          >
+            <Check
+              :size="14"
+              :stroke-width="2"
+            />
             {{ t('settings.browserFillRegistered', { id: extensionId }) }}
           </p>
         </div>
 
-        <div v-if="currentStep === 5" class="guide-step-status guide-step-status--ok">
-          <Check :size="14" :stroke-width="2" />
+        <div
+          v-if="currentStep === 5"
+          class="guide-step-status guide-step-status--ok"
+        >
+          <Check
+            :size="14"
+            :stroke-width="2"
+          />
           {{ t('settings.browserFillGuide.readyHint') }}
         </div>
       </div>
@@ -285,8 +347,16 @@ onUnmounted(() => {
 
     <template #footer>
       <div class="guide-footer">
-        <UiButton variant="default" size="small" :disabled="currentStep === 0" @click="goPrev">
-          <ChevronLeft :size="14" :stroke-width="2" />
+        <UiButton
+          variant="default"
+          size="small"
+          :disabled="currentStep === 0"
+          @click="goPrev"
+        >
+          <ChevronLeft
+            :size="14"
+            :stroke-width="2"
+          />
           {{ t('settings.browserFillGuide.prev') }}
         </UiButton>
         <UiButton
@@ -296,7 +366,11 @@ onUnmounted(() => {
           @click="goNext"
         >
           {{ isLastStep ? t('settings.browserFillGuide.finish') : t('settings.browserFillGuide.next') }}
-          <ChevronRight v-if="!isLastStep" :size="14" :stroke-width="2" />
+          <ChevronRight
+            v-if="!isLastStep"
+            :size="14"
+            :stroke-width="2"
+          />
         </UiButton>
       </div>
     </template>

@@ -495,178 +495,264 @@ onBeforeUnmount(() => {
     }"
     :style="shellStyle"
   >
-    <div v-if="!sidebarCollapsed" class="sidebar-main">
-    <div class="sidebar-top">
-      <VaultClock />
-    </div>
+    <div
+      v-if="!sidebarCollapsed"
+      class="sidebar-main"
+    >
+      <div class="sidebar-top">
+        <VaultClock />
+      </div>
 
-    <div class="category-search-wrap">
-      <div class="category-search-row">
-        <div class="search-field-wrap">
-          <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
-          <UiInput
-            v-model="categorySearchQuery"
-            class="search-field-input"
-            :class="{ 'search-field-input--animal': isAnimalIsland }"
-            :placeholder="t('vault.categorySearchPlaceholder')"
-            allow-clear
+      <div class="category-search-wrap">
+        <div class="category-search-row">
+          <div class="search-field-wrap">
+            <Search
+              v-if="!isAnimalIsland"
+              class="search-field-icon"
+              :size="14"
+              :stroke-width="1.5"
+            />
+            <UiInput
+              v-model="categorySearchQuery"
+              class="search-field-input"
+              :class="{ 'search-field-input--animal': isAnimalIsland }"
+              :placeholder="t('vault.categorySearchPlaceholder')"
+              allow-clear
+            >
+              <template
+                v-if="isAnimalIsland"
+                #prefix
+              >
+                <Search
+                  :size="14"
+                  :stroke-width="1.5"
+                />
+              </template>
+            </UiInput>
+          </div>
+          <button
+            type="button"
+            class="category-add-btn"
+            :title="t('category.newCategory')"
+            :aria-label="t('category.newCategory')"
+            @click="openCreateCategory"
           >
-            <template v-if="isAnimalIsland" #prefix>
-              <Search :size="14" :stroke-width="1.5" />
-            </template>
-          </UiInput>
+            <Plus
+              :size="16"
+              :stroke-width="1.5"
+            />
+          </button>
         </div>
+      </div>
+
+      <nav
+        ref="sidebarNavRef"
+        class="sidebar-nav"
+      >
+        <TransitionGroup
+          name="sort"
+          tag="div"
+          class="sort-list"
+        >
+          <div
+            v-for="cat in displayCategories"
+            :key="cat.id"
+            class="nav-item sortable sortable-row"
+            :class="{
+              active: selectedCategory === cat.id,
+              'is-dragging': draggingId === cat.id && dragMoved,
+            }"
+            role="button"
+            tabindex="0"
+            :title="!isCategorySearchActive ? t('vault.dragSort') : undefined"
+            @selectstart.prevent
+            @pointerdown="onItemPointerDown(cat.id as FilterCategory, $event)"
+            @click="onNavClick(cat.id as FilterCategory, $event)"
+            @keydown.enter="selectCategory(cat.id as FilterCategory)"
+            @contextmenu="handleCategoryContextMenu(cat, $event)"
+          >
+            <CategoryIconView
+              :name="cat.icon"
+              :badge-size="24"
+              :size="14"
+            />
+            <span class="nav-label">{{ cat.label }}</span>
+            <span
+              class="count"
+              :class="{ active: selectedCategory === cat.id }"
+            >{{ cat.count }}</span>
+          </div>
+        </TransitionGroup>
+      </nav>
+
+      <div
+        v-if="vaultTags.length"
+        class="sidebar-tags"
+      >
         <button
           type="button"
-          class="category-add-btn"
-          :title="t('category.newCategory')"
-          :aria-label="t('category.newCategory')"
-          @click="openCreateCategory"
+          class="utilities-toggle tag-filter-toggle"
+          :aria-expanded="tagFilterExpanded"
+          :title="tagFilterExpanded ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
+          @click="toggleTagFilter"
         >
-          <Plus :size="16" :stroke-width="1.5" />
-        </button>
-      </div>
-    </div>
-
-    <nav ref="sidebarNavRef" class="sidebar-nav">
-      <TransitionGroup name="sort" tag="div" class="sort-list">
-        <div
-          v-for="cat in displayCategories"
-          :key="cat.id"
-          class="nav-item sortable sortable-row"
-          :class="{
-            active: selectedCategory === cat.id,
-            'is-dragging': draggingId === cat.id && dragMoved,
-          }"
-          role="button"
-          tabindex="0"
-          :title="!isCategorySearchActive ? t('vault.dragSort') : undefined"
-          @selectstart.prevent
-          @pointerdown="onItemPointerDown(cat.id as FilterCategory, $event)"
-          @click="onNavClick(cat.id as FilterCategory, $event)"
-          @keydown.enter="selectCategory(cat.id as FilterCategory)"
-          @contextmenu="handleCategoryContextMenu(cat, $event)"
-        >
-          <CategoryIconView :name="cat.icon" :badge-size="24" :size="14" />
-          <span class="nav-label">{{ cat.label }}</span>
-          <span class="count" :class="{ active: selectedCategory === cat.id }">{{ cat.count }}</span>
-        </div>
-      </TransitionGroup>
-    </nav>
-
-    <div v-if="vaultTags.length" class="sidebar-tags">
-      <button
-        type="button"
-        class="utilities-toggle tag-filter-toggle"
-        :aria-expanded="tagFilterExpanded"
-        :title="tagFilterExpanded ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
-        @click="toggleTagFilter"
-      >
-        <span class="utilities-toggle-leading">
-          <span class="utilities-toggle-icon-wrap" aria-hidden="true">
-            <Hash class="utilities-toggle-icon" :size="15" :stroke-width="1.5" />
-          </span>
-          <span class="utilities-toggle-label">
-            {{ t('vault.tagFilterTitle') }}
-            <span v-if="selectedTagFilters.length" class="tag-filter-active-badge">
-              {{ selectedTagFilters.length }}
+          <span class="utilities-toggle-leading">
+            <span
+              class="utilities-toggle-icon-wrap"
+              aria-hidden="true"
+            >
+              <Hash
+                class="utilities-toggle-icon"
+                :size="15"
+                :stroke-width="1.5"
+              />
+            </span>
+            <span class="utilities-toggle-label">
+              {{ t('vault.tagFilterTitle') }}
+              <span
+                v-if="selectedTagFilters.length"
+                class="tag-filter-active-badge"
+              >
+                {{ selectedTagFilters.length }}
+              </span>
             </span>
           </span>
-        </span>
-        <ChevronDown
-          class="utilities-chevron"
-          :class="{ open: tagFilterExpanded }"
-          :size="14"
-          :stroke-width="1.5"
-        />
-      </button>
+          <ChevronDown
+            class="utilities-chevron"
+            :class="{ open: tagFilterExpanded }"
+            :size="14"
+            :stroke-width="1.5"
+          />
+        </button>
 
-      <div
-        class="utilities-collapse"
-        :class="{ 'utilities-collapse--open': tagFilterExpanded }"
-      >
-        <div class="utilities-body tag-filter-body" :inert="!tagFilterExpanded || undefined">
-          <TagFilterPanel />
-        </div>
-      </div>
-    </div>
-
-    <div class="sidebar-utilities">
-      <button
-        type="button"
-        class="utilities-toggle"
-        :aria-expanded="utilitiesExpanded"
-        :title="utilitiesExpanded ? t('vault.collapseUtilities') : t('vault.expandUtilities')"
-        @click="toggleUtilities"
-      >
-        <span class="utilities-toggle-leading">
-          <span class="utilities-toggle-icon-wrap" aria-hidden="true">
-            <Wrench class="utilities-toggle-icon" :size="15" :stroke-width="1.5" />
-          </span>
-          <span class="utilities-toggle-label">{{ t('tools.sectionLabel') }}</span>
-        </span>
-        <ChevronDown
-          class="utilities-chevron"
-          :class="{ open: utilitiesExpanded }"
-          :size="14"
-          :stroke-width="1.5"
-        />
-      </button>
-
-      <div
-        class="utilities-collapse"
-        :class="{ 'utilities-collapse--open': utilitiesExpanded }"
-      >
-        <div class="utilities-body" :inert="!utilitiesExpanded || undefined">
-
-          <div class="sidebar-bottom">
-            <button
-              type="button"
-              class="nav-item"
-              :title="t('tools.passwordGenDesc')"
-              @click="openPasswordGen()"
-            >
-              <IconBadge v-bind="NAV_ICON_STYLES.passwordGen">
-                <Sparkles :size="14" :stroke-width="1.5" />
-              </IconBadge>
-              {{ t('tools.passwordGenTitle') }}
-            </button>
-            <button
-              type="button"
-              class="nav-item"
-              :title="t('tools.passwordHealth.desc')"
-              @click="openPasswordHealth()"
-            >
-              <IconBadge v-bind="NAV_ICON_STYLES.shield">
-                <ShieldAlert :size="14" :stroke-width="1.5" />
-              </IconBadge>
-              {{ t('tools.passwordHealth.title') }}
-            </button>
-            <CategoryManagePanel ref="categoryManagePanelRef" />
-            <TagManagePanel />
-            <button type="button" class="nav-item" @click="openTrash">
-              <IconBadge v-bind="NAV_ICON_STYLES.trash">
-                <ArchiveRestore :size="14" :stroke-width="1.5" />
-              </IconBadge>
-              {{ t('vault.trash') }}
-              <span v-if="vaultStatus.trashCount > 0" class="nav-badge">{{ vaultStatus.trashCount }}</span>
-            </button>
-            <button type="button" class="nav-item" @click="navigateTo('settings')">
-              <IconBadge v-bind="NAV_ICON_STYLES.settings">
-                <Settings :size="14" :stroke-width="1.5" />
-              </IconBadge>
-              {{ t('vault.settings') }}
-            </button>
-            <button type="button" class="nav-item lock-btn" @click="lock">
-              <IconBadge v-bind="NAV_ICON_STYLES.lock">
-                <Lock :size="14" :stroke-width="1.5" />
-              </IconBadge>
-              {{ t('vault.lock') }}
-            </button>
+        <div
+          class="utilities-collapse"
+          :class="{ 'utilities-collapse--open': tagFilterExpanded }"
+        >
+          <div
+            class="utilities-body tag-filter-body"
+            :inert="!tagFilterExpanded || undefined"
+          >
+            <TagFilterPanel />
           </div>
         </div>
       </div>
-    </div>
+
+      <div class="sidebar-utilities">
+        <button
+          type="button"
+          class="utilities-toggle"
+          :aria-expanded="utilitiesExpanded"
+          :title="utilitiesExpanded ? t('vault.collapseUtilities') : t('vault.expandUtilities')"
+          @click="toggleUtilities"
+        >
+          <span class="utilities-toggle-leading">
+            <span
+              class="utilities-toggle-icon-wrap"
+              aria-hidden="true"
+            >
+              <Wrench
+                class="utilities-toggle-icon"
+                :size="15"
+                :stroke-width="1.5"
+              />
+            </span>
+            <span class="utilities-toggle-label">{{ t('tools.sectionLabel') }}</span>
+          </span>
+          <ChevronDown
+            class="utilities-chevron"
+            :class="{ open: utilitiesExpanded }"
+            :size="14"
+            :stroke-width="1.5"
+          />
+        </button>
+
+        <div
+          class="utilities-collapse"
+          :class="{ 'utilities-collapse--open': utilitiesExpanded }"
+        >
+          <div
+            class="utilities-body"
+            :inert="!utilitiesExpanded || undefined"
+          >
+            <div class="sidebar-bottom">
+              <button
+                type="button"
+                class="nav-item"
+                :title="t('tools.passwordGenDesc')"
+                @click="openPasswordGen()"
+              >
+                <IconBadge v-bind="NAV_ICON_STYLES.passwordGen">
+                  <Sparkles
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </IconBadge>
+                {{ t('tools.passwordGenTitle') }}
+              </button>
+              <button
+                type="button"
+                class="nav-item"
+                :title="t('tools.passwordHealth.desc')"
+                @click="openPasswordHealth()"
+              >
+                <IconBadge v-bind="NAV_ICON_STYLES.shield">
+                  <ShieldAlert
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </IconBadge>
+                {{ t('tools.passwordHealth.title') }}
+              </button>
+              <CategoryManagePanel ref="categoryManagePanelRef" />
+              <TagManagePanel />
+              <button
+                type="button"
+                class="nav-item"
+                @click="openTrash"
+              >
+                <IconBadge v-bind="NAV_ICON_STYLES.trash">
+                  <ArchiveRestore
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </IconBadge>
+                {{ t('vault.trash') }}
+                <span
+                  v-if="vaultStatus.trashCount > 0"
+                  class="nav-badge"
+                >{{ vaultStatus.trashCount }}</span>
+              </button>
+              <button
+                type="button"
+                class="nav-item"
+                @click="navigateTo('settings')"
+              >
+                <IconBadge v-bind="NAV_ICON_STYLES.settings">
+                  <Settings
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </IconBadge>
+                {{ t('vault.settings') }}
+              </button>
+              <button
+                type="button"
+                class="nav-item lock-btn"
+                @click="lock"
+              >
+                <IconBadge v-bind="NAV_ICON_STYLES.lock">
+                  <Lock
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </IconBadge>
+                {{ t('vault.lock') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <PanelEdge
@@ -689,8 +775,15 @@ onBeforeUnmount(() => {
       @click.stop
     >
       <template v-if="!contextMenu.confirmDelete">
-        <button type="button" class="context-menu-item" @click="handleEditCategory">
-          <Pencil :size="14" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="context-menu-item"
+          @click="handleEditCategory"
+        >
+          <Pencil
+            :size="14"
+            :stroke-width="1.5"
+          />
           {{ t('common.edit') }}
         </button>
         <button
@@ -705,14 +798,23 @@ onBeforeUnmount(() => {
           "
           @click="startContextDelete"
         >
-          <Trash2 :size="14" :stroke-width="1.5" />
+          <Trash2
+            :size="14"
+            :stroke-width="1.5"
+          />
           {{ t('common.delete') }}
         </button>
       </template>
       <template v-else>
-        <p class="context-menu-confirm">{{ t('category.deleteConfirm', { name: contextMenu.category.label }) }}</p>
+        <p class="context-menu-confirm">
+          {{ t('category.deleteConfirm', { name: contextMenu.category.label }) }}
+        </p>
         <div class="context-menu-confirm-actions">
-          <button type="button" class="context-menu-item" @click="cancelContextDelete">
+          <button
+            type="button"
+            class="context-menu-item"
+            @click="cancelContextDelete"
+          >
             {{ t('common.cancel') }}
           </button>
           <button

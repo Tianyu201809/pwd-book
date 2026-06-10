@@ -313,8 +313,14 @@ const stepLabels = computed(() => [
     :show-footer="false"
     @close="close"
   >
-    <div class="import-wizard" :class="{ 'import-wizard--animal': isAnimalIsland }">
-      <nav class="step-rail" aria-label="import steps">
+    <div
+      class="import-wizard"
+      :class="{ 'import-wizard--animal': isAnimalIsland }"
+    >
+      <nav
+        class="step-rail"
+        aria-label="import steps"
+      >
         <div
           v-for="(label, index) in stepLabels"
           :key="label"
@@ -325,7 +331,11 @@ const stepLabels = computed(() => [
           }"
         >
           <span class="step-dot">
-            <Check v-if="stepIndex > index" :size="12" :stroke-width="2.5" />
+            <Check
+              v-if="stepIndex > index"
+              :size="12"
+              :stroke-width="2.5"
+            />
             <span v-else>{{ index + 1 }}</span>
           </span>
           <span class="step-label">{{ label }}</span>
@@ -333,8 +343,13 @@ const stepLabels = computed(() => [
       </nav>
 
       <!-- Step 1: 选择来源 -->
-      <section v-if="step === 'source'" class="step-panel">
-        <p class="step-lead">{{ t('import.sourceLead') }}</p>
+      <section
+        v-if="step === 'source'"
+        class="step-panel"
+      >
+        <p class="step-lead">
+          {{ t('import.sourceLead') }}
+        </p>
         <div class="source-grid">
           <button
             v-for="source in IMPORT_SOURCES"
@@ -345,21 +360,36 @@ const stepLabels = computed(() => [
             :style="{ '--source-accent': source.accent }"
             @click="pickSource(source.id)"
           >
-            <span class="source-monogram" aria-hidden="true">{{ source.monogram }}</span>
+            <span
+              class="source-monogram"
+              aria-hidden="true"
+            >{{ source.monogram }}</span>
             <span class="source-text">
               <span class="source-name">{{ t(`import.sources.${source.nameKey}`) }}</span>
               <span class="source-desc">{{ t(`import.sources.${source.descKey}`) }}</span>
             </span>
-            <span v-if="selectedId === source.id" class="source-check">
-              <Check :size="14" :stroke-width="2.5" />
+            <span
+              v-if="selectedId === source.id"
+              class="source-check"
+            >
+              <Check
+                :size="14"
+                :stroke-width="2.5"
+              />
             </span>
           </button>
         </div>
       </section>
 
       <!-- Step 2: 上传文件 -->
-      <section v-else-if="step === 'file'" class="step-panel step-panel--file">
-        <div v-if="selectedSource" class="source-banner">
+      <section
+        v-else-if="step === 'file'"
+        class="step-panel step-panel--file"
+      >
+        <div
+          v-if="selectedSource"
+          class="source-banner"
+        >
           <span
             class="banner-monogram"
             :style="{ background: `${selectedSource.accent}22`, color: selectedSource.accent }"
@@ -367,21 +397,45 @@ const stepLabels = computed(() => [
             {{ selectedSource.monogram }}
           </span>
           <div>
-            <p class="banner-title">{{ t(`import.sources.${selectedSource.nameKey}`) }}</p>
-            <p class="banner-sub">{{ t('import.fileHint') }}</p>
+            <p class="banner-title">
+              {{ t(`import.sources.${selectedSource.nameKey}`) }}
+            </p>
+            <p class="banner-sub">
+              {{ t('import.fileHint') }}
+            </p>
           </div>
         </div>
 
-        <button type="button" class="guide-toggle" @click="guideExpanded = !guideExpanded">
-          <HelpCircle :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="guide-toggle"
+          @click="guideExpanded = !guideExpanded"
+        >
+          <HelpCircle
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('import.exportGuide') }}
-          <ChevronDown :size="16" :stroke-width="1.5" :class="{ open: guideExpanded }" />
+          <ChevronDown
+            :size="16"
+            :stroke-width="1.5"
+            :class="{ open: guideExpanded }"
+          />
         </button>
-        <UiCard v-if="guideExpanded && selectedSource" class="guide-card">
+        <UiCard
+          v-if="guideExpanded && selectedSource"
+          class="guide-card"
+        >
           <p>{{ t(`import.guides.${selectedSource.exportGuideKey}`) }}</p>
-          <p v-if="selectedSource.expectedColumns.length" class="guide-columns">
+          <p
+            v-if="selectedSource.expectedColumns.length"
+            class="guide-columns"
+          >
             <span class="guide-columns-label">{{ t('import.expectedColumns') }}</span>
-            <code v-for="col in selectedSource.expectedColumns" :key="col">{{ col }}</code>
+            <code
+              v-for="col in selectedSource.expectedColumns"
+              :key="col"
+            >{{ col }}</code>
           </p>
         </UiCard>
 
@@ -393,7 +447,11 @@ const stepLabels = computed(() => [
           @drop="onDrop"
           @click="openFilePicker"
         >
-          <Upload :size="28" :stroke-width="1.25" class="drop-icon" />
+          <Upload
+            :size="28"
+            :stroke-width="1.25"
+            class="drop-icon"
+          />
           <p class="drop-title">
             {{ selectedFile ? selectedFile.name : t('import.dropTitle') }}
           </p>
@@ -402,15 +460,27 @@ const stepLabels = computed(() => [
           </p>
         </div>
 
-        <p v-if="parseError" class="inline-error">
-          <AlertCircle :size="14" :stroke-width="1.5" />
+        <p
+          v-if="parseError"
+          class="inline-error"
+        >
+          <AlertCircle
+            :size="14"
+            :stroke-width="1.5"
+          />
           {{ parseError }}
         </p>
       </section>
 
       <!-- Step 3: 检查确认 -->
-      <section v-else-if="step === 'review'" class="step-panel step-panel--review">
-        <UiLoading v-if="previewLoading" class="review-loading" />
+      <section
+        v-else-if="step === 'review'"
+        class="step-panel step-panel--review"
+      >
+        <UiLoading
+          v-if="previewLoading"
+          class="review-loading"
+        />
         <template v-else-if="previewResult">
           <p class="step-lead">
             {{
@@ -430,7 +500,10 @@ const stepLabels = computed(() => [
             }}
           </p>
 
-          <p v-if="reviewTab === 'ready' && previewResult.totals.ready > 0" class="review-remove-hint">
+          <p
+            v-if="reviewTab === 'ready' && previewResult.totals.ready > 0"
+            class="review-remove-hint"
+          >
             {{ t('import.removeHint') }}
           </p>
 
@@ -454,13 +527,23 @@ const stepLabels = computed(() => [
                   <th>{{ t('import.colTitle') }}</th>
                   <th>{{ t('import.colAccount') }}</th>
                   <th>{{ t('import.colUrl') }}</th>
-                  <th v-if="reviewTab !== 'ready'">{{ t('import.colReason') }}</th>
-                  <th v-else class="col-action">{{ t('import.colAction') }}</th>
+                  <th v-if="reviewTab !== 'ready'">
+                    {{ t('import.colReason') }}
+                  </th>
+                  <th
+                    v-else
+                    class="col-action"
+                  >
+                    {{ t('import.colAction') }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="reviewList.length === 0">
-                  <td colspan="4" class="empty-cell">
+                  <td
+                    colspan="4"
+                    class="empty-cell"
+                  >
                     {{ t('import.listEmpty') }}
                   </td>
                 </tr>
@@ -470,9 +553,19 @@ const stepLabels = computed(() => [
                 >
                   <td>{{ item.title || `行 ${item.row}` }}</td>
                   <td>{{ item.username || '—' }}</td>
-                  <td class="url-cell">{{ item.url || '—' }}</td>
-                  <td v-if="reviewTab !== 'ready'" class="reason-cell">{{ reasonLabel(item) }}</td>
-                  <td v-else class="col-action">
+                  <td class="url-cell">
+                    {{ item.url || '—' }}
+                  </td>
+                  <td
+                    v-if="reviewTab !== 'ready'"
+                    class="reason-cell"
+                  >
+                    {{ reasonLabel(item) }}
+                  </td>
+                  <td
+                    v-else
+                    class="col-action"
+                  >
                     <button
                       type="button"
                       class="remove-row-btn"
@@ -480,7 +573,10 @@ const stepLabels = computed(() => [
                       :aria-label="t('import.removeRow')"
                       @click="removeReadyItem(index)"
                     >
-                      <X :size="16" :stroke-width="1.5" />
+                      <X
+                        :size="16"
+                        :stroke-width="1.5"
+                      />
                     </button>
                   </td>
                 </tr>
@@ -489,15 +585,27 @@ const stepLabels = computed(() => [
           </div>
         </template>
 
-        <p v-if="parseError" class="inline-error">
-          <AlertCircle :size="14" :stroke-width="1.5" />
+        <p
+          v-if="parseError"
+          class="inline-error"
+        >
+          <AlertCircle
+            :size="14"
+            :stroke-width="1.5"
+          />
           {{ parseError }}
         </p>
       </section>
 
       <footer class="wizard-footer">
-        <UiButton variant="ghost" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <UiButton
+          variant="ghost"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ step === 'source' ? t('common.cancel') : t('common.back') }}
         </UiButton>
         <div class="footer-actions">
@@ -509,7 +617,10 @@ const stepLabels = computed(() => [
             @click="goNext"
           >
             {{ t('common.next') }}
-            <ArrowRight :size="16" :stroke-width="1.5" />
+            <ArrowRight
+              :size="16"
+              :stroke-width="1.5"
+            />
           </UiButton>
           <UiButton
             v-else

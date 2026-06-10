@@ -16,11 +16,20 @@ const { detachedDetailOpen } = useAppState()
       <VaultSidebar />
       <div class="vault-list-column">
         <PasswordList class="vault-password-list" />
-        <div v-if="isAnimalIsland" class="vault-footer-tree-wrap">
-          <Footer type="tree" class="vault-footer-tree" />
+        <div
+          v-if="isAnimalIsland"
+          class="vault-footer-tree-wrap"
+        >
+          <Footer
+            type="tree"
+            class="vault-footer-tree"
+          />
         </div>
       </div>
-      <div class="vault-detail-slot" :class="{ 'is-detached': detachedDetailOpen }">
+      <div
+        class="vault-detail-slot"
+        :class="{ 'is-detached': detachedDetailOpen }"
+      >
         <PasswordDetail />
       </div>
     </div>

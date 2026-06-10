@@ -177,7 +177,11 @@ onUnmounted(() => {
     :class="{ 'quickbar-root--animal': isAnimalIsland }"
   >
     <div class="quickbar-strip">
-      <Search class="quickbar-search-icon" :size="16" :stroke-width="1.75" />
+      <Search
+        class="quickbar-search-icon"
+        :size="16"
+        :stroke-width="1.75"
+      />
       <template v-if="unlocked">
         <input
           ref="inputRef"
@@ -188,16 +192,32 @@ onUnmounted(() => {
           :placeholder="t('quickBar.placeholder')"
           spellcheck="false"
           autocomplete="off"
-        />
-        <span v-if="query || showRecent" class="quickbar-hint">{{ t('quickBar.hintNavigate') }}</span>
+        >
+        <span
+          v-if="query || showRecent"
+          class="quickbar-hint"
+        >{{ t('quickBar.hintNavigate') }}</span>
       </template>
-      <button v-else type="button" class="quickbar-locked" @click="focusMain">
-        <Lock :size="14" :stroke-width="1.75" />
+      <button
+        v-else
+        type="button"
+        class="quickbar-locked"
+        @click="focusMain"
+      >
+        <Lock
+          :size="14"
+          :stroke-width="1.75"
+        />
         {{ t('quickBar.locked') }}
       </button>
     </div>
 
-    <p v-if="showRecent" class="quickbar-section-label">{{ t('quickBar.recentOpened') }}</p>
+    <p
+      v-if="showRecent"
+      class="quickbar-section-label"
+    >
+      {{ t('quickBar.recentOpened') }}
+    </p>
 
     <ul
       v-if="showList && listItems.length"
@@ -264,12 +284,20 @@ onUnmounted(() => {
           :aria-label="t('quickBar.removeFromRecent')"
           @mousedown.prevent.stop="removeFromRecent(entry, $event)"
         >
-          <X :size="14" :stroke-width="2" />
+          <X
+            :size="14"
+            :stroke-width="2"
+          />
         </button>
       </li>
     </ul>
 
-    <p v-else-if="showEmpty" class="quickbar-empty">{{ t('quickBar.noMatch') }}</p>
+    <p
+      v-else-if="showEmpty"
+      class="quickbar-empty"
+    >
+      {{ t('quickBar.noMatch') }}
+    </p>
     <ToastHost />
   </div>
 </template>

@@ -31,25 +31,55 @@ function submitConfirm(): void {
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.back') }}</button>
+    <button
+      type="button"
+      class="back-link"
+      @click="emit('back')"
+    >
+      {{ t('recovery.back') }}
+    </button>
 
     <template v-if="mode === 'info'">
-      <h2 class="panel-title">{{ t('recovery.wipeTitle') }}</h2>
+      <h2 class="panel-title">
+        {{ t('recovery.wipeTitle') }}
+      </h2>
       <div class="danger-box">
-        <p class="danger-title">{{ t('recovery.wipeDanger') }}</p>
-        <p class="danger-desc">{{ t('recovery.wipeDesc', { count: entryCount }) }}</p>
-        <p class="danger-hint">{{ t('recovery.wipeHint') }}</p>
+        <p class="danger-title">
+          {{ t('recovery.wipeDanger') }}
+        </p>
+        <p class="danger-desc">
+          {{ t('recovery.wipeDesc', { count: entryCount }) }}
+        </p>
+        <p class="danger-hint">
+          {{ t('recovery.wipeHint') }}
+        </p>
       </div>
-      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-      <UiButton variant="ghost" class="danger-btn" block @click="emit('continue')">
+      <p
+        v-if="errorMessage"
+        class="error-text"
+      >
+        {{ errorMessage }}
+      </p>
+      <UiButton
+        variant="ghost"
+        class="danger-btn"
+        block
+        @click="emit('continue')"
+      >
         {{ t('recovery.wipeContinue') }}
       </UiButton>
     </template>
 
     <template v-else>
-      <h2 class="panel-title">{{ t('recovery.wipeFinalTitle') }}</h2>
-      <p class="panel-desc">{{ t('recovery.wipeFinalDesc') }}</p>
-      <p class="confirm-phrase">{{ confirmPhrase }}</p>
+      <h2 class="panel-title">
+        {{ t('recovery.wipeFinalTitle') }}
+      </h2>
+      <p class="panel-desc">
+        {{ t('recovery.wipeFinalDesc') }}
+      </p>
+      <p class="confirm-phrase">
+        {{ confirmPhrase }}
+      </p>
       <UiInput
         v-model="confirmText"
         class="wipe-input"
@@ -57,7 +87,12 @@ function submitConfirm(): void {
         :disabled="loading"
         @keydown.enter="submitConfirm"
       />
-      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+      <p
+        v-if="errorMessage"
+        class="error-text"
+      >
+        {{ errorMessage }}
+      </p>
       <UiButton
         variant="danger"
         class="danger-submit"

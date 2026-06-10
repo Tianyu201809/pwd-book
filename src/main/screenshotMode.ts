@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, type BrowserWindow } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import { createEntry, lockVault, setupVault, unlockVault } from './services/vaultService'

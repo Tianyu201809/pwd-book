@@ -75,16 +75,30 @@ function goBack(): void {
   <div class="tool-page-view">
     <div class="tool-page-body">
       <aside class="tool-page-sidebar">
-        <button type="button" class="tool-back-btn" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="tool-back-btn"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('tools.backToVault') }}
         </button>
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--gen">
-            <Sparkles :size="24" :stroke-width="1.5" />
+            <Sparkles
+              :size="24"
+              :stroke-width="1.5"
+            />
           </div>
-          <h2 class="tool-sidebar-title font-display">{{ t('tools.passwordGen.title') }}</h2>
-          <p class="tool-sidebar-desc">{{ t('tools.passwordGen.subtitle') }}</p>
+          <h2 class="tool-sidebar-title font-display">
+            {{ t('tools.passwordGen.title') }}
+          </h2>
+          <p class="tool-sidebar-desc">
+            {{ t('tools.passwordGen.subtitle') }}
+          </p>
         </div>
       </aside>
 
@@ -92,9 +106,19 @@ function goBack(): void {
         <div class="tool-page-content">
           <section class="panel-glow surface-card gen-panel">
             <div class="gen-output-wrap">
-              <div class="gen-display">{{ generated }}</div>
-              <button type="button" class="gen-refresh-btn" :title="t('tools.passwordGen.regenerate')" @click="regenerate">
-                <RefreshCw :size="16" :stroke-width="1.5" />
+              <div class="gen-display">
+                {{ generated }}
+              </div>
+              <button
+                type="button"
+                class="gen-refresh-btn"
+                :title="t('tools.passwordGen.regenerate')"
+                @click="regenerate"
+              >
+                <RefreshCw
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
             </div>
 
@@ -110,7 +134,10 @@ function goBack(): void {
                   }"
                 />
               </div>
-              <span class="strength-label" :class="`level-${strength.level}`">{{ strengthLabel }}</span>
+              <span
+                class="strength-label"
+                :class="`level-${strength.level}`"
+              >{{ strengthLabel }}</span>
             </div>
 
             <div class="length-row">
@@ -124,39 +151,74 @@ function goBack(): void {
                 min="8"
                 max="32"
                 class="length-slider"
-              />
+              >
             </div>
 
             <div class="charset-grid">
               <label class="charset-option">
-                <input v-model="options.upper" type="checkbox" />
+                <input
+                  v-model="options.upper"
+                  type="checkbox"
+                >
                 <span>{{ t('tools.passwordGen.upper') }}</span>
               </label>
               <label class="charset-option">
-                <input v-model="options.lower" type="checkbox" />
+                <input
+                  v-model="options.lower"
+                  type="checkbox"
+                >
                 <span>{{ t('tools.passwordGen.lower') }}</span>
               </label>
               <label class="charset-option">
-                <input v-model="options.numbers" type="checkbox" />
+                <input
+                  v-model="options.numbers"
+                  type="checkbox"
+                >
                 <span>{{ t('tools.passwordGen.numbers') }}</span>
               </label>
               <label class="charset-option">
-                <input v-model="options.symbols" type="checkbox" />
+                <input
+                  v-model="options.symbols"
+                  type="checkbox"
+                >
                 <span>{{ t('tools.passwordGen.symbols') }}</span>
               </label>
             </div>
           </section>
 
           <div class="action-row">
-            <UiButton variant="primary" class="action-btn" @click="regenerate">
-              <template #icon><Sparkles :size="16" :stroke-width="1.5" /></template>
+            <UiButton
+              variant="primary"
+              class="action-btn"
+              @click="regenerate"
+            >
+              <template #icon>
+                <Sparkles
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+              </template>
               {{ t('tools.passwordGen.regenerate') }}
             </UiButton>
-            <UiButton variant="ghost" class="action-btn" @click="copyPassword">
-              <template #icon><Copy :size="16" :stroke-width="1.5" /></template>
+            <UiButton
+              variant="ghost"
+              class="action-btn"
+              @click="copyPassword"
+            >
+              <template #icon>
+                <Copy
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+              </template>
               {{ t('tools.passwordGen.copy') }}
             </UiButton>
-            <UiButton v-if="passwordGenApplyMode" variant="ghost" class="action-btn apply-btn" @click="handleApply">
+            <UiButton
+              v-if="passwordGenApplyMode"
+              variant="ghost"
+              class="action-btn apply-btn"
+              @click="handleApply"
+            >
               {{ t('tools.passwordGen.applyToEntry') }}
             </UiButton>
           </div>

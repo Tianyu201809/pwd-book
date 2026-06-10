@@ -28,16 +28,33 @@ const { isAnimalIsland } = useTheme()
     :loading="loading"
     :size="size"
   >
-    <template v-if="$slots.checked" #checked>
+    <template
+      v-if="$slots.checked"
+      #checked
+    >
       <slot name="checked" />
     </template>
-    <template v-if="$slots.unchecked" #unchecked>
+    <template
+      v-if="$slots.unchecked"
+      #unchecked
+    >
       <slot name="unchecked" />
     </template>
   </Switch>
-  <label v-else class="ui-toggle">
-    <input v-model="model" type="checkbox" class="ui-toggle-input" :disabled="disabled" />
-    <span class="ui-toggle-track" :class="{ on: model }" />
+  <label
+    v-else
+    class="ui-toggle"
+  >
+    <input
+      v-model="model"
+      type="checkbox"
+      class="ui-toggle-input"
+      :disabled="disabled"
+    >
+    <span
+      class="ui-toggle-track"
+      :class="{ on: model }"
+    />
   </label>
 </template>
 

@@ -5,12 +5,27 @@ import decorCloud from '@/assets/images/animal/decor-cloud.svg'
 </script>
 
 <template>
-  <div class="animal-backdrop" aria-hidden="true">
+  <div
+    class="animal-backdrop"
+    aria-hidden="true"
+  >
     <div class="animal-backdrop__glow animal-backdrop__glow--sky" />
     <div class="animal-backdrop__glow animal-backdrop__glow--meadow" />
-    <img class="animal-backdrop__sprite animal-backdrop__sprite--cloud" :src="decorCloud" alt="" />
-    <img class="animal-backdrop__sprite animal-backdrop__sprite--leaf" :src="decorLeaf" alt="" />
-    <img class="animal-backdrop__sprite animal-backdrop__sprite--butterfly" :src="decorButterfly" alt="" />
+    <img
+      class="animal-backdrop__sprite animal-backdrop__sprite--cloud"
+      :src="decorCloud"
+      alt=""
+    >
+    <img
+      class="animal-backdrop__sprite animal-backdrop__sprite--leaf"
+      :src="decorLeaf"
+      alt=""
+    >
+    <img
+      class="animal-backdrop__sprite animal-backdrop__sprite--butterfly"
+      :src="decorButterfly"
+      alt=""
+    >
   </div>
 </template>
 

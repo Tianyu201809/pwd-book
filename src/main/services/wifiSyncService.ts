@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'crypto'
 import fs from 'fs'
-import http from 'http'
+import type http from 'http'
 import https from 'https'
 import os from 'os'
 import path from 'path'

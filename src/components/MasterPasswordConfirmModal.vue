@@ -40,25 +40,50 @@ defineExpose({ resetPassword })
 </script>
 
 <template>
-  <UiModal v-model:open="open" :title="title" :width="400" :show-footer="false" @close="handleClose">
+  <UiModal
+    v-model:open="open"
+    :title="title"
+    :width="400"
+    :show-footer="false"
+    @close="handleClose"
+  >
     <template #title>
       <div class="modal-header-row">
         <h3>{{ title }}</h3>
-        <button type="button" class="close-btn titlebar-no-drag" @click="handleClose">
-          <X :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="close-btn titlebar-no-drag"
+          @click="handleClose"
+        >
+          <X
+            :size="16"
+            :stroke-width="1.5"
+          />
         </button>
       </div>
     </template>
-    <p class="modal-desc">{{ description }}</p>
+    <p class="modal-desc">
+      {{ description }}
+    </p>
     <UiInput
       v-model="password"
       :type="showPassword ? 'text' : 'password'"
       :placeholder="t('tools.emailBackup.masterPasswordPlaceholder')"
       @keydown.enter="handleConfirm"
     />
-    <UiCheckbox v-model="showPassword" :label="t('tools.emailBackup.showPassword')" class="show-row" />
+    <UiCheckbox
+      v-model="showPassword"
+      :label="t('tools.emailBackup.showPassword')"
+      class="show-row"
+    />
     <div class="modal-actions">
-      <UiButton variant="ghost" class="modal-btn" @click="handleClose">{{ t('common.cancel') }}</UiButton>
+      <UiButton
+        variant="ghost"
+        class="modal-btn"
+        @click="handleClose"
+      >
+        {{ t('common.cancel') }}
+      </UiButton>
       <UiButton
         variant="primary"
         class="modal-btn"

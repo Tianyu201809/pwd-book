@@ -35,8 +35,15 @@ watch(
 </script>
 
 <template>
-  <div v-if="dataUrl" class="pairing-qr">
-    <img :src="dataUrl" alt="" class="pairing-qr__image" />
+  <div
+    v-if="dataUrl"
+    class="pairing-qr"
+  >
+    <img
+      :src="dataUrl"
+      alt=""
+      class="pairing-qr__image"
+    >
   </div>
 </template>
 

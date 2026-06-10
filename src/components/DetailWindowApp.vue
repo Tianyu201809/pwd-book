@@ -49,14 +49,20 @@ onUnmounted(() => {
   <Cursor v-if="isAnimalIsland">
     <div class="detail-window-root detail-window-root--animal vault-texture">
       <AnimalBackdrop />
-      <TitleBar class="detail-window-chrome" detail-window />
+      <TitleBar
+        class="detail-window-chrome"
+        detail-window
+      />
       <main class="detail-window-main detail-window-chrome">
         <PasswordDetail detached />
       </main>
       <ToastHost />
     </div>
   </Cursor>
-  <div v-else class="detail-window-root vault-texture">
+  <div
+    v-else
+    class="detail-window-root vault-texture"
+  >
     <TitleBar detail-window />
     <main class="detail-window-main">
       <PasswordDetail detached />

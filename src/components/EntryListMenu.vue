@@ -184,13 +184,25 @@ function scheduleCloseMoveSubmenu(): void {
   >
     {{ t('vault.openLocalProgram') }}
   </button>
-  <button type="button" class="action-menu-item" @click="handleCopy">
+  <button
+    type="button"
+    class="action-menu-item"
+    @click="handleCopy"
+  >
     {{ t('vault.copyData') }}
   </button>
-  <button type="button" class="action-menu-item" @click="handleDuplicate">
+  <button
+    type="button"
+    class="action-menu-item"
+    @click="handleDuplicate"
+  >
     {{ t('vault.duplicateEntry') }}
   </button>
-  <button type="button" class="action-menu-item" @click="handleToggleFavorite">
+  <button
+    type="button"
+    class="action-menu-item"
+    @click="handleToggleFavorite"
+  >
     {{ entry.isFavorite ? t('detail.removeFavorite') : t('detail.addFavorite') }}
   </button>
 
@@ -201,9 +213,16 @@ function scheduleCloseMoveSubmenu(): void {
     @mouseenter="openMoveSubmenu"
     @mouseleave="scheduleCloseMoveSubmenu"
   >
-    <button type="button" class="action-menu-item submenu-trigger">
+    <button
+      type="button"
+      class="action-menu-item submenu-trigger"
+    >
       <span>{{ t('vault.moveTo') }}</span>
-      <ChevronRight :size="14" :stroke-width="2" class="submenu-chevron" />
+      <ChevronRight
+        :size="14"
+        :stroke-width="2"
+        class="submenu-chevron"
+      />
     </button>
     <div
       class="submenu menu-popover surface-card"
@@ -212,7 +231,12 @@ function scheduleCloseMoveSubmenu(): void {
       @mouseenter="cancelCloseMoveSubmenu"
       @mouseleave="scheduleCloseMoveSubmenu"
     >
-      <p v-if="moveTargets.length === 0" class="submenu-empty">{{ t('vault.noOtherCategory') }}</p>
+      <p
+        v-if="moveTargets.length === 0"
+        class="submenu-empty"
+      >
+        {{ t('vault.noOtherCategory') }}
+      </p>
       <button
         v-for="category in moveTargets"
         :key="category.id"
@@ -220,13 +244,21 @@ function scheduleCloseMoveSubmenu(): void {
         class="submenu-item"
         @click="handleMove(category.id, $event)"
       >
-        <CategoryIconView :name="category.icon" :badge-size="22" :size="12" />
+        <CategoryIconView
+          :name="category.icon"
+          :badge-size="22"
+          :size="12"
+        />
         <span class="submenu-label">{{ category.label }}</span>
       </button>
     </div>
   </div>
 
-  <button type="button" class="action-menu-item danger" @click="handleDelete">
+  <button
+    type="button"
+    class="action-menu-item danger"
+    @click="handleDelete"
+  >
     {{ t('common.delete') }}
   </button>
 </template>

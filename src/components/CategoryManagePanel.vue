@@ -229,38 +229,79 @@ defineExpose({
 </script>
 
 <template>
-  <button type="button" class="nav-item manage-trigger" @click="openManageDialog">
+  <button
+    type="button"
+    class="nav-item manage-trigger"
+    @click="openManageDialog"
+  >
     <IconBadge v-bind="NAV_ICON_STYLES.layers">
-      <Layers :size="14" :stroke-width="1.5" />
+      <Layers
+        :size="14"
+        :stroke-width="1.5"
+      />
     </IconBadge>
     {{ t('category.manage') }}
-    <span v-if="categoryCount" class="trigger-count">{{ categoryCount }}</span>
+    <span
+      v-if="categoryCount"
+      class="trigger-count"
+    >{{ categoryCount }}</span>
   </button>
 
   <Teleport to="body">
     <Transition name="dialog-fade">
-      <div v-if="showManageDialog" class="dialog-overlay" @click.self="closeManageDialog">
+      <div
+        v-if="showManageDialog"
+        class="dialog-overlay"
+        @click.self="closeManageDialog"
+      >
         <div class="dialog surface-card">
           <template v-if="dialogMode === 'list'">
             <div class="dialog-header">
               <div>
-                <h4 class="dialog-title">{{ t('category.manage') }}</h4>
-                <p class="dialog-desc">{{ t('category.manageDesc', { count: categoryCount }) }}</p>
+                <h4 class="dialog-title">
+                  {{ t('category.manage') }}
+                </h4>
+                <p class="dialog-desc">
+                  {{ t('category.manageDesc', { count: categoryCount }) }}
+                </p>
               </div>
-              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
-                <X :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn"
+                :aria-label="t('common.close')"
+                @click="closeManageDialog"
+              >
+                <X
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
             </div>
 
             <div class="dialog-toolbar">
-              <button type="button" class="create-btn" @click="openCreateView">
-                <Plus :size="14" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="create-btn"
+                @click="openCreateView"
+              >
+                <Plus
+                  :size="14"
+                  :stroke-width="1.5"
+                />
                 {{ t('category.newCategory') }}
               </button>
             </div>
 
-            <div v-if="customCategories.length" class="search-field-wrap manage-search-wrap">
-              <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
+            <div
+              v-if="customCategories.length"
+              class="search-field-wrap manage-search-wrap"
+            >
+              <Search
+                v-if="!isAnimalIsland"
+                class="search-field-icon"
+                :size="14"
+                :stroke-width="1.5"
+              />
               <UiInput
                 v-model="manageSearchQuery"
                 class="search-field-input"
@@ -268,15 +309,29 @@ defineExpose({
                 :placeholder="t('category.searchPlaceholder')"
                 allow-clear
               >
-                <template v-if="isAnimalIsland" #prefix>
-                  <Search :size="14" :stroke-width="1.5" />
+                <template
+                  v-if="isAnimalIsland"
+                  #prefix
+                >
+                  <Search
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
                 </template>
               </UiInput>
             </div>
 
-            <p v-if="localError" class="error-text">{{ localError }}</p>
+            <p
+              v-if="localError"
+              class="error-text"
+            >
+              {{ localError }}
+            </p>
 
-            <div v-if="customCategories.length && filteredManageCategories.length" class="manage-list">
+            <div
+              v-if="customCategories.length && filteredManageCategories.length"
+              class="manage-list"
+            >
               <div
                 v-for="category in filteredManageCategories"
                 :key="category.id"
@@ -286,7 +341,13 @@ defineExpose({
                 <template v-if="confirmDeleteId === category.id">
                   <span class="confirm-text">{{ t('category.deleteConfirm', { name: category.label }) }}</span>
                   <div class="confirm-actions">
-                    <button type="button" class="ghost-btn" @click="cancelDelete">{{ t('common.cancel') }}</button>
+                    <button
+                      type="button"
+                      class="ghost-btn"
+                      @click="cancelDelete"
+                    >
+                      {{ t('common.cancel') }}
+                    </button>
                     <button
                       type="button"
                       class="danger-btn"
@@ -306,7 +367,11 @@ defineExpose({
                     :aria-label="t('category.editIcon')"
                     @click.stop="openIconPicker(category)"
                   >
-                    <CategoryIconView :name="category.icon" :badge-size="28" :size="15" />
+                    <CategoryIconView
+                      :name="category.icon"
+                      :badge-size="28"
+                      :size="15"
+                    />
                   </button>
                   <UiInput
                     v-if="editingId === category.id"
@@ -342,35 +407,76 @@ defineExpose({
                     :aria-label="t('category.deleteCategory')"
                     @click="startDelete(category.id)"
                   >
-                    <Trash2 :size="14" :stroke-width="1.5" />
+                    <Trash2
+                      :size="14"
+                      :stroke-width="1.5"
+                    />
                   </button>
                 </template>
               </div>
             </div>
 
-            <div v-else-if="customCategories.length && !filteredManageCategories.length" class="empty-state">
-              <Search :size="22" :stroke-width="1.5" />
+            <div
+              v-else-if="customCategories.length && !filteredManageCategories.length"
+              class="empty-state"
+            >
+              <Search
+                :size="22"
+                :stroke-width="1.5"
+              />
               <p>{{ t('category.noSearchResults') }}</p>
             </div>
 
-            <div v-else class="empty-state">
-              <FolderPlus :size="22" :stroke-width="1.5" />
+            <div
+              v-else
+              class="empty-state"
+            >
+              <FolderPlus
+                :size="22"
+                :stroke-width="1.5"
+              />
               <p>{{ t('category.empty') }}</p>
-              <button type="button" class="empty-action" @click="openCreateView">{{ t('category.createFirst') }}</button>
+              <button
+                type="button"
+                class="empty-action"
+                @click="openCreateView"
+              >
+                {{ t('category.createFirst') }}
+              </button>
             </div>
           </template>
 
           <template v-else-if="dialogMode === 'create'">
             <div class="dialog-header">
-              <button type="button" class="icon-btn back-btn" :aria-label="t('common.back')" @click="backToList">
-                <ArrowLeft :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn back-btn"
+                :aria-label="t('common.back')"
+                @click="backToList"
+              >
+                <ArrowLeft
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
               <div class="header-main">
-                <h4 class="dialog-title">{{ t('category.newCategory') }}</h4>
-                <p class="dialog-desc">{{ t('category.createHint') }}</p>
+                <h4 class="dialog-title">
+                  {{ t('category.newCategory') }}
+                </h4>
+                <p class="dialog-desc">
+                  {{ t('category.createHint') }}
+                </p>
               </div>
-              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
-                <X :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn"
+                :aria-label="t('common.close')"
+                @click="closeManageDialog"
+              >
+                <X
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
             </div>
 
@@ -383,15 +489,34 @@ defineExpose({
             />
 
             <label class="field-label">{{ t('category.icon') }}</label>
-            <button type="button" class="icon-picker-trigger" @click="showCreateIconPicker = true">
-              <CategoryIconView :name="selectedIcon" :badge-size="36" :size="18" />
+            <button
+              type="button"
+              class="icon-picker-trigger"
+              @click="showCreateIconPicker = true"
+            >
+              <CategoryIconView
+                :name="selectedIcon"
+                :badge-size="36"
+                :size="18"
+              />
               <span>{{ t('category.pickIcon') }}</span>
             </button>
 
-            <p v-if="localError" class="error-text">{{ localError }}</p>
+            <p
+              v-if="localError"
+              class="error-text"
+            >
+              {{ localError }}
+            </p>
 
             <div class="dialog-actions">
-              <UiButton variant="ghost" class="action-btn" @click="backToList">{{ t('common.cancel') }}</UiButton>
+              <UiButton
+                variant="ghost"
+                class="action-btn"
+                @click="backToList"
+              >
+                {{ t('common.cancel') }}
+              </UiButton>
               <UiButton
                 variant="primary"
                 class="action-btn"
@@ -407,11 +532,23 @@ defineExpose({
           <template v-else>
             <div class="dialog-header">
               <div class="header-main">
-                <h4 class="dialog-title">{{ t('category.editCategory') }}</h4>
-                <p class="dialog-desc">{{ t('category.editHint') }}</p>
+                <h4 class="dialog-title">
+                  {{ t('category.editCategory') }}
+                </h4>
+                <p class="dialog-desc">
+                  {{ t('category.editHint') }}
+                </p>
               </div>
-              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
-                <X :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn"
+                :aria-label="t('common.close')"
+                @click="closeManageDialog"
+              >
+                <X
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
             </div>
 
@@ -424,15 +561,34 @@ defineExpose({
             />
 
             <label class="field-label">{{ t('category.icon') }}</label>
-            <button type="button" class="icon-picker-trigger" @click="showCreateIconPicker = true">
-              <CategoryIconView :name="selectedIcon" :badge-size="36" :size="18" />
+            <button
+              type="button"
+              class="icon-picker-trigger"
+              @click="showCreateIconPicker = true"
+            >
+              <CategoryIconView
+                :name="selectedIcon"
+                :badge-size="36"
+                :size="18"
+              />
               <span>{{ t('category.pickIcon') }}</span>
             </button>
 
-            <p v-if="localError" class="error-text">{{ localError }}</p>
+            <p
+              v-if="localError"
+              class="error-text"
+            >
+              {{ localError }}
+            </p>
 
             <div class="dialog-actions">
-              <UiButton variant="ghost" class="action-btn" @click="closeManageDialog">{{ t('common.cancel') }}</UiButton>
+              <UiButton
+                variant="ghost"
+                class="action-btn"
+                @click="closeManageDialog"
+              >
+                {{ t('common.cancel') }}
+              </UiButton>
               <UiButton
                 variant="primary"
                 class="action-btn"

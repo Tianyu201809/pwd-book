@@ -125,15 +125,27 @@ function handleEmptyTrash(): void {
   <div class="tool-page-view">
     <div class="tool-page-body">
       <aside class="tool-page-sidebar">
-        <button type="button" class="tool-back-btn" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="tool-back-btn"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('trash.backToVault') }}
         </button>
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--trash">
-            <Trash2 :size="24" :stroke-width="1.5" />
+            <Trash2
+              :size="24"
+              :stroke-width="1.5"
+            />
           </div>
-          <h2 class="tool-sidebar-title font-display">{{ t('trash.title') }}</h2>
+          <h2 class="tool-sidebar-title font-display">
+            {{ t('trash.title') }}
+          </h2>
           <p class="tool-sidebar-desc">
             {{ t('trash.subtitle', { days: retentionDays }) }}
           </p>
@@ -153,7 +165,12 @@ function handleEmptyTrash(): void {
                   :disabled="trashEntries.length === 0"
                   @click="handleRestoreAll"
                 >
-                  <template #icon><Undo2 :size="16" :stroke-width="1.5" /></template>
+                  <template #icon>
+                    <Undo2
+                      :size="16"
+                      :stroke-width="1.5"
+                    />
+                  </template>
                   {{ t('trash.restoreAll') }}
                 </UiButton>
                 <UiButton
@@ -162,18 +179,33 @@ function handleEmptyTrash(): void {
                   :disabled="trashEntries.length === 0"
                   @click="handleEmptyTrash"
                 >
-                  <template #icon><Trash2 :size="16" :stroke-width="1.5" /></template>
+                  <template #icon>
+                    <Trash2
+                      :size="16"
+                      :stroke-width="1.5"
+                    />
+                  </template>
                   {{ t('trash.emptyTrash') }}
                 </UiButton>
               </div>
             </div>
 
-            <div v-if="trashEntries.length === 0" class="trash-empty">
+            <div
+              v-if="trashEntries.length === 0"
+              class="trash-empty"
+            >
               <p>{{ t('trash.empty') }}</p>
             </div>
 
-            <ul v-else class="trash-list">
-              <li v-for="entry in trashEntries" :key="entry.id" class="trash-item">
+            <ul
+              v-else
+              class="trash-list"
+            >
+              <li
+                v-for="entry in trashEntries"
+                :key="entry.id"
+                class="trash-item"
+              >
                 <div class="trash-item-main">
                   <CategoryIconView
                     v-if="entry.displayIcon"
@@ -189,10 +221,14 @@ function handleEmptyTrash(): void {
                     {{ getAvatarMeta(entry.title).text }}
                   </div>
                   <div class="trash-meta">
-                    <p class="trash-item-title">{{ entry.title }}</p>
+                    <p class="trash-item-title">
+                      {{ entry.title }}
+                    </p>
                     <p class="trash-item-sub">
                       {{ entry.username || entry.url || t('vault.noAccount') }}
-                      <template v-if="entry.categoryName"> · {{ entry.categoryName }}</template>
+                      <template v-if="entry.categoryName">
+                        · {{ entry.categoryName }}
+                      </template>
                     </p>
                     <p class="trash-item-time">
                       {{ t('trash.deletedAt', { date: formatDeletedAt(entry.deletedAt) }) }}
@@ -202,8 +238,15 @@ function handleEmptyTrash(): void {
                   </div>
                 </div>
                 <div class="trash-item-actions">
-                  <button type="button" class="trash-action-btn" @click="handleRestore(entry)">
-                    <RotateCcw :size="14" :stroke-width="1.5" />
+                  <button
+                    type="button"
+                    class="trash-action-btn"
+                    @click="handleRestore(entry)"
+                  >
+                    <RotateCcw
+                      :size="14"
+                      :stroke-width="1.5"
+                    />
                     {{ t('trash.restore') }}
                   </button>
                   <button
@@ -211,7 +254,10 @@ function handleEmptyTrash(): void {
                     class="trash-action-btn trash-action-btn--danger"
                     @click="handlePermanentDelete(entry)"
                   >
-                    <Trash2 :size="14" :stroke-width="1.5" />
+                    <Trash2
+                      :size="14"
+                      :stroke-width="1.5"
+                    />
                     {{ t('trash.deletePermanent') }}
                   </button>
                 </div>
@@ -234,7 +280,12 @@ function handleEmptyTrash(): void {
       </p>
       <template #footer>
         <div class="confirm-modal-actions">
-          <UiButton variant="default" @click="cancelConfirm">{{ t('common.cancel') }}</UiButton>
+          <UiButton
+            variant="default"
+            @click="cancelConfirm"
+          >
+            {{ t('common.cancel') }}
+          </UiButton>
           <UiButton
             :variant="confirmIsDestructive ? 'danger' : 'primary'"
             @click="handleConfirm"

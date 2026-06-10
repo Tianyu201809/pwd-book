@@ -13,6 +13,7 @@ const props = withDefaults(
   }>(),
   {
     disabled: false,
+    label: undefined,
   },
 )
 
@@ -40,8 +41,15 @@ const animalOptions = computed(() => [
     direction="horizontal"
     size="small"
   />
-  <label v-else class="ui-checkbox-classic">
-    <input v-model="model" type="checkbox" :disabled="disabled" />
+  <label
+    v-else
+    class="ui-checkbox-classic"
+  >
+    <input
+      v-model="model"
+      type="checkbox"
+      :disabled="disabled"
+    >
     <span v-if="label">{{ label }}</span>
     <slot v-else />
   </label>

@@ -10,21 +10,48 @@ const { isAnimalIsland } = useTheme()
 
 <template>
   <Teleport to="body">
-    <div class="toast-host" aria-live="polite" aria-atomic="true">
+    <div
+      class="toast-host"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <TransitionGroup name="toast">
-        <template v-for="toast in toasts" :key="toast.id">
+        <template
+          v-for="toast in toasts"
+          :key="toast.id"
+        >
           <Card
             v-if="isAnimalIsland"
             :color="toast.type === 'success' ? 'app-green' : 'app-red'"
             class="toast-item toast-item--animal"
           >
-            <CheckCircle2 v-if="toast.type === 'success'" :size="18" :stroke-width="1.5" />
-            <XCircle v-else :size="18" :stroke-width="1.5" />
+            <CheckCircle2
+              v-if="toast.type === 'success'"
+              :size="18"
+              :stroke-width="1.5"
+            />
+            <XCircle
+              v-else
+              :size="18"
+              :stroke-width="1.5"
+            />
             <span>{{ toast.message }}</span>
           </Card>
-          <div v-else class="toast-item" :class="toast.type">
-            <CheckCircle2 v-if="toast.type === 'success'" :size="18" :stroke-width="1.5" />
-            <XCircle v-else :size="18" :stroke-width="1.5" />
+          <div
+            v-else
+            class="toast-item"
+            :class="toast.type"
+          >
+            <CheckCircle2
+              v-if="toast.type === 'success'"
+              :size="18"
+              :stroke-width="1.5"
+            />
+            <XCircle
+              v-else
+              :size="18"
+              :stroke-width="1.5"
+            />
             <span>{{ toast.message }}</span>
           </div>
         </template>

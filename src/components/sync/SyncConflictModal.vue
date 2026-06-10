@@ -31,19 +31,38 @@ const conflictItems = computed(() =>
     @close="emit('close')"
   >
     <div class="conflict-body">
-      <p class="conflict-desc">{{ t('tools.wifiSync.conflictDesc', { count: conflicts.length }) }}</p>
+      <p class="conflict-desc">
+        {{ t('tools.wifiSync.conflictDesc', { count: conflicts.length }) }}
+      </p>
       <ul class="conflict-list">
-        <li v-for="item in conflictItems" :key="item.entryId" class="conflict-item">
-          <AlertTriangle :size="16" :stroke-width="1.5" class="conflict-icon" />
+        <li
+          v-for="item in conflictItems"
+          :key="item.entryId"
+          class="conflict-item"
+        >
+          <AlertTriangle
+            :size="16"
+            :stroke-width="1.5"
+            class="conflict-icon"
+          />
           <div>
-            <p class="conflict-title">{{ item.title || item.entryId }}</p>
-            <p class="conflict-meta">{{ t('tools.wifiSync.conflictKeptLocal', { time: item.timeText }) }}</p>
+            <p class="conflict-title">
+              {{ item.title || item.entryId }}
+            </p>
+            <p class="conflict-meta">
+              {{ t('tools.wifiSync.conflictKeptLocal', { time: item.timeText }) }}
+            </p>
           </div>
         </li>
       </ul>
     </div>
     <template #footer>
-      <UiButton variant="primary" @click="emit('close')">{{ t('common.confirm') }}</UiButton>
+      <UiButton
+        variant="primary"
+        @click="emit('close')"
+      >
+        {{ t('common.confirm') }}
+      </UiButton>
     </template>
   </UiModal>
 </template>

@@ -40,25 +40,48 @@ function onTagRowClick(name: string): void {
         :placeholder="t('vault.tagFilterSearchPlaceholder')"
         allow-clear
       >
-        <template v-if="isAnimalIsland" #prefix>
-          <Search :size="14" :stroke-width="1.5" />
+        <template
+          v-if="isAnimalIsland"
+          #prefix
+        >
+          <Search
+            :size="14"
+            :stroke-width="1.5"
+          />
         </template>
       </UiInput>
     </div>
 
-    <p class="tag-filter-hint">{{ t('vault.tagFilterAndHint') }}</p>
+    <p class="tag-filter-hint">
+      {{ t('vault.tagFilterAndHint') }}
+    </p>
 
-    <div v-if="selectedTagFilters.length" class="tag-filter-toolbar">
+    <div
+      v-if="selectedTagFilters.length"
+      class="tag-filter-toolbar"
+    >
       <span class="tag-filter-selected-hint">
         {{ t('vault.tagFilterSelectedCount', { count: selectedTagFilters.length }) }}
       </span>
-      <button type="button" class="tag-filter-clear-btn" @click="clearTagFilters">
+      <button
+        type="button"
+        class="tag-filter-clear-btn"
+        @click="clearTagFilters"
+      >
         {{ t('vault.tagFilterClear') }}
       </button>
     </div>
 
-    <div class="tag-filter-list" role="listbox" :aria-label="t('vault.tagFilterTitle')" aria-multiselectable="true">
-      <p v-if="filteredTags.length === 0" class="tag-filter-empty">
+    <div
+      class="tag-filter-list"
+      role="listbox"
+      :aria-label="t('vault.tagFilterTitle')"
+      aria-multiselectable="true"
+    >
+      <p
+        v-if="filteredTags.length === 0"
+        class="tag-filter-empty"
+      >
         {{ t('vault.tagFilterNoMatch') }}
       </p>
       <div

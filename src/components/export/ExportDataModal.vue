@@ -188,8 +188,14 @@ async function handleExport(): Promise<void> {
     :show-footer="false"
     @close="close"
   >
-    <div class="export-wizard" :class="{ 'export-wizard--animal': isAnimalIsland }">
-      <nav class="step-rail" aria-label="export steps">
+    <div
+      class="export-wizard"
+      :class="{ 'export-wizard--animal': isAnimalIsland }"
+    >
+      <nav
+        class="step-rail"
+        aria-label="export steps"
+      >
         <div
           v-for="(label, index) in stepLabels"
           :key="label"
@@ -200,17 +206,28 @@ async function handleExport(): Promise<void> {
           }"
         >
           <span class="step-dot">
-            <Check v-if="stepIndex > index" :size="12" :stroke-width="2.5" />
+            <Check
+              v-if="stepIndex > index"
+              :size="12"
+              :stroke-width="2.5"
+            />
             <span v-else>{{ index + 1 }}</span>
           </span>
           <span class="step-label">{{ label }}</span>
         </div>
       </nav>
 
-      <section v-if="step === 'format'" class="step-panel">
-        <p class="step-lead">{{ t('export.lead') }}</p>
+      <section
+        v-if="step === 'format'"
+        class="step-panel"
+      >
+        <p class="step-lead">
+          {{ t('export.lead') }}
+        </p>
 
-        <h4 class="group-title">{{ t('export.groups.pwdbook') }}</h4>
+        <h4 class="group-title">
+          {{ t('export.groups.pwdbook') }}
+        </h4>
         <div class="format-grid">
           <button
             v-for="dest in pwdbookDestinations"
@@ -221,18 +238,29 @@ async function handleExport(): Promise<void> {
             :style="{ '--format-accent': dest.accent }"
             @click="pickFormat(dest.id)"
           >
-            <span class="format-monogram" aria-hidden="true">{{ dest.monogram }}</span>
+            <span
+              class="format-monogram"
+              aria-hidden="true"
+            >{{ dest.monogram }}</span>
             <span class="format-text">
               <span class="format-name">{{ formatDisplayName(dest) }}</span>
               <span class="format-desc">{{ formatDisplayDesc(dest) }}</span>
             </span>
-            <span v-if="selectedId === dest.id" class="format-check">
-              <Check :size="14" :stroke-width="2.5" />
+            <span
+              v-if="selectedId === dest.id"
+              class="format-check"
+            >
+              <Check
+                :size="14"
+                :stroke-width="2.5"
+              />
             </span>
           </button>
         </div>
 
-        <h4 class="group-title">{{ t('export.groups.thirdParty') }}</h4>
+        <h4 class="group-title">
+          {{ t('export.groups.thirdParty') }}
+        </h4>
         <div class="format-grid">
           <button
             v-for="dest in thirdPartyDestinations"
@@ -243,20 +271,35 @@ async function handleExport(): Promise<void> {
             :style="{ '--format-accent': dest.accent }"
             @click="pickFormat(dest.id)"
           >
-            <span class="format-monogram" aria-hidden="true">{{ dest.monogram }}</span>
+            <span
+              class="format-monogram"
+              aria-hidden="true"
+            >{{ dest.monogram }}</span>
             <span class="format-text">
               <span class="format-name">{{ formatDisplayName(dest) }}</span>
               <span class="format-desc">{{ formatDisplayDesc(dest) }}</span>
             </span>
-            <span v-if="selectedId === dest.id" class="format-check">
-              <Check :size="14" :stroke-width="2.5" />
+            <span
+              v-if="selectedId === dest.id"
+              class="format-check"
+            >
+              <Check
+                :size="14"
+                :stroke-width="2.5"
+              />
             </span>
           </button>
         </div>
       </section>
 
-      <section v-else-if="step === 'confirm'" class="step-panel step-panel--confirm">
-        <div v-if="selectedDestination" class="format-banner">
+      <section
+        v-else-if="step === 'confirm'"
+        class="step-panel step-panel--confirm"
+      >
+        <div
+          v-if="selectedDestination"
+          class="format-banner"
+        >
           <span
             class="banner-monogram"
             :style="{
@@ -267,13 +310,20 @@ async function handleExport(): Promise<void> {
             {{ selectedDestination.monogram }}
           </span>
           <div>
-            <p class="banner-title">{{ formatDisplayName(selectedDestination) }}</p>
-            <p class="banner-sub">{{ formatDisplayDesc(selectedDestination) }}</p>
+            <p class="banner-title">
+              {{ formatDisplayName(selectedDestination) }}
+            </p>
+            <p class="banner-sub">
+              {{ formatDisplayDesc(selectedDestination) }}
+            </p>
           </div>
         </div>
 
         <UiCard class="summary-card">
-          <p v-if="selectedId && isPwdBookExport(selectedId)" class="summary-line">
+          <p
+            v-if="selectedId && isPwdBookExport(selectedId)"
+            class="summary-line"
+          >
             {{ t('export.summary.allEntries', { count: exportStats.total }) }}
           </p>
           <template v-else-if="selectedId && isThirdPartyCsvExport(selectedId)">
@@ -284,47 +334,83 @@ async function handleExport(): Promise<void> {
                 })
               }}
             </p>
-            <p v-if="exportStats.skipped > 0" class="summary-line summary-line--muted">
+            <p
+              v-if="exportStats.skipped > 0"
+              class="summary-line summary-line--muted"
+            >
               {{
                 t('export.summary.thirdPartySkipped', {
                   count: exportStats.skipped,
                 })
               }}
             </p>
-            <p v-if="exportStats.exportable === 0" class="summary-line summary-line--warn">
+            <p
+              v-if="exportStats.exportable === 0"
+              class="summary-line summary-line--warn"
+            >
               {{ t('export.summary.noExportable') }}
             </p>
           </template>
         </UiCard>
 
-        <p v-if="showJsonHint" class="security-hint">{{ t('export.security.jsonHint') }}</p>
-        <p v-if="showPlainTextWarning" class="security-warning">
+        <p
+          v-if="showJsonHint"
+          class="security-hint"
+        >
+          {{ t('export.security.jsonHint') }}
+        </p>
+        <p
+          v-if="showPlainTextWarning"
+          class="security-warning"
+        >
           {{ t('export.plainTextWarning') }}
         </p>
 
         <template v-if="selectedDestination?.importGuideKey">
-          <p class="import-guide-label">{{ t('export.importGuideLabel') }}</p>
+          <p class="import-guide-label">
+            {{ t('export.importGuideLabel') }}
+          </p>
           <UiCard class="guide-card">
             <p>{{ t(`export.importGuide.${selectedDestination.importGuideKey}`) }}</p>
           </UiCard>
         </template>
 
-        <div v-if="showExpectedColumns && selectedDestination" class="columns-section">
-          <p class="columns-label">{{ t('import.expectedColumns') }}</p>
+        <div
+          v-if="showExpectedColumns && selectedDestination"
+          class="columns-section"
+        >
+          <p class="columns-label">
+            {{ t('import.expectedColumns') }}
+          </p>
           <div class="header-chips">
-            <code v-for="col in selectedDestination.expectedColumns" :key="col">{{ col }}</code>
+            <code
+              v-for="col in selectedDestination.expectedColumns"
+              :key="col"
+            >{{ col }}</code>
           </div>
         </div>
 
-        <p v-if="errorMessage" class="inline-error">
-          <AlertCircle :size="14" :stroke-width="1.5" />
+        <p
+          v-if="errorMessage"
+          class="inline-error"
+        >
+          <AlertCircle
+            :size="14"
+            :stroke-width="1.5"
+          />
           {{ errorMessage }}
         </p>
       </section>
 
       <footer class="wizard-footer">
-        <UiButton variant="ghost" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <UiButton
+          variant="ghost"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ step === 'format' ? t('common.cancel') : t('common.back') }}
         </UiButton>
         <div class="footer-actions">
@@ -335,7 +421,10 @@ async function handleExport(): Promise<void> {
             @click="goNext"
           >
             {{ t('common.next') }}
-            <ArrowRight :size="16" :stroke-width="1.5" />
+            <ArrowRight
+              :size="16"
+              :stroke-width="1.5"
+            />
           </UiButton>
           <UiButton
             v-else
@@ -344,7 +433,10 @@ async function handleExport(): Promise<void> {
             :loading="exporting"
             @click="handleExport"
           >
-            <Download :size="16" :stroke-width="1.5" />
+            <Download
+              :size="16"
+              :stroke-width="1.5"
+            />
             {{ t('export.confirmExport') }}
           </UiButton>
         </div>

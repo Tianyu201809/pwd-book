@@ -173,10 +173,19 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 </script>
 
 <template>
-  <main ref="listPanelRef" class="list-panel" :class="{ 'list-panel--compact': isCompactList }">
+  <main
+    ref="listPanelRef"
+    class="list-panel"
+    :class="{ 'list-panel--compact': isCompactList }"
+  >
     <div class="list-toolbar">
       <div class="search-wrap">
-        <Search v-if="!isAnimalIsland" class="search-icon" :size="16" :stroke-width="1.5" />
+        <Search
+          v-if="!isAnimalIsland"
+          class="search-icon"
+          :size="16"
+          :stroke-width="1.5"
+        />
         <UiInput
           v-model="searchQuery"
           class="search-input"
@@ -185,8 +194,14 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           allow-clear
           @update:model-value="touchActivity"
         >
-          <template v-if="isAnimalIsland" #prefix>
-            <Search :size="16" :stroke-width="1.5" />
+          <template
+            v-if="isAnimalIsland"
+            #prefix
+          >
+            <Search
+              :size="16"
+              :stroke-width="1.5"
+            />
           </template>
         </UiInput>
       </div>
@@ -196,7 +211,12 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         :class="{ 'new-entry-btn': !isAnimalIsland }"
         @click="startCreateEntry"
       >
-        <template #icon><Plus :size="16" :stroke-width="1.5" /></template>
+        <template #icon>
+          <Plus
+            :size="16"
+            :stroke-width="1.5"
+          />
+        </template>
         {{ t('vault.newEntry') }}
       </UiButton>
       <div class="sort-menu-wrap">
@@ -212,10 +232,21 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           :aria-label="t('vault.sortBy')"
           @click="toggleSortMenu"
         >
-          <template #icon><SlidersHorizontal :size="16" :stroke-width="1.5" /></template>
+          <template #icon>
+            <SlidersHorizontal
+              :size="16"
+              :stroke-width="1.5"
+            />
+          </template>
         </UiButton>
-        <div v-if="showSortMenu" class="sort-menu surface-card" @click.stop>
-          <p class="sort-menu-title">{{ t('vault.sortBy') }}</p>
+        <div
+          v-if="showSortMenu"
+          class="sort-menu surface-card"
+          @click.stop
+        >
+          <p class="sort-menu-title">
+            {{ t('vault.sortBy') }}
+          </p>
           <button
             v-for="option in sortOptions"
             :key="option.id"
@@ -225,14 +256,24 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
             @click="handleSort(option.id, $event)"
           >
             {{ option.label }}
-            <Check v-if="listSortOrder === option.id" :size="14" :stroke-width="2" />
+            <Check
+              v-if="listSortOrder === option.id"
+              :size="14"
+              :stroke-width="2"
+            />
           </button>
         </div>
       </div>
     </div>
 
-    <div class="list-scroll" :class="{ 'list-scroll--animal': isAnimalIsland }">
-      <div v-if="displayEntries.length === 0" class="empty-state">
+    <div
+      class="list-scroll"
+      :class="{ 'list-scroll--animal': isAnimalIsland }"
+    >
+      <div
+        v-if="displayEntries.length === 0"
+        class="empty-state"
+      >
         <p>{{ isCreating ? t('vault.emptyCreating') : t('vault.emptyNoMatch') }}</p>
       </div>
 
@@ -243,7 +284,11 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         :class="{ 'list-item-active': !isCreating && selectedEntryId === entry.id }"
         @contextmenu="handleContextMenu(entry, $event)"
       >
-        <button type="button" class="list-item-main" @click="handleSelect(entry.id)">
+        <button
+          type="button"
+          class="list-item-main"
+          @click="handleSelect(entry.id)"
+        >
           <CategoryIconView
             v-if="entry.displayIcon"
             :name="entry.displayIcon"
@@ -267,8 +312,15 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
                 />
                 <template v-else>{{ entry.title }}</template>
               </span>
-              <div v-if="entry.tags.length" class="entry-tags">
-                <span v-for="(tag, index) in entry.tags" :key="`${entry.id}-tag-${index}`" class="tag">
+              <div
+                v-if="entry.tags.length"
+                class="entry-tags"
+              >
+                <span
+                  v-for="(tag, index) in entry.tags"
+                  :key="`${entry.id}-tag-${index}`"
+                  class="tag"
+                >
                   <SearchHighlightText
                     v-if="activeSearchQuery"
                     :text="tag"
@@ -285,7 +337,9 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
                   :text="entry.username || entry.url"
                   :query="activeSearchQuery"
                 />
-                <template v-else>{{ entry.username || entry.url || t('vault.noAccount') }}</template>
+                <template v-else>
+                  {{ entry.username || entry.url || t('vault.noAccount') }}
+                </template>
               </p>
               <span
                 v-if="!isCompactList"
@@ -303,7 +357,11 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
             :title="t('common.favorite')"
             :aria-label="t('common.favorite')"
           >
-            <Star :size="14" :stroke-width="1.5" fill="currentColor" />
+            <Star
+              :size="14"
+              :stroke-width="1.5"
+              fill="currentColor"
+            />
           </span>
           <div class="action-menu-wrap">
             <button
@@ -311,10 +369,21 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
               class="action-trigger"
               @click="toggleMenu(entry.id, $event)"
             >
-              <MoreHorizontal :size="16" :stroke-width="1.5" />
+              <MoreHorizontal
+                :size="16"
+                :stroke-width="1.5"
+              />
             </button>
-            <div v-if="openMenuId === entry.id" class="action-menu menu-popover surface-card" @click.stop>
-              <EntryListMenu :entry="entry" @action="closeMenus" @delete="handleDeleteRequest" />
+            <div
+              v-if="openMenuId === entry.id"
+              class="action-menu menu-popover surface-card"
+              @click.stop
+            >
+              <EntryListMenu
+                :entry="entry"
+                @action="closeMenus"
+                @delete="handleDeleteRequest"
+              />
             </div>
           </div>
         </div>
@@ -329,7 +398,11 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
         @click.stop
       >
-        <EntryListMenu :entry="contextMenu.entry" @action="closeMenus" @delete="handleDeleteRequest" />
+        <EntryListMenu
+          :entry="contextMenu.entry"
+          @action="closeMenus"
+          @delete="handleDeleteRequest"
+        />
       </div>
     </Teleport>
 
@@ -345,8 +418,18 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       </p>
       <template #footer>
         <div class="confirm-modal-actions">
-          <UiButton variant="default" @click="cancelDeleteConfirm">{{ t('common.cancel') }}</UiButton>
-          <UiButton variant="primary" @click="confirmDeleteEntry">{{ t('common.confirm') }}</UiButton>
+          <UiButton
+            variant="default"
+            @click="cancelDeleteConfirm"
+          >
+            {{ t('common.cancel') }}
+          </UiButton>
+          <UiButton
+            variant="primary"
+            @click="confirmDeleteEntry"
+          >
+            {{ t('common.confirm') }}
+          </UiButton>
         </div>
       </template>
     </UiModal>

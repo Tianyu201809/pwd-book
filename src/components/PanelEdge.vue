@@ -78,7 +78,10 @@ function onToggleMouseLeave(): void {
     @mouseleave="onEdgeMouseLeave"
     @mousedown="onMouseDown"
   >
-    <div class="panel-edge-sash" aria-hidden="true" />
+    <div
+      class="panel-edge-sash"
+      aria-hidden="true"
+    />
     <button
       type="button"
       class="panel-edge-toggle"
@@ -90,12 +93,28 @@ function onToggleMouseLeave(): void {
       @click.stop="emit('toggle')"
     >
       <template v-if="placement === 'after'">
-        <ChevronLeft v-if="!collapsed" :size="13" :stroke-width="2.5" />
-        <ChevronRight v-else :size="13" :stroke-width="2.5" />
+        <ChevronLeft
+          v-if="!collapsed"
+          :size="13"
+          :stroke-width="2.5"
+        />
+        <ChevronRight
+          v-else
+          :size="13"
+          :stroke-width="2.5"
+        />
       </template>
       <template v-else>
-        <ChevronRight v-if="!collapsed" :size="13" :stroke-width="2.5" />
-        <ChevronLeft v-else :size="13" :stroke-width="2.5" />
+        <ChevronRight
+          v-if="!collapsed"
+          :size="13"
+          :stroke-width="2.5"
+        />
+        <ChevronLeft
+          v-else
+          :size="13"
+          :stroke-width="2.5"
+        />
       </template>
     </button>
   </div>

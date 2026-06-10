@@ -229,10 +229,17 @@ async function handleCopyRecoveryKey(): Promise<void> {
     <div class="lock-content">
       <div class="brand">
         <div class="brand-icon">
-          <ShieldCheck :size="32" :stroke-width="1.5" />
+          <ShieldCheck
+            :size="32"
+            :stroke-width="1.5"
+          />
         </div>
-        <h1 class="font-display">{{ t('common.appName') }}</h1>
-        <p class="subtitle">{{ title }}</p>
+        <h1 class="font-display">
+          {{ t('common.appName') }}
+        </h1>
+        <p class="subtitle">
+          {{ title }}
+        </p>
       </div>
 
       <UiCard class="panel-glow lock-panel">
@@ -248,9 +255,21 @@ async function handleCopyRecoveryKey(): Promise<void> {
               :disabled="loading"
               @keydown="onKeydown"
             />
-            <button type="button" class="eye-btn titlebar-no-drag" @click="showPassword = !showPassword">
-              <EyeOff v-if="showPassword" :size="16" :stroke-width="1.5" />
-              <Eye v-else :size="16" :stroke-width="1.5" />
+            <button
+              type="button"
+              class="eye-btn titlebar-no-drag"
+              @click="showPassword = !showPassword"
+            >
+              <EyeOff
+                v-if="showPassword"
+                :size="16"
+                :stroke-width="1.5"
+              />
+              <Eye
+                v-else
+                :size="16"
+                :stroke-width="1.5"
+              />
             </button>
           </div>
 
@@ -266,17 +285,43 @@ async function handleCopyRecoveryKey(): Promise<void> {
             />
           </template>
 
-          <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-          <p v-if="localMessage" class="info-text">{{ localMessage }}</p>
+          <p
+            v-if="errorMessage"
+            class="error-text"
+          >
+            {{ errorMessage }}
+          </p>
+          <p
+            v-if="localMessage"
+            class="info-text"
+          >
+            {{ localMessage }}
+          </p>
 
-          <UiButton variant="primary" class="unlock-btn" :disabled="loading" block @click="submitUnlockOrSetup">
+          <UiButton
+            variant="primary"
+            class="unlock-btn"
+            :disabled="loading"
+            block
+            @click="submitUnlockOrSetup"
+          >
             {{ loading ? t('common.processing') : isSetupMode ? t('common.next') : submitLabel }}
           </UiButton>
 
           <template v-if="!isSetupMode">
             <div class="recovery-links">
-              <button type="button" class="text-link" @click="openRecoveryMenu">{{ t('lock.forgotPassword') }}</button>
-              <button type="button" class="text-link accent" @click="openRecoveryMenu">
+              <button
+                type="button"
+                class="text-link"
+                @click="openRecoveryMenu"
+              >
+                {{ t('lock.forgotPassword') }}
+              </button>
+              <button
+                type="button"
+                class="text-link accent"
+                @click="openRecoveryMenu"
+              >
                 {{ t('lock.useRecoveryKey') }}
               </button>
             </div>
@@ -340,7 +385,9 @@ async function handleCopyRecoveryKey(): Promise<void> {
         />
       </UiCard>
 
-      <p class="footer-note">{{ t('lock.footerNote') }}</p>
+      <p class="footer-note">
+        {{ t('lock.footerNote') }}
+      </p>
     </div>
   </div>
 </template>

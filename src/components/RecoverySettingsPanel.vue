@@ -147,17 +147,35 @@ async function handleExportExcel(): Promise<void> {
 
 <template>
   <div class="recovery-settings">
-    <h4 class="section-title">{{ t('recovery.sectionTitle') }}</h4>
-    <p v-if="statusMessage" class="status-message">{{ statusMessage }}</p>
+    <h4 class="section-title">
+      {{ t('recovery.sectionTitle') }}
+    </h4>
+    <p
+      v-if="statusMessage"
+      class="status-message"
+    >
+      {{ statusMessage }}
+    </p>
     <div class="surface-card settings-card">
       <div class="row">
         <div>
-          <p class="row-title">{{ t('recovery.recoveryKey') }}</p>
-          <p class="row-desc">{{ t('recovery.recoveryKeyDesc') }}</p>
+          <p class="row-title">
+            {{ t('recovery.recoveryKey') }}
+          </p>
+          <p class="row-desc">
+            {{ t('recovery.recoveryKeyDesc') }}
+          </p>
         </div>
-        <span class="status-badge" :class="recoveryStatusClass">{{ recoveryStatusLabel }}</span>
+        <span
+          class="status-badge"
+          :class="recoveryStatusClass"
+        >{{ recoveryStatusLabel }}</span>
       </div>
-      <button type="button" class="link-row" @click="openRecoveryAction">
+      <button
+        type="button"
+        class="link-row"
+        @click="openRecoveryAction"
+      >
         <span>
           <component
             :is="recoveryConfigured ? RefreshCw : KeyRound"
@@ -166,20 +184,51 @@ async function handleExportExcel(): Promise<void> {
           />
           {{ actionLabel }}
         </span>
-        <ChevronRight :size="16" :stroke-width="1.5" />
+        <ChevronRight
+          :size="16"
+          :stroke-width="1.5"
+        />
       </button>
-      <button type="button" class="link-row" @click="handleExportJson">
-        <span><Download :size="16" :stroke-width="1.5" /> {{ t('recovery.exportJson') }}</span>
-        <ChevronRight :size="16" :stroke-width="1.5" />
+      <button
+        type="button"
+        class="link-row"
+        @click="handleExportJson"
+      >
+        <span><Download
+          :size="16"
+          :stroke-width="1.5"
+        /> {{ t('recovery.exportJson') }}</span>
+        <ChevronRight
+          :size="16"
+          :stroke-width="1.5"
+        />
       </button>
-      <button type="button" class="link-row last" @click="handleExportExcel">
-        <span><Download :size="16" :stroke-width="1.5" /> {{ t('recovery.exportExcel') }}</span>
-        <ChevronRight :size="16" :stroke-width="1.5" />
+      <button
+        type="button"
+        class="link-row last"
+        @click="handleExportExcel"
+      >
+        <span><Download
+          :size="16"
+          :stroke-width="1.5"
+        /> {{ t('recovery.exportExcel') }}</span>
+        <ChevronRight
+          :size="16"
+          :stroke-width="1.5"
+        />
       </button>
     </div>
 
-    <UiModal v-model:open="showPasswordDialog" :title="t('recovery.verifyPassword')" :width="420" :show-footer="false" @close="closePasswordDialog">
-      <p class="dialog-desc">{{ t('recovery.verifyPasswordDesc') }}</p>
+    <UiModal
+      v-model:open="showPasswordDialog"
+      :title="t('recovery.verifyPassword')"
+      :width="420"
+      :show-footer="false"
+      @close="closePasswordDialog"
+    >
+      <p class="dialog-desc">
+        {{ t('recovery.verifyPasswordDesc') }}
+      </p>
       <label class="field-label">{{ t('recovery.currentPassword') }}</label>
       <div class="input-wrap">
         <UiInput
@@ -189,17 +238,39 @@ async function handleExportExcel(): Promise<void> {
           :disabled="loading"
           @keydown.enter="confirmRegenerate"
         />
-        <button type="button" class="eye-btn" @click="showMasterPassword = !showMasterPassword">
+        <button
+          type="button"
+          class="eye-btn"
+          @click="showMasterPassword = !showMasterPassword"
+        >
           {{ showMasterPassword ? t('common.hide') : t('common.show') }}
         </button>
       </div>
-      <p v-if="passwordError" class="error-text">{{ passwordError }}</p>
-      <UiButton variant="primary" class="submit-btn" block :disabled="loading" :loading="loading" @click="confirmRegenerate">
+      <p
+        v-if="passwordError"
+        class="error-text"
+      >
+        {{ passwordError }}
+      </p>
+      <UiButton
+        variant="primary"
+        class="submit-btn"
+        block
+        :disabled="loading"
+        :loading="loading"
+        @click="confirmRegenerate"
+      >
         {{ loading ? t('common.verifying') : t('common.continue') }}
       </UiButton>
     </UiModal>
 
-    <UiModal v-model:open="showKeySetup" :show-footer="false" :width="480" :mask-closable="true" @close="closeKeySetup">
+    <UiModal
+      v-model:open="showKeySetup"
+      :show-footer="false"
+      :width="480"
+      :mask-closable="true"
+      @close="closeKeySetup"
+    >
       <RecoveryKeySetup
         :recovery-key="generatedRecoveryKey"
         :loading="loading"

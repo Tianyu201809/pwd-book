@@ -247,17 +247,31 @@ async function confirmSync(masterPassword: string): Promise<void> {
   <div class="tool-page-view">
     <div class="tool-page-body">
       <aside class="tool-page-sidebar">
-        <button type="button" class="tool-back-btn" @click="goBack">
-          <ArrowLeft :size="16" :stroke-width="1.5" />
+        <button
+          type="button"
+          class="tool-back-btn"
+          @click="goBack"
+        >
+          <ArrowLeft
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ t('settings.backToSettings') }}
         </button>
 
         <div class="tool-sidebar-hero">
           <div class="tool-hero-icon tool-hero-icon--wifi">
-            <Wifi :size="22" :stroke-width="1.5" />
+            <Wifi
+              :size="22"
+              :stroke-width="1.5"
+            />
           </div>
-          <h2 class="tool-sidebar-title font-display">{{ t('settings.sync') }}</h2>
-          <p class="tool-sidebar-desc">{{ t('tools.wifiSync.subtitle') }}</p>
+          <h2 class="tool-sidebar-title font-display">
+            {{ t('settings.sync') }}
+          </h2>
+          <p class="tool-sidebar-desc">
+            {{ t('tools.wifiSync.subtitle') }}
+          </p>
         </div>
 
         <nav class="sync-mode-nav">
@@ -267,7 +281,10 @@ async function confirmSync(masterPassword: string): Promise<void> {
             :class="{ active: mode === 'server' }"
             @click="mode = 'server'"
           >
-            <Server :size="16" :stroke-width="1.5" />
+            <Server
+              :size="16"
+              :stroke-width="1.5"
+            />
             {{ t('tools.wifiSync.serverMode') }}
           </button>
           <button
@@ -276,7 +293,10 @@ async function confirmSync(masterPassword: string): Promise<void> {
             :class="{ active: mode === 'client' }"
             @click="mode = 'client'"
           >
-            <Smartphone :size="16" :stroke-width="1.5" />
+            <Smartphone
+              :size="16"
+              :stroke-width="1.5"
+            />
             {{ t('tools.wifiSync.clientMode') }}
           </button>
         </nav>
@@ -285,9 +305,20 @@ async function confirmSync(masterPassword: string): Promise<void> {
       <main class="tool-page-main">
         <div class="tool-page-content">
           <header class="role-header">
-            <div class="role-header__icon" :class="`role-header__icon--${mode}`">
-              <Server v-if="mode === 'server'" :size="20" :stroke-width="1.5" />
-              <Smartphone v-else :size="20" :stroke-width="1.5" />
+            <div
+              class="role-header__icon"
+              :class="`role-header__icon--${mode}`"
+            >
+              <Server
+                v-if="mode === 'server'"
+                :size="20"
+                :stroke-width="1.5"
+              />
+              <Smartphone
+                v-else
+                :size="20"
+                :stroke-width="1.5"
+              />
             </div>
             <div>
               <h3 class="role-header__title">
@@ -302,25 +333,41 @@ async function confirmSync(masterPassword: string): Promise<void> {
           <SyncTutorialPanel :role="mode" />
 
           <div class="sync-status-bar surface-card">
-            <p class="sync-status-title">{{ t('tools.wifiSync.syncStatusTitle') }}</p>
+            <p class="sync-status-title">
+              {{ t('tools.wifiSync.syncStatusTitle') }}
+            </p>
             <p class="sync-status-line">
               {{ t('tools.wifiSync.syncRevision', { revision: syncStatus.revision }) }}
             </p>
-            <p class="sync-status-line">{{ lastSyncedText }}</p>
+            <p class="sync-status-line">
+              {{ lastSyncedText }}
+            </p>
           </div>
 
-          <section v-if="mode === 'server'" class="panel-glow surface-card sync-panel">
+          <section
+            v-if="mode === 'server'"
+            class="panel-glow surface-card sync-panel"
+          >
             <UiButton
               class="sync-primary-btn"
               :variant="serverRunning ? 'default' : 'primary'"
               :disabled="serverLoading"
               @click="toggleServer"
             >
-              <Loader2 v-if="serverLoading" :size="16" class="spin" />
+              <Loader2
+                v-if="serverLoading"
+                :size="16"
+                class="spin"
+              />
               {{ serverRunning ? t('tools.wifiSync.stopServer') : t('tools.wifiSync.startServer') }}
             </UiButton>
 
-            <p v-if="!serverRunning" class="sync-hint">{{ t('tools.wifiSync.serverCardDesc') }}</p>
+            <p
+              v-if="!serverRunning"
+              class="sync-hint"
+            >
+              {{ t('tools.wifiSync.serverCardDesc') }}
+            </p>
 
             <template v-else>
               <div class="pairing-card">
@@ -338,7 +385,11 @@ async function confirmSync(masterPassword: string): Promise<void> {
                 </div>
               </div>
 
-              <UiButton variant="ghost" size="small" @click="handleRegeneratePassword">
+              <UiButton
+                variant="ghost"
+                size="small"
+                @click="handleRegeneratePassword"
+              >
                 {{ t('tools.wifiSync.regeneratePassword') }}
               </UiButton>
 
@@ -356,22 +407,42 @@ async function confirmSync(masterPassword: string): Promise<void> {
                 </div>
               </details>
 
-              <div v-if="pairingInfo" class="pairing-qr-section">
-                <p class="pairing-qr-title">{{ t('tools.wifiSync.qrPayloadTitle') }}</p>
-                <p class="sync-hint">{{ t('tools.wifiSync.qrPayloadHint') }}</p>
+              <div
+                v-if="pairingInfo"
+                class="pairing-qr-section"
+              >
+                <p class="pairing-qr-title">
+                  {{ t('tools.wifiSync.qrPayloadTitle') }}
+                </p>
+                <p class="sync-hint">
+                  {{ t('tools.wifiSync.qrPayloadHint') }}
+                </p>
                 <SyncPairingQr :payload="pairingInfo.qrPayload" />
                 <details class="sync-details sync-details--nested">
                   <summary>{{ t('tools.wifiSync.qrPayloadRaw') }}</summary>
                   <div class="sync-details-body">
-                    <textarea class="qr-payload" readonly :value="pairingInfo.qrPayload" rows="3" />
+                    <textarea
+                      class="qr-payload"
+                      readonly
+                      :value="pairingInfo.qrPayload"
+                      rows="3"
+                    />
                   </div>
                 </details>
               </div>
 
-              <div v-if="pairedDevices.length" class="paired-devices">
-                <p class="paired-devices-title">{{ t('tools.wifiSync.pairedDevices') }}</p>
+              <div
+                v-if="pairedDevices.length"
+                class="paired-devices"
+              >
+                <p class="paired-devices-title">
+                  {{ t('tools.wifiSync.pairedDevices') }}
+                </p>
                 <ul class="paired-devices-list">
-                  <li v-for="device in pairedDevices" :key="device.id">
+                  <li
+                    v-for="device in pairedDevices"
+                    :key="device.id"
+                  >
                     <strong>{{ device.name }}</strong>
                     <span v-if="device.lastSeenAt">
                       {{ new Date(device.lastSeenAt).toLocaleString() }}
@@ -379,24 +450,46 @@ async function confirmSync(masterPassword: string): Promise<void> {
                   </li>
                 </ul>
               </div>
-              <p v-else class="sync-hint">{{ t('tools.wifiSync.pairedDevicesEmpty') }}</p>
+              <p
+                v-else
+                class="sync-hint"
+              >
+                {{ t('tools.wifiSync.pairedDevicesEmpty') }}
+              </p>
             </template>
           </section>
 
-          <section v-else class="panel-glow surface-card sync-panel">
+          <section
+            v-else
+            class="panel-glow surface-card sync-panel"
+          >
             <UiButton
               class="sync-primary-btn"
               variant="default"
               :disabled="discoverLoading"
               @click="handleDiscover"
             >
-              <Loader2 v-if="discoverLoading" :size="16" class="spin" />
-              <RefreshCw v-else :size="16" :stroke-width="1.5" />
+              <Loader2
+                v-if="discoverLoading"
+                :size="16"
+                class="spin"
+              />
+              <RefreshCw
+                v-else
+                :size="16"
+                :stroke-width="1.5"
+              />
               {{ t('tools.wifiSync.discover') }}
             </UiButton>
 
-            <ul v-if="discoveredServers.length" class="server-list">
-              <li v-for="server in discoveredServers" :key="`${server.host}:${server.port}`">
+            <ul
+              v-if="discoveredServers.length"
+              class="server-list"
+            >
+              <li
+                v-for="server in discoveredServers"
+                :key="`${server.host}:${server.port}`"
+              >
                 <button
                   type="button"
                   class="server-item"
@@ -409,14 +502,24 @@ async function confirmSync(masterPassword: string): Promise<void> {
               </li>
             </ul>
 
-            <p v-else class="sync-hint">{{ t('tools.wifiSync.clientCardDesc') }}</p>
+            <p
+              v-else
+              class="sync-hint"
+            >
+              {{ t('tools.wifiSync.clientCardDesc') }}
+            </p>
 
-            <div v-if="selectedServer && clientVerificationCode" class="pairing-card">
+            <div
+              v-if="selectedServer && clientVerificationCode"
+              class="pairing-card"
+            >
               <div class="pairing-row pairing-row--highlight">
                 <span class="pairing-label">{{ t('tools.wifiSync.clientVerificationCode') }}</span>
                 <code class="verification">{{ clientVerificationCode }}</code>
               </div>
-              <p class="sync-hint">{{ t('tools.wifiSync.clientVerificationHint') }}</p>
+              <p class="sync-hint">
+                {{ t('tools.wifiSync.clientVerificationHint') }}
+              </p>
             </div>
 
             <UiInput
@@ -435,8 +538,16 @@ async function confirmSync(masterPassword: string): Promise<void> {
             <details class="sync-details">
               <summary>{{ t('tools.wifiSync.manualPairing') }}</summary>
               <div class="sync-details-body">
-                <UiInput v-model="qrPayload" :placeholder="t('tools.wifiSync.scanQrPlaceholder')" />
-                <UiButton variant="default" size="small" :disabled="syncLoading" @click="openQrSync">
+                <UiInput
+                  v-model="qrPayload"
+                  :placeholder="t('tools.wifiSync.scanQrPlaceholder')"
+                />
+                <UiButton
+                  variant="default"
+                  size="small"
+                  :disabled="syncLoading"
+                  @click="openQrSync"
+                >
                   {{ t('tools.wifiSync.syncFromQr') }}
                 </UiButton>
               </div>

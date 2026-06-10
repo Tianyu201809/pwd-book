@@ -37,7 +37,11 @@ function onClassicChange(event: Event): void {
 </script>
 
 <template>
-  <div v-if="isAnimalIsland" class="ui-animal-select" :class="attrs.class">
+  <div
+    v-if="isAnimalIsland"
+    class="ui-animal-select"
+    :class="attrs.class"
+  >
     <Select
       v-model="model"
       :options="animalOptions"
@@ -53,8 +57,18 @@ function onClassicChange(event: Event): void {
     :disabled="disabled"
     @change="onClassicChange"
   >
-    <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
-    <option v-for="opt in options" :key="String(opt.value)" :value="String(opt.value)">
+    <option
+      v-if="placeholder"
+      value=""
+      disabled
+    >
+      {{ placeholder }}
+    </option>
+    <option
+      v-for="opt in options"
+      :key="String(opt.value)"
+      :value="String(opt.value)"
+    >
       {{ opt.label }}
     </option>
   </select>

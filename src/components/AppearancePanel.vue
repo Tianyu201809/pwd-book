@@ -41,7 +41,9 @@ const modeIcons = {
   <div class="appearance">
     <section>
       <h3>{{ t('appearance.skinTitle') }}</h3>
-      <p class="desc">{{ t('appearance.skinDesc') }}</p>
+      <p class="desc">
+        {{ t('appearance.skinDesc') }}
+      </p>
       <div class="theme-segment skin-segment">
         <button
           v-for="item in skinOptions"
@@ -51,7 +53,11 @@ const modeIcons = {
           :class="{ active: skin === item.id }"
           @click="setSkin(item.id as ThemeSkin)"
         >
-          <TreePalm v-if="item.id === 'animalIsland'" :size="16" :stroke-width="1.5" />
+          <TreePalm
+            v-if="item.id === 'animalIsland'"
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ item.label }}
         </button>
       </div>
@@ -59,7 +65,9 @@ const modeIcons = {
 
     <section>
       <h3>{{ t('appearance.languageTitle') }}</h3>
-      <p class="desc">{{ t('appearance.languageDesc') }}</p>
+      <p class="desc">
+        {{ t('appearance.languageDesc') }}
+      </p>
       <div class="theme-segment">
         <button
           v-for="item in localeOptions"
@@ -76,7 +84,9 @@ const modeIcons = {
 
     <section v-if="isClassic">
       <h3>{{ t('appearance.modeTitle') }}</h3>
-      <p class="desc">{{ t('appearance.modeDesc') }}</p>
+      <p class="desc">
+        {{ t('appearance.modeDesc') }}
+      </p>
       <div class="theme-segment">
         <button
           v-for="mode in modeOptions"
@@ -86,7 +96,11 @@ const modeIcons = {
           :class="{ active: modePref === mode.id }"
           @click="setMode(mode.id as ThemeModePref)"
         >
-          <component :is="modeIcons[mode.id]" :size="16" :stroke-width="1.5" />
+          <component
+            :is="modeIcons[mode.id]"
+            :size="16"
+            :stroke-width="1.5"
+          />
           {{ mode.label }}
         </button>
       </div>
@@ -94,7 +108,9 @@ const modeIcons = {
 
     <section v-if="isClassic">
       <h3>{{ t('appearance.accentTitle') }}</h3>
-      <p class="desc">{{ t('appearance.accentDesc') }}</p>
+      <p class="desc">
+        {{ t('appearance.accentDesc') }}
+      </p>
       <div class="swatch-grid">
         <button
           v-for="item in accentOptions"
@@ -105,8 +121,15 @@ const modeIcons = {
           :title="item.label"
           @click="setAccent(item.id as ThemeAccent)"
         >
-          <span class="swatch-color" :style="{ background: item.color, boxShadow: `0 4px 14px ${item.color}44` }">
-            <Check class="swatch-check" :size="16" :stroke-width="2" />
+          <span
+            class="swatch-color"
+            :style="{ background: item.color, boxShadow: `0 4px 14px ${item.color}44` }"
+          >
+            <Check
+              class="swatch-check"
+              :size="16"
+              :stroke-width="2"
+            />
           </span>
           <span class="swatch-label">{{ item.label }}</span>
         </button>
@@ -116,26 +139,46 @@ const modeIcons = {
     <section>
       <h3>{{ t('appearance.previewTitle') }}</h3>
       <template v-if="isAnimalIsland">
-        <Card type="title" color="app-teal" class="preview-animal-card">
+        <Card
+          type="title"
+          color="app-teal"
+          class="preview-animal-card"
+        >
           {{ t('appearance.skinAnimalIslandPreview') }}
         </Card>
         <Card class="preview-animal-body">
           <p class="preview-meta-animal">
             {{ currentSkin?.label }} · {{ currentModeLabel }}
           </p>
-          <Input v-model="previewInput" :placeholder="t('appearance.inputPreview')" allow-clear />
-          <Button type="primary" block style="margin-top: 12px">
+          <Input
+            v-model="previewInput"
+            :placeholder="t('appearance.inputPreview')"
+            allow-clear
+          />
+          <Button
+            type="primary"
+            block
+            style="margin-top: 12px"
+          >
             {{ t('appearance.primaryButton') }}
           </Button>
         </Card>
       </template>
-      <UiCard v-else class="preview-card">
+      <UiCard
+        v-else
+        class="preview-card"
+      >
         <div class="preview-header">
           <div class="preview-icon">
-            <ShieldCheck :size="16" :stroke-width="1.5" />
+            <ShieldCheck
+              :size="16"
+              :stroke-width="1.5"
+            />
           </div>
           <div>
-            <p class="preview-title">{{ t('common.appName') }}</p>
+            <p class="preview-title">
+              {{ t('common.appName') }}
+            </p>
             <p class="preview-meta">
               {{ currentModeLabel }} · {{ t('appearance.themeAccent') }}
               <span :style="{ color: currentAccent.color }">{{ currentAccent.label }}</span>
@@ -143,12 +186,20 @@ const modeIcons = {
           </div>
         </div>
         <div class="preview-body">
-          <UiButton variant="primary" class="preview-primary">{{ t('appearance.primaryButton') }}</UiButton>
+          <UiButton
+            variant="primary"
+            class="preview-primary"
+          >
+            {{ t('appearance.primaryButton') }}
+          </UiButton>
           <div class="preview-tags">
             <span class="preview-tag">{{ t('appearance.tag') }}</span>
             <span class="preview-tag muted">{{ t('appearance.tagMuted') }}</span>
           </div>
-          <UiInput v-model="previewInput" :placeholder="t('appearance.inputPreview')" />
+          <UiInput
+            v-model="previewInput"
+            :placeholder="t('appearance.inputPreview')"
+          />
         </div>
       </UiCard>
     </section>

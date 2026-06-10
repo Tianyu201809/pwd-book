@@ -190,10 +190,17 @@ onUnmounted(() => {
 <template>
   <header class="titlebar titlebar-drag">
     <div class="titlebar-left">
-      <ShieldCheck class="icon-accent titlebar-no-drag" :size="14" :stroke-width="1.5" />
+      <ShieldCheck
+        class="icon-accent titlebar-no-drag"
+        :size="14"
+        :stroke-width="1.5"
+      />
       <span class="title">{{ t('common.appName') }}</span>
     </div>
-    <div class="titlebar-actions titlebar-no-drag" :class="{ 'titlebar-actions--detail': detailWindow }">
+    <div
+      class="titlebar-actions titlebar-no-drag"
+      :class="{ 'titlebar-actions--detail': detailWindow }"
+    >
       <div class="skin-menu-wrap">
         <button
           ref="skinTriggerRef"
@@ -204,7 +211,10 @@ onUnmounted(() => {
           :aria-expanded="showSkinMenu"
           @click.stop="toggleSkinMenu"
         >
-          <Palette :size="14" :stroke-width="1.5" />
+          <Palette
+            :size="14"
+            :stroke-width="1.5"
+          />
         </button>
         <Teleport to="body">
           <Transition name="skin-popover">
@@ -215,7 +225,9 @@ onUnmounted(() => {
               :style="popoverStyle"
               @click.stop
             >
-              <p class="skin-popover-title">{{ t('titlebar.skinMenuTitle') }}</p>
+              <p class="skin-popover-title">
+                {{ t('titlebar.skinMenuTitle') }}
+              </p>
               <button
                 v-for="item in skinOptions"
                 :key="item.id"
@@ -224,12 +236,28 @@ onUnmounted(() => {
                 :class="{ active: skin === item.id }"
                 @click="selectSkin(item.id as ThemeSkin)"
               >
-                <span class="skin-option-icon" :class="`skin-option-icon--${item.id}`">
-                  <TreePalm v-if="item.id === 'animalIsland'" :size="15" :stroke-width="1.5" />
-                  <Sparkles v-else :size="15" :stroke-width="1.5" />
+                <span
+                  class="skin-option-icon"
+                  :class="`skin-option-icon--${item.id}`"
+                >
+                  <TreePalm
+                    v-if="item.id === 'animalIsland'"
+                    :size="15"
+                    :stroke-width="1.5"
+                  />
+                  <Sparkles
+                    v-else
+                    :size="15"
+                    :stroke-width="1.5"
+                  />
                 </span>
                 <span class="skin-option-label">{{ item.label }}</span>
-                <Check v-if="skin === item.id" class="skin-option-check" :size="14" :stroke-width="2.5" />
+                <Check
+                  v-if="skin === item.id"
+                  class="skin-option-check"
+                  :size="14"
+                  :stroke-width="2.5"
+                />
               </button>
               <button
                 v-if="canOpenAppearanceSettings"
@@ -250,9 +278,16 @@ onUnmounted(() => {
         :aria-label="t('titlebar.quickLock')"
         @click="lock"
       >
-        <Lock :size="14" :stroke-width="1.5" />
+        <Lock
+          :size="14"
+          :stroke-width="1.5"
+        />
       </button>
-      <span v-if="!detailWindow && canQuickLock" class="titlebar-divider" aria-hidden="true" />
+      <span
+        v-if="!detailWindow && canQuickLock"
+        class="titlebar-divider"
+        aria-hidden="true"
+      />
       <button
         v-if="detailWindow"
         type="button"
@@ -262,10 +297,21 @@ onUnmounted(() => {
         :aria-pressed="alwaysOnTop"
         @click="toggleAlwaysOnTop"
       >
-        <Pin :size="14" :stroke-width="1.5" />
+        <Pin
+          :size="14"
+          :stroke-width="1.5"
+        />
       </button>
-      <button type="button" class="win-btn titlebar-minimize-btn" :aria-label="t('titlebar.minimize')" @click="minimize">
-        <Minus :size="14" :stroke-width="1.5" />
+      <button
+        type="button"
+        class="win-btn titlebar-minimize-btn"
+        :aria-label="t('titlebar.minimize')"
+        @click="minimize"
+      >
+        <Minus
+          :size="14"
+          :stroke-width="1.5"
+        />
       </button>
       <button
         v-if="!detailWindow"
@@ -274,10 +320,21 @@ onUnmounted(() => {
         :aria-label="t('titlebar.maximize')"
         @click="maximize"
       >
-        <Square :size="12" :stroke-width="1.5" />
+        <Square
+          :size="12"
+          :stroke-width="1.5"
+        />
       </button>
-      <button type="button" class="win-btn close-btn" :aria-label="t('common.close')" @click="openCloseDialog">
-        <X :size="14" :stroke-width="1.5" />
+      <button
+        type="button"
+        class="win-btn close-btn"
+        :aria-label="t('common.close')"
+        @click="openCloseDialog"
+      >
+        <X
+          :size="14"
+          :stroke-width="1.5"
+        />
       </button>
     </div>
   </header>
@@ -292,13 +349,29 @@ onUnmounted(() => {
     :glow="false"
     @close="dismissCloseDialog"
   >
-    <p class="dialog-desc">{{ t('titlebar.closePrompt') }}</p>
-    <UiCheckbox v-model="rememberChoice" :label="t('titlebar.rememberChoice')" class="remember-row" />
+    <p class="dialog-desc">
+      {{ t('titlebar.closePrompt') }}
+    </p>
+    <UiCheckbox
+      v-model="rememberChoice"
+      :label="t('titlebar.rememberChoice')"
+      class="remember-row"
+    />
     <div class="close-dialog-actions">
-      <UiButton variant="ghost" block class="close-dialog-btn" @click="minimizeFromDialog">
+      <UiButton
+        variant="ghost"
+        block
+        class="close-dialog-btn"
+        @click="minimizeFromDialog"
+      >
         {{ t('titlebar.minimize') }}
       </UiButton>
-      <UiButton variant="primary" block class="close-dialog-btn" @click="quitApp">
+      <UiButton
+        variant="primary"
+        block
+        class="close-dialog-btn"
+        @click="quitApp"
+      >
         {{ t('titlebar.quit') }}
       </UiButton>
     </div>

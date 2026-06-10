@@ -36,8 +36,16 @@ function submit(): void {
 
 <template>
   <div class="recovery-panel">
-    <button type="button" class="back-link" @click="emit('back')">{{ t('recovery.back') }}</button>
-    <h2 class="panel-title">{{ t('recovery.enterRecoveryKey') }}</h2>
+    <button
+      type="button"
+      class="back-link"
+      @click="emit('back')"
+    >
+      {{ t('recovery.back') }}
+    </button>
+    <h2 class="panel-title">
+      {{ t('recovery.enterRecoveryKey') }}
+    </h2>
     <RecoveryTrustNotice />
 
     <label class="label">{{ t('recovery.recoveryKey') }}</label>
@@ -50,16 +58,45 @@ function submit(): void {
         :disabled="loading"
         @keydown.enter="submit"
       />
-      <button type="button" class="eye-btn" @click="showKey = !showKey">
-        <EyeOff v-if="showKey" :size="16" :stroke-width="1.5" />
-        <Eye v-else :size="16" :stroke-width="1.5" />
+      <button
+        type="button"
+        class="eye-btn"
+        @click="showKey = !showKey"
+      >
+        <EyeOff
+          v-if="showKey"
+          :size="16"
+          :stroke-width="1.5"
+        />
+        <Eye
+          v-else
+          :size="16"
+          :stroke-width="1.5"
+        />
       </button>
     </div>
 
-    <p v-if="!recoveryConfigured" class="warn-text">{{ t('recovery.recoveryKeyNotConfigured') }}</p>
-    <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+    <p
+      v-if="!recoveryConfigured"
+      class="warn-text"
+    >
+      {{ t('recovery.recoveryKeyNotConfigured') }}
+    </p>
+    <p
+      v-if="errorMessage"
+      class="error-text"
+    >
+      {{ errorMessage }}
+    </p>
 
-    <UiButton variant="primary" class="submit-btn" block :disabled="loading || !recoveryKey" :loading="loading" @click="submit">
+    <UiButton
+      variant="primary"
+      class="submit-btn"
+      block
+      :disabled="loading || !recoveryKey"
+      :loading="loading"
+      @click="submit"
+    >
       {{ loading ? t('common.verifying') : t('common.continue') }}
     </UiButton>
   </div>

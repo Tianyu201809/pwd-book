@@ -133,38 +133,79 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
 </script>
 
 <template>
-  <button type="button" class="nav-item manage-trigger" @click="openManageDialog">
+  <button
+    type="button"
+    class="nav-item manage-trigger"
+    @click="openManageDialog"
+  >
     <IconBadge v-bind="NAV_ICON_STYLES.hash">
-      <Hash :size="14" :stroke-width="1.5" />
+      <Hash
+        :size="14"
+        :stroke-width="1.5"
+      />
     </IconBadge>
     {{ t('tag.manage') }}
-    <span v-if="tagCount" class="trigger-count">{{ tagCount }}</span>
+    <span
+      v-if="tagCount"
+      class="trigger-count"
+    >{{ tagCount }}</span>
   </button>
 
   <Teleport to="body">
     <Transition name="dialog-fade">
-      <div v-if="showManageDialog" class="dialog-overlay" @click.self="closeManageDialog">
+      <div
+        v-if="showManageDialog"
+        class="dialog-overlay"
+        @click.self="closeManageDialog"
+      >
         <div class="dialog surface-card">
           <template v-if="dialogMode === 'list'">
             <div class="dialog-header">
               <div>
-                <h4 class="dialog-title">{{ t('tag.manage') }}</h4>
-                <p class="dialog-desc">{{ t('tag.manageDesc', { count: tagCount }) }}</p>
+                <h4 class="dialog-title">
+                  {{ t('tag.manage') }}
+                </h4>
+                <p class="dialog-desc">
+                  {{ t('tag.manageDesc', { count: tagCount }) }}
+                </p>
               </div>
-              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
-                <X :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn"
+                :aria-label="t('common.close')"
+                @click="closeManageDialog"
+              >
+                <X
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
             </div>
 
             <div class="dialog-toolbar">
-              <button type="button" class="create-btn" @click="openCreateView">
-                <Plus :size="14" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="create-btn"
+                @click="openCreateView"
+              >
+                <Plus
+                  :size="14"
+                  :stroke-width="1.5"
+                />
                 {{ t('tag.newTag') }}
               </button>
             </div>
 
-            <div v-if="vaultTags.length" class="search-field-wrap manage-search-wrap">
-              <Search v-if="!isAnimalIsland" class="search-field-icon" :size="14" :stroke-width="1.5" />
+            <div
+              v-if="vaultTags.length"
+              class="search-field-wrap manage-search-wrap"
+            >
+              <Search
+                v-if="!isAnimalIsland"
+                class="search-field-icon"
+                :size="14"
+                :stroke-width="1.5"
+              />
               <UiInput
                 v-model="manageSearchQuery"
                 class="search-field-input"
@@ -172,15 +213,29 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
                 :placeholder="t('tag.searchPlaceholder')"
                 allow-clear
               >
-                <template v-if="isAnimalIsland" #prefix>
-                  <Search :size="14" :stroke-width="1.5" />
+                <template
+                  v-if="isAnimalIsland"
+                  #prefix
+                >
+                  <Search
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
                 </template>
               </UiInput>
             </div>
 
-            <p v-if="localError" class="error-text">{{ localError }}</p>
+            <p
+              v-if="localError"
+              class="error-text"
+            >
+              {{ localError }}
+            </p>
 
-            <div v-if="vaultTags.length && filteredTags.length" class="manage-list">
+            <div
+              v-if="vaultTags.length && filteredTags.length"
+              class="manage-list"
+            >
               <div
                 v-for="tag in filteredTags"
                 :key="tag.name"
@@ -196,7 +251,13 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
                     }}
                   </span>
                   <div class="confirm-actions">
-                    <button type="button" class="ghost-btn" @click="cancelDelete">{{ t('common.cancel') }}</button>
+                    <button
+                      type="button"
+                      class="ghost-btn"
+                      @click="cancelDelete"
+                    >
+                      {{ t('common.cancel') }}
+                    </button>
                     <button
                       type="button"
                       class="danger-btn"
@@ -237,35 +298,76 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
                     :aria-label="t('tag.deleteTag')"
                     @click="startDelete(tag.name)"
                   >
-                    <Trash2 :size="14" :stroke-width="1.5" />
+                    <Trash2
+                      :size="14"
+                      :stroke-width="1.5"
+                    />
                   </button>
                 </template>
               </div>
             </div>
 
-            <div v-else-if="vaultTags.length && !filteredTags.length" class="empty-state">
-              <Search :size="22" :stroke-width="1.5" />
+            <div
+              v-else-if="vaultTags.length && !filteredTags.length"
+              class="empty-state"
+            >
+              <Search
+                :size="22"
+                :stroke-width="1.5"
+              />
               <p>{{ t('tag.noSearchResults') }}</p>
             </div>
 
-            <div v-else class="empty-state">
-              <Hash :size="22" :stroke-width="1.5" />
+            <div
+              v-else
+              class="empty-state"
+            >
+              <Hash
+                :size="22"
+                :stroke-width="1.5"
+              />
               <p>{{ t('tag.empty') }}</p>
-              <button type="button" class="empty-action" @click="openCreateView">{{ t('tag.createFirst') }}</button>
+              <button
+                type="button"
+                class="empty-action"
+                @click="openCreateView"
+              >
+                {{ t('tag.createFirst') }}
+              </button>
             </div>
           </template>
 
           <template v-else>
             <div class="dialog-header">
-              <button type="button" class="icon-btn back-btn" :aria-label="t('common.back')" @click="backToList">
-                <ArrowLeft :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn back-btn"
+                :aria-label="t('common.back')"
+                @click="backToList"
+              >
+                <ArrowLeft
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
               <div class="header-main">
-                <h4 class="dialog-title">{{ t('tag.newTag') }}</h4>
-                <p class="dialog-desc">{{ t('tag.createHint') }}</p>
+                <h4 class="dialog-title">
+                  {{ t('tag.newTag') }}
+                </h4>
+                <p class="dialog-desc">
+                  {{ t('tag.createHint') }}
+                </p>
               </div>
-              <button type="button" class="icon-btn" :aria-label="t('common.close')" @click="closeManageDialog">
-                <X :size="16" :stroke-width="1.5" />
+              <button
+                type="button"
+                class="icon-btn"
+                :aria-label="t('common.close')"
+                @click="closeManageDialog"
+              >
+                <X
+                  :size="16"
+                  :stroke-width="1.5"
+                />
               </button>
             </div>
 
@@ -277,10 +379,21 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
               @keydown.enter="submitTag"
             />
 
-            <p v-if="localError" class="error-text">{{ localError }}</p>
+            <p
+              v-if="localError"
+              class="error-text"
+            >
+              {{ localError }}
+            </p>
 
             <div class="dialog-actions">
-              <UiButton variant="ghost" class="action-btn" @click="backToList">{{ t('common.cancel') }}</UiButton>
+              <UiButton
+                variant="ghost"
+                class="action-btn"
+                @click="backToList"
+              >
+                {{ t('common.cancel') }}
+              </UiButton>
               <UiButton
                 variant="primary"
                 class="action-btn"

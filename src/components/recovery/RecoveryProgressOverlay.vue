@@ -9,11 +9,15 @@ const { t } = useI18n()
   <UiLoading :active="true" />
   <div class="progress-overlay">
     <UiCard class="progress-card">
-      <p class="progress-title">{{ t('recovery.progressTitle') }}</p>
+      <p class="progress-title">
+        {{ t('recovery.progressTitle') }}
+      </p>
       <div class="progress-bar">
         <span class="progress-fill" />
       </div>
-      <p class="progress-hint">{{ t('recovery.progressHint') }}</p>
+      <p class="progress-hint">
+        {{ t('recovery.progressHint') }}
+      </p>
     </UiCard>
   </div>
 </template>

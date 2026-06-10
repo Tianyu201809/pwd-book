@@ -13,12 +13,26 @@ const { isAnimalIsland } = useTheme()
 </script>
 
 <template>
-  <Tabs v-if="isAnimalIsland" v-model="model" :items="items">
-    <template v-for="item in items" :key="item.key" #[item.key]>
-      <slot :name="item.key" :item="item" />
+  <Tabs
+    v-if="isAnimalIsland"
+    v-model="model"
+    :items="items"
+  >
+    <template
+      v-for="item in items"
+      :key="item.key"
+      #[item.key]
+    >
+      <slot
+        :name="item.key"
+        :item="item"
+      />
     </template>
   </Tabs>
-  <div v-else class="ui-tabs-classic">
+  <div
+    v-else
+    class="ui-tabs-classic"
+  >
     <div class="ui-tabs-nav">
       <button
         v-for="item in items"
@@ -32,9 +46,15 @@ const { isAnimalIsland } = useTheme()
       </button>
     </div>
     <div class="ui-tabs-content">
-      <template v-for="item in items" :key="item.key">
+      <template
+        v-for="item in items"
+        :key="item.key"
+      >
         <div v-show="model === item.key">
-          <slot :name="item.key" :item="item" />
+          <slot
+            :name="item.key"
+            :item="item"
+          />
         </div>
       </template>
     </div>

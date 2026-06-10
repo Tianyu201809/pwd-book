@@ -120,7 +120,10 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
       <ToastHost />
     </div>
   </Cursor>
-  <div v-else class="app-root vault-texture">
+  <div
+    v-else
+    class="app-root vault-texture"
+  >
     <TitleBar />
     <main class="app-main">
       <LockScreen v-if="screen === 'lock'" />

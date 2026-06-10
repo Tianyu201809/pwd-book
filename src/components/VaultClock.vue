@@ -42,14 +42,23 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="vault-clock" :class="{ 'vault-clock--animal': isAnimalIsland }">
+  <div
+    class="vault-clock"
+    :class="{ 'vault-clock--animal': isAnimalIsland }"
+  >
     <Time v-if="isAnimalIsland" />
     <template v-else>
       <div class="vault-clock__date-block">
-        <p class="vault-clock__weekday font-display">{{ weekday }}</p>
-        <p class="vault-clock__date">{{ dateLine }}</p>
+        <p class="vault-clock__weekday font-display">
+          {{ weekday }}
+        </p>
+        <p class="vault-clock__date">
+          {{ dateLine }}
+        </p>
       </div>
-      <p class="vault-clock__time font-display">{{ timeLine }}</p>
+      <p class="vault-clock__time font-display">
+        {{ timeLine }}
+      </p>
     </template>
   </div>
 </template>
