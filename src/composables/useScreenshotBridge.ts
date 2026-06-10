@@ -12,7 +12,7 @@ type ScreenshotCommand = {
 
 export function initScreenshotBridge(): void {
   const { setSkin } = useTheme()
-  const { bootstrap, navigateTo, switchSettingsTab, entries, selectEntry } = useAppState()
+  const { bootstrap, navigateTo, entries, selectEntry } = useAppState()
 
   window.__PWD_BOOK_SCREENSHOT_READY__ = true
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronRight, Download, KeyRound, RefreshCw, X } from 'lucide-vue-next'
+import { ChevronRight, Download, KeyRound, RefreshCw } from 'lucide-vue-next'
 import RecoveryKeySetup from '@/components/recovery/RecoveryKeySetup.vue'
 import { UiModal, UiInput, UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'

@@ -9,7 +9,6 @@ import { SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION, SYNC_MAGIC } from '../../share
 import { deriveSyncTransportKey } from './vaultCrypto'
 
 const ALGORITHM = 'aes-256-gcm'
-const KEY_LENGTH = 32
 const IV_LENGTH = 12
 const TAG_LENGTH = 16
 const SALT_LENGTH = 16
@@ -45,7 +44,6 @@ export function decryptSyncBundle(payload: Buffer, masterPasswordOrKey: string |
   }
 
   let offset = 5
-  const salt = payload.subarray(offset, offset + SALT_LENGTH)
   offset += SALT_LENGTH
   const iv = payload.subarray(offset, offset + IV_LENGTH)
   offset += IV_LENGTH

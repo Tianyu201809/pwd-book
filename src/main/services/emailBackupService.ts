@@ -11,7 +11,6 @@ import type {
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   LastBackupInfo,
-  SmtpSettingsInput,
 } from '../../shared/types'
 import { appError, ErrorCode } from '../../shared/errors'
 

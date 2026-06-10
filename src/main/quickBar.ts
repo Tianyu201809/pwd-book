@@ -3,7 +3,7 @@ import { join } from 'path'
 import { IPC_EVENTS } from '../shared/types'
 import { getSecuritySettings } from './services/settingsService'
 import { isUnlocked } from './services/sessionService'
-import { getMainWindow, showFromTray } from './tray'
+import { showFromTray } from './tray'
 
 const QUICK_BAR_WIDTH = 560
 const QUICK_BAR_COLLAPSED_HEIGHT = 52

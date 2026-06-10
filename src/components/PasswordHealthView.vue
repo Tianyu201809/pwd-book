@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowLeft, ShieldAlert, Copy } from 'lucide-vue-next'
-import { UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { analyzePasswordHealth } from '@/shared/passwordHealth'

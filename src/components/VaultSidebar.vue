@@ -15,7 +15,6 @@ import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { textMatchesQuery } from '@/shared/searchMatch'
-import { parseErrorMessage } from '@/shared/utils'
 import type { FilterCategory } from '@/types'
 
 const WIDTH_STORAGE_KEY = 'pwdbook-sidebar-width'

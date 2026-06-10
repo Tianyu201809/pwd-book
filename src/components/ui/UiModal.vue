@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n'
 
 const open = defineModel<boolean>('open', { default: false })
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     title?: string
     width?: number | string

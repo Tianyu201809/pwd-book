@@ -127,7 +127,7 @@ function wrap<T>(handler: () => T): T {
     return handler()
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-    throw new Error(message)
+    throw new Error(message, { cause: error })
   }
 }
 
@@ -183,7 +183,7 @@ export function registerIpcHandlers(): void {
       return getVaultStatus()
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -475,7 +475,7 @@ export function registerIpcHandlers(): void {
       await openLocalProgram(programPath)
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -542,7 +542,7 @@ export function registerIpcHandlers(): void {
       await testEmailConnection()
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -552,7 +552,7 @@ export function registerIpcHandlers(): void {
       return await sendBackupNow(payload.masterPassword)
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -614,7 +614,7 @@ export function registerIpcHandlers(): void {
       return await startWifiSyncServer()
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -623,7 +623,7 @@ export function registerIpcHandlers(): void {
       return await stopWifiSyncServer()
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -636,7 +636,7 @@ export function registerIpcHandlers(): void {
       return await discoverSyncServers()
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -646,7 +646,7 @@ export function registerIpcHandlers(): void {
       return await pullMergeAndPush(payload)
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-      throw new Error(message)
+      throw new Error(message, { cause: error })
     }
   })
 
@@ -662,7 +662,7 @@ export function registerIpcHandlers(): void {
         )
       } catch (error) {
         const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
-        throw new Error(message)
+        throw new Error(message, { cause: error })
       }
     },
   )

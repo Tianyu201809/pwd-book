@@ -55,9 +55,9 @@ async function invoke<T>(channel: string, payload?: unknown): Promise<T> {
       nested?.[1]?.trim() ??
       message.replace(/^Error invoking remote method '[^']+':\s*/i, '').trim()
     if (stripped.startsWith(ERR_PREFIX)) {
-      throw new Error(stripped)
+      throw new Error(stripped, { cause: error })
     }
-    throw new Error(`${ERR_PREFIX}REQUEST_FAILED`)
+    throw new Error(`${ERR_PREFIX}REQUEST_FAILED`, { cause: error })
   }
 }
 
