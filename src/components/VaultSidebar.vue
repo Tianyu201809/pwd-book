@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, GripVertical, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
+import { Settings, Lock, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
@@ -135,7 +135,6 @@ const suppressNextClick = ref(false)
 const activePointerId = ref<number | null>(null)
 const contextMenu = ref<{ category: SidebarCategoryItem; x: number; y: number; confirmDelete: boolean } | null>(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
-
 const BODY_DRAG_CLASS = 'category-drag-active'
 const VIEWPORT_MENU_PADDING = 8
 const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
@@ -281,7 +280,7 @@ function readTagFilterExpanded(): boolean {
 const utilitiesExpanded = ref(readUtilitiesExpanded())
 const tagFilterExpanded = ref(readTagFilterExpanded())
 
-const isDragging = computed(() => dragFromIndex.value !== null)
+const isDragging = computed(() => dragFromIndex.value !== null && dragMoved.value)
 
 const isCategorySearchActive = computed(() => categorySearchQuery.value.trim().length > 0)
 
@@ -311,6 +310,31 @@ function cleanupDrag(): void {
   draggingId.value = null
   dragMoved.value = false
   activePointerId.value = null
+}
+
+function beginCategoryDrag(categoryId: FilterCategory, pointerId: number, captureTarget: HTMLElement): void {
+  window.getSelection()?.removeAllRanges()
+
+  const index = categories.value.findIndex((category) => category.id === categoryId)
+  if (index < 0) return
+
+  captureTarget.setPointerCapture(pointerId)
+  activePointerId.value = pointerId
+  dragFromIndex.value = index
+  dragOverIndex.value = index
+  draggingId.value = categoryId
+  dragMoved.value = false
+
+  document.addEventListener('pointermove', onDocumentPointerMove, { passive: false })
+  document.addEventListener('pointerup', onDocumentPointerUp)
+  document.addEventListener('pointercancel', onDocumentPointerUp)
+}
+
+function onItemPointerDown(categoryId: FilterCategory, event: PointerEvent): void {
+  if (isCategorySearchActive.value || event.button !== 0) return
+
+  event.preventDefault()
+  beginCategoryDrag(categoryId, event.pointerId, event.currentTarget as HTMLElement)
 }
 
 const AUTO_SCROLL_EDGE_PX = 36
@@ -362,36 +386,16 @@ function updateDragTarget(clientY: number): void {
   }
 }
 
-function onHandlePointerDown(categoryId: FilterCategory, event: PointerEvent): void {
-  event.preventDefault()
-  event.stopPropagation()
-  window.getSelection()?.removeAllRanges()
-
-  const index = categories.value.findIndex((category) => category.id === categoryId)
-  if (index < 0) return
-
-  const handle = event.currentTarget as HTMLElement
-  handle.setPointerCapture(event.pointerId)
-  activePointerId.value = event.pointerId
-
-  dragFromIndex.value = index
-  dragOverIndex.value = index
-  draggingId.value = categoryId
-  dragMoved.value = false
-  document.body.classList.add(BODY_DRAG_CLASS)
-  document.body.style.userSelect = 'none'
-
-  document.addEventListener('pointermove', onDocumentPointerMove, { passive: false })
-  document.addEventListener('pointerup', onDocumentPointerUp)
-  document.addEventListener('pointercancel', onDocumentPointerUp)
-}
-
 function onDocumentPointerMove(event: PointerEvent): void {
   if (dragFromIndex.value === null) return
   if (activePointerId.value !== null && event.pointerId !== activePointerId.value) return
 
   event.preventDefault()
-  dragMoved.value = true
+  if (!dragMoved.value) {
+    dragMoved.value = true
+    document.body.classList.add(BODY_DRAG_CLASS)
+    document.body.style.userSelect = 'none'
+  }
   autoScrollNav(event.clientY)
   updateDragTarget(event.clientY)
 }
@@ -411,7 +415,7 @@ async function onDocumentPointerUp(event: PointerEvent): Promise<void> {
     newOrder = reordered.map((category) => category.id)
   }
 
-  suppressNextClick.value = Boolean(newOrder)
+  suppressNextClick.value = Boolean(newOrder) || moved
   cleanupDrag()
 
   if (newOrder) {
@@ -517,24 +521,17 @@ onBeforeUnmount(() => {
           class="nav-item sortable sortable-row"
           :class="{
             active: selectedCategory === cat.id,
-            'is-dragging': draggingId === cat.id,
-            'no-drag': isCategorySearchActive,
+            'is-dragging': draggingId === cat.id && dragMoved,
           }"
           role="button"
           tabindex="0"
+          :title="!isCategorySearchActive ? t('vault.dragSort') : undefined"
           @selectstart.prevent
+          @pointerdown="onItemPointerDown(cat.id as FilterCategory, $event)"
           @click="onNavClick(cat.id as FilterCategory, $event)"
           @keydown.enter="selectCategory(cat.id as FilterCategory)"
           @contextmenu="handleCategoryContextMenu(cat, $event)"
         >
-          <span
-            v-if="!isCategorySearchActive"
-            class="drag-handle"
-            :title="t('vault.dragSort')"
-            @pointerdown="onHandlePointerDown(cat.id, $event)"
-          >
-            <GripVertical :size="14" :stroke-width="1.5" />
-          </span>
           <CategoryIconView :name="cat.icon" :badge-size="24" :size="14" />
           <span class="nav-label">{{ cat.label }}</span>
           <span class="count" :class="{ active: selectedCategory === cat.id }">{{ cat.count }}</span>
@@ -752,13 +749,8 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.sidebar.is-sorting {
-  cursor: grabbing;
-}
-
-.sidebar.is-sorting .nav-item.sortable,
-.sidebar.is-sorting .drag-handle {
-  cursor: grabbing;
+.sidebar.is-sorting .nav-item.sortable:not(.is-dragging) {
+  cursor: pointer;
 }
 
 .sidebar.is-sorting .nav-item.sortable:not(.is-dragging),
@@ -982,14 +974,15 @@ onBeforeUnmount(() => {
 }
 
 .nav-item.sortable {
-  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   position: relative;
   max-width: 100%;
+  touch-action: pan-y;
 }
 
 .nav-item.is-dragging {
+  cursor: grab;
   z-index: 2;
   opacity: 0.96;
   background: var(--bg-elevated);
@@ -1001,33 +994,6 @@ onBeforeUnmount(() => {
 .nav-item.is-dragging.active {
   background: var(--bg-elevated);
   color: var(--text-primary);
-}
-
-.drag-handle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  flex-shrink: 0;
-  color: var(--text-muted);
-  opacity: 0;
-  transition: opacity 0.15s;
-  cursor: grab;
-  touch-action: none;
-}
-
-.nav-item.sortable:hover .drag-handle,
-.sidebar.is-sorting .drag-handle {
-  opacity: 1;
-}
-
-.nav-item.is-dragging .drag-handle {
-  cursor: grabbing;
-  color: var(--accent-primary);
-}
-
-.nav-item.no-drag {
-  padding-left: 12px;
 }
 
 .nav-label {

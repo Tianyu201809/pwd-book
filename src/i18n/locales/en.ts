@@ -142,7 +142,7 @@ export default {
     lock: 'Lock',
     trash: 'Recycle bin',
     movedToTrash: 'Moved to recycle bin',
-    dragSort: 'Drag to reorder',
+    dragSort: 'Press and drag to reorder',
     sortRecent: 'Recently used',
     sortTitle: 'Title A-Z',
     sortCreated: 'Date created',

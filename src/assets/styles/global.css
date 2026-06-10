@@ -399,9 +399,8 @@ textarea.input-field {
   font-weight: 500;
 }
 
-body.category-drag-active,
-body.category-drag-active * {
-  cursor: grabbing !important;
+body.category-drag-active {
+  cursor: grab;
 }
 
 /* Tool entry cards (sidebar) */

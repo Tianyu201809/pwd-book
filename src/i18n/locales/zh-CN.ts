@@ -141,7 +141,7 @@ export default {
     lock: '锁定',
     trash: '回收站',
     movedToTrash: '已移至回收站',
-    dragSort: '拖拽排序',
+    dragSort: '按住拖拽排序',
     sortRecent: '最近使用',
     sortTitle: '标题 A-Z',
     sortCreated: '创建时间',
