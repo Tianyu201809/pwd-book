@@ -9,7 +9,6 @@ import TagFilterPanel from '@/components/TagFilterPanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconBadge from '@/components/IconBadge.vue'
 import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
-import { Divider } from 'animal-island-vue'
 import VaultClock from '@/components/VaultClock.vue'
 import { UiInput } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
@@ -586,7 +585,6 @@ onBeforeUnmount(() => {
         :class="{ 'utilities-collapse--open': utilitiesExpanded }"
       >
         <div class="utilities-body" :inert="!utilitiesExpanded || undefined">
-          <Divider v-if="isAnimalIsland" type="wave-yellow" class="sidebar-divider" />
 
           <div class="sidebar-bottom">
             <button
@@ -746,10 +744,6 @@ onBeforeUnmount(() => {
   transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.sidebar-divider {
-  flex-shrink: 0;
-}
-
 .sidebar-top {
   padding: 10px 12px 4px;
 }
@@ -813,8 +807,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-top,
-.sidebar-utilities,
-.sidebar-divider {
+.sidebar-utilities {
   flex-shrink: 0;
 }
 
@@ -949,10 +942,6 @@ onBeforeUnmount(() => {
 
 .sidebar--animal .utilities-toggle {
   padding: 8px 12px 6px;
-}
-
-.sidebar--animal .sidebar-divider {
-  margin: 0 12px 6px;
 }
 
 .sort-list {
