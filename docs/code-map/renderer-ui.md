@@ -10,10 +10,12 @@ App.vue
 ├── LockScreen.vue            # 锁定页状态机
 │   └── recovery/*            # 恢复流程子组件
 ├── VaultView.vue             # 主工作区（v1.14.0：detached 时隐藏内联详情位）
-│   ├── VaultSidebar.vue      # 分类导航、拖拽排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩）
+│   ├── PanelEdge.vue         # 面板边缘：4px 分割条 + 圆形折叠钮 + 拖拽调宽（v1.17.0；侧栏/详情共用）
+│   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
-│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏；v1.14.0 弹出小窗口）
-├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口）
+│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏；v1.14.0 弹出小窗口；v1.17.0 PanelEdge）
+├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口；v1.17.0 浏览器扩展安装向导）
+│   └── browser/BrowserExtensionGuideModal.vue  # 6 步安装引导 + BrowserExtensionGuideVisual 示意图（v1.17.0）
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
 ├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全；v1.13.0 SMTP 密码占位/显隐）
@@ -53,17 +55,23 @@ App.vue
 - 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**）；↑↓ / Enter 选择并 `launchEntry`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 
+### PanelEdge.vue（v1.17.0）
+
+- 侧栏（`placement="after"`）与详情（`placement="before"`）共用的 **4px 边缘**：悬停/收起/调宽时显示 **圆形描边箭头** 折叠钮；分割线在钮位挖空，`z-index` 高于邻列。
+- `@toggle` 折叠/展开；非收起态 `@resize-start` 触发面板宽度拖拽（`PanelEdge` 内排除 `.panel-edge-toggle` 点击）。
+- Token：`--panel-edge-width`（`tokens.css`）；动森皮肤下 `.sidebar-shell` / `.detail-shell` 需 `overflow: visible` 避免钮被裁切。
+
 ### VaultSidebar.vue
 
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
-- HTML5 拖拽排序，`reorderSidebarCategories` 持久化。
+- **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
 - **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
 - **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`（**v1.13.0** 起默认 **收起**）。
-- **侧栏收缩**（v1.14.0）：右缘按钮收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
+- **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
 
 ### PasswordDetail.vue（内联 / detached）
 
-- 内联模式：左缘收起/展开（`pwdbook-detail-collapsed`）、拖拽调宽；选中或新建时 `expandDetailPanel`。
+- 内联模式：左缘 `PanelEdge` 收起/展开（`pwdbook-detail-collapsed`）、拖拽调宽；选中或新建时 `expandDetailPanel`。
 - **在新窗口打开**（v1.14.0）：标题栏 `SquareArrowOutUpRight` → `openDetachedDetail`；小窗口打开后主窗口 `detachedDetailOpen` 隐藏 `.vault-detail-slot`。
 - `detached` prop：全宽展示、无收起边缘；与小窗口共用编辑/保存/TOTP 等逻辑。
 
@@ -71,6 +79,7 @@ App.vue
 
 - 四个 Tab（安全 / 外观 / 数据 / 关于）；Tab 图标使用 `IconBadge`（v1.11.0）。
 - **安全** Tab 含 **打开邮箱备份** 按钮（`openEmailBackup`）；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
+- **浏览器扩展安装向导**（v1.17.0）：`BrowserExtensionGuideModal`（6 步、GSAP 动效、`BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page` → `browserLaunchService.openBrowserExtensionsPage`（复制 `chrome://extensions` / `edge://extensions` 到剪贴板）。
 
 ### UiInput.vue（`components/ui/`）
 
@@ -161,13 +170,14 @@ App.vue
 - `IconPickerModal.vue` — **图标 / 字母** 双 Tab、搜索过滤；动森皮肤下搜索图标走 `UiInput` `#prefix` 插槽
 - `IconBadge.vue` — 通用彩色圆角徽章容器
 - `CategoryIconView.vue` — 图形图标或字母渲染；字母图标在徽章内显示加粗字符
-- `VaultSidebar.vue` — HTML5 拖拽排序、分类右键菜单，`reorderSidebarCategories` 持久化
+- `VaultSidebar.vue` — 按住拖动排序（v1.17.0）、分类右键菜单，`reorderSidebarCategories` 持久化
 - `CategoryManagePanel.vue` — 新建/编辑/删除分类，复用 IconPicker；可由侧栏右键「编辑」唤起
 
 ## 样式
 
-- `assets/styles/tokens.css` — 设计 token（颜色、间距）
-- `assets/styles/global.css` — 全局布局、`.vault-texture` 背景
+- `assets/styles/tokens.css` — 设计 token（颜色、间距）；**v1.17.0** 暗黑色阶上移、`--panel-edge-width`
+- `assets/styles/global.css` — 全局布局、`.vault-texture` 背景；**v1.17.0** 暗黑 `.list-item` 背景、`body.category-drag-active` 光标
+- `assets/styles/animal-skin.css` — **v1.17.0** 指针 16px、PanelEdge/窄条背景、`overflow: visible`
 
 ## 类型 re-export
 

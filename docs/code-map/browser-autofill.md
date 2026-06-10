@@ -11,6 +11,8 @@ Chrome / Edge 扩展 + Native Messaging Host + 主进程本地桥接。全程本
 | 桥接服务 | [`browserBridgeService.ts`](../../src/main/services/browserBridgeService.ts) | `127.0.0.1` TCP，校验 token / 解锁 / URL |
 | URL 匹配 | [`browserMatchService.ts`](../../src/main/services/browserMatchService.ts) | 按页面 hostname 匹配条目 |
 | 注册 | [`nativeHostRegistryService.ts`](../../src/main/services/nativeHostRegistryService.ts) | 写清单 + Windows 注册表 / macOS NativeMessagingHosts（v1.12.0） |
+| 扩展管理页 | [`browserLaunchService.ts`](../../src/main/services/browserLaunchService.ts) | **v1.17.0** 检测 Chrome/Edge，复制 `chrome://extensions` 或 `edge://extensions` 到剪贴板 |
+| 安装向导 UI | [`BrowserExtensionGuideModal.vue`](../../src/components/browser/BrowserExtensionGuideModal.vue) | **v1.17.0** 6 步引导 + 示意图 |
 | 协议类型 | [`browserBridgeProtocol.ts`](../../src/shared/browserBridgeProtocol.ts) | Bridge 请求/响应、注册状态 |
 | URL 工具 | [`urlMatch.ts`](../../src/shared/urlMatch.ts) | `entryUrlMatchesPage`、`normalizeUrl` |
 
@@ -89,7 +91,7 @@ sequenceDiagram
 |------|------|
 | `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`content_scripts` |
 | `background.js` | `connectNative('com.pwdbook.app')` 转发 |
-| `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起 |
+| `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter |
 | `content.css` | 填充条布局与交互样式（**v1.15.0** 收起态、拖拽光标） |
 | `popup.js` | 连接状态（已连接 / 锁定 / BRIDGE_NOT_RUNNING 等） |
 | `pwdbook-theme.css` | 与经典主题一致的配色变量 |
@@ -113,10 +115,18 @@ sequenceDiagram
 [`SettingsView.vue`](../../src/components/SettingsView.vue) 安全页：
 
 - 开关 `browserFillEnabled` → `settingsService` + `syncBrowserBridge()`
+- **「安装向导」**（**v1.17.0**）→ `BrowserExtensionGuideModal`：6 步（开启开关 → 安装扩展 → 复制 ID → 注册 Host → 重启浏览器 → 解锁使用）；步骤 4 要求 `nativeHostInfo.registered` 才可下一步；`BrowserExtensionGuideVisual` 提供每步示意图。
 - 扩展 ID 输入 + **「注册到 Chrome / Edge」** → IPC `browser:register-native-host`
-- **「打开扩展管理页」** → `shell:open-extensions-page`（`chrome://extensions/`）
+- **「打开扩展管理页」** → IPC `shell:open-extensions-page` → [`openBrowserExtensionsPage`](../../src/main/services/browserLaunchService.ts)：Windows 下按已安装浏览器与默认浏览器选择 URL，**写入剪贴板**并返回 `{ copiedUrl }`；Toast 提示用户切换到浏览器粘贴。
 
 命令行等价：`npm run register-native-host -- <扩展ID>`（[`scripts/register-native-host.mjs`](../../scripts/register-native-host.mjs)）。
+
+### 填充字段检测（v1.17.0）
+
+[`content.js`](../../extension/content.js)：
+
+- `isVisibleFillInput` — 排除 `display:none`、`visibility:hidden`、`opacity:0`、零尺寸矩形。
+- `fillInput` — 优先 `HTMLInputElement.prototype.value` setter，再 `dispatchEvent('input'/'change')`，兼容 React / Vue 受控组件。
 
 ## IPC 通道
 
@@ -126,7 +136,7 @@ sequenceDiagram
 | `browser:bridge-regenerate-token` | 重建 token + 端口 |
 | `browser:native-host-info` | `NativeHostRegistrationInfo` |
 | `browser:register-native-host` | 参数：扩展 ID 字符串 |
-| `shell:open-extensions-page` | 打开 Chrome 扩展管理页 |
+| `shell:open-extensions-page` | **v1.17.0** 复制 Chrome/Edge 扩展管理页 URL 到剪贴板（`openBrowserExtensionsPage`） |
 
 ## 数据库 / 设置键
 
