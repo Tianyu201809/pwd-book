@@ -28,6 +28,10 @@
   box-sizing: border-box;
 }
 
+[data-mode="dark"] .list-item {
+  background: var(--bg-elevated);
+}
+
 html,
 body,
 #app {

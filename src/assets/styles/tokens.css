@@ -107,11 +107,11 @@
 :root,
 [data-mode="dark"] {
   color-scheme: dark;
-  --color-ink-950: #0a0c10;
-  --color-ink-900: #0f1219;
-  --color-ink-800: #161b26;
-  --color-ink-700: #1e2433;
-  --color-ink-600: #2a3144;
+  --color-ink-950: #0f1219;
+  --color-ink-900: #161b26;
+  --color-ink-800: #1e2433;
+  --color-ink-700: #2a3144;
+  --color-ink-600: #353d52;
   --color-ink-400: #6b7289;
   --color-ink-200: #c5cad8;
   --color-ink-50: #f4f5f8;
