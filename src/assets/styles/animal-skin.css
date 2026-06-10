@@ -378,6 +378,20 @@
   overflow: visible;
 }
 
+[data-skin="animalIsland"] .sidebar-shell.collapsed,
+[data-skin="animalIsland"] .detail-shell.collapsed {
+  background: var(--bg-surface);
+}
+
+[data-skin="animalIsland"] .panel-edge.collapsed .panel-edge-toggle {
+  background-color: var(--bg-surface);
+}
+
+[data-skin="animalIsland"] .panel-edge.collapsed .panel-edge-toggle:hover,
+[data-skin="animalIsland"] .panel-edge.collapsed .panel-edge-toggle:focus-visible {
+  background-color: color-mix(in srgb, var(--accent-primary) 14%, var(--bg-surface));
+}
+
 [data-skin="animalIsland"] .list-panel,
 [data-skin="animalIsland"] .list-toolbar,
 [data-skin="animalIsland"] .vault-list-column {
@@ -392,11 +406,11 @@
   overflow: hidden;
 }
 
-/* animal-island-vue 默认指针 49×48，缩至 70% 以适配桌面密度 */
+/* animal-island-vue 默认指针 49×48；桌面端缩至 16px，与经典模式系统指针视觉大小接近 */
 [data-skin="animalIsland"] .animal-cursor--force,
 [data-skin="animalIsland"] .animal-cursor--force *,
 [data-skin="animalIsland"] .animal-cursor.animal-cursor--scoped {
-  cursor: url("../images/animal/cursor-icon.png") 3 0, default !important;
+  cursor: url("../images/animal/cursor-icon.png") 1 0, default !important;
 }
 
 [data-skin="animalIsland"] .list-scroll--animal {

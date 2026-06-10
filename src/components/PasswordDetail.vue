@@ -768,6 +768,10 @@ watch(detailCollapsed, () => {
   transition: none;
 }
 
+.detail-shell.collapsed {
+  background: var(--bg-app);
+}
+
 .detail-main {
   flex: 1;
   min-width: 0;

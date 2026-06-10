@@ -244,5 +244,11 @@ function onToggleMouseLeave(): void {
 .panel-edge.collapsed .panel-edge-toggle {
   opacity: 1;
   pointer-events: auto;
+  background-color: var(--bg-app);
+}
+
+.panel-edge.collapsed .panel-edge-toggle:hover,
+.panel-edge.collapsed .panel-edge-toggle:focus-visible {
+  background-color: color-mix(in srgb, var(--accent-primary) 14%, var(--bg-app));
 }
 </style>

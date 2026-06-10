@@ -721,6 +721,10 @@ onBeforeUnmount(() => {
   transition: none;
 }
 
+.sidebar-shell.collapsed {
+  background: var(--bg-app);
+}
+
 .sidebar-main {
   flex: 1;
   min-width: 0;
