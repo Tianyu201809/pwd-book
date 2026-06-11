@@ -4,6 +4,25 @@
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-06-10
+
+### 改进
+
+- **分类切换** — 切换分类时 **不再自动选中第一条目**，右侧详情区清空，需手动点击列表项；分类条目 `pointerdown` 时 **立即切换分类**，与按住拖动排序配合更顺畅（`VaultSidebar.vue`、`useAppState.ts`）。
+- **IPC 错误链** — 主进程 `handlers.ts` 的 `wrap` 与 Preload `invoke` 抛出错误时保留 `{ cause: error }`，DevTools 可追溯原始异常。
+
+### 修复
+
+- **启动崩溃** — v1.17.0 因 `handlers.ts` 缺少 `openLocalProgram` 导入导致应用无法启动（v1.17.1 热修，本版正式包含）。
+
+### 开发
+
+- **ESLint** — 新增 `eslint.config.mjs`（flat config）；`npm run lint` / `lint:fix`；全项目 Vue/TS 模板格式与可访问性规则对齐。
+
+### 文档
+
+- README、CHANGELOG 与 code-map 同步 v1.18.0（分类切换、启动修复、IPC 错误链、ESLint 等）。
+
 ## [1.17.0] - 2026-06-10
 
 ### 新增

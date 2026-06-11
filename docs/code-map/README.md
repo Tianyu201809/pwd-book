@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.17.0**（`package.json`）— 浏览器扩展安装向导、PanelEdge 面板折叠钮、分类按住拖动排序等。
+**当前版本：v1.18.0**（`package.json`）— 分类切换不自动选中条目、启动崩溃修复、ESLint flat config 等。
 
 ## 文档索引
 
@@ -42,6 +42,8 @@
 | 改浏览器填充条 UI（拖拽/收起） | `extension/content.js`、`extension/content.css`（`pwdbook-ui-x` / `pwdbook-ui-y` / `pwdbook-ui-collapsed`） |
 | 改面板折叠钮 / 调宽边缘 | `PanelEdge.vue`、`VaultSidebar.vue`、`PasswordDetail.vue`；`--panel-edge-width`（`tokens.css`） |
 | 改分类拖拽排序 | `VaultSidebar.vue`（`DRAG_ACTIVATION_PX`、`reorderSidebarCategories`） |
+| 改分类切换 / 选中条目逻辑 | `useAppState.ts`（`selectCategory` 清空 `selectedEntryId`；`selectedEntry` 不再回退首条）、`VaultSidebar.vue`（`onItemPointerDown` 立即 `selectCategory`） |
+| 改 ESLint / 代码风格 | `eslint.config.mjs`；`npm run lint` / `lint:fix` |
 | 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
 | 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |

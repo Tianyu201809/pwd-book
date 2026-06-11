@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.15.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.18.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -133,7 +133,7 @@ npm run dev
 
 | 能力 | 说明 |
 |------|------|
-| **分类** | 内置「全部」「收藏」与自定义分类；侧栏 **按住拖动** 排序（**v1.17.0**：移除左侧把手，纵向 ≥15px 才进入拖拽；顺序持久化）；搜索框旁 **「+」** 快速新建；**分类管理**面板内联改名、点图标更换（**v1.11.0**：60 图形 + A–Z 字母，双 Tab 选择器）；**自定义分类右键**可编辑、删除（仅空分类可删，有条目时禁用并提示）；**v1.14.0** 侧栏右缘可 **收起** 至窄条（**v1.17.0** 圆形描边折叠钮；状态写入 `localStorage`，空间不足时自动收起） |
+| **分类** | 内置「全部」「收藏」与自定义分类；侧栏 **按住拖动** 排序（**v1.17.0**：移除左侧把手，纵向 ≥15px 才进入拖拽；顺序持久化）；**v1.18.0** 切换分类时 **不自动选中条目**，需手动点击列表项；搜索框旁 **「+」** 快速新建；**分类管理**面板内联改名、点图标更换（**v1.11.0**：60 图形 + A–Z 字母，双 Tab 选择器）；**自定义分类右键**可编辑、删除（仅空分类可删，有条目时禁用并提示）；**v1.14.0** 侧栏右缘可 **收起** 至窄条（**v1.17.0** 圆形描边折叠钮；状态写入 `localStorage`，空间不足时自动收起） |
 | **标签** | 侧栏「标签管理」：新建、重命名、删除（同步更新所有关联条目）；详情页从已有标签选用，支持搜索与条目数统计；**v1.12.0** 分类列表下方 **按标签筛选**（搜索 + 多选，同时包含所选标签；**v1.13.0** 起默认收起） |
 | **浏览** | 「全部」/「收藏」筛选；搜索标题、用户名、网址、分类、标签与 **备注**（**v1.12.0**；支持**拼音首字母**，如 `cs` 匹配「测试」；支持一键清除，命中时高亮原文子串）；默认按 **标题 A–Z** 排序，可切换 **最近使用** / **创建时间**（「最近使用」依赖 `last_used_at`，在打开网址或启动本地程序时更新） |
 | **条目字段** | 标题、网址、用户名、密码、备注、标签、**显示图标**、所属分类、**本地程序路径**（可选）、**TOTP 两步验证密钥**（**v1.12.0**，选填；实时 6 位验证码，30 秒刷新，可复制；**v1.13.0** 起编辑时可显示/隐藏密钥） |
@@ -323,6 +323,8 @@ npm run dev
 | `npm run build` | 编译到 `out/`（main / preload / renderer） |
 | `npm run preview` | 预览生产构建 |
 | `npm run typecheck` | Vue + TypeScript 类型检查 |
+| `npm run lint` | ESLint 检查（**v1.18.0** flat config） |
+| `npm run lint:fix` | ESLint 自动修复 |
 | `npm test` | 单元测试（含同步合并、加密封包等） |
 | `npm run icons` | 从 `icon.png` 生成应用图标资源 |
 | `npm run dist:win` | 构建并生成 Windows NSIS 安装包（输出 `release/`） |
@@ -362,7 +364,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.17.0（当前）
+### v1.18.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1180---2026-06-10)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 交互 | 切换分类 **不自动选中条目**；`pointerdown` 立即切换分类，拖动排序更顺畅 |
+| 修复 | v1.17.0 **启动崩溃**（`openLocalProgram` 导入缺失，v1.17.1 热修） |
+| 开发 | **ESLint** flat config；`npm run lint` / `lint:fix` |
+
+### v1.17.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1170---2026-06-10)**。摘要：
 

@@ -11,7 +11,7 @@ App.vue
 │   └── recovery/*            # 恢复流程子组件
 ├── VaultView.vue             # 主工作区（v1.14.0：detached 时隐藏内联详情位）
 │   ├── PanelEdge.vue         # 面板边缘：4px 分割条 + 圆形折叠钮 + 拖拽调宽（v1.17.0；侧栏/详情共用）
-│   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge）
+│   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge；v1.18.0 pointerdown 立即切换分类）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
 │   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏；v1.14.0 弹出小窗口；v1.17.0 PanelEdge）
 ├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口；v1.17.0 浏览器扩展安装向导）
@@ -65,6 +65,7 @@ App.vue
 
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
 - **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
+- **分类切换**（v1.18.0）：`onItemPointerDown` 在非当前分类上 **立即 `selectCategory`**（先于拖拽阈值判断）；`selectCategory` 将 `selectedEntryId` 置 `null`，右侧详情清空，不再回退列表首条。
 - **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
 - **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`（**v1.13.0** 起默认 **收起**）。
 - **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
@@ -104,7 +105,7 @@ App.vue
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
 | `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
-| `loadEntries` / `selectEntry` | 列表与选中项；`selectEntry` 同步 `detail-window:select-entry` |
+| `loadEntries` / `selectEntry` | 列表与选中项；`selectEntry` 同步 `detail-window:select-entry`；**v1.18.0** `selectedEntry` 仅在 `selectedEntryId` 有值时解析，切换分类不自动选中首条 |
 | `openDetachedDetail` / `detachedDetailOpen` | 弹出详情小窗口；主窗口是否隐藏内联详情位（v1.14.0） |
 | `detailCollapsed` / `setDetailCollapsed` / `expandDetailPanel` | 内联详情收起状态（`pwdbook-detail-collapsed`） |
 | `handleDetailWindowOpened` / `handleDetailWindowClosed` | 响应小窗口开/关，恢复内联详情展开 |
@@ -118,7 +119,7 @@ App.vue
 | `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 侧栏标签多选筛选（v1.12.0，AND 逻辑） |
 | `openPasswordHealth` | 密码健康页导航（v1.12.0） |
 
-错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。
+错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。**v1.18.0** 主进程 `wrap` 与 Preload `invoke` 重抛时附带 `{ cause: error }`，便于 DevTools 追溯。
 
 ### useAutoLock (`src/composables/useAutoLock.ts`)
 

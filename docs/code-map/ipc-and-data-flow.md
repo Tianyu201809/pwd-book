@@ -173,6 +173,10 @@ sequenceDiagram
 
 失败时 `catch` → `parseErrorMessage` → Toast 显示具体原因（如「密码不能为空」）。
 
+### 错误传播（v1.18.0）
+
+主进程 `handlers.ts` 中 `wrap()` 及各 `ipcMain.handle` 的 `catch` 块以 `throw new Error(message, { cause: error })` 重抛；Preload `api.ts` 的 `invoke()` 同样在解析失败时保留 `cause`。渲染进程仍通过 `parseErrorMessage` 提取用户可见文案，开发调试可在 DevTools 展开 `error.cause` 查看原始堆栈。
+
 ## 恢复主密码流程（锁定态）
 
 ```mermaid
