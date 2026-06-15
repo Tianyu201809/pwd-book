@@ -614,6 +614,18 @@ body.category-drag-active {
   color: #60a5fa;
 }
 
+.tool-hero-icon--folder {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  color: #d97706;
+}
+
+.tool-hero-icon--sync {
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  color: #8b5cf6;
+}
+
 .gen-display {
   font-family: var(--font-mono);
   font-size: 18px;

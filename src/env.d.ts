@@ -30,6 +30,8 @@ import type {
   WifiSyncPairingInfo,
   WifiSyncServerStatus,
   WifiSyncSettings,
+  FolderSyncSettings,
+  FolderSyncStatus,
 } from '@/shared/syncTypes'
 import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '@/shared/browserBridgeProtocol'
 
@@ -121,6 +123,16 @@ declare global {
         masterPassword: string
         deviceName?: string
       }) => Promise<SyncMergeResult>
+      getFolderSyncSettings: () => Promise<FolderSyncSettings>
+      updateFolderSyncSettings: (partial: Partial<FolderSyncSettings>) => Promise<FolderSyncSettings>
+      getFolderSyncStatus: () => Promise<FolderSyncStatus>
+      pickFolderSyncDirectory: () => Promise<string | null>
+      connectFolderSync: (payload: {
+        folderPath: string
+        masterPassword: string
+      }) => Promise<SyncMergeResult>
+      disconnectFolderSync: () => Promise<FolderSyncSettings>
+      syncFolderNow: (masterPassword: string) => Promise<SyncMergeResult>
       onScheduledBackupDue: (handler: () => void) => () => void
       onSystemLockScreen: (handler: () => void) => () => void
       hideQuickBar?: () => void

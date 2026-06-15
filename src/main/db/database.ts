@@ -32,6 +32,9 @@ export function persistDatabase(): void {
   void import('../services/wifiSyncService')
     .then((module) => module.notifyVaultChangedForSync())
     .catch(() => {})
+  void import('../services/folderSyncService')
+    .then((module) => module.notifyVaultChangedForFolderSync())
+    .catch(() => {})
 }
 
 export async function initDatabase(): Promise<Database> {

@@ -12,7 +12,9 @@ import LockScreen from '@/components/LockScreen.vue'
 import VaultView from '@/components/VaultView.vue'
 import SettingsView from '@/components/SettingsView.vue'
 import EmailBackupView from '@/components/EmailBackupView.vue'
+import SyncHubView from '@/components/SyncHubView.vue'
 import WifiSyncView from '@/components/WifiSyncView.vue'
+import FolderSyncView from '@/components/FolderSyncView.vue'
 import PasswordGenView from '@/components/PasswordGenView.vue'
 import PasswordHealthView from '@/components/PasswordHealthView.vue'
 import TrashView from '@/components/TrashView.vue'
@@ -102,7 +104,9 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
         <VaultView v-else-if="screen === 'vault'" />
         <SettingsView v-else-if="screen === 'settings'" />
         <EmailBackupView v-else-if="screen === 'email-backup'" />
+        <SyncHubView v-else-if="screen === 'sync'" />
         <WifiSyncView v-else-if="screen === 'wifi-sync'" />
+        <FolderSyncView v-else-if="screen === 'folder-sync'" />
         <PasswordGenView v-else-if="screen === 'password-gen'" />
         <PasswordHealthView v-else-if="screen === 'password-health'" />
         <TrashView v-else-if="screen === 'trash'" />
@@ -130,7 +134,9 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
       <VaultView v-else-if="screen === 'vault'" />
       <SettingsView v-else-if="screen === 'settings'" />
       <EmailBackupView v-else-if="screen === 'email-backup'" />
+      <SyncHubView v-else-if="screen === 'sync'" />
       <WifiSyncView v-else-if="screen === 'wifi-sync'" />
+      <FolderSyncView v-else-if="screen === 'folder-sync'" />
       <PasswordGenView v-else-if="screen === 'password-gen'" />
       <PasswordHealthView v-else-if="screen === 'password-health'" />
       <TrashView v-else-if="screen === 'trash'" />

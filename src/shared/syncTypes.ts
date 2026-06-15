@@ -121,3 +121,20 @@ export interface SyncPairingConfig {
   verificationCode?: string
   secure?: boolean
 }
+
+export interface FolderSyncSettings {
+  enabled: boolean
+  folderPath: string | null
+  autoSync: boolean
+}
+
+export interface FolderSyncStatus {
+  connected: boolean
+  folderPath: string | null
+  autoSync: boolean
+  bundleExists: boolean
+  bundleSizeBytes: number
+  bundleModifiedAt: number | null
+  lastPublishedAt: number | null
+  lastPublishedRevision: number
+}

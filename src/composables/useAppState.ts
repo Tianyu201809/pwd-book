@@ -40,6 +40,8 @@ import type {
   WifiSyncPairingInfo,
   WifiSyncServerStatus,
   WifiSyncSettings,
+  FolderSyncSettings,
+  FolderSyncStatus,
 } from '@/shared/syncTypes'
 
 const screen = ref<AppScreen>('lock')
@@ -93,6 +95,21 @@ const wifiSyncServerStatus = ref<WifiSyncServerStatus>({
   lastPublishedAt: null,
   lastPublishedRevision: 0,
   bundleSizeBytes: 0,
+})
+const folderSyncSettings = ref<FolderSyncSettings>({
+  enabled: false,
+  folderPath: null,
+  autoSync: true,
+})
+const folderSyncStatus = ref<FolderSyncStatus>({
+  connected: false,
+  folderPath: null,
+  autoSync: true,
+  bundleExists: false,
+  bundleSizeBytes: 0,
+  bundleModifiedAt: null,
+  lastPublishedAt: null,
+  lastPublishedRevision: 0,
 })
 
 const emailBackupSettings = ref<EmailBackupSettings>({
@@ -463,9 +480,24 @@ function openEmailBackup(): void {
   void loadEmailBackupSettings()
 }
 
+function openSync(): void {
+  navigateTo('sync')
+}
+
 function openWifiSync(): void {
   navigateTo('wifi-sync')
   void loadWifiSyncState()
+}
+
+function openFolderSync(): void {
+  navigateTo('folder-sync')
+  void loadFolderSyncState()
+}
+
+async function loadSyncState(): Promise<void> {
+  if (vaultStatus.value.unlocked) {
+    syncStatus.value = await vaultApi.getSyncStatus()
+  }
 }
 
 async function loadWifiSyncState(): Promise<void> {
@@ -525,6 +557,46 @@ async function pullWifiSyncMergeQr(
   const result = await vaultApi.pullWifiSyncMergeQr({ qrPayload, masterPassword, deviceName })
   await refreshVaultData()
   await loadWifiSyncState()
+  touchActivity()
+  return result
+}
+
+async function loadFolderSyncState(): Promise<void> {
+  folderSyncSettings.value = await vaultApi.getFolderSyncSettings()
+  folderSyncStatus.value = await vaultApi.getFolderSyncStatus()
+  if (vaultStatus.value.unlocked) {
+    syncStatus.value = await vaultApi.getSyncStatus()
+  }
+}
+
+async function pickFolderSyncDirectory(): Promise<string | null> {
+  return vaultApi.pickFolderSyncDirectory()
+}
+
+async function connectFolderSync(folderPath: string, masterPassword: string): Promise<SyncMergeResult> {
+  const result = await vaultApi.connectFolderSync({ folderPath, masterPassword })
+  await refreshVaultData()
+  await loadFolderSyncState()
+  touchActivity()
+  return result
+}
+
+async function disconnectFolderSync(): Promise<void> {
+  folderSyncSettings.value = await vaultApi.disconnectFolderSync()
+  await loadFolderSyncState()
+  touchActivity()
+}
+
+async function updateFolderSyncAutoSync(autoSync: boolean): Promise<void> {
+  folderSyncSettings.value = await vaultApi.updateFolderSyncSettings({ autoSync })
+  folderSyncStatus.value = await vaultApi.getFolderSyncStatus()
+  touchActivity()
+}
+
+async function syncFolderNow(masterPassword: string): Promise<SyncMergeResult> {
+  const result = await vaultApi.syncFolderNow(masterPassword)
+  await refreshVaultData()
+  await loadFolderSyncState()
   touchActivity()
   return result
 }
@@ -1217,11 +1289,17 @@ export function useAppState() {
     openPasswordGen,
     openPasswordHealth,
     openEmailBackup,
+    openSync,
     openWifiSync,
+    openFolderSync,
     wifiSyncSettings,
     wifiSyncServerStatus,
+    folderSyncSettings,
+    folderSyncStatus,
     syncStatus,
+    loadSyncState,
     loadWifiSyncState,
+    loadFolderSyncState,
     getWifiSyncVerificationCode,
     startWifiSyncServer,
     stopWifiSyncServer,
@@ -1230,6 +1308,11 @@ export function useAppState() {
     discoverWifiSyncServers,
     pullWifiSyncMerge,
     pullWifiSyncMergeQr,
+    pickFolderSyncDirectory,
+    connectFolderSync,
+    disconnectFolderSync,
+    updateFolderSyncAutoSync,
+    syncFolderNow,
     openTrash,
     refreshTrashEntries,
     restoreTrashEntry,

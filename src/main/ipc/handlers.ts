@@ -1,4 +1,4 @@
-import { clipboard, ipcMain, shell } from 'electron'
+import { clipboard, dialog, ipcMain, shell } from 'electron'
 import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
@@ -111,8 +111,17 @@ import {
   updateWifiSyncSettings,
 } from '../services/wifiSyncService'
 import { getClientVerificationCode } from '../services/syncClientService'
-import type { WifiSyncClientPullPayload, WifiSyncSettings } from '../../shared/syncTypes'
+import type { WifiSyncClientPullPayload, WifiSyncSettings, FolderSyncSettings } from '../../shared/syncTypes'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
+import {
+  connectFolderSync,
+  disconnectFolderSync,
+  getFolderSyncSettings,
+  getFolderSyncStatus,
+  restoreFolderSyncOnUnlock,
+  syncFolderNow,
+  updateFolderSyncSettings,
+} from '../services/folderSyncService'
 
 let clipboardTimer: NodeJS.Timeout | null = null
 
@@ -162,6 +171,7 @@ export function registerIpcHandlers(): void {
       resetScheduledBackupNotification()
       checkScheduledBackupDue(true)
       void restoreWifiSyncServerIfNeeded()
+      restoreFolderSyncOnUnlock()
       return getVaultStatus()
     }),
   )
@@ -665,6 +675,48 @@ export function registerIpcHandlers(): void {
         throw new Error(message, { cause: error })
       }
     },
+  )
+
+  ipcMain.handle(IPC.folderSyncGetSettings, () => wrap(() => getFolderSyncSettings()))
+
+  ipcMain.handle(IPC.folderSyncUpdateSettings, (_event, partial: Partial<FolderSyncSettings>) =>
+    wrap(() => updateFolderSyncSettings(partial)),
+  )
+
+  ipcMain.handle(IPC.folderSyncStatus, () => wrap(() => getFolderSyncStatus()))
+
+  ipcMain.handle(IPC.folderSyncPickDirectory, async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory', 'createDirectory'],
+        title: 'Select sync folder',
+      })
+      if (result.canceled || result.filePaths.length === 0) {
+        return null
+      }
+      return result.filePaths[0] ?? null
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message, { cause: error })
+    }
+  })
+
+  ipcMain.handle(
+    IPC.folderSyncConnect,
+    (_event, payload: { folderPath: string; masterPassword: string }) =>
+      wrap(() => {
+        ensureUnlocked()
+        return connectFolderSync(payload.folderPath, payload.masterPassword)
+      }),
+  )
+
+  ipcMain.handle(IPC.folderSyncDisconnect, () => wrap(() => disconnectFolderSync()))
+
+  ipcMain.handle(IPC.folderSyncSyncNow, (_event, masterPassword: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      return syncFolderNow(masterPassword)
+    }),
   )
 
   startBackupScheduler()

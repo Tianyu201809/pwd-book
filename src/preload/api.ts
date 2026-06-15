@@ -41,6 +41,8 @@ import type {
   WifiSyncPairingInfo,
   WifiSyncServerStatus,
   WifiSyncSettings,
+  FolderSyncSettings,
+  FolderSyncStatus,
 } from '../shared/syncTypes'
 
 export type ThemeNativeMode = 'dark' | 'light' | 'system'
@@ -196,6 +198,18 @@ export const electronAPI = {
     masterPassword: string
     deviceName?: string
   }): Promise<SyncMergeResult> => invoke(IPC.wifiSyncPullMergeQr, payload),
+  getFolderSyncSettings: (): Promise<FolderSyncSettings> => invoke(IPC.folderSyncGetSettings),
+  updateFolderSyncSettings: (partial: Partial<FolderSyncSettings>): Promise<FolderSyncSettings> =>
+    invoke(IPC.folderSyncUpdateSettings, partial),
+  getFolderSyncStatus: (): Promise<FolderSyncStatus> => invoke(IPC.folderSyncStatus),
+  pickFolderSyncDirectory: (): Promise<string | null> => invoke(IPC.folderSyncPickDirectory),
+  connectFolderSync: (payload: {
+    folderPath: string
+    masterPassword: string
+  }): Promise<SyncMergeResult> => invoke(IPC.folderSyncConnect, payload),
+  disconnectFolderSync: (): Promise<FolderSyncSettings> => invoke(IPC.folderSyncDisconnect),
+  syncFolderNow: (masterPassword: string): Promise<SyncMergeResult> =>
+    invoke(IPC.folderSyncSyncNow, masterPassword),
   onScheduledBackupDue: (handler: () => void): (() => void) => {
     const listener = (): void => handler()
     ipcRenderer.on(IPC_EVENTS.scheduledBackupDue, listener)

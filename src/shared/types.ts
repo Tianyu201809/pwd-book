@@ -5,7 +5,9 @@ export type AppScreen =
   | 'vault'
   | 'settings'
   | 'email-backup'
+  | 'sync'
   | 'wifi-sync'
+  | 'folder-sync'
   | 'password-gen'
   | 'password-health'
   | 'trash'
@@ -319,6 +321,13 @@ export const IPC = {
   wifiSyncDiscover: 'wifi-sync:discover',
   wifiSyncPullMerge: 'wifi-sync:pull-merge',
   wifiSyncPullMergeQr: 'wifi-sync:pull-merge-qr',
+  folderSyncGetSettings: 'folder-sync:get-settings',
+  folderSyncUpdateSettings: 'folder-sync:update-settings',
+  folderSyncStatus: 'folder-sync:status',
+  folderSyncPickDirectory: 'folder-sync:pick-directory',
+  folderSyncConnect: 'folder-sync:connect',
+  folderSyncDisconnect: 'folder-sync:disconnect',
+  folderSyncSyncNow: 'folder-sync:sync-now',
   detailWindowOpen: 'detail-window:open',
   detailWindowClose: 'detail-window:close',
   detailWindowReady: 'detail-window:ready',

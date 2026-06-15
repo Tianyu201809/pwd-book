@@ -43,7 +43,7 @@ const {
   securitySettings,
   updateSecuritySettings,
   resetAllData,
-  openWifiSync,
+  openSync,
   openEmailBackup,
   errorMessage,
   clearError,
@@ -595,7 +595,7 @@ async function handleReset(): Promise<void> {
             <button
               type="button"
               class="link-row"
-              @click="openWifiSync"
+              @click="openSync"
             >
               <span><RefreshCw
                 :size="16"

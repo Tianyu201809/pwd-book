@@ -113,7 +113,7 @@ onUnmounted(() => {
 })
 
 function goBack(): void {
-  navigateTo('settings', 'data')
+  navigateTo('sync')
 }
 
 async function toggleServer(): Promise<void> {
@@ -256,7 +256,7 @@ async function confirmSync(masterPassword: string): Promise<void> {
             :size="16"
             :stroke-width="1.5"
           />
-          {{ t('settings.backToSettings') }}
+          {{ t('tools.wifiSync.backToSync') }}
         </button>
 
         <div class="tool-sidebar-hero">

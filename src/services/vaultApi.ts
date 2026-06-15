@@ -28,6 +28,8 @@ import type {
   WifiSyncPairingInfo,
   WifiSyncServerStatus,
   WifiSyncSettings,
+  FolderSyncSettings,
+  FolderSyncStatus,
 } from '@/shared/syncTypes'
 
 function getApi() {
@@ -145,4 +147,16 @@ export const vaultApi = {
     masterPassword: string
     deviceName?: string
   }): Promise<SyncMergeResult> => getApi().pullWifiSyncMergeQr(payload),
+  getFolderSyncSettings: (): Promise<FolderSyncSettings> => getApi().getFolderSyncSettings(),
+  updateFolderSyncSettings: (partial: Partial<FolderSyncSettings>): Promise<FolderSyncSettings> =>
+    getApi().updateFolderSyncSettings(partial),
+  getFolderSyncStatus: (): Promise<FolderSyncStatus> => getApi().getFolderSyncStatus(),
+  pickFolderSyncDirectory: (): Promise<string | null> => getApi().pickFolderSyncDirectory(),
+  connectFolderSync: (payload: {
+    folderPath: string
+    masterPassword: string
+  }): Promise<SyncMergeResult> => getApi().connectFolderSync(payload),
+  disconnectFolderSync: (): Promise<FolderSyncSettings> => getApi().disconnectFolderSync(),
+  syncFolderNow: (masterPassword: string): Promise<SyncMergeResult> =>
+    getApi().syncFolderNow(masterPassword),
 }
