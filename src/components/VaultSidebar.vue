@@ -164,12 +164,13 @@ function stopResize(): void {
   localStorage.setItem(WIDTH_STORAGE_KEY, String(panelWidth.value))
   document.body.style.cursor = ''
   document.body.style.userSelect = ''
-  window.removeEventListener('mousemove', onResizeMove)
-  window.removeEventListener('mouseup', stopResize)
+  document.removeEventListener('pointermove', onResizeMove)
+  document.removeEventListener('pointerup', stopResize)
+  document.removeEventListener('pointercancel', stopResize)
   window.dispatchEvent(new Event('resize'))
 }
 
-function onResizeMove(event: MouseEvent): void {
+function onResizeMove(event: PointerEvent): void {
   const shell = document.querySelector('.sidebar-shell') as HTMLElement | null
   if (!shell) return
   const rect = shell.getBoundingClientRect()
@@ -181,13 +182,14 @@ function onResizeMove(event: MouseEvent): void {
   window.dispatchEvent(new Event('resize'))
 }
 
-function onResizeStart(event: MouseEvent): void {
+function onResizeStart(event: PointerEvent): void {
   if (sidebarCollapsed.value || event.button !== 0) return
   isResizing.value = true
   document.body.style.cursor = 'col-resize'
   document.body.style.userSelect = 'none'
-  window.addEventListener('mousemove', onResizeMove)
-  window.addEventListener('mouseup', stopResize)
+  document.addEventListener('pointermove', onResizeMove)
+  document.addEventListener('pointerup', stopResize)
+  document.addEventListener('pointercancel', stopResize)
 }
 
 function onVaultLayoutResize(): void {

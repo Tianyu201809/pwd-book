@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -22,14 +22,20 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   toggle: []
-  'resize-start': [event: MouseEvent]
+  'resize-start': [event: PointerEvent]
 }>()
 
 const hovered = ref(false)
 const toggleHovered = ref(false)
+const suppressHover = ref(false)
+
+let suppressHoverTimer: ReturnType<typeof setTimeout> | null = null
 
 const edgeActive = computed(
-  () => props.collapsed || hovered.value || toggleHovered.value || props.resizing,
+  () =>
+    props.collapsed
+    || props.resizing
+    || (!suppressHover.value && (hovered.value || toggleHovered.value)),
 )
 
 const showToggle = computed(() => edgeActive.value)
@@ -38,11 +44,17 @@ const toggleTitle = computed(() =>
   props.collapsed ? props.expandLabel : props.collapseLabel,
 )
 
-function onMouseDown(event: MouseEvent): void {
+function onPointerDown(event: PointerEvent): void {
   if (props.collapsed || event.button !== 0) return
   const target = event.target as HTMLElement | null
   if (target?.closest('.panel-edge-toggle')) return
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
   emit('resize-start', event)
+}
+
+function onEdgeMouseEnter(): void {
+  if (suppressHover.value) return
+  hovered.value = true
 }
 
 function onEdgeMouseLeave(event: MouseEvent): void {
@@ -59,12 +71,37 @@ function onEdgeMouseLeave(event: MouseEvent): void {
 }
 
 function onToggleMouseEnter(): void {
+  if (suppressHover.value) return
   toggleHovered.value = true
 }
 
 function onToggleMouseLeave(): void {
   toggleHovered.value = false
 }
+
+watch(
+  () => props.collapsed,
+  () => {
+    hovered.value = false
+    toggleHovered.value = false
+    suppressHover.value = true
+    if (suppressHoverTimer) clearTimeout(suppressHoverTimer)
+    suppressHoverTimer = setTimeout(() => {
+      suppressHover.value = false
+      suppressHoverTimer = null
+    }, 250)
+  },
+)
+
+function onToggleClick(): void {
+  hovered.value = false
+  toggleHovered.value = false
+  emit('toggle')
+}
+
+onUnmounted(() => {
+  if (suppressHoverTimer) clearTimeout(suppressHoverTimer)
+})
 </script>
 
 <template>
@@ -74,9 +111,9 @@ function onToggleMouseLeave(): void {
       `panel-edge--${placement}`,
       { collapsed, resizing, hovered: edgeActive },
     ]"
-    @mouseenter="hovered = true"
+    @mouseenter="onEdgeMouseEnter"
     @mouseleave="onEdgeMouseLeave"
-    @mousedown="onMouseDown"
+    @pointerdown="onPointerDown"
   >
     <div
       class="panel-edge-sash"
@@ -90,7 +127,7 @@ function onToggleMouseLeave(): void {
       :aria-label="toggleTitle"
       @mouseenter="onToggleMouseEnter"
       @mouseleave="onToggleMouseLeave"
-      @click.stop="emit('toggle')"
+      @click.stop="onToggleClick"
     >
       <template v-if="placement === 'after'">
         <ChevronLeft
@@ -150,7 +187,7 @@ function onToggleMouseLeave(): void {
   z-index: 1;
   width: 1px;
   transform: translateX(-50%);
-  background: transparent;
+  background: var(--border-default);
   transition:
     width 0.12s ease,
     background-color 0.12s ease,

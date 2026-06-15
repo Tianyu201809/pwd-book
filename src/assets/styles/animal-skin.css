@@ -377,6 +377,18 @@
   background: var(--bg-surface);
 }
 
+[data-skin="animalIsland"] .panel-edge:not(.collapsed):not(.hovered):not(.resizing) .panel-edge-sash {
+  width: 2px;
+  background: var(--border-strong);
+}
+
+[data-skin="animalIsland"] .panel-edge.hovered .panel-edge-sash,
+[data-skin="animalIsland"] .panel-edge.resizing .panel-edge-sash {
+  width: 2px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 6px rgba(25, 200, 185, 0.35);
+}
+
 [data-skin="animalIsland"] .panel-edge.collapsed .panel-edge-toggle {
   background-color: var(--bg-surface);
 }
