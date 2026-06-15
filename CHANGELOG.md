@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-06-15
+
+### 新增
+
+- **文件夹同步（Folder Sync）** — 参考 Enpass 模式：选择本地或云盘同步目录，读写加密 `vault.pwdbook`；**设置 → 数据 → 同步** 先进入 **同步方式选择页**（Sync Hub），再选 **局域网同步** 或 **文件夹同步**。
+- **Sync Hub** — `SyncHubView.vue`：两张方式卡片（Wi-Fi / 文件夹）；Wi-Fi 同步页返回按钮改为回到 Hub 而非设置页。
+- **FolderSyncView** — 选文件夹、主密码确认连接、自动同步开关（变更 debounce 3s）、立即同步、更改目录、断开连接；合并冲突复用 `SyncConflictModal`。
+
+### 改进
+
+- **同步入口** — 设置 → 数据 → **同步** 打开 Sync Hub（`AppScreen = 'sync'`），不再直接进入 Wi-Fi 页。
+
+### 文档
+
+- 新增 [docs/code-map/folder-sync.md](./docs/code-map/folder-sync.md)；README、CHANGELOG 与 code-map 同步 v1.19.0。
+
 ## [1.18.0] - 2026-06-10
 
 ### 改进

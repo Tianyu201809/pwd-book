@@ -96,9 +96,9 @@
 
 在 `main/index.ts` 的 `app.whenReady()` 中调用 `registerSystemAutoLock()`。
 
-### 同步服务（v1.9.0）
+### 同步服务（v1.9.0 Wi-Fi / v1.19.0 文件夹）
 
-详见 [wifi-sync.md](./wifi-sync.md)。
+Wi-Fi 详见 [wifi-sync.md](./wifi-sync.md)；文件夹详见 [folder-sync.md](./folder-sync.md)。
 
 | 模块 | 职责 |
 |------|------|
@@ -106,8 +106,9 @@
 | `syncMergeService` | 解密远端 bundle → `mergeSyncBundles` → 本地重加密落库 |
 | `wifiSyncService` | HTTPS WebDAV Server、mDNS、配对信息、vault 变更 debounce 发布 |
 | `syncClientService` | mDNS 发现、pull-merge-push、配对 JSON 同步 |
+| `folderSyncService` | **v1.19.0** 用户目录读写 `vault.pwdbook`、连接/断开、解锁与变更时 merge-write |
 
-解锁时若 `wifi_sync_settings.serverEnabled` 为 true，handlers 调用 `restoreWifiSyncServerIfNeeded()`。`database.ts` 持久化后调用 `notifyVaultChangedForSync()`。
+解锁时：若 `wifi_sync_settings.serverEnabled` → `restoreWifiSyncServerIfNeeded()`；若 `folder_sync_settings.enabled` → `restoreFolderSyncOnUnlock()`。`database.ts` 持久化后调用 `notifyVaultChangedForSync()` 与 `notifyVaultChangedForFolderSync()`。
 
 ## 加密模块 (`src/main/crypto/vaultCrypto.ts`)
 

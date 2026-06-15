@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.18.0**（`package.json`）— 分类切换不自动选中条目、启动崩溃修复、ESLint flat config 等。
+**当前版本：v1.19.0**（`package.json`）— 文件夹同步（Enpass 式）、Sync Hub 同步方式选择页等。
 
 ## 文档索引
 
@@ -16,6 +16,7 @@
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试 |
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
+| [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
 
 ## 相关文档
 
@@ -53,6 +54,7 @@
 | 改详情小窗口 / 置顶 / 主窗同步 | `main/detailWindow.ts`、`DetailWindowApp.vue`、`renderer/detail.ts`、`TitleBar.vue`（`detail-window`）、`useAppState.ts`（`openDetachedDetail`、`detachedDetailOpen`） |
 | 改侧栏收缩 | `VaultSidebar.vue`（`pwdbook-sidebar-collapsed`） |
 | 改 Wi-Fi 同步 / 合并 | [wifi-sync.md](./wifi-sync.md)、`wifiSyncService.ts`、`syncMergeService.ts`、`shared/syncMerge.ts` |
-| 改 Wi-Fi 同步冲突 UI | `WifiSyncView.vue`、`sync/SyncConflictModal.vue`、`shared/syncMerge.ts` |
+| 改文件夹同步 / Sync Hub | [folder-sync.md](./folder-sync.md)、`folderSyncService.ts`、`SyncHubView.vue`、`FolderSyncView.vue` |
+| 改 Wi-Fi 同步冲突 UI | `WifiSyncView.vue`、`FolderSyncView.vue`、`sync/SyncConflictModal.vue`、`shared/syncMerge.ts` |
 | 改托盘文案 / 语言 | `shared/trayLabels.ts`、`main/tray.ts`；`app_settings.ui_locale` |
 | 改类型定义 | `src/shared/types.ts`、`src/shared/syncTypes.ts`、`src/shared/browserBridgeProtocol.ts` |

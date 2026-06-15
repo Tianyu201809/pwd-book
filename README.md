@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.18.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.19.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -19,7 +19,7 @@
 > [!IMPORTANT]
 > **本地优先，默认不上网。** 保险库数据仅存本机 `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录；无遥测、无厂商托管云同步。
 >
-> **可选局域网同步（v1.9.0）** 仅在同一 Wi-Fi / 局域网内传输**主密码加密的同步包**，不经互联网；见 [Wi-Fi 同步](#wi-fi-局域网同步-v190)。
+> **可选同步（v1.9.0 局域网 / v1.19.0 文件夹）** — Wi-Fi 同步仅在同一局域网内传输**主密码加密的同步包**；文件夹同步将相同格式的 `vault.pwdbook` 写入本地或云盘目录（Dropbox、OneDrive 等），由云盘传播、本机加解密。均不经 PwdBook 厂商云。见 [同步](#同步-v1190)。
 >
 > **可选邮箱备份** 会在你主动配置 SMTP 并发送时，向指定邮件服务器建立出站连接；备份内容为 AES-256 加密 ZIP，解压密码为主密码。
 >
@@ -123,7 +123,7 @@ npm run dev
 
 ## 功能
 
-功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [Wi-Fi 同步](#wi-fi-局域网同步-v190) · [外观](#外观) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
+功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [同步](#同步-v1190) · [外观](#外观) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
 
 以下按用户可见模块整理；实现细节见 [docs/code-map](./docs/code-map/README.md)。
 
@@ -183,7 +183,7 @@ npm run dev
 |------|------|
 | **导出数据** | 两步向导：选格式 → 确认条数 → 保存文件（见 [数据导入导出](#数据导入导出)） |
 | **导入数据** | 三步向导：选来源 → 上传文件 → 预览确认（见下） |
-| **同步** | **v1.9.0** 局域网 Wi-Fi 同步（见 [Wi-Fi 同步](#wi-fi-局域网同步-v190)） |
+| **同步** | **v1.19.0** 同步方式选择页 + **文件夹同步**（Enpass 式目录同步）；**v1.9.0** 局域网 Wi-Fi 同步（见 [同步](#同步-v1190)） |
 | **清除所有数据** | 二次确认后 wipe 本地库并重置为未初始化状态 |
 
 #### 关于
@@ -236,15 +236,30 @@ npm run dev
 
 分类与条目的 **显示图标** 可在图标选择器中挑选：**60 个图形图标** 或 **A–Z 字母图标**（分 Tab）；侧栏与设置页导航项使用彩色徽章风格。
 
-### Wi-Fi 局域网同步（v1.9.0）
+### 同步（v1.19.0） {#同步-v1190}
+
+**设置 → 数据 → 同步** 打开 **同步方式选择页**，可选：
+
+#### 文件夹同步（v1.19.0，Enpass 式）
+
+将加密同步包 `vault.pwdbook` 写入你选择的文件夹；若该文件夹位于 **Dropbox / OneDrive / iCloud** 等云盘同步目录内，其他设备指向同一路径即可跨设备合并。云盘只存加密文件，解密与合并在本机完成；**各设备主密码须一致**。
+
+1. **设置 → 数据 → 同步 → 文件夹同步**
+2. **选择同步文件夹** → 确认主密码（目录已有 `vault.pwdbook` 则合并，否则写入本机数据）
+3. 保持 **自动同步** 开启时，修改条目约 3 秒后自动 merge 写回；亦可 **立即同步**
+4. 在其他设备重复步骤 1–2，选择**同一云盘文件夹**
+
+技术细节见 [docs/code-map/folder-sync.md](./docs/code-map/folder-sync.md)。
+
+#### Wi-Fi 局域网同步（v1.9.0）
 
 在同一局域网内同步密码库，**不经互联网**；各设备**主密码须一致**。
 
-1. **桌面（服务端）** — **设置 → 数据 → 同步** → 选择 **我是服务端（桌面）** → **启动服务**。
+1. **设置 → 数据 → 同步 → 局域网同步** → 选择 **我是服务端（桌面）** → **启动服务**。
 2. 将页面上的 **配对二维码**、访问密码或校验码交给另一台设备（校验码用于确认未遭中间人篡改）。
 3. **其他设备（客户端）** — 进入同步页选择 **我是客户端** → **发现局域网服务** 或粘贴配对 JSON → 核对校验码 → 输入访问密码 → **立即同步**（需确认主密码）。
 
-合并规则：同一条目以较新的修改为准；删除与还原按时间戳参与合并。**v1.12.0** 起，若两端同时修改且时间戳相同，默认保留本机版本并弹出 **同步冲突** 对话框列出相关条目。技术细节见 [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md)。
+合并规则（两种方式相同）：同一条目以较新的修改为准；删除与还原按时间戳参与合并。**v1.12.0** 起，若两端同时修改且时间戳相同，默认保留本机版本并弹出 **同步冲突** 对话框。Wi-Fi 细节见 [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md)。
 
 ### 数据导入导出
 
@@ -356,6 +371,7 @@ npm run dev
 
 - **本地存储**：默认无厂商云同步；安全与界面偏好写入 `app_settings` 表。
 - **局域网同步**：WebDAV 上仅为 AES 加密的 SyncBundle；Access Password 保护 LAN 读取；解锁后才合并明文。
+- **文件夹同步（v1.19.0）**：用户目录内仅 `vault.pwdbook` 加密文件；云盘不接触明文；解锁后才 merge-write。
 - **恢复密钥**：独立 scrypt 校验；用恢复密钥包装会话密钥，支持主密码重置后的条目重加密。
 - **剪贴板**：可选在复制后 N 秒清空剪贴板（若内容未被用户改写）。
 - **导出文件**：JSON、CSV、Excel 等导出均可能包含**明文密码**，勿上传至网盘或聊天工具。
@@ -364,9 +380,16 @@ npm run dev
 
 ## 版本更新
 
-### v1.18.0（当前）
+### v1.19.0（当前）
 
-完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1180---2026-06-10)**。摘要：
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1190---2026-06-15)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 同步 | **文件夹同步**（Enpass 式目录 + `vault.pwdbook`）；**Sync Hub** 选择 Wi-Fi / 文件夹 |
+| 入口 | 设置 → 数据 → 同步 → 方式选择页 |
+
+### v1.18.0
 
 | 类别 | 内容 |
 |------|------|
@@ -574,6 +597,7 @@ pwd-book/
 | [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md) | 快捷搜索条、最近打开与全局快捷键 |
 | [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0；**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md) | Wi-Fi 局域网同步（v1.9.0） |
+| [docs/code-map/folder-sync.md](./docs/code-map/folder-sync.md) | 文件夹同步（v1.19.0） |
 | [design/design-system.md](./design/design-system.md) | 色彩、字体与组件 Token |
 | [design/recovery-flow.md](./design/recovery-flow.md) | 恢复密钥 UX 与文案规范 |
 
@@ -583,7 +607,7 @@ pwd-book/
 Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 通常为 `%APPDATA%\pwd-book\`；macOS 通常为 `~/Library/Application Support/pwd-book/`）。Windows 通过 NSIS 安装程序卸载时会询问是否删除本地密码数据（见 `deps/installer.nsh`）；选择「否」则仅移除程序，数据保留。应用内覆盖安装（升级）不会弹出提示，也不会删除数据。
 
 **能否多端同步？**  
-**v1.9.0** 起支持 **同一局域网内的 Wi-Fi 同步**（**设置 → 数据 → 同步**），桌面作服务端、其他设备作客户端；不经互联网，主密码须一致。无厂商托管云同步。亦可自行通过「导出数据」导出 **JSON** / **CSV** 拷贝恢复，或使用「邮箱备份」作灾备。
+**v1.19.0** 起支持 **文件夹同步**（**设置 → 数据 → 同步 → 文件夹同步**）：将加密 `vault.pwdbook` 写入本地或云盘目录，各设备主密码一致即可合并。**v1.9.0** 起另支持 **同一局域网 Wi-Fi 同步**（Sync Hub → 局域网同步）。均无厂商托管云。亦可导出 **JSON** / **CSV** 或使用「邮箱备份」作灾备。
 
 **误删条目能恢复吗？**  
 可以。删除会**移至回收站**（非立即彻底删除）。侧栏底部打开 **回收站** → 单条 **还原** 或 **一键还原**。超过 **设置 → 安全 → 回收站保留期限**（默认 30 天）后条目会自动彻底删除。

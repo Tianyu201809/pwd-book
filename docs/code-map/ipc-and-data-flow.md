@@ -83,6 +83,20 @@
 | `wifi-sync:pull-merge` | 是 | 客户端拉取、合并、回传 |
 | `wifi-sync:discover` | 否 | mDNS 浏览局域网服务 |
 
+### 文件夹同步（v1.19.0）
+
+详见 [folder-sync.md](./folder-sync.md)。
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `folder-sync:get-settings` | 否 | `FolderSyncSettings` |
+| `folder-sync:update-settings` | 否 | 部分更新（如 `autoSync`） |
+| `folder-sync:status` | 否 | 连接状态、路径、bundle 文件信息 |
+| `folder-sync:pick-directory` | 否 | 系统文件夹选择器 |
+| `folder-sync:connect` | 是 | 选择目录 + 主密码，首次连接或改目录 |
+| `folder-sync:disconnect` | 否 | 断开连接（不删文件夹内文件） |
+| `folder-sync:sync-now` | 是 | 手动 merge-write |
+
 ### 浏览器自动填充（v1.6.0）
 
 | 通道 | 需解锁 | 说明 |
@@ -203,4 +217,4 @@ sequenceDiagram
 | 主进程 | 未解锁拒绝条目/分类 mutating IPC |
 | 内存 | sessionKey 仅 `sessionService` 持有，锁定清零 |
 | 磁盘 | 条目密码仅 `password_encrypted` 字段；主密码仅存 scrypt hash |
-| 网络 | 无 outbound 云业务；Wi-Fi 同步仅 LAN WebDAV（v1.9.0） |
+| 网络 | 无 outbound 云业务；Wi-Fi 同步仅 LAN WebDAV（v1.9.0）；文件夹同步由用户自选目录/云盘传播加密文件（v1.19.0） |

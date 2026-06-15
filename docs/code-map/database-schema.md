@@ -66,6 +66,7 @@
 | `browser_extension_id` | 上次注册的 Chrome 扩展 ID（32 位 a–p） |
 | `sidebar_category_order` | JSON：`string[]`，含 `all`、`favorite` 及自定义分类 id |
 | `wifi_sync_settings` | JSON：`serverEnabled`、`accessPassword`、`port`、`pairedDevices`（v1.9.0） |
+| `folder_sync_settings` | JSON：`enabled`、`folderPath`、`autoSync`（v1.19.0） |
 | `sync_device_id` | 本机同步设备 UUID（v1.9.0） |
 | `sync_revision` | 当前 SyncBundle 版本号（v1.9.0） |
 | `sync_last_synced_at` | 上次成功同步时间戳 ms（v1.9.0） |
@@ -103,6 +104,14 @@
 | `{userData}/wifi-sync-certs/` | 自签 TLS 证书与私钥 |
 
 详见 [wifi-sync.md](./wifi-sync.md)。
+
+## 文件夹同步（v1.19.0，非 SQLite）
+
+| 路径 | 说明 |
+|------|------|
+| `{用户选择的目录}/vault.pwdbook` | 加密 SyncBundle；由 `folderSyncService` 读写 |
+
+详见 [folder-sync.md](./folder-sync.md)。
 
 ## 备份 JSON 结构
 

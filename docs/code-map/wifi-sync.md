@@ -2,7 +2,7 @@
 
 PwdBook **v1.9.0** 起支持参考 Enpass 模式的 **局域网同步**：桌面作 **Server**，其他设备作 **Client**，数据不经互联网，传输层为 HTTPS WebDAV + mDNS 发现，同步包全程主密码加密。
 
-用户入口：**设置 → 数据 → 同步**（`AppScreen = 'wifi-sync'`）。
+用户入口：**设置 → 数据 → 同步** → **局域网同步**（`AppScreen = 'wifi-sync'`）。**v1.19.0** 起先进入 Sync Hub（`AppScreen = 'sync'`）再选择本方式。
 
 ## 架构概览
 
@@ -142,7 +142,7 @@ sequenceDiagram
 - **Access Password** 防止 LAN 内未授权读取；**校验码** 供用户肉眼防 MITM。
 - **主密码必须一致**，否则无法解密合并。
 - **锁定不同步**：未解锁不构建明文 bundle、不执行 merge。
-- 条目变更触发 `notifyVaultChangedForSync()`（`database.ts` persist 钩子）。
+- 条目变更触发 `notifyVaultChangedForSync()`（`database.ts` persist 钩子）；**v1.19.0** 起文件夹同步另触发 `notifyVaultChangedForFolderSync()`，见 [folder-sync.md](./folder-sync.md)。
 
 ## 相关测试
 

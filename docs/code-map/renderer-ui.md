@@ -19,10 +19,12 @@ App.vue
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
 ├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全；v1.13.0 SMTP 密码占位/显隐）
+├── SyncHubView.vue           # 同步方式选择（v1.19.0，设置 → 数据 → 同步）
+├── FolderSyncView.vue        # 文件夹同步（v1.19.0，Enpass 式目录 + vault.pwdbook）
 ├── PasswordGenView.vue       # 随机密码（侧栏工具区入口）
 ├── PasswordHealthView.vue    # 密码健康（v1.12.0，侧栏工具区入口）
-├── WifiSyncView.vue          # 局域网同步（v1.9.0，设置 → 数据 → 同步）
-│   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram、SyncConflictModal（v1.12.0）
+├── WifiSyncView.vue          # 局域网同步（v1.9.0，经 Sync Hub 进入；返回 Hub）
+│   └── sync/*                # SyncTutorialPanel、SyncPairingQr、SyncTutorialDiagram、SyncConflictModal（v1.12.0；FolderSync 复用 ConflictModal）
 ├── TagFilterPanel.vue        # 侧栏按标签筛选（v1.12.0，VaultSidebar 内嵌；v1.13.0 搜索框尺寸）
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
 ├── TagManagePanel.vue        # 标签管理
@@ -100,7 +102,7 @@ App.vue
 
 | 状态/方法 | 说明 |
 |-----------|------|
-| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'wifi-sync' \| 'password-gen' \| 'password-health' \| 'trash'` |
+| `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'sync' \| 'wifi-sync' \| 'folder-sync' \| 'password-gen' \| 'password-health' \| 'trash'` |
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
@@ -114,8 +116,11 @@ App.vue
 | `exportData` / `importData` | PwdBook JSON 备份导入 |
 | `previewImportData` / `commitImportData` | 多来源导入（含 PwdBook CSV）预览与提交 |
 | `exportDataAsCsv` | PwdBook / 第三方 CSV 导出 |
-| `openWifiSync` / `loadWifiSyncState` | 同步页导航与状态（v1.9.0） |
-| `startWifiSyncServer` / `pullWifiSyncMerge` | 服务端开关、客户端拉取合并 |
+| `openSync` / `openWifiSync` / `openFolderSync` | Sync Hub 与两种同步页导航（v1.19.0） |
+| `loadWifiSyncState` / `loadFolderSyncState` | 同步状态加载 |
+| `startWifiSyncServer` / `pullWifiSyncMerge` | Wi-Fi 服务端开关、客户端拉取合并 |
+| `pickFolderSyncDirectory` / `connectFolderSync` / `syncFolderNow` | 文件夹选择、连接、手动同步（v1.19.0） |
+| `disconnectFolderSync` / `updateFolderSyncAutoSync` | 断开文件夹同步、自动同步开关 |
 | `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 侧栏标签多选筛选（v1.12.0，AND 逻辑） |
 | `openPasswordHealth` | 密码健康页导航（v1.12.0） |
 

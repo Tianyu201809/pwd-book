@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.18.0（`package.json`） |
+| 版本 | 1.19.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch` 等 |
@@ -59,7 +59,7 @@ flowchart TB
 `useAppState` 用 `screen: AppScreen` 驱动根视图切换：
 
 ```
-lock ──unlock──► vault ◄──► settings / email-backup / wifi-sync / …
+lock ──unlock──► vault ◄──► settings / email-backup / sync / wifi-sync / folder-sync / …
   ▲                  │
   └──── lock ────────┘
 ```
@@ -67,7 +67,9 @@ lock ──unlock──► vault ◄──► settings / email-backup / wifi-syn
 - **lock**：`LockScreen.vue` — 创建/解锁/恢复密钥/清除保险库
 - **vault**：`VaultView.vue` — 侧边栏 + 列表 + 详情
 - **settings**：`SettingsView.vue` — 安全、外观、数据、关于
-- **wifi-sync**：`WifiSyncView.vue` — 局域网同步（v1.9.0，入口：设置 → 数据 → 同步）
+- **sync**：`SyncHubView.vue` — 同步方式选择（v1.19.0，入口：设置 → 数据 → 同步）
+- **wifi-sync**：`WifiSyncView.vue` — 局域网同步（v1.9.0，经 Sync Hub 进入）
+- **folder-sync**：`FolderSyncView.vue` — 文件夹同步（v1.19.0，经 Sync Hub 进入）
 - **password-health**：`PasswordHealthView.vue` — 密码健康分析（v1.12.0，入口：侧栏工具与设置）
 
 ## 目录结构
@@ -79,7 +81,7 @@ src/
 │   ├── ipc/handlers.ts   # IPC 路由与校验
 │   ├── crypto/           # scrypt + AES-256-GCM
 │   ├── db/               # sql.js 初始化、迁移、helpers
-│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、browserBridge
+│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge
 ├── extension/            # Chrome/Edge MV3（v1.6.0）
 ├── native-host/          # Native Messaging Host（v1.6.0）
 ├── preload/
