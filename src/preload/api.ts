@@ -269,4 +269,8 @@ export const electronAPI = {
     invoke(IPC.detailWindowGetAlwaysOnTop),
   toggleDetailWindowAlwaysOnTop: (): Promise<boolean> =>
     invoke(IPC.detailWindowToggleAlwaysOnTop),
+  getWindowAlwaysOnTop: (): Promise<boolean> =>
+    invoke(IPC.windowGetAlwaysOnTop),
+  toggleWindowAlwaysOnTop: (): Promise<boolean> =>
+    invoke(IPC.windowToggleAlwaysOnTop),
 }

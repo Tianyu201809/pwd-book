@@ -334,6 +334,8 @@ export const IPC = {
   detailWindowSelectEntry: 'detail-window:select-entry',
   detailWindowToggleAlwaysOnTop: 'detail-window:toggle-always-on-top',
   detailWindowGetAlwaysOnTop: 'detail-window:get-always-on-top',
+  windowGetAlwaysOnTop: 'window:get-always-on-top',
+  windowToggleAlwaysOnTop: 'window:toggle-always-on-top',
   vaultDataNotifyChanged: 'vault-data:notify-changed',
 } as const
 

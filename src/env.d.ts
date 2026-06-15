@@ -154,6 +154,8 @@ declare global {
       onVaultDataChanged?: (handler: () => void) => () => void
       getDetailWindowAlwaysOnTop?: () => Promise<boolean>
       toggleDetailWindowAlwaysOnTop?: () => Promise<boolean>
+      getWindowAlwaysOnTop?: () => Promise<boolean>
+      toggleWindowAlwaysOnTop?: () => Promise<boolean>
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }

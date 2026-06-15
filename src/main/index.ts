@@ -34,6 +34,7 @@ import {
 import { destroyBrowserBridge, syncBrowserBridge } from './services/browserBridgeService'
 import { stopWifiSyncServer } from './services/wifiSyncService'
 import { registerSystemAutoLock } from './autoLock'
+import { IPC } from '../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -157,6 +158,19 @@ if (gotSingleInstanceLock) {
         return
       }
       requestQuit()
+    })
+
+    ipcMain.handle(IPC.windowGetAlwaysOnTop, (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      return win?.isAlwaysOnTop() ?? false
+    })
+
+    ipcMain.handle(IPC.windowToggleAlwaysOnTop, (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      if (!win) return false
+      const next = !win.isAlwaysOnTop()
+      win.setAlwaysOnTop(next, 'floating')
+      return next
     })
 
     ipcMain.on('theme-set-native', (_event, mode: 'dark' | 'light' | 'system') => {

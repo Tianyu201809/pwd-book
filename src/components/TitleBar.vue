@@ -57,11 +57,11 @@ function closeDetailWindow(): void {
 }
 
 async function syncAlwaysOnTop(): Promise<void> {
-  alwaysOnTop.value = (await window.electronAPI?.getDetailWindowAlwaysOnTop?.()) ?? false
+  alwaysOnTop.value = (await window.electronAPI?.getWindowAlwaysOnTop?.()) ?? false
 }
 
 async function toggleAlwaysOnTop(): Promise<void> {
-  alwaysOnTop.value = (await window.electronAPI?.toggleDetailWindowAlwaysOnTop?.()) ?? false
+  alwaysOnTop.value = (await window.electronAPI?.toggleWindowAlwaysOnTop?.()) ?? false
 }
 
 function openCloseDialog(): void {
@@ -172,11 +172,10 @@ watch(showSkinMenu, (open) => {
 })
 
 onMounted(() => {
-  if (props.detailWindow) {
-    void syncAlwaysOnTop()
-    return
+  void syncAlwaysOnTop()
+  if (!props.detailWindow) {
+    removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
   }
-  removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
 })
 
 onUnmounted(() => {
@@ -283,13 +282,7 @@ onUnmounted(() => {
           :stroke-width="1.5"
         />
       </button>
-      <span
-        v-if="!detailWindow && canQuickLock"
-        class="titlebar-divider"
-        aria-hidden="true"
-      />
       <button
-        v-if="detailWindow"
         type="button"
         class="win-btn titlebar-always-on-top-btn"
         :class="{ 'always-on-top-btn--active': alwaysOnTop }"
@@ -302,6 +295,11 @@ onUnmounted(() => {
           :stroke-width="1.5"
         />
       </button>
+      <span
+        v-if="!detailWindow"
+        class="titlebar-divider"
+        aria-hidden="true"
+      />
       <button
         type="button"
         class="win-btn titlebar-minimize-btn"
