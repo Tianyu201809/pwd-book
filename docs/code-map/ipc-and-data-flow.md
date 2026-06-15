@@ -117,9 +117,18 @@
 | `detail-window:close` | 否 | 关闭小窗口 |
 | `detail-window:ready` | 否 | 小窗口渲染就绪；主进程下发待选条目 |
 | `detail-window:select-entry` | 是* | 主窗口切换选中时同步至已打开的小窗口（sender 须为主窗口） |
-| `detail-window:get-always-on-top` | 否* | 查询小窗口置顶状态（sender 须为小窗口） |
-| `detail-window:toggle-always-on-top` | 否* | 切换小窗口置顶（sender 须为小窗口） |
+| `detail-window:get-always-on-top` | 否* | 查询小窗口置顶状态（sender 须为小窗口；**v1.20.0** 起推荐 `window:get-always-on-top`） |
+| `detail-window:toggle-always-on-top` | 否* | 切换小窗口置顶（sender 须为小窗口；**v1.20.0** 起推荐 `window:toggle-always-on-top`） |
 | `vault-data:notify-changed` | 否 | 任一侧保存后通知主进程广播 `vault-data:changed` |
+
+### 窗口置顶（v1.20.0）
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `window:get-always-on-top` | 否 | 查询 **sender 所在窗口** 是否 `isAlwaysOnTop()` |
+| `window:toggle-always-on-top` | 否 | 切换 sender 窗口置顶（`setAlwaysOnTop(next, 'floating')`） |
+
+主窗口与详情小窗口 `TitleBar.vue` 均调用上述通道；小窗口仍保留 `detail-window:*` 兼容实现。
 
 ### 窗口（非 IPC handle）
 

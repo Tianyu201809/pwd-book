@@ -6,11 +6,11 @@
 
 ```
 App.vue
-├── TitleBar.vue              # 自定义标题栏、窗口控制（v1.14.0：详情小窗口模式含置顶）
+├── TitleBar.vue              # 自定义标题栏、窗口控制（v1.14.0 详情小窗口置顶；v1.20.0 主窗口置顶）
 ├── LockScreen.vue            # 锁定页状态机
 │   └── recovery/*            # 恢复流程子组件
 ├── VaultView.vue             # 主工作区（v1.14.0：detached 时隐藏内联详情位）
-│   ├── PanelEdge.vue         # 面板边缘：4px 分割条 + 圆形折叠钮 + 拖拽调宽（v1.17.0；侧栏/详情共用）
+│   ├── PanelEdge.vue         # 面板边缘：4px 分割条 + 圆形折叠钮 + 拖拽调宽（v1.17.0；v1.20.0 常驻分割线、Pointer 调宽）
 │   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge；v1.18.0 pointerdown 立即切换分类）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作
 │   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏；v1.14.0 弹出小窗口；v1.17.0 PanelEdge）
@@ -46,10 +46,11 @@ App.vue
 - 订阅 `vault-data:changed` 与主窗口保持数据一致；选中清空且非新建时自动 `closeDetailWindow`。
 - 动森皮肤下同样包裹 `Cursor` + `AnimalBackdrop`。
 
-### TitleBar.vue（详情小窗口模式）
+### TitleBar.vue
 
-- `detailWindow` prop 为 true 时：隐藏最大化与快速锁定；关闭按钮直接 `closeDetailWindow`；新增 **置顶** 图钉（`getDetailWindowAlwaysOnTop` / `toggleDetailWindowAlwaysOnTop`）。
-- 详情小窗口按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
+- 自定义无边框标题栏：换肤、快速锁定（主窗口）、**置顶图钉**（**v1.20.0** 主窗口与详情小窗口均显示；`getWindowAlwaysOnTop` / `toggleWindowAlwaysOnTop`）、最小化 / 最大化 / 关闭。
+- `detailWindow` prop 为 true 时：隐藏最大化与快速锁定；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
+- 主窗口按钮顺序：换肤 → 锁定（已解锁时）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
 
 ### QuickBarApp.vue
 
@@ -57,10 +58,11 @@ App.vue
 - 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**）；↑↓ / Enter 选择并 `launchEntry`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 
-### PanelEdge.vue（v1.17.0）
+### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
 - 侧栏（`placement="after"`）与详情（`placement="before"`）共用的 **4px 边缘**：悬停/收起/调宽时显示 **圆形描边箭头** 折叠钮；分割线在钮位挖空，`z-index` 高于邻列。
-- `@toggle` 折叠/展开；非收起态 `@resize-start` 触发面板宽度拖拽（`PanelEdge` 内排除 `.panel-edge-toggle` 点击）。
+- **v1.20.0**：`.panel-edge-sash` 默认 `background: var(--border-default)` 常驻细线；动森皮肤 `animal-skin.css` 覆盖为 2px `--border-strong`，悬停/拖拽仍为 `--accent-primary`；`pointerdown` + `setPointerCapture`；`collapsed` 变化时 `suppressHover` 250ms 避免展开偶发高亮。
+- `@toggle` 折叠/展开；非收起态 `@resize-start` 触发面板宽度拖拽（`VaultSidebar` / `PasswordDetail` 监听 `pointermove` / `pointerup` / `pointercancel`）。
 - Token：`--panel-edge-width`（`tokens.css`）；动森皮肤下 `.sidebar-shell` / `.detail-shell` 需 `overflow: visible` 避免钮被裁切。
 
 ### VaultSidebar.vue
@@ -183,7 +185,7 @@ App.vue
 
 - `assets/styles/tokens.css` — 设计 token（颜色、间距）；**v1.17.0** 暗黑色阶上移、`--panel-edge-width`
 - `assets/styles/global.css` — 全局布局、`.vault-texture` 背景；**v1.17.0** 暗黑 `.list-item` 背景、`body.category-drag-active` 光标
-- `assets/styles/animal-skin.css` — **v1.17.0** 指针 16px、PanelEdge/窄条背景、`overflow: visible`
+- `assets/styles/animal-skin.css` — **v1.17.0** 指针 16px、PanelEdge/窄条背景、`overflow: visible`；**v1.20.0** PanelEdge 常驻 2px 分割线与悬停青绿粗线、展开 `suppressHover`
 
 ## 类型 re-export
 

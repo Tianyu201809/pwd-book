@@ -84,7 +84,7 @@
 | `notifyDetailWindowThemeSync` | 主窗口换肤后向小窗口广播 `theme:changed` |
 | `registerDetailWindowIpc` | 注册 open/close/ready/select-entry/always-on-top IPC；`vault-data:notify-changed` 广播至其它窗口 |
 
-小窗口 `setAlwaysOnTop` 经 `detail-window:toggle-always-on-top` / `detail-window:get-always-on-top` 暴露给 `TitleBar.vue`（`detail-window` 模式）。
+小窗口 `setAlwaysOnTop` 经 `detail-window:toggle-always-on-top` / `detail-window:get-always-on-top` 暴露（**v1.20.0** 起主窗与小窗统一改用 `window:toggle-always-on-top` / `window:get-always-on-top`，按 sender 窗口操作）。
 
 ### autoLock（v1.8.0）
 
@@ -156,3 +156,4 @@ SyncBundle 整包 AES-256-GCM；魔数 `PBKS`，版本字节 `1`。
 - 无边框窗口（`frame: false`），配合 `TitleBar.vue`
 - `contextIsolation: true`，`nodeIntegration: false`
 - 额外 `ipcMain.on`：`window-minimize/maximize/close`、`theme-set-native`
+- **v1.20.0** `ipcMain.handle`：`window:get-always-on-top`、`window:toggle-always-on-top`（`BrowserWindow.fromWebContents(event.sender)`）

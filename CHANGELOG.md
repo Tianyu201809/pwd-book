@@ -4,6 +4,26 @@
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-06-15
+
+### 新增
+
+- **主窗口置顶** — 标题栏 **图钉** 按钮（换肤 / 锁定与窗口控制之间）可切换 **窗口置顶**；主窗口与详情小窗口共用 `window:get-always-on-top` / `window:toggle-always-on-top` IPC（按 `event.sender` 对应窗口 `setAlwaysOnTop`）。
+
+### 改进
+
+- **PanelEdge 分割线** — `.panel-edge-sash` 默认显示静态分割线（`--border-default`）；动森皮肤常驻 **2px**（`--border-strong`），悬停/拖拽仍为青绿色粗线。
+- **面板宽度拖拽** — 侧栏/详情 `PanelEdge` 使用 **Pointer Capture** 与 `pointermove` / `pointerup` / `pointercancel`，在输入框等区域松手可正确结束调宽。
+
+### 修复
+
+- **动森皮肤分割线** — v1.17.0 `PanelEdge` 重构后默认透明，三栏背景统一为 `bg-surface` 导致分割线不可见。
+- **动森展开高亮** — 侧栏/详情从收起展开时偶发绿色高亮分割线（`collapsed` 变化时清除悬停并 `suppressHover` 250ms）。
+
+### 文档
+
+- README、CHANGELOG 与 code-map 同步 v1.20.0（主窗口置顶、PanelEdge/动森 UI、拖拽修复等）。
+
 ## [1.19.0] - 2026-06-15
 
 ### 新增

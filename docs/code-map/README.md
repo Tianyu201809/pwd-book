@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.19.0**（`package.json`）— 文件夹同步（Enpass 式）、Sync Hub 同步方式选择页等。
+**当前版本：v1.20.0**（`package.json`）— 主窗口置顶、PanelEdge/动森 UI 与拖拽修复等。
 
 ## 文档索引
 
@@ -41,7 +41,8 @@
 | 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |
 | 改浏览器扩展安装向导 | `BrowserExtensionGuideModal.vue`、`BrowserExtensionGuideVisual.vue`、`SettingsView.vue`、`browserLaunchService.ts` |
 | 改浏览器填充条 UI（拖拽/收起） | `extension/content.js`、`extension/content.css`（`pwdbook-ui-x` / `pwdbook-ui-y` / `pwdbook-ui-collapsed`） |
-| 改面板折叠钮 / 调宽边缘 | `PanelEdge.vue`、`VaultSidebar.vue`、`PasswordDetail.vue`；`--panel-edge-width`（`tokens.css`） |
+| 改面板折叠钮 / 调宽边缘 | `PanelEdge.vue`、`VaultSidebar.vue`、`PasswordDetail.vue`；`--panel-edge-width`（`tokens.css`）；**v1.20.0** 常驻分割线、Pointer Capture 调宽 |
+| 改主窗口 / 小窗口置顶 | `TitleBar.vue`；`window:get-always-on-top` / `window:toggle-always-on-top`（`main/index.ts`） |
 | 改分类拖拽排序 | `VaultSidebar.vue`（`DRAG_ACTIVATION_PX`、`reorderSidebarCategories`） |
 | 改分类切换 / 选中条目逻辑 | `useAppState.ts`（`selectCategory` 清空 `selectedEntryId`；`selectedEntry` 不再回退首条）、`VaultSidebar.vue`（`onItemPointerDown` 立即 `selectCategory`） |
 | 改 ESLint / 代码风格 | `eslint.config.mjs`；`npm run lint` / `lint:fix` |
@@ -51,7 +52,7 @@
 | 改 TOTP / 密码健康 / 标签筛选 | `shared/totp.ts`、`shared/passwordHealth.ts`、`PasswordDetail.vue`、`PasswordHealthView.vue`、`TagFilterPanel.vue`、`VaultSidebar.vue`、`useAppState.ts` |
 | 改邮箱备份 SMTP 密码 UX | `EmailBackupView.vue`（`smtpPasswordModel`、显隐按钮） |
 | 改经典输入框布局 | `components/ui/UiInput.vue`（`ui-input-classic-wrap` 承载 class/style） |
-| 改详情小窗口 / 置顶 / 主窗同步 | `main/detailWindow.ts`、`DetailWindowApp.vue`、`renderer/detail.ts`、`TitleBar.vue`（`detail-window`）、`useAppState.ts`（`openDetachedDetail`、`detachedDetailOpen`） |
+| 改详情小窗口 / 置顶 / 主窗同步 | `main/detailWindow.ts`、`DetailWindowApp.vue`、`renderer/detail.ts`、`TitleBar.vue`（`detail-window`）、`useAppState.ts`（`openDetachedDetail`、`detachedDetailOpen`）；**v1.20.0** 主窗亦用 `getWindowAlwaysOnTop` |
 | 改侧栏收缩 | `VaultSidebar.vue`（`pwdbook-sidebar-collapsed`） |
 | 改 Wi-Fi 同步 / 合并 | [wifi-sync.md](./wifi-sync.md)、`wifiSyncService.ts`、`syncMergeService.ts`、`shared/syncMerge.ts` |
 | 改文件夹同步 / Sync Hub | [folder-sync.md](./folder-sync.md)、`folderSyncService.ts`、`SyncHubView.vue`、`FolderSyncView.vue` |
