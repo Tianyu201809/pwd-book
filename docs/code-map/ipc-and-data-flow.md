@@ -62,7 +62,7 @@
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
-| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口）；同步 `browserBridgeService` |
+| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
 | `data:export` | 是 | JSON 结构 `ExportPayload` |
 | `data:import` | 是 | 批量导入条目 |

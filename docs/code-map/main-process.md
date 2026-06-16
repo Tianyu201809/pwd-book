@@ -49,7 +49,7 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
 
 ### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
 
@@ -95,6 +95,18 @@
 3. 向主窗口发送 `session:system-lock`（`IPC_EVENTS.systemLockScreen`），由渲染进程 `useAutoLock` 切换至锁定页
 
 在 `main/index.ts` 的 `app.whenReady()` 中调用 `registerSystemAutoLock()`。
+
+### launchAtLogin（v1.21.0）
+
+`src/main/launchAtLogin.ts` — 系统登录后自动启动。
+
+| 函数 / 行为 | 说明 |
+|-------------|------|
+| `syncLaunchAtLogin(enabled)` | 调用 `app.setLoginItemSettings({ openAtLogin: enabled })` |
+| 生效条件 | `app.isPackaged` 为真；截图模式（`isScreenshotMode()`）跳过 |
+| 触发时机 | `app.whenReady()` 读取 `getSecuritySettings().launchAtLoginEnabled`；`settings:update` 变更该字段时同步 |
+
+设置项：`SecuritySettings.launchAtLoginEnabled`，持久化键 `launch_at_login_enabled`（默认 `false`）。
 
 ### 同步服务（v1.9.0 Wi-Fi / v1.19.0 文件夹）
 

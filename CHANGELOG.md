@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+## [1.21.0] - 2026-06-16
+
+### 新增
+
+- **开机自动启动** — **设置 → 安全** 首行新增开关（默认关闭）；开启后通过 Electron `app.setLoginItemSettings` 注册系统登录项；启动时与 `settings:update` 时由 `launchAtLogin.ts` 同步 OS 状态（仅正式打包版本生效，开发模式跳过）。
+
+### 改进
+
+- **恢复访问菜单** — 移除锁定页「我有 JSON 备份」选项（Phase 1 仅 toast 提示须先解锁后从设置导入，无法在锁定态完成恢复，易误导用户）；保留「我记得恢复密钥」与「我什么都没有」两条路径。JSON/CSV 备份导入仍在 **设置 → 数据 → 导入数据**（须已知备份时主密码并解锁）。
+
+### 文档
+
+- README、CHANGELOG 与 code-map 同步 v1.21.0（开机自动启动、`SecuritySettings.launchAtLoginEnabled`、`launch_at_login_enabled` 设置键、恢复菜单精简等）。
+
 ## [1.20.0] - 2026-06-15
 
 ### 新增

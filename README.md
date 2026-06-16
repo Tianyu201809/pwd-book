@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.20.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.21.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -40,7 +40,7 @@ npm run dev
 
 若你用过 KeePass、Bitwarden 离线库或 1Password 本地 vault，核心思路相同：**主密码 + 本地加密存储**。PwdBook 的差异在于开箱即用的桌面体验、恢复密钥流程，以及可选的加密邮箱灾备。
 
-应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；**v1.20.0** 主窗口标题栏支持 **窗口置顶** 图钉；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）与 **macOS**（DMG，x64 / arm64）。
+应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；**v1.20.0** 主窗口标题栏支持 **窗口置顶** 图钉；**v1.21.0** **设置 → 安全** 支持 **开机自动启动**（默认关闭）；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）与 **macOS**（DMG，x64 / arm64）。
 
 <p align="center">
   <img src="./docs/images/main.png" alt="PwdBook 主界面：侧栏分类、搜索与条目列表" width="720" />
@@ -64,17 +64,17 @@ npm run dev
 <p align="center"><em>锁定页 — 主密码解锁；支持恢复密钥入口</em></p>
 
 <p align="center">
-  <img src="./docs/images/reset.png" alt="恢复访问：恢复密钥、JSON 备份或清除数据" width="480" />
+  <img src="./docs/images/reset.png" alt="恢复访问：恢复密钥或清除数据" width="480" />
 </p>
-<p align="center"><em>恢复访问 — 恢复密钥重置主密码、从 JSON 备份恢复，或清除后重建</em></p>
+<p align="center"><em>恢复访问 — 用恢复密钥重置主密码，或清除后重建</em></p>
 
 ### 设置
 
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/images/setting-safe.png" alt="设置 - 安全：自动锁定、剪贴板、关闭窗口、恢复密钥" width="100%" />
-      <br /><sub>安全 — 自动锁定、剪贴板清除、关闭窗口行为、恢复密钥</sub>
+      <img src="./docs/images/setting-safe.png" alt="设置 - 安全：开机自动启动、自动锁定、剪贴板、关闭窗口、恢复密钥" width="100%" />
+      <br /><sub>安全 — 开机自动启动、自动锁定、剪贴板清除、关闭窗口行为、恢复密钥</sub>
     </td>
     <td width="50%" align="center">
       <img src="./docs/images/lang-theme.png" alt="设置 - 外观：语言、深浅色、主题色" width="100%" />
@@ -161,6 +161,7 @@ npm run dev
 
 | 项 | 说明 |
 |----|------|
+| **开机自动启动** | **v1.21.0** 系统登录后自动启动 PwdBook；默认关闭；仅正式打包版本写入系统登录项 |
 | 自动锁定 | 空闲 5 / 15 / 30 / 60 / **120** 分钟后锁定，或 **跟随系统锁屏**（清除内存中的会话密钥） |
 | 回收站保留期限 | 7 / 14 / 30 / 60 / 90 天（默认 30）；超期条目自动彻底删除 |
 | 剪贴板自动清除 | 复制密码等文本后，若剪贴板内容未被改写，约 30 秒后清空 |
@@ -199,11 +200,12 @@ npm run dev
 | **日常使用** | 主密码解锁；标题栏、空闲 **自动锁定** 或 **系统锁屏**（若已选跟随系统锁屏）；锁定后需重新输入主密码 |
 | **忘记主密码** | 锁定页 →「使用恢复密钥」→ 选择路径（见下） |
 
-**无法解锁时的三条路径**（`recovery-menu`）：
+**无法解锁时的两条路径**（`recovery-menu`）：
 
 1. **我有恢复密钥** — 验证恢复密钥 → 设置新主密码 → 后台重加密全部条目密码字段（进度遮罩）
-2. **我有 JSON / CSV 备份** — 提示需先用**备份时的主密码**解锁，再在 **设置 → 数据 → 导入数据** 选择 PwdBook JSON 或 CSV 恢复（锁定页不直接导入文件）
-3. **我什么都没有** — **清除保险库**：分步说明 + 输入确认短语后删除本地数据并回到首次创建流程（不可恢复）
+2. **我什么都没有** — **清除保险库**：分步说明 + 输入确认短语后删除本地数据并回到首次创建流程（不可恢复）
+
+> 若曾导出 **JSON / CSV 备份**，须在**已知备份时主密码**的前提下先解锁，再在 **设置 → 数据 → 导入数据** 恢复；锁定页不提供直接导入入口。
 
 ### 工具
 
@@ -380,7 +382,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.20.0（当前）
+### v1.21.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1210---2026-06-16)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 设置 | **设置 → 安全** 首行 **开机自动启动**（默认关闭；`launchAtLoginEnabled`） |
+| 恢复 | 锁定页恢复菜单移除「我有 JSON 备份」；保留恢复密钥与清除数据 |
+| 主进程 | `launchAtLogin.ts` — `app.setLoginItemSettings` 同步（打包版） |
+
+### v1.20.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1200---2026-06-15)**。摘要：
 

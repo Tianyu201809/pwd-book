@@ -161,7 +161,7 @@ App.vue
 
 | 组件 | 用途 |
 |------|------|
-| `RecoveryMenu.vue` | 恢复入口菜单 |
+| `RecoveryMenu.vue` | 恢复入口菜单（**v1.21.0** 起：恢复密钥 / 清除数据两条路径） |
 | `RecoveryKeyInput.vue` | 输入恢复密钥 |
 | `RecoveryResetPassword.vue` | 设置新主密码 |
 | `RecoveryKeySetup.vue` | 首次创建后引导保存恢复密钥 |
