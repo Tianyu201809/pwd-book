@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
   browserFillEnabled: false,
   trashRetentionDays: 30,
+  launchAtLoginEnabled: false,
 }
 
 let sessionKey: Buffer | null = null

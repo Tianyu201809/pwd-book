@@ -33,7 +33,9 @@ import {
 } from './screenshotMode'
 import { destroyBrowserBridge, syncBrowserBridge } from './services/browserBridgeService'
 import { stopWifiSyncServer } from './services/wifiSyncService'
+import { getSecuritySettings } from './services/settingsService'
 import { registerSystemAutoLock } from './autoLock'
+import { syncLaunchAtLogin } from './launchAtLogin'
 import { IPC } from '../shared/types'
 
 let mainWindow: BrowserWindow | null = null
@@ -133,6 +135,7 @@ if (gotSingleInstanceLock) {
     registerMainWindowShortcut()
     registerSystemAutoLock()
     syncBrowserBridge()
+    syncLaunchAtLogin(getSecuritySettings().launchAtLoginEnabled)
 
     ipcMain.on('window-minimize', (event) => {
       const win = BrowserWindow.fromWebContents(event.sender)

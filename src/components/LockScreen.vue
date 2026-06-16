@@ -149,10 +149,6 @@ function openRecoveryMenu(): void {
   lockMode.value = 'recovery-menu'
 }
 
-async function handleBackupOption(): Promise<void> {
-  localMessage.value = t('lock.backupHint')
-}
-
 async function handleRecoveryKeySubmit(recoveryKey: string): Promise<void> {
   if (!vaultStatus.value.recoveryConfigured) return
   clearError()
@@ -343,7 +339,6 @@ async function handleCopyRecoveryKey(): Promise<void> {
           :entry-count="vaultStatus.entryCount"
           @back="lockMode = 'unlock'"
           @recovery-key="lockMode = 'recovery-key'"
-          @backup="handleBackupOption"
           @wipe="lockMode = 'recovery-wipe'"
         />
 

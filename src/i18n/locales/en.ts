@@ -127,7 +127,6 @@ export default {
     footerNote: 'Data stored locally · AES-256 · SQLite',
     skipRecoveryConfirm:
       'Without a recovery key, forgetting your master password means losing all entries. Skip anyway?',
-    backupHint: 'Unlock first, then import a JSON backup under Settings → Data',
     enterCurrentPassword: 'Enter your current master password',
   },
   quickBar: {
@@ -563,6 +562,8 @@ export default {
     closeWindowAsk: 'Ask every time',
     closeWindowTray: 'Minimize to tray',
     closeWindowQuit: 'Quit application',
+    launchAtLogin: 'Start at login',
+    launchAtLoginDesc: 'Launch PwdBook automatically when you sign in to the system',
     quickBar: 'Floating quick search',
     quickBarDesc: 'A slim bar at the top of the screen; Enter opens the URL or launches the local program. Shortcut: {accelerator}',
     quickBarOpen: 'Open quick bar',
@@ -885,8 +886,6 @@ export default {
     chooseOption: 'Choose the option that fits your situation',
     haveRecoveryKey: 'I have my recovery key',
     haveRecoveryKeyDesc: 'Enter the key and set a new master password',
-    haveBackup: 'I have a JSON backup',
-    haveBackupDesc: 'Restore from backup (requires the original master password)',
     haveNothing: 'I have nothing',
     haveNothingDesc: 'Erase everything and start over ({count} entries)',
     backToUnlock: '← Back to unlock',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { KeyRound, FileJson, AlertTriangle } from 'lucide-vue-next'
+import { KeyRound, AlertTriangle } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
@@ -11,7 +11,6 @@ defineProps<{
 const emit = defineEmits<{
   back: []
   recoveryKey: []
-  backup: []
   wipe: []
 }>()
 </script>
@@ -48,26 +47,6 @@ const emit = defineEmits<{
         </p>
         <p class="option-desc">
           {{ t('recovery.haveRecoveryKeyDesc') }}
-        </p>
-      </div>
-    </button>
-
-    <button
-      type="button"
-      class="option-card"
-      @click="emit('backup')"
-    >
-      <FileJson
-        :size="20"
-        :stroke-width="1.5"
-        class="option-icon"
-      />
-      <div>
-        <p class="option-title">
-          {{ t('recovery.haveBackup') }}
-        </p>
-        <p class="option-desc">
-          {{ t('recovery.haveBackupDesc') }}
         </p>
       </div>
     </button>

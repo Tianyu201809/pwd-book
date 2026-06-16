@@ -126,7 +126,6 @@ export default {
     footerNote: '数据仅存储在本地 · AES-256 加密 · SQLite 存储',
     skipRecoveryConfirm:
       '未保存恢复密钥时，忘记主密码将无法恢复条目，只能清除全部数据。仍要跳过吗？',
-    backupHint: '请先解锁后，在「设置 → 数据」中导入 JSON 备份',
     enterCurrentPassword: '请输入当前主密码',
   },
   quickBar: {
@@ -561,6 +560,8 @@ export default {
     closeWindowAsk: '每次询问',
     closeWindowTray: '最小化到托盘',
     closeWindowQuit: '退出程序',
+    launchAtLogin: '开机自动启动',
+    launchAtLoginDesc: '系统登录后自动启动 PwdBook',
     quickBar: '悬浮快捷搜索',
     quickBarDesc: '屏幕顶部细长搜索条，Enter 直接打开网址或启动本地程序。快捷键：{accelerator}',
     quickBarOpen: '打开快捷条',
@@ -879,8 +880,6 @@ export default {
     chooseOption: '请选择适合你的情况',
     haveRecoveryKey: '我记得恢复密钥',
     haveRecoveryKeyDesc: '输入恢复密钥，设置新的主密码',
-    haveBackup: '我有 JSON 备份',
-    haveBackupDesc: '从备份文件恢复（需知道备份时的主密码）',
     haveNothing: '我什么都没有',
     haveNothingDesc: '清除全部数据并重新开始（共 {count} 条）',
     backToUnlock: '← 返回解锁',

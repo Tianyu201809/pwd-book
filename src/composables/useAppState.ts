@@ -64,6 +64,7 @@ const securitySettings = ref<SecuritySettings>({
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
   trashRetentionDays: 30,
+  launchAtLoginEnabled: false,
 })
 
 const selectedCategory = ref<FilterCategory>('all')

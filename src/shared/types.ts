@@ -158,6 +158,8 @@ export interface SecuritySettings {
   browserFillEnabled: boolean
   /** 回收站条目保留天数，过期后彻底删除 */
   trashRetentionDays: number
+  /** 系统登录后自动启动应用 */
+  launchAtLoginEnabled: boolean
 }
 
 export interface VaultStatus {

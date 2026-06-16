@@ -5,6 +5,7 @@ import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
 import { hideDetailWindowOnLock } from '../detailWindow'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
+import { syncLaunchAtLogin } from '../launchAtLogin'
 import { IPC } from '../../shared/types'
 import type {
   PasswordEntryInput,
@@ -429,6 +430,9 @@ export function registerIpcHandlers(): void {
     registerQuickBarShortcut()
     registerMainWindowShortcut()
     syncBrowserBridge()
+    if (partial.launchAtLoginEnabled !== undefined) {
+      syncLaunchAtLogin(next.launchAtLoginEnabled)
+    }
     return next
   })
 

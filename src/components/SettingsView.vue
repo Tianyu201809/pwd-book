@@ -111,6 +111,10 @@ async function onCloseWindowChange(value: string): Promise<void> {
   await updateSecuritySettings({ closeWindowAction: value as 'ask' | 'tray' | 'quit' })
 }
 
+async function onLaunchAtLoginChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ launchAtLoginEnabled: enabled })
+}
+
 async function onTrashRetentionChange(value: string): Promise<void> {
   await updateSecuritySettings({ trashRetentionDays: Number(value) })
 }
@@ -288,6 +292,20 @@ async function handleReset(): Promise<void> {
         >
           <h3>{{ t('settings.security') }}</h3>
           <UiCard class="settings-card">
+            <div class="row">
+              <div>
+                <p class="row-title">
+                  {{ t('settings.launchAtLogin') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.launchAtLoginDesc') }}
+                </p>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.launchAtLoginEnabled"
+                @update:model-value="onLaunchAtLoginChange"
+              />
+            </div>
             <div class="row">
               <div>
                 <p class="row-title">
