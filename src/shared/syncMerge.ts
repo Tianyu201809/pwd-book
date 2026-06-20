@@ -57,15 +57,52 @@ function mergeCategoryLists(local: VaultCategory[], remote: VaultCategory[]): Va
 export function mergeSyncAttachments(
   local: SyncAttachmentMeta[],
   remote: SyncAttachmentMeta[],
-): { merged: SyncAttachmentMeta[] } {
+  options?: {
+    localDeletions?: { id: string; deletedAt: number }[]
+    remoteDeletions?: { id: string; deletedAt: number }[]
+  },
+): { merged: SyncAttachmentMeta[]; mergedDeletions: { id: string; deletedAt: number }[] } {
   const localById = new Map(local.map((item) => [item.id, item]))
   const remoteById = new Map(remote.map((item) => [item.id, item]))
-  const allIds = new Set([...localById.keys(), ...remoteById.keys()])
+  const localDeletionById = new Map((options?.localDeletions ?? []).map((item) => [item.id, item.deletedAt]))
+  const remoteDeletionById = new Map((options?.remoteDeletions ?? []).map((item) => [item.id, item.deletedAt]))
+  const allIds = new Set([
+    ...localById.keys(),
+    ...remoteById.keys(),
+    ...localDeletionById.keys(),
+    ...remoteDeletionById.keys(),
+  ])
   const merged: SyncAttachmentMeta[] = []
+  const mergedDeletionById = new Map<string, number>()
 
   for (const id of allIds) {
     const localItem = localById.get(id)
     const remoteItem = remoteById.get(id)
+    const localDeletedAt = localDeletionById.get(id)
+    const remoteDeletedAt = remoteDeletionById.get(id)
+
+    if (localDeletedAt !== undefined) {
+      const remoteTime = remoteItem?.updatedAt ?? 0
+      if (!remoteItem || localDeletedAt >= remoteTime) {
+        mergedDeletionById.set(id, Math.max(mergedDeletionById.get(id) ?? 0, localDeletedAt))
+        if (remoteDeletedAt !== undefined) {
+          mergedDeletionById.set(id, Math.max(mergedDeletionById.get(id) ?? 0, remoteDeletedAt))
+        }
+        continue
+      }
+    }
+
+    if (remoteDeletedAt !== undefined) {
+      const localTime = localItem?.updatedAt ?? 0
+      if (!localItem || remoteDeletedAt >= localTime) {
+        mergedDeletionById.set(id, Math.max(mergedDeletionById.get(id) ?? 0, remoteDeletedAt))
+        if (localDeletedAt !== undefined) {
+          mergedDeletionById.set(id, Math.max(mergedDeletionById.get(id) ?? 0, localDeletedAt))
+        }
+        continue
+      }
+    }
+
     if (!localItem && remoteItem) {
       merged.push(remoteItem)
       continue
@@ -74,11 +111,15 @@ export function mergeSyncAttachments(
       merged.push(localItem)
       continue
     }
-    if (!localItem || !remoteItem) continue
-    merged.push(localItem.updatedAt >= remoteItem.updatedAt ? localItem : remoteItem)
+    if (localItem && remoteItem) {
+      merged.push(localItem.updatedAt >= remoteItem.updatedAt ? localItem : remoteItem)
+    }
   }
 
-  return { merged }
+  return {
+    merged,
+    mergedDeletions: [...mergedDeletionById.entries()].map(([id, deletedAt]) => ({ id, deletedAt })),
+  }
 }
 
 export function mergeSyncBundles(
@@ -127,9 +168,13 @@ export function mergeSyncBundles(
 
   const mergedCategories = mergeCategoryLists(local.categories, remote.categories)
   const mergedRevision = Math.max(local.revision, remote.revision) + 1
-  const { merged: mergedAttachments } = mergeSyncAttachments(
+  const { merged: mergedAttachments, mergedDeletions } = mergeSyncAttachments(
     local.attachments ?? [],
     remote.attachments ?? [],
+    {
+      localDeletions: local.attachmentDeletions,
+      remoteDeletions: remote.attachmentDeletions,
+    },
   )
 
   const merged: SyncBundle = {
@@ -141,6 +186,7 @@ export function mergeSyncBundles(
     categories: mergedCategories,
     entries: mergedEntries,
     attachments: mergedAttachments,
+    attachmentDeletions: mergedDeletions,
     settings: {
       trashRetentionDays:
         remote.settings?.trashRetentionDays ?? local.settings?.trashRetentionDays,

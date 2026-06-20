@@ -236,6 +236,7 @@ export default {
     openAttachment: 'Open',
     saveAttachmentAs: 'Save as',
     deleteAttachment: 'Delete attachment',
+    deleteAttachmentConfirm: 'Delete attachment 「{filename}」?',
     attachmentAdded: 'Attachment added',
     attachmentDeleted: 'Attachment deleted',
     attachmentOpened: 'Attachment opened',

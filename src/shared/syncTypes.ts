@@ -35,6 +35,11 @@ export interface SyncAttachmentMeta {
   updatedAt: number
 }
 
+export interface AttachmentDeletionTombstone {
+  id: string
+  deletedAt: number
+}
+
 export interface SyncBundleSettings {
   trashRetentionDays?: number
 }
@@ -48,6 +53,7 @@ export interface SyncBundle {
   categories: VaultCategory[]
   entries: SyncEntry[]
   attachments?: SyncAttachmentMeta[]
+  attachmentDeletions?: AttachmentDeletionTombstone[]
   settings?: SyncBundleSettings
 }
 

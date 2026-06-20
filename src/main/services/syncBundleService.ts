@@ -14,6 +14,7 @@ import type { SyncBundle, SyncEntry, SyncStatus } from '../../shared/syncTypes'
 import { SYNC_BUNDLE_FILENAME, SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from '../../shared/syncTypes'
 import { appError, ErrorCode } from '../../shared/errors'
 import { buildSyncAttachmentsFromDb } from './attachmentSyncService'
+import { readAttachmentDeletionTombstones } from './attachmentService'
 
 const DEVICE_ID_KEY = 'sync_device_id'
 const REVISION_KEY = 'sync_revision'
@@ -107,6 +108,7 @@ export function buildSyncBundle(revision?: number): SyncBundle {
     categories: listCategories(),
     entries,
     attachments: buildSyncAttachmentsFromDb(),
+    attachmentDeletions: readAttachmentDeletionTombstones(),
     settings: {
       trashRetentionDays: getSecuritySettings().trashRetentionDays,
     },

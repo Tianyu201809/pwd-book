@@ -12,7 +12,7 @@ import {
 import { showToast } from '@/composables/useToast'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import IconPickerModal from '@/components/IconPickerModal.vue'
-import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
+import { UiInput, UiSelect, UiButton, UiCheckbox, UiModal } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
@@ -140,6 +140,8 @@ let totpTimer: ReturnType<typeof setInterval> | null = null
 
 const attachments = ref<EntryAttachmentMeta[]>([])
 const attachmentsLoading = ref(false)
+const attachmentDeleteConfirm = ref<EntryAttachmentMeta | null>(null)
+const showAttachmentDeleteConfirm = ref(false)
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -178,14 +180,30 @@ async function handleAddAttachment(): Promise<void> {
   }
 }
 
-async function handleDeleteAttachment(attachmentId: string): Promise<void> {
+function handleDeleteAttachment(attachmentId: string): void {
+  const item = attachments.value.find((attachment) => attachment.id === attachmentId)
+  if (!item) return
+  attachmentDeleteConfirm.value = item
+  showAttachmentDeleteConfirm.value = true
+}
+
+function cancelAttachmentDeleteConfirm(): void {
+  showAttachmentDeleteConfirm.value = false
+  attachmentDeleteConfirm.value = null
+}
+
+async function confirmDeleteAttachment(): Promise<void> {
+  const item = attachmentDeleteConfirm.value
+  if (!item) return
   try {
-    await vaultApi.deleteAttachment(attachmentId)
+    await vaultApi.deleteAttachment(item.id)
     await loadAttachments()
     await refreshVaultData()
     showToast(t('detail.attachmentDeleted'), 'success')
   } catch (error) {
     showToast(parseErrorMessage(error), 'error')
+  } finally {
+    cancelAttachmentDeleteConfirm()
   }
 }
 
@@ -318,11 +336,23 @@ function resetDraftFromEntry(): void {
   refreshTotpDisplay()
 }
 
-watch([selectedEntry, isCreating], () => {
-  if (!isCreating.value) isEditing.value = false
-  resetDraftFromEntry()
-  void loadAttachments()
-}, { immediate: true })
+watch(
+  () => [selectedEntry.value?.id, isCreating.value] as const,
+  ([entryId, creating], oldValue) => {
+    const prevEntryId = oldValue?.[0]
+    const prevCreating = oldValue?.[1]
+    if (oldValue !== undefined) {
+      const entryChanged = entryId !== prevEntryId
+      const creatingChanged = creating !== prevCreating
+      if (!entryChanged && !creatingChanged) return
+    }
+
+    if (!creating) isEditing.value = false
+    resetDraftFromEntry()
+    void loadAttachments()
+  },
+  { immediate: true },
+)
 
 function startEditing(): void {
   isEditing.value = true
@@ -948,7 +978,7 @@ watch(detailCollapsed, () => {
                   type="button"
                   class="attachment-delete-btn"
                   :title="t('detail.deleteAttachment')"
-                  @click="handleDeleteAttachment(item.id)"
+                  @click.stop="handleDeleteAttachment(item.id)"
                 >
                   <Trash2
                     :size="14"
@@ -1112,6 +1142,34 @@ watch(detailCollapsed, () => {
       @select="handleIconSelect"
       @clear="handleIconClear"
     />
+
+    <UiModal
+      v-model:open="showAttachmentDeleteConfirm"
+      :title="t('detail.deleteAttachment')"
+      :width="400"
+      :show-footer="false"
+      @close="cancelAttachmentDeleteConfirm"
+    >
+      <p class="confirm-modal-body delete-confirm-text">
+        {{ t('detail.deleteAttachmentConfirm', { filename: attachmentDeleteConfirm?.filename ?? '' }) }}
+      </p>
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton
+            variant="default"
+            @click="cancelAttachmentDeleteConfirm"
+          >
+            {{ t('common.cancel') }}
+          </UiButton>
+          <UiButton
+            variant="danger"
+            @click="confirmDeleteAttachment"
+          >
+            {{ t('common.confirm') }}
+          </UiButton>
+        </div>
+      </template>
+    </UiModal>
 
     <Teleport to="body">
       <div
@@ -1564,6 +1622,7 @@ watch(detailCollapsed, () => {
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
   background: var(--bg-elevated);
+  flex-wrap: wrap;
 }
 
 .attachment-icon {
@@ -1596,6 +1655,7 @@ watch(detailCollapsed, () => {
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .attachment-action-btn {
@@ -1774,5 +1834,25 @@ watch(detailCollapsed, () => {
 .save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.delete-confirm-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.confirm-modal-actions :deep(.ui-classic-btn) {
+  min-width: 96px;
+  padding: 10px 22px;
 }
 </style>

@@ -235,6 +235,7 @@ export default {
     openAttachment: '打开',
     saveAttachmentAs: '另存为',
     deleteAttachment: '删除附件',
+    deleteAttachmentConfirm: '确定删除附件「{filename}」吗？',
     attachmentAdded: '附件已添加',
     attachmentDeleted: '附件已删除',
     attachmentOpened: '已打开附件',

@@ -6,10 +6,12 @@ import { encryptBuffer, decryptBuffer } from '../crypto/vaultCrypto'
 import { getDatabase, persistDatabase } from '../db/database'
 import {
   countAttachmentsForEntry,
+  getSetting,
   readActiveEntryRow,
   readAttachmentRow,
   readAttachmentRowsForEntry,
   readAllAttachmentRows,
+  setSetting,
   type AttachmentRow,
 } from '../db/helpers'
 import { getSessionKey, isUnlocked } from './sessionService'
@@ -20,6 +22,7 @@ import { appError, ErrorCode } from '../../shared/errors'
 export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
 export const MAX_ATTACHMENTS_PER_ENTRY = 10
 export const ATTACHMENT_FILE_EXT = '.enc'
+export const ATTACHMENT_DELETION_TOMBSTONES_KEY = 'attachment_deletion_tombstones'
 export { SYNC_ATTACHMENT_FILE_EXT }
 
 function assertUnlocked(): void {
@@ -46,6 +49,53 @@ function rowToMeta(row: AttachmentRow): EntryAttachmentMeta {
     sizeBytes: row.size_bytes,
     createdAt: row.created_at,
   }
+}
+
+function readAttachmentDeletionTombstoneMap(): Record<string, number> {
+  const raw = getSetting(ATTACHMENT_DELETION_TOMBSTONES_KEY)
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw) as Record<string, number>
+  } catch {
+    return {}
+  }
+}
+
+export function readAttachmentDeletionTombstones(): { id: string; deletedAt: number }[] {
+  return Object.entries(readAttachmentDeletionTombstoneMap()).map(([id, deletedAt]) => ({
+    id,
+    deletedAt,
+  }))
+}
+
+export function replaceAttachmentDeletionTombstones(
+  tombstones: { id: string; deletedAt: number }[],
+): void {
+  if (tombstones.length === 0) {
+    setSetting(ATTACHMENT_DELETION_TOMBSTONES_KEY, '')
+    return
+  }
+  const map: Record<string, number> = {}
+  for (const tombstone of tombstones) {
+    map[tombstone.id] = tombstone.deletedAt
+  }
+  setSetting(ATTACHMENT_DELETION_TOMBSTONES_KEY, JSON.stringify(map))
+}
+
+export function recordAttachmentDeletion(attachmentId: string): void {
+  const tombstones = readAttachmentDeletionTombstoneMap()
+  tombstones[attachmentId] = Date.now()
+  setSetting(ATTACHMENT_DELETION_TOMBSTONES_KEY, JSON.stringify(tombstones))
+}
+
+function recordAttachmentDeletions(attachmentIds: string[]): void {
+  if (attachmentIds.length === 0) return
+  const tombstones = readAttachmentDeletionTombstoneMap()
+  const now = Date.now()
+  for (const attachmentId of attachmentIds) {
+    tombstones[attachmentId] = now
+  }
+  setSetting(ATTACHMENT_DELETION_TOMBSTONES_KEY, JSON.stringify(tombstones))
 }
 
 function guessMimeType(filename: string): string {
@@ -159,6 +209,8 @@ export function deleteAttachment(attachmentId: string): void {
   const row = readAttachmentRow(attachmentId)
   if (!row) throw appError(ErrorCode.ATTACHMENT_NOT_FOUND)
 
+  recordAttachmentDeletion(attachmentId)
+
   const db = getDatabase()
   db.run('DELETE FROM entry_attachments WHERE id = ?', [attachmentId])
   deleteAttachmentFile(attachmentId)
@@ -169,6 +221,8 @@ export function deleteAttachmentsForEntry(entryId: string): void {
   const rows = readAttachmentRowsForEntry(entryId)
   if (rows.length === 0) return
 
+  recordAttachmentDeletions(rows.map((row) => row.id))
+
   const db = getDatabase()
   db.run('DELETE FROM entry_attachments WHERE entry_id = ?', [entryId])
   rows.forEach((row) => deleteAttachmentFile(row.id))
@@ -177,10 +231,15 @@ export function deleteAttachmentsForEntry(entryId: string): void {
 
 export function deleteAttachmentsForEntries(entryIds: string[]): void {
   if (entryIds.length === 0) return
+  const attachmentIds: string[] = []
   entryIds.forEach((entryId) => {
     const rows = readAttachmentRowsForEntry(entryId)
-    rows.forEach((row) => deleteAttachmentFile(row.id))
+    rows.forEach((row) => {
+      attachmentIds.push(row.id)
+      deleteAttachmentFile(row.id)
+    })
   })
+  recordAttachmentDeletions(attachmentIds)
   const db = getDatabase()
   const placeholders = entryIds.map(() => '?').join(', ')
   db.run(`DELETE FROM entry_attachments WHERE entry_id IN (${placeholders})`, entryIds)

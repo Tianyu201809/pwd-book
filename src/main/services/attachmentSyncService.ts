@@ -13,6 +13,8 @@ import {
   getAttachmentsDir,
   getSyncAttachmentFilePath,
   importAttachmentFromEncryptedFile,
+  readAttachmentDeletionTombstones,
+  replaceAttachmentDeletionTombstones,
   upsertAttachmentMetadata,
 } from './attachmentService'
 
@@ -103,7 +105,14 @@ export function gcRemoteAttachmentFiles(remoteDir: string, validIds: Set<string>
 export function applyMergedAttachments(merged: SyncBundle): void {
   const mergedAttachments = merged.attachments ?? []
   const localAttachments = buildSyncAttachmentsFromDb()
-  const { merged: attachmentManifest } = mergeSyncAttachments(localAttachments, mergedAttachments)
+  const { merged: attachmentManifest, mergedDeletions } = mergeSyncAttachments(
+    localAttachments,
+    mergedAttachments,
+    {
+      localDeletions: readAttachmentDeletionTombstones(),
+      remoteDeletions: merged.attachmentDeletions,
+    },
+  )
 
   const db = getDatabase()
   const mergedIds = new Set(attachmentManifest.map((item) => item.id))
@@ -128,6 +137,7 @@ export function applyMergedAttachments(merged: SyncBundle): void {
     }
   }
 
+  replaceAttachmentDeletionTombstones(mergedDeletions)
   persistDatabase()
   gcOrphanAttachmentFiles(mergedIds)
 

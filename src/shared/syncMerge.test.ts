@@ -206,4 +206,25 @@ describe('mergeSyncBundles', () => {
     expect(merged.find((item) => item.id === 'att-1')?.filename).toBe('remote.pdf')
     expect(merged.find((item) => item.id === 'att-2')?.filename).toBe('new.txt')
   })
+
+  it('respects local deletion tombstones and does not restore remote-only attachments', () => {
+    const remote: SyncAttachmentMeta[] = [
+      {
+        id: 'att-deleted',
+        entryId: 'entry-1',
+        filename: 'secret.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 100,
+        createdAt: 1,
+        updatedAt: 100,
+      },
+    ]
+
+    const { merged, mergedDeletions } = mergeSyncAttachments([], remote, {
+      localDeletions: [{ id: 'att-deleted', deletedAt: 200 }],
+    })
+
+    expect(merged).toHaveLength(0)
+    expect(mergedDeletions).toEqual([{ id: 'att-deleted', deletedAt: 200 }])
+  })
 })
