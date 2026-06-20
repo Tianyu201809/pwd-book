@@ -44,6 +44,7 @@ import type {
   FolderSyncSettings,
   FolderSyncStatus,
 } from '@/shared/syncTypes'
+import type { ExportAttachment } from '@/shared/types'
 
 const screen = ref<AppScreen>('lock')
 const settingsTab = ref<SettingsTab>('security')
@@ -1194,9 +1195,10 @@ async function commitImportData(
   sourceId: string,
   entries: PasswordEntryInput[],
   categories?: VaultCategory[],
+  attachments?: ExportAttachment[],
 ): Promise<number> {
   const count = await vaultApi.commitImport(
-    cloneForIpc({ sourceId, entries, categories }),
+    cloneForIpc({ sourceId, entries, categories, attachments }),
   )
   await refreshVaultData()
   touchActivity()

@@ -15,7 +15,7 @@ import {
   type AttachmentRow,
 } from '../db/helpers'
 import { getSessionKey, isUnlocked } from './sessionService'
-import type { EntryAttachmentMeta } from '../../shared/types'
+import type { EntryAttachmentMeta, ExportAttachment } from '../../shared/types'
 import { SYNC_ATTACHMENT_FILE_EXT } from '../../shared/syncTypes'
 import { appError, ErrorCode } from '../../shared/errors'
 
@@ -331,4 +331,78 @@ export function gcOrphanAttachmentFiles(validIds: Set<string>): void {
       fs.unlinkSync(path.join(dir, name))
     }
   }
+}
+
+function resolveImportAttachmentEntryId(
+  entryId: string,
+  importedEntryIds: Set<string>,
+  entryIdRemap: Map<string, string>,
+): string | null {
+  const remapped = entryIdRemap.get(entryId) ?? entryId
+  if (!importedEntryIds.has(remapped)) return null
+  if (!readActiveEntryRow(remapped)) return null
+  return remapped
+}
+
+export function importAttachmentsFromExport(
+  attachments: ExportAttachment[],
+  importedEntryIds: Set<string>,
+  entryIdRemap: Map<string, string> = new Map(),
+): number {
+  assertUnlocked()
+  const perEntryCount = new Map<string, number>()
+  let imported = 0
+
+  for (const attachment of attachments) {
+    const entryId = resolveImportAttachmentEntryId(
+      attachment.entryId,
+      importedEntryIds,
+      entryIdRemap,
+    )
+    if (!entryId) continue
+
+    const currentCount = perEntryCount.get(entryId) ?? countAttachmentsForEntry(entryId)
+    if (currentCount >= MAX_ATTACHMENTS_PER_ENTRY) continue
+
+    let data: Buffer
+    try {
+      data = Buffer.from(attachment.dataBase64, 'base64')
+    } catch {
+      continue
+    }
+
+    if (data.length === 0 || data.length > MAX_ATTACHMENT_BYTES) continue
+
+    let attachmentId = attachment.id?.trim() || randomUUID()
+    if (readAttachmentRow(attachmentId)) {
+      attachmentId = randomUUID()
+    }
+
+    writeEncryptedAttachmentFile(attachmentId, data)
+
+    const db = getDatabase()
+    db.run(
+      `INSERT INTO entry_attachments
+        (id, entry_id, filename, mime_type, size_bytes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        attachmentId,
+        entryId,
+        attachment.filename,
+        attachment.mimeType || guessMimeType(attachment.filename),
+        data.length,
+        attachment.createdAt || Date.now(),
+        attachment.updatedAt || Date.now(),
+      ],
+    )
+
+    perEntryCount.set(entryId, currentCount + 1)
+    imported += 1
+  }
+
+  if (imported > 0) {
+    persistDatabase()
+  }
+
+  return imported
 }

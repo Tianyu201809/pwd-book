@@ -1,6 +1,7 @@
 import { parseCustomFields, normalizeCustomFields } from './customFields'
+import { parseExportAttachmentsFromPayload } from './exportAttachments'
 import { parseCsvRecords, pickField } from './importCsv'
-import type { ExportPayload, PasswordEntryInput, VaultCategory } from './types'
+import type { ExportAttachment, ExportPayload, PasswordEntryInput, VaultCategory } from './types'
 
 const LEGACY_CATEGORY_MAP: Record<string, string> = {
   work: 'cat-work',
@@ -16,6 +17,8 @@ export function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntr
     LEGACY_CATEGORY_MAP[String(raw.category ?? '')] ??
     undefined
 
+  const id = String(raw.id ?? '').trim()
+
   return {
     title: String(raw.title ?? ''),
     url: String(raw.url ?? ''),
@@ -29,6 +32,7 @@ export function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntr
     localProgramPath: String(raw.localProgramPath ?? raw.local_program_path ?? ''),
     totpSecret: String(raw.totpSecret ?? raw.totp_secret ?? ''),
     customFields: normalizeCustomFields(raw.customFields ?? raw.custom_fields),
+    ...(id ? { id } : {}),
   }
 }
 
@@ -74,6 +78,7 @@ export function collectImportCategories(parsed: ExportPayload): VaultCategory[] 
 export function parsePwdbookJson(content: string): {
   categories: VaultCategory[]
   entries: PasswordEntryInput[]
+  attachments: ExportAttachment[]
 } {
   const parsed = JSON.parse(content) as ExportPayload
   return {
@@ -81,6 +86,7 @@ export function parsePwdbookJson(content: string): {
     entries: (parsed.entries ?? []).map((entry) =>
       normalizeImportEntry(entry as unknown as Record<string, unknown>),
     ),
+    attachments: parseExportAttachmentsFromPayload(parsed),
   }
 }
 

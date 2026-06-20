@@ -712,7 +712,7 @@ export default {
       noExportable: '没有符合该格式要求的条目可导出',
     },
     security: {
-      jsonHint: 'JSON 为完整备份，可在「导入数据」中重新导入本应用。',
+      jsonHint: 'JSON 为完整备份（含附件），可在「导入数据」中重新导入本应用。',
     },
     formats: {
       pwdbookJson: 'JSON 备份',
@@ -753,6 +753,7 @@ export default {
     reviewLead: '已解析 {parsed} 条。将导入 {ready} 条；{skipped} 条与现有数据重复已跳过；{invalid} 条无效。',
     reviewCategory: '新条目将归入分类「{name}」',
     reviewCategoryJson: '将保留备份中的分类信息',
+    reviewAttachments: '备份含 {count} 个附件，导入后将一并恢复',
     tabReady: '将导入 ({n})',
     tabSkipped: '重复跳过 ({n})',
     tabInvalid: '无效 ({n})',

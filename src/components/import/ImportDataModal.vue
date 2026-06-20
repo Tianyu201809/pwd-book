@@ -287,6 +287,7 @@ async function handleImport(): Promise<void> {
       selectedId.value,
       entries,
       previewResult.value.categories,
+      previewResult.value.attachments,
     )
     emit('imported', count)
     close()
@@ -497,6 +498,17 @@ const stepLabels = computed(() => [
               isPwdbookNativeSource
                 ? t('import.reviewCategoryJson')
                 : t('import.reviewCategory', { name: previewResult.sourceCategoryName })
+            }}
+          </p>
+
+          <p
+            v-if="previewResult.attachments?.length"
+            class="review-attachment-hint"
+          >
+            {{
+              t('import.reviewAttachments', {
+                count: previewResult.attachments.length,
+              })
             }}
           </p>
 
@@ -1061,6 +1073,12 @@ const stepLabels = computed(() => [
   margin: 0;
   font-size: 12px;
   color: var(--accent-primary);
+}
+
+.review-attachment-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .review-remove-hint {

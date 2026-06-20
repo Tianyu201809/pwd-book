@@ -155,6 +155,8 @@ export interface PasswordEntryInput {
   localProgramPath?: string
   totpSecret?: string
   customFields?: EntryCustomField[]
+  /** PwdBook JSON 导入时保留原条目 ID，用于关联附件 */
+  id?: string
 }
 
 /** 跟随系统锁屏时存入 auto_lock_minutes 的哨兵值 */
@@ -220,15 +222,32 @@ export interface ApiResult<T = void> {
   error?: string
 }
 
+export interface ExportAttachment {
+  id: string
+  entryId: string
+  filename: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: number
+  updatedAt: number
+  /** Base64 编码的原始文件字节（导出为明文 JSON 时内嵌） */
+  dataBase64: string
+}
+
+export const EXPORT_PAYLOAD_VERSION = 2
+
 export interface ExportPayload {
+  version?: number
   exportedAt: string
   categories: VaultCategory[]
   entries: PasswordEntry[]
+  attachments?: ExportAttachment[]
 }
 
 export interface VaultImportPayload {
   categories?: VaultCategory[]
   entries: PasswordEntryInput[]
+  attachments?: ExportAttachment[]
 }
 
 export type ImportPreviewItemStatus = 'ready' | 'duplicate' | 'invalid'
@@ -250,6 +269,8 @@ export interface ImportPreviewResult {
   sourceCategoryName: string
   /** PwdBook JSON 备份中的分类（提交导入时使用） */
   categories?: VaultCategory[]
+  /** PwdBook JSON 备份中的附件（提交导入时使用） */
+  attachments?: ExportAttachment[]
   ready: ImportPreviewItem[]
   skipped: ImportPreviewItem[]
   invalid: ImportPreviewItem[]
@@ -270,6 +291,7 @@ export interface ImportCommitRequest {
   sourceId: string
   entries: PasswordEntryInput[]
   categories?: VaultCategory[]
+  attachments?: ExportAttachment[]
 }
 
 export const IPC = {

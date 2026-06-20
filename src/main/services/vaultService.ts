@@ -17,6 +17,7 @@ import { getDatabase, persistDatabase } from '../db/database'
 import { ensureCategoriesFromImport, resolveCategoryId } from './categoryService'
 import { rowToEntry } from './entryMapper'
 import type { VaultImportPayload } from '../../shared/types'
+import { importAttachmentsFromExport } from './attachmentService'
 import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
 import { recordQuickBarRecentEntry, removeQuickBarRecentEntry } from './quickBarRecentService'
 import { getTrashCount, moveEntryToTrash, purgeExpiredTrash } from './trashService'
@@ -93,9 +94,14 @@ export function getEntryById(id: string): PasswordEntry | null {
 }
 
 export function createEntry(input: PasswordEntryInput): PasswordEntry {
+  const requestedId = input.id?.trim()
+  const id = requestedId && !readEntryRow(requestedId) ? requestedId : randomUUID()
+  return insertEntry(id, input)
+}
+
+function insertEntry(id: string, input: PasswordEntryInput): PasswordEntry {
   const key = getSessionKey()
   const now = Date.now()
-  const id = randomUUID()
   const db = getDatabase()
 
   const totpSecret = input.totpSecret?.trim() ?? ''
@@ -198,6 +204,8 @@ export function touchEntry(id: string): void {
 
 export function importFromExportPayload(payload: VaultImportPayload): number {
   const idRemap = ensureCategoriesFromImport(payload.categories ?? [])
+  const entryIdRemap = new Map<string, string>()
+  const importedEntryIds = new Set<string>()
   let count = 0
 
   payload.entries.forEach((entry) => {
@@ -206,12 +214,23 @@ export function importFromExportPayload(payload: VaultImportPayload): number {
     const importCategoryId = entry.categoryId?.trim()
     const mappedCategoryId = importCategoryId ? idRemap.get(importCategoryId) : undefined
 
-    createEntry({
+    const requestedId = entry.id?.trim()
+    const id = requestedId && !readEntryRow(requestedId) ? requestedId : randomUUID()
+    if (requestedId) {
+      entryIdRemap.set(requestedId, id)
+    }
+
+    insertEntry(id, {
       ...entry,
       categoryId: mappedCategoryId ?? importCategoryId,
     })
+    importedEntryIds.add(id)
     count += 1
   })
+
+  if (payload.attachments?.length) {
+    importAttachmentsFromExport(payload.attachments, importedEntryIds, entryIdRemap)
+  }
 
   return count
 }

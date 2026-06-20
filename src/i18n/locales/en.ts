@@ -716,7 +716,7 @@ export default {
       noExportable: 'No entries match this format’s requirements',
     },
     security: {
-      jsonHint: 'JSON is a full backup you can re-import via Import data.',
+      jsonHint: 'JSON is a full backup (including attachments) you can re-import via Import data.',
     },
     formats: {
       pwdbookJson: 'JSON backup',
@@ -758,6 +758,7 @@ export default {
       'Parsed {parsed} rows. {ready} will be imported; {skipped} duplicates skipped; {invalid} invalid.',
     reviewCategory: 'New entries go to category “{name}”',
     reviewCategoryJson: 'Categories from the backup will be preserved',
+    reviewAttachments: 'Backup includes {count} attachments; they will be restored on import',
     tabReady: 'To import ({n})',
     tabSkipped: 'Skipped duplicates ({n})',
     tabInvalid: 'Invalid ({n})',

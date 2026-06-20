@@ -106,15 +106,19 @@ function parseChromeCsv(content: string): ParsedImportRow[] {
 export function parseImportContent(
   sourceId: ImportSourceId,
   content: string,
-): { rows: ParsedImportRow[]; categories?: ReturnType<typeof parsePwdbookJson>['categories'] } {
+): {
+  rows: ParsedImportRow[]
+  categories?: ReturnType<typeof parsePwdbookJson>['categories']
+  attachments?: ReturnType<typeof parsePwdbookJson>['attachments']
+} {
   if (sourceId === 'pwdbook-json') {
-    const { categories, entries } = parsePwdbookJson(content)
+    const { categories, entries, attachments } = parsePwdbookJson(content)
     const rows: ParsedImportRow[] = entries.map((entry, index) => {
       if (!entry.title?.trim()) return { row: index + 1, entry: null, invalidReason: 'missing_title' }
       if (!entry.password) return { row: index + 1, entry: null, invalidReason: 'missing_password' }
       return { row: index + 1, entry }
     })
-    return { rows, categories }
+    return { rows, categories, attachments }
   }
 
   if (sourceId === 'pwdbook-csv') {

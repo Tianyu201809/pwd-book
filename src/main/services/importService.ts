@@ -118,6 +118,9 @@ export function previewImport(request: ImportPreviewRequest): ImportPreviewResul
   if (parsed.categories) {
     result.categories = parsed.categories
   }
+  if (parsed.attachments) {
+    result.attachments = parsed.attachments
+  }
   return result
 }
 
@@ -133,6 +136,7 @@ export function commitImport(request: ImportCommitRequest): number {
     return importFromExportPayload({
       categories: request.categories ?? [],
       entries,
+      attachments: request.attachments,
     })
   }
 
