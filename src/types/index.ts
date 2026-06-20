@@ -1,5 +1,7 @@
 export type ListSortOrder = 'recent' | 'title' | 'created'
 
+export type ListLayoutMode = 'list' | 'grid'
+
 export type {
   AppScreen,
   BackupFrequency,

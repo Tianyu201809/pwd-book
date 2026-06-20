@@ -21,6 +21,7 @@ import type {
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   FilterCategory,
+  ListLayoutMode,
   ListSortOrder,
   PasswordEntry,
   PasswordEntryInput,
@@ -72,6 +73,14 @@ const selectedTagFilters = ref<string[]>([])
 const selectedEntryId = ref<string | null>(null)
 const searchQuery = ref('')
 const listSortOrder = ref<ListSortOrder>('title')
+const LIST_LAYOUT_STORAGE_KEY = 'pwdbook-entry-list-layout'
+
+function readListLayoutMode(): ListLayoutMode {
+  const stored = localStorage.getItem(LIST_LAYOUT_STORAGE_KEY)
+  return stored === 'grid' ? 'grid' : 'list'
+}
+
+const listLayoutMode = ref<ListLayoutMode>(readListLayoutMode())
 const passwordGenApplyMode = ref(false)
 const pendingApplyPassword = ref<string | null>(null)
 const wifiSyncSettings = ref<WifiSyncSettings>({
@@ -1222,6 +1231,12 @@ function setListSortOrder(order: ListSortOrder): void {
   touchActivity()
 }
 
+function setListLayoutMode(mode: ListLayoutMode): void {
+  listLayoutMode.value = mode
+  localStorage.setItem(LIST_LAYOUT_STORAGE_KEY, mode)
+  touchActivity()
+}
+
 export function useAppState() {
   return {
     screen,
@@ -1233,6 +1248,7 @@ export function useAppState() {
     selectedEntryId,
     searchQuery,
     listSortOrder,
+    listLayoutMode,
     entries,
     trashEntries,
     vaultCategories,
@@ -1348,6 +1364,7 @@ export function useAppState() {
     resetAllData,
     switchSettingsTab,
     setListSortOrder,
+    setListLayoutMode,
     touchActivity,
     clearError,
   }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star } from 'lucide-vue-next'
+import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star, LayoutList, LayoutGrid } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
@@ -9,16 +9,18 @@ import { UiInput, UiButton, UiModal } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
-import type { ListSortOrder, PasswordEntry } from '@/types'
+import type { ListLayoutMode, ListSortOrder, PasswordEntry } from '@/types'
 
 const {
   displayEntries,
   selectedEntryId,
   searchQuery,
   listSortOrder,
+  listLayoutMode,
   selectEntry,
   isCreating,
   setListSortOrder,
+  setListLayoutMode,
   touchActivity,
   startCreateEntry,
   removeEntry,
@@ -140,6 +142,11 @@ function handleSort(order: ListSortOrder, event: MouseEvent): void {
   closeMenus()
 }
 
+function handleLayout(mode: ListLayoutMode): void {
+  setListLayoutMode(mode)
+  closeMenus()
+}
+
 const VIEWPORT_MENU_PADDING = 8
 
 function adjustContextMenuPosition(): void {
@@ -176,7 +183,10 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   <main
     ref="listPanelRef"
     class="list-panel"
-    :class="{ 'list-panel--compact': isCompactList }"
+    :class="{
+      'list-panel--compact': isCompactList,
+      'list-panel--grid': listLayoutMode === 'grid',
+    }"
   >
     <div class="list-toolbar">
       <div class="search-wrap">
@@ -264,11 +274,48 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           </button>
         </div>
       </div>
+      <div
+        class="layout-toggle"
+        role="group"
+        :aria-label="t('vault.layoutToggle')"
+      >
+        <button
+          type="button"
+          class="layout-toggle-btn"
+          :class="{ active: listLayoutMode === 'list' }"
+          :title="t('vault.layoutList')"
+          :aria-label="t('vault.layoutList')"
+          :aria-pressed="listLayoutMode === 'list'"
+          @click="handleLayout('list')"
+        >
+          <LayoutList
+            :size="16"
+            :stroke-width="1.5"
+          />
+        </button>
+        <button
+          type="button"
+          class="layout-toggle-btn"
+          :class="{ active: listLayoutMode === 'grid' }"
+          :title="t('vault.layoutGrid')"
+          :aria-label="t('vault.layoutGrid')"
+          :aria-pressed="listLayoutMode === 'grid'"
+          @click="handleLayout('grid')"
+        >
+          <LayoutGrid
+            :size="16"
+            :stroke-width="1.5"
+          />
+        </button>
+      </div>
     </div>
 
     <div
       class="list-scroll"
-      :class="{ 'list-scroll--animal': isAnimalIsland }"
+      :class="{
+        'list-scroll--animal': isAnimalIsland,
+        'list-scroll--grid': listLayoutMode === 'grid',
+      }"
     >
       <div
         v-if="displayEntries.length === 0"
@@ -278,12 +325,91 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       </div>
 
       <div
-        v-for="entry in displayEntries"
-        :key="entry.id"
-        class="list-item"
-        :class="{ 'list-item-active': !isCreating && selectedEntryId === entry.id }"
-        @contextmenu="handleContextMenu(entry, $event)"
+        v-else-if="listLayoutMode === 'grid'"
+        class="entry-grid"
       >
+        <div
+          v-for="entry in displayEntries"
+          :key="entry.id"
+          class="grid-tile"
+          :class="{ 'grid-tile-active': !isCreating && selectedEntryId === entry.id }"
+          @contextmenu="handleContextMenu(entry, $event)"
+        >
+          <button
+            type="button"
+            class="grid-tile-main"
+            @click="handleSelect(entry.id)"
+          >
+            <div class="grid-tile-visual">
+              <CategoryIconView
+                v-if="entry.displayIcon"
+                :name="entry.displayIcon"
+                :badge-size="44"
+                :size="20"
+              />
+              <div
+                v-else
+                class="grid-tile-avatar"
+                :style="{ background: entry.avatar?.color ?? getAvatarMeta(entry.title).color }"
+              >
+                {{ entry.avatar?.text ?? getAvatarMeta(entry.title).text }}
+              </div>
+              <span
+                v-if="entry.isFavorite"
+                class="grid-tile-favorite"
+                :title="t('common.favorite')"
+                :aria-label="t('common.favorite')"
+              >
+                <Star
+                  :size="11"
+                  :stroke-width="1.5"
+                  fill="currentColor"
+                />
+              </span>
+            </div>
+            <span class="grid-tile-title">
+              <SearchHighlightText
+                v-if="activeSearchQuery"
+                :text="entry.title"
+                :query="activeSearchQuery"
+              />
+              <template v-else>{{ entry.title }}</template>
+            </span>
+          </button>
+          <div class="grid-tile-side">
+            <button
+              type="button"
+              class="grid-tile-menu-btn"
+              @click="toggleMenu(entry.id, $event)"
+            >
+              <MoreHorizontal
+                :size="14"
+                :stroke-width="1.5"
+              />
+            </button>
+            <div
+              v-if="openMenuId === entry.id"
+              class="action-menu menu-popover surface-card"
+              @click.stop
+            >
+              <EntryListMenu
+                :entry="entry"
+                @action="closeMenus"
+                @delete="handleDeleteRequest"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template v-else>
+        <div
+          v-for="entry in displayEntries"
+          :key="entry.id"
+          class="list-item"
+          :class="{ 'list-item-active': !isCreating && selectedEntryId === entry.id }"
+          @contextmenu="handleContextMenu(entry, $event)"
+        >
         <button
           type="button"
           class="list-item-main"
@@ -387,7 +513,8 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </template>
     </div>
 
     <Teleport to="body">
@@ -755,5 +882,181 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 .confirm-modal-actions :deep(.ui-classic-btn) {
   min-width: 96px;
   padding: 10px 22px;
+}
+
+.layout-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  gap: 2px;
+}
+
+.layout-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.layout-toggle-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.layout-toggle-btn.active {
+  color: var(--accent-primary);
+  background: var(--accent-subtle);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 25%, transparent);
+}
+
+.list-scroll--grid {
+  overflow-x: hidden;
+}
+
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  padding: 16px 20px 20px;
+}
+
+.grid-tile {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  transition: border-color 0.2s, background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.grid-tile:hover:not(.grid-tile-active) {
+  border-color: var(--border-default);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.grid-tile-active,
+.grid-tile-active:hover {
+  border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--border-default));
+  background: var(--accent-subtle);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+.grid-tile-main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.grid-tile-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.grid-tile-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.grid-tile-favorite {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  display: inline-flex;
+  color: #f59e0b;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.grid-tile-title {
+  width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.grid-tile-side {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+}
+
+.grid-tile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-app) 72%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background-color 0.15s, color 0.15s;
+}
+
+.grid-tile:hover .grid-tile-menu-btn,
+.grid-tile-active .grid-tile-menu-btn,
+.grid-tile-side:focus-within .grid-tile-menu-btn {
+  opacity: 1;
+}
+
+.grid-tile-menu-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.grid-tile-side .action-menu {
+  top: calc(100% + 4px);
+  right: 0;
+}
+
+.list-panel--grid.list-panel--compact .entry-grid {
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+  padding: 12px 14px 16px;
 }
 </style>
