@@ -108,6 +108,11 @@ export interface EntryAttachment extends EntryAttachmentMeta {
   entryId: string
 }
 
+export interface EntryCustomField {
+  name: string
+  value: string
+}
+
 export interface PasswordEntry {
   id: string
   title: string
@@ -124,6 +129,7 @@ export interface PasswordEntry {
   localProgramPath: string
   /** TOTP 密钥（Base32），空字符串表示未配置 */
   totpSecret: string
+  customFields: EntryCustomField[]
   attachmentCount: number
   lastUsedAt: number | null
   createdAt: number
@@ -148,6 +154,7 @@ export interface PasswordEntryInput {
   displayIcon?: string
   localProgramPath?: string
   totpSecret?: string
+  customFields?: EntryCustomField[]
 }
 
 /** 跟随系统锁屏时存入 auto_lock_minutes 的哨兵值 */

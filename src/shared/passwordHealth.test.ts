@@ -17,6 +17,7 @@ function makeEntry(overrides: Partial<PasswordEntry> & { id: string }): Password
     displayIcon: '',
     localProgramPath: '',
     totpSecret: '',
+    customFields: [],
     attachmentCount: 0,
     lastUsedAt: null,
     createdAt: 1,

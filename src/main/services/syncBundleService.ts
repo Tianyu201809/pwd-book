@@ -86,6 +86,7 @@ function rowToSyncEntry(row: EntryRow): SyncEntry {
     displayIcon: entry.displayIcon,
     localProgramPath: entry.localProgramPath,
     totpSecret: entry.totpSecret,
+    customFields: entry.customFields,
     lastUsedAt: entry.lastUsedAt,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,

@@ -11,6 +11,7 @@ import { resetDatabaseFile } from '../db/database'
 import { getSetting, readActiveEntryRow, readActiveEntryRows, readEntryRow, setSetting } from '../db/helpers'
 import { getSessionKey, isUnlocked, lockSession, unlockSession } from './sessionService'
 import type { PasswordEntry, PasswordEntryInput, VaultStatus } from '../../shared/types'
+import { serializeCustomFields, parseCustomFields } from '../../shared/customFields'
 import { appError, ErrorCode } from '../../shared/errors'
 import { getDatabase, persistDatabase } from '../db/database'
 import { ensureCategoriesFromImport, resolveCategoryId } from './categoryService'
@@ -100,8 +101,8 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
   const totpSecret = input.totpSecret?.trim() ?? ''
   db.run(
     `INSERT INTO password_entries
-      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, totp_secret_encrypted, last_used_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, totp_secret_encrypted, custom_fields, last_used_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.title.trim(),
@@ -115,6 +116,7 @@ export function createEntry(input: PasswordEntryInput): PasswordEntry {
       input.displayIcon?.trim() ?? '',
       input.localProgramPath?.trim() ?? '',
       totpSecret ? encryptSecret(totpSecret, key) : '',
+      serializeCustomFields(input.customFields),
       null,
       now,
       now,
@@ -136,7 +138,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
   const totpSecret = input.totpSecret?.trim() ?? ''
   db.run(
     `UPDATE password_entries
-     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, local_program_path = ?, totp_secret_encrypted = ?, updated_at = ?
+     SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?, is_favorite = ?, display_icon = ?, local_program_path = ?, totp_secret_encrypted = ?, custom_fields = ?, updated_at = ?
      WHERE id = ?`,
     [
       input.title.trim(),
@@ -150,6 +152,7 @@ export function updateEntry(id: string, input: PasswordEntryInput): PasswordEntr
       input.displayIcon?.trim() ?? existing.display_icon,
       input.localProgramPath?.trim() ?? existing.local_program_path,
       totpSecret ? encryptSecret(totpSecret, key) : '',
+      serializeCustomFields(input.customFields ?? parseCustomFields(existing.custom_fields)),
       now,
       id,
     ],

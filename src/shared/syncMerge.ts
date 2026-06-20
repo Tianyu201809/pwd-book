@@ -1,3 +1,4 @@
+import { customFieldsContentEqual } from './customFields'
 import type { SyncAttachmentMeta, SyncBundle, SyncConflict, SyncEntry } from './syncTypes'
 import { SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from './syncTypes'
 import type { VaultCategory } from './types'
@@ -19,6 +20,7 @@ function entriesContentEqual(a: SyncEntry, b: SyncEntry): boolean {
     a.localProgramPath === b.localProgramPath &&
     a.totpSecret === b.totpSecret &&
     JSON.stringify(a.tags) === JSON.stringify(b.tags) &&
+    customFieldsContentEqual(a.customFields, b.customFields) &&
     a.deletedAt === b.deletedAt
   )
 }

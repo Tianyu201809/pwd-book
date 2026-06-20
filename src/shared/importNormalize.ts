@@ -1,3 +1,4 @@
+import { parseCustomFields, normalizeCustomFields } from './customFields'
 import { parseCsvRecords, pickField } from './importCsv'
 import type { ExportPayload, PasswordEntryInput, VaultCategory } from './types'
 
@@ -27,6 +28,7 @@ export function normalizeImportEntry(raw: Record<string, unknown>): PasswordEntr
     displayIcon: String(raw.displayIcon ?? ''),
     localProgramPath: String(raw.localProgramPath ?? raw.local_program_path ?? ''),
     totpSecret: String(raw.totpSecret ?? raw.totp_secret ?? ''),
+    customFields: normalizeCustomFields(raw.customFields ?? raw.custom_fields),
   }
 }
 
@@ -130,6 +132,7 @@ export function parsePwdbookCsv(content: string): {
       tags: parsePwdbookTags(pickField(record, '标签', 'tags')),
       categoryId: categoryName || undefined,
       isFavorite: parsePwdbookFavorite(pickField(record, '收藏', 'favorite', 'isFavorite')),
+      customFields: parseCustomFields(pickField(record, '自定义字段', 'customFields', 'custom_fields')),
     })
   }
 

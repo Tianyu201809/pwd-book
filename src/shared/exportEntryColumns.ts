@@ -1,3 +1,4 @@
+import { serializeCustomFields } from './customFields'
 import type { PasswordEntry } from './types'
 
 export const PWD_BOOK_ENTRY_HEADERS = [
@@ -12,6 +13,7 @@ export const PWD_BOOK_ENTRY_HEADERS = [
   '收藏',
   '创建时间',
   '更新时间',
+  '自定义字段',
 ] as const
 
 export const PWD_BOOK_CATEGORY_HEADERS = ['ID', '名称', '图标', '排序', '条目数'] as const
@@ -34,5 +36,6 @@ export function entryToPwdBookRow(entry: PasswordEntry): string[] {
     entry.isFavorite ? '是' : '否',
     formatExportTimestamp(entry.createdAt),
     formatExportTimestamp(entry.updatedAt),
+    serializeCustomFields(entry.customFields),
   ]
 }

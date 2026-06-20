@@ -1,4 +1,5 @@
 import { encryptSecret } from '../crypto/vaultCrypto'
+import { serializeCustomFields } from '../../shared/customFields'
 import { getDatabase, persistDatabase } from '../db/database'
 import { readEntryRow } from '../db/helpers'
 import { ensureCategoriesFromImport, resolveCategoryId } from './categoryService'
@@ -32,8 +33,8 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
     const totpSecret = entry.totpSecret?.trim() ?? ''
     db.run(
       `INSERT INTO password_entries
-        (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, totp_secret_encrypted, last_used_at, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, title, url, username, password_encrypted, note, category, tags, is_favorite, display_icon, local_program_path, totp_secret_encrypted, custom_fields, last_used_at, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         entry.id,
         entry.title.trim(),
@@ -47,6 +48,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
         entry.displayIcon?.trim() ?? '',
         entry.localProgramPath?.trim() ?? '',
         totpSecret ? encryptSecret(totpSecret, key) : '',
+        serializeCustomFields(entry.customFields),
         entry.lastUsedAt,
         entry.createdAt,
         entry.updatedAt,
@@ -67,7 +69,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
   db.run(
     `UPDATE password_entries
      SET title = ?, url = ?, username = ?, password_encrypted = ?, note = ?, category = ?, tags = ?,
-         is_favorite = ?, display_icon = ?, local_program_path = ?, totp_secret_encrypted = ?,
+         is_favorite = ?, display_icon = ?, local_program_path = ?, totp_secret_encrypted = ?, custom_fields = ?,
          last_used_at = ?, created_at = ?, updated_at = ?, deleted_at = ?
      WHERE id = ?`,
     [
@@ -82,6 +84,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
       entry.displayIcon?.trim() ?? '',
       entry.localProgramPath?.trim() ?? '',
       totpSecret ? encryptSecret(totpSecret, key) : '',
+      serializeCustomFields(entry.customFields),
       entry.lastUsedAt,
       entry.createdAt,
       entry.updatedAt,

@@ -1,5 +1,6 @@
 import { decryptSecret } from '../crypto/vaultCrypto'
 import type { EntryRow } from '../db/helpers'
+import { parseCustomFields } from '../../shared/customFields'
 import type { PasswordEntry } from '../../shared/types'
 import { getCategoryName } from './categoryService'
 import { getSessionKey } from './sessionService'
@@ -22,6 +23,7 @@ export function rowToEntry(row: EntryRow, attachmentCount = 0): PasswordEntry {
     totpSecret: row.totp_secret_encrypted
       ? decryptSecret(row.totp_secret_encrypted, key)
       : '',
+    customFields: parseCustomFields(row.custom_fields),
     attachmentCount,
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,

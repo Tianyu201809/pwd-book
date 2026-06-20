@@ -16,6 +16,7 @@ const sample: PasswordEntry = {
   displayIcon: '',
   localProgramPath: '',
   totpSecret: '',
+  customFields: [],
   attachmentCount: 0,
   lastUsedAt: null,
   createdAt: 1,
@@ -26,5 +27,14 @@ describe('entrySearch', () => {
   it('matches note field', () => {
     expect(entryMatchesSearch(sample, '恢复邮箱')).toBe(true)
     expect(entryMatchesSearch(sample, '不存在')).toBe(false)
+  })
+
+  it('matches custom field name and value', () => {
+    const entry = {
+      ...sample,
+      customFields: [{ name: 'PIN', value: '9988' }],
+    }
+    expect(entryMatchesSearch(entry, 'PIN')).toBe(true)
+    expect(entryMatchesSearch(entry, '9988')).toBe(true)
   })
 })

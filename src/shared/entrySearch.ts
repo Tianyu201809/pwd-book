@@ -9,6 +9,7 @@ export function entrySearchFields(entry: PasswordEntry): string[] {
     entry.note,
     entry.categoryName,
     ...entry.tags,
+    ...entry.customFields.flatMap((field) => [field.name, field.value]),
   ]
 }
 

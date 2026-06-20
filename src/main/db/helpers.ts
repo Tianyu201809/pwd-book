@@ -32,6 +32,7 @@ export interface EntryRow {
   display_icon: string
   local_program_path: string
   totp_secret_encrypted: string
+  custom_fields: string
   last_used_at: number | null
   created_at: number
   updated_at: number
@@ -40,7 +41,7 @@ export interface EntryRow {
 
 const ENTRY_SELECT_COLUMNS = `
   id, title, url, username, password_encrypted, note, category, tags,
-  is_favorite, display_icon, local_program_path, totp_secret_encrypted,
+  is_favorite, display_icon, local_program_path, totp_secret_encrypted, custom_fields,
   last_used_at, created_at, updated_at, deleted_at
 `
 
@@ -58,10 +59,11 @@ function mapEntryRow(values: unknown[]): EntryRow {
     display_icon: String(values[9] ?? ''),
     local_program_path: String(values[10] ?? ''),
     totp_secret_encrypted: String(values[11] ?? ''),
-    last_used_at: values[12] == null ? null : Number(values[12]),
-    created_at: Number(values[13]),
-    updated_at: Number(values[14]),
-    deleted_at: values[15] == null ? null : Number(values[15]),
+    custom_fields: String(values[12] ?? '[]'),
+    last_used_at: values[13] == null ? null : Number(values[13]),
+    created_at: Number(values[14]),
+    updated_at: Number(values[15]),
+    deleted_at: values[16] == null ? null : Number(values[16]),
   }
 }
 

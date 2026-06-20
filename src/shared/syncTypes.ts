@@ -1,4 +1,5 @@
 import type { VaultCategory } from './types'
+import type { EntryCustomField } from './types'
 
 export const SYNC_BUNDLE_FORMAT = 'pwdbook-sync' as const
 export const SYNC_BUNDLE_VERSION = 2 as const
@@ -19,6 +20,7 @@ export interface SyncEntry {
   displayIcon: string
   localProgramPath: string
   totpSecret: string
+  customFields?: EntryCustomField[]
   lastUsedAt: number | null
   createdAt: number
   updatedAt: number

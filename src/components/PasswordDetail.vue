@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, Sparkles, Tags, X, Shield, SquareArrowOutUpRight, Paperclip, FileText } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, Sparkles, Tags, X, Shield, SquareArrowOutUpRight, Paperclip, FileText, Plus } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
 import {
   generateTotpCode,
@@ -17,7 +17,8 @@ import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
 import { vaultApi } from '@/services/vaultApi'
-import type { PasswordEntryInput, EntryAttachmentMeta } from '@/types'
+import type { PasswordEntryInput, EntryAttachmentMeta, EntryCustomField } from '@/types'
+import { MAX_CUSTOM_FIELDS_PER_ENTRY, normalizeCustomFields } from '@/shared/customFields'
 
 const props = withDefaults(
   defineProps<{
@@ -132,6 +133,7 @@ const draft = ref<PasswordEntryInput>({
   displayIcon: '',
   localProgramPath: '',
   totpSecret: '',
+  customFields: [],
 })
 
 const totpCode = ref('')
@@ -298,6 +300,38 @@ const shellStyle = computed(() => ({
 
 const formEditable = computed(() => isCreating.value || isEditing.value)
 
+const draftCustomFields = computed(() => draft.value.customFields ?? [])
+
+const showCustomFieldsSection = computed(
+  () => formEditable.value || normalizeCustomFields(draft.value.customFields).length > 0,
+)
+
+function ensureDraftCustomFields(): EntryCustomField[] {
+  if (!draft.value.customFields) {
+    draft.value.customFields = []
+  }
+  return draft.value.customFields
+}
+
+function addCustomField(): void {
+  const fields = ensureDraftCustomFields()
+  if (fields.length >= MAX_CUSTOM_FIELDS_PER_ENTRY) {
+    showToast(t('detail.customFieldLimit', { limit: MAX_CUSTOM_FIELDS_PER_ENTRY }), 'error')
+    return
+  }
+  fields.push({ name: '', value: '' })
+}
+
+function removeCustomField(index: number): void {
+  draft.value.customFields?.splice(index, 1)
+}
+
+async function copyCustomFieldValue(value: string): Promise<void> {
+  if (!value) return
+  await window.electronAPI?.copySecret(value, 0)
+  showToast(t('detail.customFieldCopied'), 'success')
+}
+
 function resetDraftFromEntry(): void {
   showTotpSecret.value = false
   if (isCreating.value || !selectedEntry.value) {
@@ -313,6 +347,7 @@ function resetDraftFromEntry(): void {
       displayIcon: '',
       localProgramPath: '',
       totpSecret: '',
+      customFields: [],
     }
     closeTagPicker()
     refreshTotpDisplay()
@@ -331,6 +366,7 @@ function resetDraftFromEntry(): void {
     displayIcon: selectedEntry.value.displayIcon ?? '',
     localProgramPath: selectedEntry.value.localProgramPath ?? '',
     totpSecret: selectedEntry.value.totpSecret ?? '',
+    customFields: [...(selectedEntry.value.customFields ?? [])],
   }
   closeTagPicker()
   refreshTotpDisplay()
@@ -370,6 +406,7 @@ function buildInput(): PasswordEntryInput {
     ...draft.value,
     tags: [...draftTags.value],
     totpSecret: normalizeTotpSecret(draft.value.totpSecret ?? ''),
+    customFields: normalizeCustomFields(draft.value.customFields),
   }
 }
 
@@ -999,6 +1036,92 @@ watch(detailCollapsed, () => {
               :stroke-width="1.5"
             />
             {{ t('detail.addAttachment') }}
+          </UiButton>
+        </div>
+
+        <div
+          v-if="showCustomFieldsSection"
+          class="field custom-fields-field"
+        >
+          <label>{{ t('detail.customFields') }}</label>
+          <p
+            v-if="formEditable"
+            class="field-hint"
+          >
+            {{ t('detail.customFieldsHint') }}
+          </p>
+          <p
+            v-if="!formEditable && draftCustomFields.length === 0"
+            class="custom-fields-empty"
+          >
+            {{ t('detail.customFieldsEmpty') }}
+          </p>
+          <ul
+            v-else
+            class="custom-field-list"
+          >
+            <li
+              v-for="(field, index) in draftCustomFields"
+              :key="`custom-field-${index}`"
+              class="custom-field-item"
+            >
+              <UiInput
+                v-if="formEditable"
+                v-model="field.name"
+                class="custom-field-name"
+                :placeholder="t('detail.customFieldNamePlaceholder')"
+              />
+              <span
+                v-else
+                class="custom-field-label"
+              >
+                {{ field.name || t('detail.customFieldUntitled') }}
+              </span>
+              <div class="custom-field-value-row">
+                <UiInput
+                  v-model="field.value"
+                  class="custom-field-value"
+                  :placeholder="t('detail.customFieldValuePlaceholder')"
+                  :readonly="!formEditable"
+                />
+                <button
+                  v-if="field.value"
+                  type="button"
+                  class="icon-btn square"
+                  :title="t('detail.copyCustomField')"
+                  @click="copyCustomFieldValue(field.value)"
+                >
+                  <Copy
+                    :size="16"
+                    :stroke-width="1.5"
+                  />
+                </button>
+                <button
+                  v-if="formEditable"
+                  type="button"
+                  class="custom-field-delete-btn"
+                  :title="t('detail.removeCustomField')"
+                  @click="removeCustomField(index)"
+                >
+                  <Trash2
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </button>
+              </div>
+            </li>
+          </ul>
+          <UiButton
+            v-if="formEditable"
+            variant="ghost"
+            class="custom-field-add-btn"
+            @click="addCustomField"
+          >
+            <Plus
+              :size="14"
+              :stroke-width="1.5"
+            />
+            {{ t('detail.addCustomField') }}
           </UiButton>
         </div>
 
@@ -1854,5 +1977,72 @@ watch(detailCollapsed, () => {
 .confirm-modal-actions :deep(.ui-classic-btn) {
   min-width: 96px;
   padding: 10px 22px;
+}
+
+.custom-fields-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-fields-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.custom-field-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+
+.custom-field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.custom-field-value-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.custom-field-name,
+.custom-field-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.custom-field-delete-btn {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--status-danger);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.custom-field-delete-btn:hover {
+  background: color-mix(in srgb, var(--status-danger) 12%, transparent);
+}
+
+.custom-field-add-btn {
+  align-self: flex-start;
 }
 </style>

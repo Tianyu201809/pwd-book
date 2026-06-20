@@ -789,6 +789,7 @@ function entryToInput(entry: PasswordEntry): PasswordEntryInput {
     displayIcon: entry.displayIcon ?? '',
     localProgramPath: entry.localProgramPath ?? '',
     totpSecret: entry.totpSecret ?? '',
+    customFields: [...(entry.customFields ?? [])],
   }
 }
 

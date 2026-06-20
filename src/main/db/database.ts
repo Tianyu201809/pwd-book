@@ -81,6 +81,7 @@ export async function initDatabase(): Promise<Database> {
   migrateEntryLocalProgramPath(db)
   migrateEntryDeletedAt(db)
   migrateEntryTotpSecret(db)
+  migrateEntryCustomFields(db)
 
   db.run(`
     CREATE TABLE IF NOT EXISTS entry_attachments (
@@ -157,5 +158,12 @@ function migrateEntryTotpSecret(db: Database): void {
   const columns = readEntryTableColumns(db)
   if (!columns.includes('totp_secret_encrypted')) {
     db.run(`ALTER TABLE password_entries ADD COLUMN totp_secret_encrypted TEXT NOT NULL DEFAULT ''`)
+  }
+}
+
+function migrateEntryCustomFields(db: Database): void {
+  const columns = readEntryTableColumns(db)
+  if (!columns.includes('custom_fields')) {
+    db.run(`ALTER TABLE password_entries ADD COLUMN custom_fields TEXT NOT NULL DEFAULT '[]'`)
   }
 }
