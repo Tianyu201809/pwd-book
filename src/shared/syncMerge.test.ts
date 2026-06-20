@@ -17,6 +17,7 @@ function makeEntry(overrides: Partial<SyncEntry> & { id: string }): SyncEntry {
     displayIcon: overrides.displayIcon ?? '',
     localProgramPath: overrides.localProgramPath ?? '',
     totpSecret: overrides.totpSecret ?? '',
+    customFields: overrides.customFields ?? [],
     lastUsedAt: overrides.lastUsedAt ?? null,
     createdAt: overrides.createdAt ?? 1000,
     updatedAt: overrides.updatedAt ?? 1000,
@@ -226,5 +227,26 @@ describe('mergeSyncBundles', () => {
 
     expect(merged).toHaveLength(0)
     expect(mergedDeletions).toEqual([{ id: 'att-deleted', deletedAt: 200 }])
+  })
+
+  it('merges custom fields by entry updatedAt', () => {
+    const local = makeBundle('local', 1, [
+      makeEntry({
+        id: 'entry-1',
+        updatedAt: 100,
+        customFields: [{ name: 'PIN', value: '1111' }],
+      }),
+    ])
+    const remote = makeBundle('remote', 2, [
+      makeEntry({
+        id: 'entry-1',
+        updatedAt: 200,
+        customFields: [{ name: 'PIN', value: '2222' }],
+      }),
+    ])
+
+    const { merged, conflicts } = mergeSyncBundles(local, remote)
+    expect(conflicts).toHaveLength(0)
+    expect(merged.entries[0]?.customFields).toEqual([{ name: 'PIN', value: '2222' }])
   })
 })

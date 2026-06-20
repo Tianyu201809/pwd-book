@@ -148,12 +148,17 @@ export function applyMergedAttachments(merged: SyncBundle): void {
   }
 }
 
+export function syncAttachmentFilesAfterMerge(merged: SyncBundle, remoteDir: string): void {
+  const manifest = merged.attachments ?? []
+  const validIds = new Set(manifest.map((item) => item.id))
+  publishLocalAttachmentsToDir(remoteDir, validIds)
+  pullMissingAttachmentsFromDir(remoteDir, manifest)
+  gcRemoteAttachmentFiles(remoteDir, validIds)
+}
+
 export function syncAttachmentsAfterMerge(merged: SyncBundle, remoteDir: string): void {
   applyMergedAttachments(merged)
-  const validIds = new Set((merged.attachments ?? []).map((item) => item.id))
-  publishLocalAttachmentsToDir(remoteDir, validIds)
-  pullMissingAttachmentsFromDir(remoteDir, merged.attachments ?? [])
-  gcRemoteAttachmentFiles(remoteDir, validIds)
+  syncAttachmentFilesAfterMerge(merged, remoteDir)
 }
 
 export function listLocalEncryptedAttachmentFiles(): { id: string; path: string }[] {

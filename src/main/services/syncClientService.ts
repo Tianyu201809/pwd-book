@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { fetchRemoteEncryptedBundle, fetchRemoteAttachment, parsePairingPayload, pushRemoteEncryptedBundle, pushRemoteAttachment } from '../../shared/syncClient'
+import { fetchRemoteEncryptedBundle, fetchRemoteAttachment, parsePairingPayload, pushRemoteEncryptedBundle, pushRemoteAttachment, deleteRemoteAttachment } from '../../shared/syncClient'
 import { assertPairingFingerprint } from '../../shared/mobileSyncWorkflow'
 import type { SyncMergeResult, WifiSyncClientPullPayload, WifiSyncDiscoveredServer } from '../../shared/syncTypes'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
@@ -65,6 +65,14 @@ async function syncAttachmentsWithRemote(
       await pushRemoteAttachment(pairing, meta.id, encrypted, { rejectUnauthorized: false })
     } catch {
       // ignore push failures for individual files
+    }
+  }
+
+  for (const tombstone of mergedBundle.attachmentDeletions ?? []) {
+    try {
+      await deleteRemoteAttachment(pairing, tombstone.id, { rejectUnauthorized: false })
+    } catch {
+      // remote file may already be gone
     }
   }
 }

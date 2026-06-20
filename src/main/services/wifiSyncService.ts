@@ -27,7 +27,7 @@ import { isUnlocked } from './sessionService'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 import { getSyncVerificationCode } from '../../shared/syncVerification'
 import { SYNC_ATTACHMENT_FILE_EXT } from './attachmentService'
-import { syncAttachmentsAfterMerge } from './attachmentSyncService'
+import { syncAttachmentFilesAfterMerge } from './attachmentSyncService'
 
 const SETTINGS_KEY = 'wifi_sync_settings'
 const SERVICE_TYPE = 'pwdbook-sync'
@@ -160,7 +160,7 @@ function unauthorized(res: http.ServerResponse): void {
 
 function writeDavHeaders(res: http.ServerResponse, extra: Record<string, string> = {}): void {
   res.setHeader('DAV', '1,2')
-  res.setHeader('Allow', 'GET, PUT, HEAD, OPTIONS, PROPFIND')
+  res.setHeader('Allow', 'GET, PUT, HEAD, OPTIONS, PROPFIND, DELETE')
   Object.entries(extra).forEach(([key, value]) => res.setHeader(key, value))
 }
 
@@ -175,7 +175,7 @@ function getSyncAttachmentServerPath(attachmentId: string): string {
 function publishAttachmentsToSyncServer(): void {
   if (!isUnlocked()) return
   const bundle = buildSyncBundle()
-  syncAttachmentsAfterMerge(bundle, getSyncServerDir())
+  syncAttachmentFilesAfterMerge(bundle, getSyncServerDir())
 }
 
 function handleAttachmentDavRequest(
@@ -215,6 +215,15 @@ function handleAttachmentDavRequest(
       res.writeHead(204)
       res.end()
     })
+    return
+  }
+
+  if (req.method === 'DELETE') {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
+    }
+    res.writeHead(204)
+    res.end()
     return
   }
 
@@ -424,6 +433,7 @@ export async function startWifiSyncServer(): Promise<WifiSyncServerStatus> {
 
   if (isUnlocked()) {
     const result = publishEncryptedBundle()
+    publishAttachmentsToSyncServer()
     lastPublishedAt = Date.now()
     lastPublishedRevision = result.revision
   }

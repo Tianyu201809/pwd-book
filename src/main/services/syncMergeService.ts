@@ -1,7 +1,7 @@
 import { encryptSecret } from '../crypto/vaultCrypto'
 import { serializeCustomFields } from '../../shared/customFields'
 import { getDatabase, persistDatabase } from '../db/database'
-import { readEntryRow } from '../db/helpers'
+import { getSetting, readEntryRow, type EntryRow } from '../db/helpers'
 import { ensureCategoriesFromImport, resolveCategoryId } from './categoryService'
 import { mergeSyncBundles } from '../../shared/syncMerge'
 import type { SyncBundle, SyncEntry, SyncMergeResult } from '../../shared/syncTypes'
@@ -17,10 +17,21 @@ import {
 import { getSessionKey, isUnlocked } from './sessionService'
 import { appError, ErrorCode } from '../../shared/errors'
 import { removeQuickBarRecentEntry } from './quickBarRecentService'
-import { applyMergedAttachments } from './attachmentSyncService'
+import { applyMergedAttachments, syncAttachmentFilesAfterMerge } from './attachmentSyncService'
+import { getSyncServerDir } from './syncBundleService'
 
 function assertUnlocked(): void {
   if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
+}
+
+function resolveSyncCustomFields(entry: SyncEntry, existing: EntryRow | null): string {
+  if (entry.customFields !== undefined) {
+    return serializeCustomFields(entry.customFields)
+  }
+  if (existing) {
+    return existing.custom_fields || '[]'
+  }
+  return '[]'
 }
 
 function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 'added' | 'updated' | 'removed' | 'unchanged' {
@@ -48,7 +59,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
         entry.displayIcon?.trim() ?? '',
         entry.localProgramPath?.trim() ?? '',
         totpSecret ? encryptSecret(totpSecret, key) : '',
-        serializeCustomFields(entry.customFields),
+        resolveSyncCustomFields(entry, null),
         entry.lastUsedAt,
         entry.createdAt,
         entry.updatedAt,
@@ -84,7 +95,7 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
       entry.displayIcon?.trim() ?? '',
       entry.localProgramPath?.trim() ?? '',
       totpSecret ? encryptSecret(totpSecret, key) : '',
-      serializeCustomFields(entry.customFields),
+      resolveSyncCustomFields(entry, existing),
       entry.lastUsedAt,
       entry.createdAt,
       entry.updatedAt,
@@ -106,6 +117,29 @@ function upsertSyncEntry(entry: SyncEntry, categoryRemap: Map<string, string>): 
   return 'updated'
 }
 
+const FOLDER_SYNC_SETTINGS_KEY = 'folder_sync_settings'
+
+function readFolderSyncPath(): string | null {
+  const raw = getSetting(FOLDER_SYNC_SETTINGS_KEY)
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as { enabled?: boolean; folderPath?: string | null }
+    if (!parsed.enabled || !parsed.folderPath) return null
+    return parsed.folderPath
+  } catch {
+    return null
+  }
+}
+
+function finalizeAttachmentFileSync(merged: SyncBundle): void {
+  const folderPath = readFolderSyncPath()
+  if (folderPath) {
+    syncAttachmentFilesAfterMerge(merged, folderPath)
+    return
+  }
+  syncAttachmentFilesAfterMerge(merged, getSyncServerDir())
+}
+
 function applyMergedBundle(merged: SyncBundle): Omit<SyncMergeResult, 'conflicts' | 'revision'> {
   const categoryRemap = ensureCategoriesFromImport(merged.categories)
   let added = 0
@@ -122,6 +156,7 @@ function applyMergedBundle(merged: SyncBundle): Omit<SyncMergeResult, 'conflicts
 
   persistDatabase()
   applyMergedAttachments(merged)
+  finalizeAttachmentFileSync(merged)
   return { added, updated, removed }
 }
 
@@ -161,6 +196,7 @@ export function mergeAndPublish(
   const bundle = buildSyncBundle(result.revision)
   const encrypted = encryptBundleForTransport(bundle, masterPassword)
   writeEncryptedBundleToServer(encrypted)
+  syncAttachmentFilesAfterMerge(bundle, getSyncServerDir())
   return {
     ...result,
     encrypted,

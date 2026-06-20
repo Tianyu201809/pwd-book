@@ -56,9 +56,17 @@ export async function pushRemoteAttachment(
   await requestBufferAtPath(config, 'PUT', buildSyncAttachmentPath(attachmentId), payload, options)
 }
 
+export async function deleteRemoteAttachment(
+  config: SyncPairingConfig,
+  attachmentId: string,
+  options: SyncClientFetchOptions = {},
+): Promise<void> {
+  await requestBufferAtPath(config, 'DELETE', buildSyncAttachmentPath(attachmentId), undefined, options)
+}
+
 function requestBufferAtPath(
   config: SyncPairingConfig,
-  method: 'GET' | 'PUT',
+  method: 'GET' | 'PUT' | 'DELETE',
   requestPath: string,
   body?: Buffer,
   options: SyncClientFetchOptions = {},
@@ -79,7 +87,7 @@ function requestBufferAtPath(
     }
 
     const req = client.request(requestOptions, (res) => {
-      if (method === 'PUT') {
+      if (method === 'PUT' || method === 'DELETE') {
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
           resolve(Buffer.alloc(0))
           return
