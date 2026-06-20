@@ -4,7 +4,7 @@ import type { PasswordEntry } from '../../shared/types'
 import { getCategoryName } from './categoryService'
 import { getSessionKey } from './sessionService'
 
-export function rowToEntry(row: EntryRow): PasswordEntry {
+export function rowToEntry(row: EntryRow, attachmentCount = 0): PasswordEntry {
   const key = getSessionKey()
   return {
     id: row.id,
@@ -22,6 +22,7 @@ export function rowToEntry(row: EntryRow): PasswordEntry {
     totpSecret: row.totp_secret_encrypted
       ? decryptSecret(row.totp_secret_encrypted, key)
       : '',
+    attachmentCount,
     lastUsedAt: row.last_used_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

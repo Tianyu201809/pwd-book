@@ -13,6 +13,7 @@ import { getSyncTransportKey, isUnlocked } from './sessionService'
 import type { SyncBundle, SyncEntry, SyncStatus } from '../../shared/syncTypes'
 import { SYNC_BUNDLE_FILENAME, SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from '../../shared/syncTypes'
 import { appError, ErrorCode } from '../../shared/errors'
+import { buildSyncAttachmentsFromDb } from './attachmentSyncService'
 
 const DEVICE_ID_KEY = 'sync_device_id'
 const REVISION_KEY = 'sync_revision'
@@ -105,6 +106,7 @@ export function buildSyncBundle(revision?: number): SyncBundle {
     exportedAt: new Date().toISOString(),
     categories: listCategories(),
     entries,
+    attachments: buildSyncAttachmentsFromDb(),
     settings: {
       trashRetentionDays: getSecuritySettings().trashRetentionDays,
     },

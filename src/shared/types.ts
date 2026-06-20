@@ -96,6 +96,18 @@ export interface TagInput {
   name: string
 }
 
+export interface EntryAttachmentMeta {
+  id: string
+  filename: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: number
+}
+
+export interface EntryAttachment extends EntryAttachmentMeta {
+  entryId: string
+}
+
 export interface PasswordEntry {
   id: string
   title: string
@@ -112,6 +124,7 @@ export interface PasswordEntry {
   localProgramPath: string
   /** TOTP 密钥（Base32），空字符串表示未配置 */
   totpSecret: string
+  attachmentCount: number
   lastUsedAt: number | null
   createdAt: number
   updatedAt: number
@@ -339,6 +352,11 @@ export const IPC = {
   windowGetAlwaysOnTop: 'window:get-always-on-top',
   windowToggleAlwaysOnTop: 'window:toggle-always-on-top',
   vaultDataNotifyChanged: 'vault-data:notify-changed',
+  attachmentsList: 'attachments:list',
+  attachmentsAdd: 'attachments:add',
+  attachmentsDelete: 'attachments:delete',
+  attachmentsOpen: 'attachments:open',
+  attachmentsSaveAs: 'attachments:save-as',
 } as const
 
 export const IPC_EVENTS = {

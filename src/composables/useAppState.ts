@@ -135,7 +135,7 @@ const entries = ref<PasswordEntry[]>([])
 const trashEntries = ref<TrashedEntry[]>([])
 const vaultCategories = ref<VaultCategory[]>([])
 const vaultTags = ref<VaultTag[]>([])
-const sidebarCategoryOrder = ref<string[]>(['all', 'favorite'])
+const sidebarCategoryOrder = ref<string[]>(['all', 'favorite', 'attachments'])
 const isCreating = ref(false)
 const DETAIL_COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
 const detailCollapsed = ref(localStorage.getItem(DETAIL_COLLAPSED_STORAGE_KEY) === 'true')
@@ -158,6 +158,12 @@ const systemCategories = computed(() => [
     icon: 'Star',
     count: entries.value.filter((entry) => entry.isFavorite).length,
   },
+  {
+    id: 'attachments' as const,
+    label: i18n.global.t('common.attachments'),
+    icon: 'Paperclip',
+    count: entries.value.filter((entry) => entry.attachmentCount > 0).length,
+  },
 ])
 
 type SidebarCategoryItem = {
@@ -177,11 +183,11 @@ const customCategories = computed(() =>
 )
 
 function buildDefaultSidebarOrder(categoryIds: string[]): string[] {
-  return ['all', 'favorite', ...categoryIds]
+  return ['all', 'favorite', 'attachments', ...categoryIds]
 }
 
 function mergeSidebarOrder(stored: string[], categoryIds: string[]): string[] {
-  const valid = new Set(['all', 'favorite', ...categoryIds])
+  const valid = new Set(['all', 'favorite', 'attachments', ...categoryIds])
   const merged: string[] = []
   for (const id of stored) {
     if (valid.has(id) && !merged.includes(id)) {
@@ -212,7 +218,9 @@ const filteredEntries = computed(() => {
       selectedCategory.value === 'all' ||
       (selectedCategory.value === 'favorite'
         ? entry.isFavorite
-        : entry.categoryId === selectedCategory.value)
+        : selectedCategory.value === 'attachments'
+          ? entry.attachmentCount > 0
+          : entry.categoryId === selectedCategory.value)
     const matchTag =
       selectedTagFilters.value.length === 0 ||
       selectedTagFilters.value.every((filterTag) => {
@@ -740,7 +748,7 @@ function cancelCreateEntry(): void {
 }
 
 function getCreateDefaultCategoryId(): string {
-  if (selectedCategory.value !== 'all' && selectedCategory.value !== 'favorite') {
+  if (selectedCategory.value !== 'all' && selectedCategory.value !== 'favorite' && selectedCategory.value !== 'attachments') {
     return selectedCategory.value
   }
   return defaultCategoryId.value

@@ -15,6 +15,7 @@ import type {
   VaultStatus,
   VaultUnlockPayload,
   VaultImportPayload,
+  EntryAttachmentMeta,
   ImportPreviewRequest,
   ImportPreviewResult,
   ImportCommitRequest,
@@ -133,6 +134,11 @@ declare global {
       }) => Promise<SyncMergeResult>
       disconnectFolderSync: () => Promise<FolderSyncSettings>
       syncFolderNow: (masterPassword: string) => Promise<SyncMergeResult>
+      listAttachments: (entryId: string) => Promise<EntryAttachmentMeta[]>
+      addAttachment: (entryId: string) => Promise<EntryAttachmentMeta | null>
+      deleteAttachment: (attachmentId: string) => Promise<void>
+      openAttachment: (attachmentId: string) => Promise<string>
+      saveAttachmentAs: (attachmentId: string) => Promise<boolean>
       onScheduledBackupDue: (handler: () => void) => () => void
       onSystemLockScreen: (handler: () => void) => () => void
       hideQuickBar?: () => void

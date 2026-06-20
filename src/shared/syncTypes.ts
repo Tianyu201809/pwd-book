@@ -1,8 +1,9 @@
 import type { VaultCategory } from './types'
 
 export const SYNC_BUNDLE_FORMAT = 'pwdbook-sync' as const
-export const SYNC_BUNDLE_VERSION = 1 as const
+export const SYNC_BUNDLE_VERSION = 2 as const
 export const SYNC_BUNDLE_FILENAME = 'vault.pwdbook'
+export const SYNC_ATTACHMENT_FILE_EXT = '.pwdattach'
 export const SYNC_MAGIC = 'PBKS'
 
 export interface SyncEntry {
@@ -24,6 +25,16 @@ export interface SyncEntry {
   deletedAt: number | null
 }
 
+export interface SyncAttachmentMeta {
+  id: string
+  entryId: string
+  filename: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: number
+  updatedAt: number
+}
+
 export interface SyncBundleSettings {
   trashRetentionDays?: number
 }
@@ -36,6 +47,7 @@ export interface SyncBundle {
   exportedAt: string
   categories: VaultCategory[]
   entries: SyncEntry[]
+  attachments?: SyncAttachmentMeta[]
   settings?: SyncBundleSettings
 }
 

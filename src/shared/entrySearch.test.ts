@@ -16,6 +16,7 @@ const sample: PasswordEntry = {
   displayIcon: '',
   localProgramPath: '',
   totpSecret: '',
+  attachmentCount: 0,
   lastUsedAt: null,
   createdAt: 1,
   updatedAt: 1,

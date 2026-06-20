@@ -15,7 +15,7 @@ import { RESERVED_CATEGORY_NAMES } from '../../shared/types'
 import { CATEGORY_ICON_VALUES } from '../../shared/categoryIcons'
 
 const SIDEBAR_ORDER_KEY = 'sidebar_category_order'
-const SYSTEM_CATEGORY_IDS = new Set(['all', 'favorite'])
+const SYSTEM_CATEGORY_IDS = new Set(['all', 'favorite', 'attachments'])
 
 const ALLOWED_ICONS = new Set(CATEGORY_ICON_VALUES)
 
@@ -168,12 +168,12 @@ export function reorderSidebarCategories(order: string[]): VaultCategory[] {
 
   const categories = listCategories()
   const categoryIds = categories.map((category) => category.id)
-  const expected = new Set(['all', 'favorite', ...categoryIds])
+  const expected = new Set(['all', 'favorite', 'attachments', ...categoryIds])
 
   if (order.length !== expected.size) {
     throw appError(ErrorCode.CATEGORY_LIST_INCOMPLETE)
   }
-  if (!order.includes('all') || !order.includes('favorite')) {
+  if (!order.includes('all') || !order.includes('favorite') || !order.includes('attachments')) {
     throw appError(ErrorCode.CATEGORY_LIST_INCOMPLETE)
   }
   for (const id of order) {
@@ -235,7 +235,7 @@ function insertCategoryFromImport(category: VaultCategory): void {
 function mergeSidebarOrderAfterImport(): void {
   const stored = getSidebarCategoryOrder()
   const categoryIds = listCategories().map((category) => category.id)
-  const valid = new Set(['all', 'favorite', ...categoryIds])
+  const valid = new Set(['all', 'favorite', 'attachments', ...categoryIds])
   const merged: string[] = []
 
   for (const id of stored) {
@@ -243,7 +243,7 @@ function mergeSidebarOrderAfterImport(): void {
       merged.push(id)
     }
   }
-  for (const id of ['all', 'favorite', ...categoryIds]) {
+  for (const id of ['all', 'favorite', 'attachments', ...categoryIds]) {
     if (!merged.includes(id)) {
       merged.push(id)
     }

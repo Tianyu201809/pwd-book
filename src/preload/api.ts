@@ -19,6 +19,7 @@ import type {
   PasswordEntry,
   PasswordEntryInput,
   TrashedEntry,
+  EntryAttachmentMeta,
   RecoveryCreateResult,
   RecoveryResetPayload,
   RecoveryVerifyResult,
@@ -273,4 +274,15 @@ export const electronAPI = {
     invoke(IPC.windowGetAlwaysOnTop),
   toggleWindowAlwaysOnTop: (): Promise<boolean> =>
     invoke(IPC.windowToggleAlwaysOnTop),
+
+  listAttachments: (entryId: string): Promise<EntryAttachmentMeta[]> =>
+    invoke(IPC.attachmentsList, entryId),
+  addAttachment: (entryId: string): Promise<EntryAttachmentMeta | null> =>
+    invoke(IPC.attachmentsAdd, entryId),
+  deleteAttachment: (attachmentId: string): Promise<void> =>
+    invoke(IPC.attachmentsDelete, attachmentId),
+  openAttachment: (attachmentId: string): Promise<string> =>
+    invoke(IPC.attachmentsOpen, attachmentId),
+  saveAttachmentAs: (attachmentId: string): Promise<boolean> =>
+    invoke(IPC.attachmentsSaveAs, attachmentId),
 }

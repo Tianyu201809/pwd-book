@@ -6,6 +6,7 @@ export type {
   CategoryInput,
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
+  EntryAttachmentMeta,
   ExportPayload,
   VaultImportPayload,
   FilterCategory,

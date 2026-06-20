@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { entryEffectiveTime, mergeSyncBundles } from './syncMerge'
-import type { SyncBundle, SyncEntry } from './syncTypes'
+import { entryEffectiveTime, mergeSyncAttachments, mergeSyncBundles } from './syncMerge'
+import type { SyncAttachmentMeta, SyncBundle, SyncEntry } from './syncTypes'
 import { SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from './syncTypes'
 
 function makeEntry(overrides: Partial<SyncEntry> & { id: string }): SyncEntry {
@@ -166,5 +166,44 @@ describe('mergeSyncBundles', () => {
 
     const { merged } = mergeSyncBundles(local, remote)
     expect(merged.categories.map((category) => category.id).sort()).toEqual(['cat-a', 'cat-b'])
+  })
+
+  it('merges attachments by updatedAt', () => {
+    const local: SyncAttachmentMeta[] = [
+      {
+        id: 'att-1',
+        entryId: 'entry-1',
+        filename: 'local.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 10,
+        createdAt: 1,
+        updatedAt: 100,
+      },
+    ]
+    const remote: SyncAttachmentMeta[] = [
+      {
+        id: 'att-1',
+        entryId: 'entry-1',
+        filename: 'remote.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 20,
+        createdAt: 1,
+        updatedAt: 200,
+      },
+      {
+        id: 'att-2',
+        entryId: 'entry-2',
+        filename: 'new.txt',
+        mimeType: 'text/plain',
+        sizeBytes: 5,
+        createdAt: 2,
+        updatedAt: 2,
+      },
+    ]
+
+    const { merged } = mergeSyncAttachments(local, remote)
+    expect(merged).toHaveLength(2)
+    expect(merged.find((item) => item.id === 'att-1')?.filename).toBe('remote.pdf')
+    expect(merged.find((item) => item.id === 'att-2')?.filename).toBe('new.txt')
   })
 })

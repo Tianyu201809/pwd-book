@@ -137,3 +137,100 @@ export function countTrashedEntries(): number {
   stmt.free()
   return count
 }
+
+export interface AttachmentRow {
+  id: string
+  entry_id: string
+  filename: string
+  mime_type: string
+  size_bytes: number
+  created_at: number
+  updated_at: number
+}
+
+function mapAttachmentRow(values: unknown[]): AttachmentRow {
+  return {
+    id: String(values[0]),
+    entry_id: String(values[1]),
+    filename: String(values[2]),
+    mime_type: String(values[3]),
+    size_bytes: Number(values[4]),
+    created_at: Number(values[5]),
+    updated_at: Number(values[6]),
+  }
+}
+
+export function readAttachmentRowsForEntry(entryId: string): AttachmentRow[] {
+  const db = getDatabase()
+  const stmt = db.prepare(`
+    SELECT id, entry_id, filename, mime_type, size_bytes, created_at, updated_at
+    FROM entry_attachments
+    WHERE entry_id = ?
+    ORDER BY created_at ASC
+  `)
+  stmt.bind([entryId])
+  const rows: AttachmentRow[] = []
+  while (stmt.step()) {
+    rows.push(mapAttachmentRow(stmt.get()))
+  }
+  stmt.free()
+  return rows
+}
+
+export function readAttachmentRow(id: string): AttachmentRow | null {
+  const db = getDatabase()
+  const stmt = db.prepare(`
+    SELECT id, entry_id, filename, mime_type, size_bytes, created_at, updated_at
+    FROM entry_attachments
+    WHERE id = ?
+  `)
+  stmt.bind([id])
+  if (!stmt.step()) {
+    stmt.free()
+    return null
+  }
+  const row = mapAttachmentRow(stmt.get())
+  stmt.free()
+  return row
+}
+
+export function readAllAttachmentRows(): AttachmentRow[] {
+  const db = getDatabase()
+  const stmt = db.prepare(`
+    SELECT id, entry_id, filename, mime_type, size_bytes, created_at, updated_at
+    FROM entry_attachments
+    ORDER BY updated_at DESC
+  `)
+  const rows: AttachmentRow[] = []
+  while (stmt.step()) {
+    rows.push(mapAttachmentRow(stmt.get()))
+  }
+  stmt.free()
+  return rows
+}
+
+export function countAttachmentsForEntry(entryId: string): number {
+  const db = getDatabase()
+  const stmt = db.prepare('SELECT COUNT(*) FROM entry_attachments WHERE entry_id = ?')
+  stmt.bind([entryId])
+  stmt.step()
+  const count = Number(stmt.get()[0])
+  stmt.free()
+  return count
+}
+
+export function readAttachmentCountsByEntry(): Map<string, number> {
+  const db = getDatabase()
+  const stmt = db.prepare(`
+    SELECT entry_id, COUNT(*) AS cnt
+    FROM entry_attachments
+    GROUP BY entry_id
+  `)
+  const counts = new Map<string, number>()
+  while (stmt.step()) {
+    const values = stmt.get()
+    counts.set(String(values[0]), Number(values[1]))
+  }
+  stmt.free()
+  return counts
+}

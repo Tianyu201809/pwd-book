@@ -1,7 +1,10 @@
+import fs from 'fs'
 import archiverImport from 'archiver'
 import archiverZipEncrypted from 'archiver-zip-encrypted'
 import { buildExcelBuffer } from './exportExcelService'
 import type { ExportPayload } from '../../shared/types'
+import { SYNC_ATTACHMENT_FILE_EXT } from './attachmentService'
+import { listLocalEncryptedAttachmentFiles } from './attachmentSyncService'
 
 type ArchiverVending = typeof archiverImport & {
   registerFormat: (format: string, module: unknown) => void
@@ -56,6 +59,11 @@ export function createPasswordProtectedBackupZip(
 
     archive.append(json, { name: jsonName })
     archive.append(excelBuffer, { name: excelName })
+    for (const file of listLocalEncryptedAttachmentFiles()) {
+      archive.append(fs.readFileSync(file.path), {
+        name: `attachments/${file.id}${SYNC_ATTACHMENT_FILE_EXT}`,
+      })
+    }
     void archive.finalize()
   })
 }

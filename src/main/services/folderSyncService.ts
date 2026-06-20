@@ -12,6 +12,7 @@ import { mergeEncryptedRemoteBundle } from './syncMergeService'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 import { getSyncTransportKey, isUnlocked } from './sessionService'
 import { appError, ErrorCode } from '../../shared/errors'
+import { syncAttachmentsAfterMerge } from './attachmentSyncService'
 
 const SETTINGS_KEY = 'folder_sync_settings'
 
@@ -108,6 +109,7 @@ function publishMergedToFolder(
   const bundle = buildSyncBundle(result.revision)
   const encrypted = encryptBundleForTransport(bundle, transportKey)
   writeRemoteBundle(folderPath, encrypted)
+  syncAttachmentsAfterMerge(bundle, folderPath)
   lastPublishedAt = Date.now()
   lastPublishedRevision = result.revision
   return result

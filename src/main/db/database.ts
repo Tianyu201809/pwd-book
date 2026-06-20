@@ -82,6 +82,21 @@ export async function initDatabase(): Promise<Database> {
   migrateEntryDeletedAt(db)
   migrateEntryTotpSecret(db)
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS entry_attachments (
+      id TEXT PRIMARY KEY NOT NULL,
+      entry_id TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+      size_bytes INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `)
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_attachments_entry_id ON entry_attachments(entry_id)
+  `)
+
   persistDatabase()
   return db
 }
@@ -105,6 +120,10 @@ export function resetDatabaseFile(): void {
   closeDatabase()
   if (fs.existsSync(dbPath)) {
     fs.unlinkSync(dbPath)
+  }
+  const attachmentsDir = path.join(path.dirname(dbPath), 'attachments')
+  if (fs.existsSync(attachmentsDir)) {
+    fs.rmSync(attachmentsDir, { recursive: true, force: true })
   }
 }
 

@@ -3,12 +3,14 @@ import { getDatabase, persistDatabase } from '../db/database'
 import {
   countTrashedEntries,
   readActiveEntryRow,
+  readAttachmentCountsByEntry,
   readEntryRow,
   readTrashedEntryRows,
 } from '../db/helpers'
 import type { TrashedEntry } from '../../shared/types'
 import { getSecuritySettings } from './settingsService'
 import { rowToEntry } from './entryMapper'
+import { deleteAttachmentsForEntries } from './attachmentService'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -32,22 +34,28 @@ function computeTrashMeta(deletedAt: number, retentionDays: number, now = Date.n
 export function purgeExpiredTrash(now = Date.now()): number {
   const retentionDays = getTrashRetentionDays()
   const cutoff = now - retentionDays * MS_PER_DAY
+  const trashed = readTrashedEntryRows().filter((row) => row.deleted_at != null && row.deleted_at < cutoff)
+  const entryIds = trashed.map((row) => row.id)
   const db = getDatabase()
   db.run('DELETE FROM password_entries WHERE deleted_at IS NOT NULL AND deleted_at < ?', [cutoff])
   const purged = db.getRowsModified()
-  if (purged > 0) persistDatabase()
+  if (purged > 0) {
+    deleteAttachmentsForEntries(entryIds)
+    persistDatabase()
+  }
   return purged
 }
 
 function rowToTrashedEntry(
   row: ReturnType<typeof readTrashedEntryRows>[number],
   retentionDays: number,
+  attachmentCounts: Map<string, number>,
   now = Date.now(),
 ): TrashedEntry {
   const deletedAt = row.deleted_at!
   const { expiresAt, daysRemaining } = computeTrashMeta(deletedAt, retentionDays, now)
   return {
-    ...rowToEntry(row),
+    ...rowToEntry(row, attachmentCounts.get(row.id) ?? 0),
     deletedAt,
     expiresAt,
     daysRemaining,
@@ -58,7 +66,10 @@ export function listTrashedEntries(): TrashedEntry[] {
   purgeExpiredTrash()
   const retentionDays = getTrashRetentionDays()
   const now = Date.now()
-  return readTrashedEntryRows().map((row) => rowToTrashedEntry(row, retentionDays, now))
+  const attachmentCounts = readAttachmentCountsByEntry()
+  return readTrashedEntryRows().map((row) =>
+    rowToTrashedEntry(row, retentionDays, attachmentCounts, now),
+  )
 }
 
 export function restoreTrashEntry(id: string): void {
@@ -90,12 +101,16 @@ export function permanentlyDeleteTrashEntry(id: string): void {
   if (!row || row.deleted_at == null) {
     throw appError(ErrorCode.ENTRY_NOT_FOUND)
   }
+  deleteAttachmentsForEntries([id])
   const db = getDatabase()
   db.run('DELETE FROM password_entries WHERE id = ? AND deleted_at IS NOT NULL', [id])
   persistDatabase()
 }
 
 export function emptyTrash(): number {
+  const trashed = readTrashedEntryRows()
+  const entryIds = trashed.map((row) => row.id)
+  deleteAttachmentsForEntries(entryIds)
   const db = getDatabase()
   db.run('DELETE FROM password_entries WHERE deleted_at IS NOT NULL')
   const deleted = db.getRowsModified()

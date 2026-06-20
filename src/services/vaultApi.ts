@@ -15,6 +15,7 @@ import type {
   VaultStatus,
   VaultUnlockPayload,
   VaultImportPayload,
+  EntryAttachmentMeta,
   ImportPreviewRequest,
   ImportPreviewResult,
   ImportCommitRequest,
@@ -159,4 +160,14 @@ export const vaultApi = {
   disconnectFolderSync: (): Promise<FolderSyncSettings> => getApi().disconnectFolderSync(),
   syncFolderNow: (masterPassword: string): Promise<SyncMergeResult> =>
     getApi().syncFolderNow(masterPassword),
+
+  listAttachments: (entryId: string): Promise<EntryAttachmentMeta[]> =>
+    getApi().listAttachments(entryId),
+  addAttachment: (entryId: string): Promise<EntryAttachmentMeta | null> =>
+    getApi().addAttachment(entryId),
+  deleteAttachment: (attachmentId: string): Promise<void> =>
+    getApi().deleteAttachment(attachmentId),
+  openAttachment: (attachmentId: string): Promise<string> => getApi().openAttachment(attachmentId),
+  saveAttachmentAs: (attachmentId: string): Promise<boolean> =>
+    getApi().saveAttachmentAs(attachmentId),
 }

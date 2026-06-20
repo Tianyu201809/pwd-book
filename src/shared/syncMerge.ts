@@ -1,4 +1,4 @@
-import type { SyncBundle, SyncConflict, SyncEntry } from './syncTypes'
+import type { SyncAttachmentMeta, SyncBundle, SyncConflict, SyncEntry } from './syncTypes'
 import { SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from './syncTypes'
 import type { VaultCategory } from './types'
 
@@ -54,6 +54,33 @@ function mergeCategoryLists(local: VaultCategory[], remote: VaultCategory[]): Va
   return Array.from(byId.values()).sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
+export function mergeSyncAttachments(
+  local: SyncAttachmentMeta[],
+  remote: SyncAttachmentMeta[],
+): { merged: SyncAttachmentMeta[] } {
+  const localById = new Map(local.map((item) => [item.id, item]))
+  const remoteById = new Map(remote.map((item) => [item.id, item]))
+  const allIds = new Set([...localById.keys(), ...remoteById.keys()])
+  const merged: SyncAttachmentMeta[] = []
+
+  for (const id of allIds) {
+    const localItem = localById.get(id)
+    const remoteItem = remoteById.get(id)
+    if (!localItem && remoteItem) {
+      merged.push(remoteItem)
+      continue
+    }
+    if (localItem && !remoteItem) {
+      merged.push(localItem)
+      continue
+    }
+    if (!localItem || !remoteItem) continue
+    merged.push(localItem.updatedAt >= remoteItem.updatedAt ? localItem : remoteItem)
+  }
+
+  return { merged }
+}
+
 export function mergeSyncBundles(
   local: SyncBundle,
   remote: SyncBundle,
@@ -100,6 +127,10 @@ export function mergeSyncBundles(
 
   const mergedCategories = mergeCategoryLists(local.categories, remote.categories)
   const mergedRevision = Math.max(local.revision, remote.revision) + 1
+  const { merged: mergedAttachments } = mergeSyncAttachments(
+    local.attachments ?? [],
+    remote.attachments ?? [],
+  )
 
   const merged: SyncBundle = {
     format: SYNC_BUNDLE_FORMAT,
@@ -109,6 +140,7 @@ export function mergeSyncBundles(
     exportedAt: new Date().toISOString(),
     categories: mergedCategories,
     entries: mergedEntries,
+    attachments: mergedAttachments,
     settings: {
       trashRetentionDays:
         remote.settings?.trashRetentionDays ?? local.settings?.trashRetentionDays,

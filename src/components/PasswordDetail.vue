@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Star, Trash2, Copy, Eye, EyeOff, Sparkles, Tags, X, Shield, SquareArrowOutUpRight } from 'lucide-vue-next'
+import { Star, Trash2, Copy, Eye, EyeOff, Sparkles, Tags, X, Shield, SquareArrowOutUpRight, Paperclip, FileText } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
 import {
   generateTotpCode,
@@ -15,8 +15,9 @@ import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiSelect, UiButton, UiCheckbox } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
-import { getAvatarMeta } from '@/shared/utils'
-import type { PasswordEntryInput } from '@/types'
+import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
+import { vaultApi } from '@/services/vaultApi'
+import type { PasswordEntryInput, EntryAttachmentMeta } from '@/types'
 
 const props = withDefaults(
   defineProps<{
@@ -67,6 +68,7 @@ const {
   openDetachedDetail,
   detachedDetailOpen,
   consumeSkipDetailAutoCollapse,
+  refreshVaultData,
 } = useAppState()
 
 const { t } = useI18n()
@@ -135,6 +137,79 @@ const draft = ref<PasswordEntryInput>({
 const totpCode = ref('')
 const totpRemaining = ref(30)
 let totpTimer: ReturnType<typeof setInterval> | null = null
+
+const attachments = ref<EntryAttachmentMeta[]>([])
+const attachmentsLoading = ref(false)
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function loadAttachments(): Promise<void> {
+  const entryId = selectedEntry.value?.id
+  if (!entryId || isCreating.value) {
+    attachments.value = []
+    return
+  }
+  attachmentsLoading.value = true
+  try {
+    attachments.value = await vaultApi.listAttachments(entryId)
+  } catch (error) {
+    attachments.value = []
+    showToast(parseErrorMessage(error), 'error')
+  } finally {
+    attachmentsLoading.value = false
+  }
+}
+
+async function handleAddAttachment(): Promise<void> {
+  const entryId = selectedEntry.value?.id
+  if (!entryId) return
+  try {
+    const added = await vaultApi.addAttachment(entryId)
+    if (!added) return
+    await loadAttachments()
+    await refreshVaultData()
+    showToast(t('detail.attachmentAdded'), 'success')
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
+async function handleDeleteAttachment(attachmentId: string): Promise<void> {
+  try {
+    await vaultApi.deleteAttachment(attachmentId)
+    await loadAttachments()
+    await refreshVaultData()
+    showToast(t('detail.attachmentDeleted'), 'success')
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
+async function handleOpenAttachment(attachmentId: string): Promise<void> {
+  try {
+    const errorMessage = await vaultApi.openAttachment(attachmentId)
+    if (errorMessage) {
+      showToast(errorMessage, 'error')
+      return
+    }
+    showToast(t('detail.attachmentOpened'), 'success')
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
+async function handleSaveAttachmentAs(attachmentId: string): Promise<void> {
+  try {
+    const saved = await vaultApi.saveAttachmentAs(attachmentId)
+    if (saved) showToast(t('detail.attachmentSaved'), 'success')
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
 
 async function refreshTotpDisplay(): Promise<void> {
   const secret = normalizeTotpSecret(draft.value.totpSecret ?? '')
@@ -246,6 +321,7 @@ function resetDraftFromEntry(): void {
 watch([selectedEntry, isCreating], () => {
   if (!isCreating.value) isEditing.value = false
   resetDraftFromEntry()
+  void loadAttachments()
 }, { immediate: true })
 
 function startEditing(): void {
@@ -815,6 +891,87 @@ watch(detailCollapsed, () => {
           </div>
         </div>
 
+        <div
+          v-if="!isCreating && selectedEntry"
+          class="field"
+        >
+          <label>{{ t('detail.attachments') }}</label>
+          <div
+            v-if="attachmentsLoading"
+            class="attachments-empty"
+          >
+            {{ t('common.processing') }}
+          </div>
+          <p
+            v-else-if="attachments.length === 0"
+            class="attachments-empty"
+          >
+            {{ t('detail.attachmentsEmpty') }}
+          </p>
+          <ul
+            v-else
+            class="attachment-list"
+          >
+            <li
+              v-for="item in attachments"
+              :key="item.id"
+              class="attachment-item"
+            >
+              <FileText
+                :size="16"
+                :stroke-width="1.5"
+                class="attachment-icon"
+              />
+              <div class="attachment-meta">
+                <span class="attachment-name">{{ item.filename }}</span>
+                <span class="attachment-size">{{ t('detail.attachmentSize', { size: formatFileSize(item.sizeBytes) }) }}</span>
+              </div>
+              <div class="attachment-actions">
+                <button
+                  type="button"
+                  class="attachment-action-btn"
+                  :title="t('detail.openAttachment')"
+                  @click="handleOpenAttachment(item.id)"
+                >
+                  {{ t('detail.openAttachment') }}
+                </button>
+                <button
+                  type="button"
+                  class="attachment-action-btn"
+                  :title="t('detail.saveAttachmentAs')"
+                  @click="handleSaveAttachmentAs(item.id)"
+                >
+                  {{ t('detail.saveAttachmentAs') }}
+                </button>
+                <button
+                  v-if="formEditable"
+                  type="button"
+                  class="attachment-delete-btn"
+                  :title="t('detail.deleteAttachment')"
+                  @click="handleDeleteAttachment(item.id)"
+                >
+                  <Trash2
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </button>
+              </div>
+            </li>
+          </ul>
+          <UiButton
+            v-if="formEditable"
+            variant="ghost"
+            class="attachment-add-btn"
+            @click="handleAddAttachment"
+          >
+            <Paperclip
+              :size="14"
+              :stroke-width="1.5"
+            />
+            {{ t('detail.addAttachment') }}
+          </UiButton>
+        </div>
+
         <div class="field">
           <label>{{ t('detail.note') }}</label>
           <textarea
@@ -1382,6 +1539,98 @@ watch(detailCollapsed, () => {
   margin-left: auto;
   font-size: 11px;
   color: var(--text-muted);
+}
+
+.attachments-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.attachment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+
+.attachment-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.attachment-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attachment-name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-size {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.attachment-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.attachment-action-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.attachment-action-btn:hover {
+  text-decoration: underline;
+}
+
+.attachment-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.attachment-delete-btn:hover {
+  color: var(--danger, #dc2626);
+}
+
+.attachment-add-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .field-row {

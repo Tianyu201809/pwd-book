@@ -16,6 +16,7 @@ import {
 import { getSessionKey, isUnlocked } from './sessionService'
 import { appError, ErrorCode } from '../../shared/errors'
 import { removeQuickBarRecentEntry } from './quickBarRecentService'
+import { applyMergedAttachments } from './attachmentSyncService'
 
 function assertUnlocked(): void {
   if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
@@ -117,6 +118,7 @@ function applyMergedBundle(merged: SyncBundle): Omit<SyncMergeResult, 'conflicts
   }
 
   persistDatabase()
+  applyMergedAttachments(merged)
   return { added, updated, removed }
 }
 

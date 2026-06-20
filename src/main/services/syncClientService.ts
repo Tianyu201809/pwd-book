@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { fetchRemoteEncryptedBundle, parsePairingPayload, pushRemoteEncryptedBundle } from '../../shared/syncClient'
+import { fetchRemoteEncryptedBundle, fetchRemoteAttachment, parsePairingPayload, pushRemoteEncryptedBundle, pushRemoteAttachment } from '../../shared/syncClient'
 import { assertPairingFingerprint } from '../../shared/mobileSyncWorkflow'
 import type { SyncMergeResult, WifiSyncClientPullPayload, WifiSyncDiscoveredServer } from '../../shared/syncTypes'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
@@ -15,6 +15,59 @@ import {
   getVerificationCode,
   updateWifiSyncSettings,
 } from './wifiSyncService'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import { getAttachmentFilePath, importAttachmentFromEncryptedFile } from './attachmentService'
+import type { SyncBundle } from '../../shared/syncTypes'
+
+async function syncAttachmentsWithRemote(
+  pairing: {
+    host: string
+    port: number
+    accessPassword: string
+    fingerprint: string
+    secure: boolean
+  },
+  mergedBundle: SyncBundle,
+): Promise<void> {
+  const attachments = mergedBundle.attachments ?? []
+  for (const meta of attachments) {
+    const localPath = getAttachmentFilePath(meta.id)
+    if (fs.existsSync(localPath)) continue
+    try {
+      const data = await fetchRemoteAttachment(pairing, meta.id, { rejectUnauthorized: false })
+      const tempDir = path.join(os.tmpdir(), 'pwdbook-sync-pull')
+      fs.mkdirSync(tempDir, { recursive: true })
+      const tempPath = path.join(tempDir, `${meta.id}.pwdattach`)
+      fs.writeFileSync(tempPath, data)
+      importAttachmentFromEncryptedFile(
+        meta.entryId,
+        meta.id,
+        meta.filename,
+        meta.mimeType,
+        meta.sizeBytes,
+        meta.createdAt,
+        meta.updatedAt,
+        tempPath,
+      )
+      fs.unlinkSync(tempPath)
+    } catch {
+      // remote attachment may not exist yet
+    }
+  }
+
+  for (const meta of attachments) {
+    const localPath = getAttachmentFilePath(meta.id)
+    if (!fs.existsSync(localPath)) continue
+    try {
+      const encrypted = fs.readFileSync(localPath)
+      await pushRemoteAttachment(pairing, meta.id, encrypted, { rejectUnauthorized: false })
+    } catch {
+      // ignore push failures for individual files
+    }
+  }
+}
 
 export async function discoverSyncServers(timeoutMs = 3000): Promise<WifiSyncDiscoveredServer[]> {
   return discoverWifiSyncServers(timeoutMs)
@@ -43,6 +96,7 @@ export async function pullMergeAndPush(payload: WifiSyncClientPullPayload): Prom
     const mergedBundle = buildSyncBundle(mergeResult.revision)
     const encrypted = encryptBundleForTransport(mergedBundle, transportKey)
     await pushRemoteEncryptedBundle(pairing, encrypted, { rejectUnauthorized: false })
+    await syncAttachmentsWithRemote(pairing, mergedBundle)
 
     recordSyncSuccess(mergeResult.revision)
 

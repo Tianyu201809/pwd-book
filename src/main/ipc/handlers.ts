@@ -123,6 +123,15 @@ import {
   syncFolderNow,
   updateFolderSyncSettings,
 } from '../services/folderSyncService'
+import {
+  addAttachment,
+  deleteAttachment,
+  listAttachments,
+  readAttachmentBuffer,
+  writeDecryptedToTemp,
+} from '../services/attachmentService'
+import { readAttachmentRow } from '../db/helpers'
+import fs from 'fs'
 
 let clipboardTimer: NodeJS.Timeout | null = null
 
@@ -722,6 +731,64 @@ export function registerIpcHandlers(): void {
       return syncFolderNow(masterPassword)
     }),
   )
+
+  ipcMain.handle(IPC.attachmentsList, (_event, entryId: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      return listAttachments(entryId)
+    }),
+  )
+
+  ipcMain.handle(IPC.attachmentsAdd, async (_event, entryId: string) => {
+    try {
+      ensureUnlocked()
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        title: 'Select attachment',
+      })
+      if (result.canceled || result.filePaths.length === 0) return null
+      const sourcePath = result.filePaths[0]
+      if (!sourcePath) return null
+      return addAttachment(entryId, sourcePath)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message, { cause: error })
+    }
+  })
+
+  ipcMain.handle(IPC.attachmentsDelete, (_event, attachmentId: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      deleteAttachment(attachmentId)
+    }),
+  )
+
+  ipcMain.handle(IPC.attachmentsOpen, (_event, attachmentId: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      const filePath = writeDecryptedToTemp(attachmentId)
+      const openError = shell.openPath(filePath)
+      return openError
+    }),
+  )
+
+  ipcMain.handle(IPC.attachmentsSaveAs, async (_event, attachmentId: string) => {
+    try {
+      ensureUnlocked()
+      const row = readAttachmentRow(attachmentId)
+      if (!row) throw appError(ErrorCode.ATTACHMENT_NOT_FOUND)
+      const result = await dialog.showSaveDialog({
+        defaultPath: row.filename,
+      })
+      if (result.canceled || !result.filePath) return false
+      const data = readAttachmentBuffer(attachmentId)
+      fs.writeFileSync(result.filePath, data)
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message, { cause: error })
+    }
+  })
 
   startBackupScheduler()
 }

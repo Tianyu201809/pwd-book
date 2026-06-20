@@ -1,7 +1,7 @@
 import http from 'http'
 import https from 'https'
 import type { SyncPairingConfig } from './syncTypes'
-import { SYNC_BUNDLE_FILENAME } from './syncTypes'
+import { SYNC_ATTACHMENT_FILE_EXT, SYNC_BUNDLE_FILENAME } from './syncTypes'
 
 export const SYNC_WEBDAV_PATH = `/sync/${SYNC_BUNDLE_FILENAME}`
 export const SYNC_WEBDAV_USER = 'pwdbook'
@@ -35,9 +35,31 @@ export interface SyncClientFetchOptions {
   rejectUnauthorized?: boolean
 }
 
-function requestBuffer(
+export function buildSyncAttachmentPath(attachmentId: string): string {
+  return `/sync/attachments/${attachmentId}${SYNC_ATTACHMENT_FILE_EXT}`
+}
+
+export async function fetchRemoteAttachment(
+  config: SyncPairingConfig,
+  attachmentId: string,
+  options: SyncClientFetchOptions = {},
+): Promise<Buffer> {
+  return requestBufferAtPath(config, 'GET', buildSyncAttachmentPath(attachmentId), undefined, options)
+}
+
+export async function pushRemoteAttachment(
+  config: SyncPairingConfig,
+  attachmentId: string,
+  payload: Buffer,
+  options: SyncClientFetchOptions = {},
+): Promise<void> {
+  await requestBufferAtPath(config, 'PUT', buildSyncAttachmentPath(attachmentId), payload, options)
+}
+
+function requestBufferAtPath(
   config: SyncPairingConfig,
   method: 'GET' | 'PUT',
+  requestPath: string,
   body?: Buffer,
   options: SyncClientFetchOptions = {},
 ): Promise<Buffer> {
@@ -47,7 +69,7 @@ function requestBuffer(
     const requestOptions: https.RequestOptions = {
       hostname: config.host,
       port: config.port,
-      path: SYNC_WEBDAV_PATH,
+      path: requestPath,
       method,
       headers: {
         Authorization: buildBasicAuthHeader(config.accessPassword),
@@ -80,6 +102,15 @@ function requestBuffer(
     if (body) req.write(body)
     req.end()
   })
+}
+
+function requestBuffer(
+  config: SyncPairingConfig,
+  method: 'GET' | 'PUT',
+  body?: Buffer,
+  options: SyncClientFetchOptions = {},
+): Promise<Buffer> {
+  return requestBufferAtPath(config, method, SYNC_WEBDAV_PATH, body, options)
 }
 
 export async function fetchRemoteEncryptedBundle(

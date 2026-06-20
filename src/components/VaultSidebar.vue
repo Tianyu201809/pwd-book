@@ -197,7 +197,7 @@ function onVaultLayoutResize(): void {
 }
 
 function isCustomCategory(id: string): boolean {
-  return id !== 'all' && id !== 'favorite'
+  return id !== 'all' && id !== 'favorite' && id !== 'attachments'
 }
 
 function closeContextMenu(): void {

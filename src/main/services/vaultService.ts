@@ -20,6 +20,7 @@ import { getLockedEntryCount, isRecoveryKeyConfigured } from './recoveryService'
 import { recordQuickBarRecentEntry, removeQuickBarRecentEntry } from './quickBarRecentService'
 import { getTrashCount, moveEntryToTrash, purgeExpiredTrash } from './trashService'
 import { validateMasterPasswordSetup } from '../../shared/vaultValidation'
+import { readAttachmentCountsByEntry } from '../db/helpers'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
@@ -79,13 +80,15 @@ export function resetVault(): void {
 
 export function listEntries(): PasswordEntry[] {
   purgeExpiredTrash()
-  return readActiveEntryRows().map(rowToEntry)
+  const counts = readAttachmentCountsByEntry()
+  return readActiveEntryRows().map((row) => rowToEntry(row, counts.get(row.id) ?? 0))
 }
 
 export function getEntryById(id: string): PasswordEntry | null {
   const row = readActiveEntryRow(id)
   if (!row) return null
-  return rowToEntry(row)
+  const counts = readAttachmentCountsByEntry()
+  return rowToEntry(row, counts.get(row.id) ?? 0)
 }
 
 export function createEntry(input: PasswordEntryInput): PasswordEntry {

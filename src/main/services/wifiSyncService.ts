@@ -21,10 +21,13 @@ import {
   getSyncServerDir,
   publishEncryptedBundle,
   readEncryptedBundleFromServer,
+  buildSyncBundle,
 } from './syncBundleService'
 import { isUnlocked } from './sessionService'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 import { getSyncVerificationCode } from '../../shared/syncVerification'
+import { SYNC_ATTACHMENT_FILE_EXT } from './attachmentService'
+import { syncAttachmentsAfterMerge } from './attachmentSyncService'
 
 const SETTINGS_KEY = 'wifi_sync_settings'
 const SERVICE_TYPE = 'pwdbook-sync'
@@ -161,6 +164,64 @@ function writeDavHeaders(res: http.ServerResponse, extra: Record<string, string>
   Object.entries(extra).forEach(([key, value]) => res.setHeader(key, value))
 }
 
+function getSyncAttachmentsDir(): string {
+  return path.join(getSyncServerDir(), 'attachments')
+}
+
+function getSyncAttachmentServerPath(attachmentId: string): string {
+  return path.join(getSyncAttachmentsDir(), `${attachmentId}${SYNC_ATTACHMENT_FILE_EXT}`)
+}
+
+function publishAttachmentsToSyncServer(): void {
+  if (!isUnlocked()) return
+  const bundle = buildSyncBundle()
+  syncAttachmentsAfterMerge(bundle, getSyncServerDir())
+}
+
+function handleAttachmentDavRequest(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  attachmentId: string,
+): void {
+  const filePath = getSyncAttachmentServerPath(attachmentId)
+
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    if (!fs.existsSync(filePath)) {
+      res.writeHead(404)
+      res.end('Attachment not found')
+      return
+    }
+    const data = fs.readFileSync(filePath)
+    writeDavHeaders(res, {
+      'Content-Type': 'application/octet-stream',
+      'Content-Length': String(data.length),
+    })
+    res.writeHead(200)
+    if (req.method === 'HEAD') {
+      res.end()
+      return
+    }
+    res.end(data)
+    return
+  }
+
+  if (req.method === 'PUT') {
+    const chunks: Buffer[] = []
+    req.on('data', (chunk: Buffer) => chunks.push(chunk))
+    req.on('end', () => {
+      const payload = Buffer.concat(chunks)
+      fs.mkdirSync(getSyncAttachmentsDir(), { recursive: true })
+      fs.writeFileSync(filePath, payload)
+      res.writeHead(204)
+      res.end()
+    })
+    return
+  }
+
+  res.writeHead(405)
+  res.end('Method Not Allowed')
+}
+
 function handleDavRequest(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -169,11 +230,21 @@ function handleDavRequest(
   const url = new URL(req.url ?? '/', `https://${req.headers.host ?? 'localhost'}`)
   const bundlePath = SYNC_WEBDAV_PATH
   const password = parseBasicAuth(req.headers.authorization)
+  const attachmentMatch = url.pathname.match(/^\/sync\/attachments\/([^/]+)$/)
 
   if (req.method === 'OPTIONS') {
     writeDavHeaders(res)
     res.writeHead(204)
     res.end()
+    return
+  }
+
+  if (attachmentMatch) {
+    if (password !== accessPassword) {
+      unauthorized(res)
+      return
+    }
+    handleAttachmentDavRequest(req, res, attachmentMatch[1]!)
     return
   }
 
@@ -256,6 +327,7 @@ function schedulePublish(): void {
     if (!isUnlocked() || !httpServer) return
     try {
       const result = publishEncryptedBundle()
+      publishAttachmentsToSyncServer()
       lastPublishedAt = Date.now()
       lastPublishedRevision = result.revision
     } catch {
