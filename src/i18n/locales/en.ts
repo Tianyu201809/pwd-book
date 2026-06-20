@@ -693,6 +693,8 @@ export default {
     title: 'Export passwords',
     lead: 'Choose a format: PwdBook backups for archiving, or third-party CSV for migrating to another password manager.',
     plainTextWarning: 'CSV and Excel files contain plaintext passwords. Store and share them securely.',
+    plainTextConfirmTitle: 'Export plaintext data',
+    plainTextConfirmBody: 'The exported file contains plaintext passwords and other sensitive data. Store it securely and do not share it over insecure channels. Continue exporting?',
     confirmExport: 'Export',
     importGuideLabel: 'How to import into the target app?',
     exported: 'Data exported',

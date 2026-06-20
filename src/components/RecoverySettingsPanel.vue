@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronRight, Download, KeyRound, RefreshCw } from 'lucide-vue-next'
+import { ChevronRight, Download, KeyRound, RefreshCw, AlertCircle } from 'lucide-vue-next'
 import RecoveryKeySetup from '@/components/recovery/RecoveryKeySetup.vue'
 import { UiModal, UiInput, UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
@@ -27,6 +27,8 @@ const showMasterPassword = ref(false)
 const passwordError = ref('')
 const generatedRecoveryKey = ref('')
 const statusMessage = ref('')
+const showPlainTextConfirm = ref(false)
+const pendingPlainTextExport = ref<'json' | 'excel' | null>(null)
 
 const recoveryConfigured = computed(() => vaultStatus.value.recoveryConfigured)
 const recoveryStatusLabel = computed(() =>
@@ -103,6 +105,35 @@ async function handleKeySetupComplete(): Promise<void> {
 async function handleCopyRecoveryKey(): Promise<void> {
   if (generatedRecoveryKey.value) {
     await copyUsername(generatedRecoveryKey.value)
+  }
+}
+
+function requestExportJson(): void {
+  clearError()
+  statusMessage.value = ''
+  pendingPlainTextExport.value = 'json'
+  showPlainTextConfirm.value = true
+}
+
+function requestExportExcel(): void {
+  clearError()
+  statusMessage.value = ''
+  pendingPlainTextExport.value = 'excel'
+  showPlainTextConfirm.value = true
+}
+
+function cancelPlainTextConfirm(): void {
+  showPlainTextConfirm.value = false
+  pendingPlainTextExport.value = null
+}
+
+async function confirmPlainTextExport(): Promise<void> {
+  const format = pendingPlainTextExport.value
+  cancelPlainTextConfirm()
+  if (format === 'json') {
+    await handleExportJson()
+  } else if (format === 'excel') {
+    await handleExportExcel()
   }
 }
 
@@ -192,7 +223,7 @@ async function handleExportExcel(): Promise<void> {
       <button
         type="button"
         class="link-row"
-        @click="handleExportJson"
+        @click="requestExportJson"
       >
         <span><Download
           :size="16"
@@ -206,7 +237,7 @@ async function handleExportExcel(): Promise<void> {
       <button
         type="button"
         class="link-row last"
-        @click="handleExportExcel"
+        @click="requestExportExcel"
       >
         <span><Download
           :size="16"
@@ -281,6 +312,43 @@ async function handleExportExcel(): Promise<void> {
         @skip="closeKeySetup"
         @copy="handleCopyRecoveryKey"
       />
+    </UiModal>
+
+    <UiModal
+      v-model:open="showPlainTextConfirm"
+      :title="t('export.plainTextConfirmTitle')"
+      :width="400"
+      :show-footer="false"
+      @close="cancelPlainTextConfirm"
+    >
+      <p class="confirm-modal-body plain-text-confirm-text">
+        <AlertCircle
+          :size="16"
+          :stroke-width="1.5"
+          class="plain-text-confirm-icon"
+        />
+        {{ t('export.plainTextConfirmBody') }}
+      </p>
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton
+            variant="default"
+            @click="cancelPlainTextConfirm"
+          >
+            {{ t('common.cancel') }}
+          </UiButton>
+          <UiButton
+            variant="primary"
+            @click="confirmPlainTextExport"
+          >
+            <Download
+              :size="16"
+              :stroke-width="1.5"
+            />
+            {{ t('export.confirmExport') }}
+          </UiButton>
+        </div>
+      </template>
     </UiModal>
   </div>
 </template>
@@ -467,5 +535,31 @@ async function handleExportExcel(): Promise<void> {
   width: 100%;
   margin-top: 16px;
   padding: 12px;
+}
+
+.confirm-modal-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.plain-text-confirm-text {
+  color: var(--text-secondary);
+}
+
+.plain-text-confirm-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--status-danger);
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
 }
 </style>

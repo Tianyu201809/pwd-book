@@ -38,6 +38,7 @@ const step = ref<WizardStep>('format')
 const selectedId = ref<ExportDestinationId | null>(null)
 const exporting = ref(false)
 const errorMessage = ref('')
+const showPlainTextConfirm = ref(false)
 
 const pwdbookDestinations = computed(() =>
   EXPORT_DESTINATIONS.filter((dest) => dest.group === 'pwdbook'),
@@ -91,6 +92,7 @@ function resetState(): void {
   selectedId.value = null
   exporting.value = false
   errorMessage.value = ''
+  showPlainTextConfirm.value = false
 }
 
 function close(): void {
@@ -147,7 +149,21 @@ function triggerDownload(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url)
 }
 
-async function handleExport(): Promise<void> {
+function requestExport(): void {
+  if (!canExport.value) return
+  showPlainTextConfirm.value = true
+}
+
+function cancelPlainTextConfirm(): void {
+  showPlainTextConfirm.value = false
+}
+
+async function confirmPlainTextExport(): Promise<void> {
+  showPlainTextConfirm.value = false
+  await executeExport()
+}
+
+async function executeExport(): Promise<void> {
   if (!selectedId.value || !canExport.value) return
   const formatId = selectedId.value
   const dest = getExportDestination(formatId)
@@ -431,7 +447,7 @@ async function handleExport(): Promise<void> {
             variant="primary"
             :disabled="!canExport"
             :loading="exporting"
-            @click="handleExport"
+            @click="requestExport"
           >
             <Download
               :size="16"
@@ -442,6 +458,44 @@ async function handleExport(): Promise<void> {
         </div>
       </footer>
     </div>
+  </UiModal>
+
+  <UiModal
+    v-model:open="showPlainTextConfirm"
+    :title="t('export.plainTextConfirmTitle')"
+    :width="400"
+    :show-footer="false"
+    @close="cancelPlainTextConfirm"
+  >
+    <p class="confirm-modal-body plain-text-confirm-text">
+      <AlertCircle
+        :size="16"
+        :stroke-width="1.5"
+        class="plain-text-confirm-icon"
+      />
+      {{ t('export.plainTextConfirmBody') }}
+    </p>
+    <template #footer>
+      <div class="confirm-modal-actions">
+        <UiButton
+          variant="default"
+          @click="cancelPlainTextConfirm"
+        >
+          {{ t('common.cancel') }}
+        </UiButton>
+        <UiButton
+          variant="primary"
+          :loading="exporting"
+          @click="confirmPlainTextExport"
+        >
+          <Download
+            :size="16"
+            :stroke-width="1.5"
+          />
+          {{ t('export.confirmExport') }}
+        </UiButton>
+      </div>
+    </template>
   </UiModal>
 </template>
 
@@ -759,6 +813,32 @@ async function handleExport(): Promise<void> {
 .footer-actions {
   display: flex;
   gap: 8px;
+}
+
+.confirm-modal-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.plain-text-confirm-text {
+  color: var(--text-secondary);
+}
+
+.plain-text-confirm-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--status-danger);
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
 }
 </style>
 

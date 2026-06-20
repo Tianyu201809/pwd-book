@@ -689,6 +689,8 @@ export default {
     title: '导出密码',
     lead: '选择导出格式：PwdBook 备份便于存档，或第三方 CSV 便于迁移到其他密码管理器。',
     plainTextWarning: 'CSV / Excel 含明文密码，请妥善保管导出文件，勿通过不安全渠道传输。',
+    plainTextConfirmTitle: '导出明文数据',
+    plainTextConfirmBody: '导出的文件包含明文密码等敏感信息。请妥善保管，勿通过不安全渠道传输。确定要继续导出吗？',
     confirmExport: '确认导出',
     importGuideLabel: '如何在目标应用中导入？',
     exported: '数据已导出',
