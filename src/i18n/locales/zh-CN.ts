@@ -242,6 +242,7 @@ export default {
     attachmentSaved: '附件已保存',
     attachmentSize: '{size}',
     customFields: '自定义字段',
+    customFieldMark: '自定义字段',
     customFieldsHint: '可添加任意名称的附加信息，例如 PIN、安全问题答案等',
     customFieldsEmpty: '暂无自定义字段',
     addCustomField: '添加字段',

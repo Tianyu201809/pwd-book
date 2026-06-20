@@ -243,6 +243,7 @@ export default {
     attachmentSaved: 'Attachment saved',
     attachmentSize: '{size}',
     customFields: 'Custom fields',
+    customFieldMark: 'Custom field',
     customFieldsHint: 'Add extra name-value pairs such as PIN or security answers',
     customFieldsEmpty: 'No custom fields',
     addCustomField: 'Add field',

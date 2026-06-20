@@ -1039,78 +1039,67 @@ watch(detailCollapsed, () => {
           </UiButton>
         </div>
 
-        <div
-          v-if="showCustomFieldsSection"
-          class="field custom-fields-field"
-        >
-          <label>{{ t('detail.customFields') }}</label>
+        <template v-if="showCustomFieldsSection">
           <p
-            v-if="formEditable"
-            class="field-hint"
+            v-if="formEditable && draftCustomFields.length === 0"
+            class="field-hint custom-fields-intro"
           >
             {{ t('detail.customFieldsHint') }}
           </p>
-          <p
-            v-if="!formEditable && draftCustomFields.length === 0"
-            class="custom-fields-empty"
+
+          <div
+            v-for="(field, index) in draftCustomFields"
+            :key="`custom-field-${index}`"
+            class="field custom-field"
           >
-            {{ t('detail.customFieldsEmpty') }}
-          </p>
-          <ul
-            v-else
-            class="custom-field-list"
-          >
-            <li
-              v-for="(field, index) in draftCustomFields"
-              :key="`custom-field-${index}`"
-              class="custom-field-item"
-            >
+            <div class="custom-field-label-row">
               <UiInput
                 v-if="formEditable"
                 v-model="field.name"
-                class="custom-field-name"
+                class="detail-field custom-field-name-input"
                 :placeholder="t('detail.customFieldNamePlaceholder')"
               />
               <span
                 v-else
-                class="custom-field-label"
+                class="custom-field-name-text"
               >
                 {{ field.name || t('detail.customFieldUntitled') }}
               </span>
-              <div class="custom-field-value-row">
-                <UiInput
-                  v-model="field.value"
-                  class="custom-field-value"
-                  :placeholder="t('detail.customFieldValuePlaceholder')"
-                  :readonly="!formEditable"
+            </div>
+            <div class="field-row">
+              <UiInput
+                v-model="field.value"
+                class="detail-field"
+                :placeholder="t('detail.customFieldValuePlaceholder')"
+                :readonly="!formEditable"
+              />
+              <button
+                v-if="field.value"
+                type="button"
+                class="icon-btn square"
+                :title="t('detail.copyCustomField')"
+                @click="copyCustomFieldValue(field.value)"
+              >
+                <Copy
+                  :size="16"
+                  :stroke-width="1.5"
                 />
-                <button
-                  v-if="field.value"
-                  type="button"
-                  class="icon-btn square"
-                  :title="t('detail.copyCustomField')"
-                  @click="copyCustomFieldValue(field.value)"
-                >
-                  <Copy
-                    :size="16"
-                    :stroke-width="1.5"
-                  />
-                </button>
-                <button
-                  v-if="formEditable"
-                  type="button"
-                  class="custom-field-delete-btn"
-                  :title="t('detail.removeCustomField')"
-                  @click="removeCustomField(index)"
-                >
-                  <Trash2
-                    :size="14"
-                    :stroke-width="1.5"
-                  />
-                </button>
-              </div>
-            </li>
-          </ul>
+              </button>
+              <button
+                v-if="formEditable"
+                type="button"
+                class="icon-btn square danger"
+                :title="t('detail.removeCustomField')"
+                @click="removeCustomField(index)"
+              >
+                <Trash2
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+              </button>
+            </div>
+          </div>
+
           <UiButton
             v-if="formEditable"
             variant="ghost"
@@ -1123,7 +1112,7 @@ watch(detailCollapsed, () => {
             />
             {{ t('detail.addCustomField') }}
           </UiButton>
-        </div>
+        </template>
 
         <div class="field">
           <label>{{ t('detail.note') }}</label>
@@ -1979,70 +1968,67 @@ watch(detailCollapsed, () => {
   padding: 10px 22px;
 }
 
-.custom-fields-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.custom-fields-empty {
+.custom-fields-intro {
   margin: 0;
-  font-size: 13px;
-  color: var(--text-muted);
 }
 
-.custom-field-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.custom-field-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--bg-elevated);
-}
-
-.custom-field-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.custom-field-value-row {
+.custom-field-label-row {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.custom-field-name,
-.custom-field-value {
-  flex: 1;
+  margin-bottom: 8px;
   min-width: 0;
 }
 
-.custom-field-delete-btn {
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
+.custom-field-name-text {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--status-danger);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.custom-field-delete-btn:hover {
-  background: color-mix(in srgb, var(--status-danger) 12%, transparent);
+.custom-field-name-input {
+  flex: 1;
+  min-width: 0;
+  color: var(--status-danger);
+}
+
+.custom-field-name-input:deep(.ui-classic-input) {
+  min-height: 30px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--status-danger);
+}
+
+.custom-field-name-input:deep(.ui-classic-input::placeholder) {
+  color: color-mix(in srgb, var(--status-danger) 55%, transparent);
+}
+
+.custom-field-name-input:deep(.animal-input) {
+  min-height: 30px;
+}
+
+.custom-field-name-input:deep(.animal-input__inner) {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--status-danger);
+}
+
+.custom-field-name-input:deep(.animal-input__inner::placeholder) {
+  color: color-mix(in srgb, var(--status-danger) 55%, transparent);
 }
 
 .custom-field-add-btn {
   align-self: flex-start;
+  margin-top: -4px;
 }
 </style>
