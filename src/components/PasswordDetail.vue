@@ -1028,7 +1028,7 @@ watch(detailCollapsed, () => {
           <UiButton
             v-if="formEditable"
             variant="ghost"
-            class="attachment-add-btn"
+            class="detail-section-add-btn"
             @click="handleAddAttachment"
           >
             <Paperclip
@@ -1039,7 +1039,17 @@ watch(detailCollapsed, () => {
           </UiButton>
         </div>
 
-        <template v-if="showCustomFieldsSection">
+        <div
+          v-if="showCustomFieldsSection"
+          class="field custom-fields-section"
+        >
+          <label>{{ t('detail.customFields') }}</label>
+          <p
+            v-if="formEditable && draftCustomFields.length === 0"
+            class="attachments-empty"
+          >
+            {{ t('detail.customFieldsEmpty') }}
+          </p>
           <p
             v-if="formEditable && draftCustomFields.length === 0"
             class="field-hint custom-fields-intro"
@@ -1103,7 +1113,7 @@ watch(detailCollapsed, () => {
           <UiButton
             v-if="formEditable"
             variant="ghost"
-            class="custom-field-add-btn"
+            class="detail-section-add-btn"
             @click="addCustomField"
           >
             <Plus
@@ -1112,7 +1122,7 @@ watch(detailCollapsed, () => {
             />
             {{ t('detail.addCustomField') }}
           </UiButton>
-        </template>
+        </div>
 
         <div class="field">
           <label>{{ t('detail.note') }}</label>
@@ -1798,11 +1808,38 @@ watch(detailCollapsed, () => {
   color: var(--danger, #dc2626);
 }
 
-.attachment-add-btn {
+.detail-section-add-btn {
   margin-top: 8px;
+  align-self: flex-start;
+}
+
+.detail-section-add-btn:deep(.ui-classic-btn) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 40px;
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.detail-section-add-btn:deep(.animal-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-width: 2px;
+}
+
+.custom-fields-section > .field.custom-field {
+  margin-top: 12px;
+}
+
+.custom-fields-section > .field.custom-field:first-of-type {
+  margin-top: 0;
 }
 
 .field-row {
@@ -2025,10 +2062,5 @@ watch(detailCollapsed, () => {
 
 .custom-field-name-input:deep(.animal-input__inner::placeholder) {
   color: color-mix(in srgb, var(--status-danger) 55%, transparent);
-}
-
-.custom-field-add-btn {
-  align-self: flex-start;
-  margin-top: -4px;
 }
 </style>
