@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.21.0（`package.json`） |
+| 版本 | 1.22.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch` 等 |
@@ -81,7 +81,7 @@ src/
 │   ├── ipc/handlers.ts   # IPC 路由与校验
 │   ├── crypto/           # scrypt + AES-256-GCM
 │   ├── db/               # sql.js 初始化、迁移、helpers
-│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge
+│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge、attachment*（v1.22.0）
 ├── extension/            # Chrome/Edge MV3（v1.6.0）
 ├── native-host/          # Native Messaging Host（v1.6.0）
 ├── preload/

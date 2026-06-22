@@ -41,15 +41,19 @@ sequenceDiagram
 ```json
 {
   "format": "pwdbook-sync",
-  "version": 1,
+  "version": 2,
   "deviceId": "uuid",
   "revision": 42,
   "exportedAt": "ISO8601",
   "categories": [],
   "entries": [],
+  "attachments": [],
+  "attachmentDeletions": [],
   "settings": { "trashRetentionDays": 30 }
 }
 ```
+
+- **v1.22.0** `version` 升至 **2**：`entries` 含 `customFields`；`attachments` 为元数据；实际文件为同目录 `attachments/{id}.pwdattach`（Wi-Fi WebDAV `/sync/attachments/{id}.pwdattach`）。
 
 - **不传输** `master_salt` / 各设备独立的 `password_encrypted` 形态；合并后在本地用会话密钥重新加密条目。
 - 传输密钥：`deriveSyncTransportKey(masterPassword)`（跨设备一致）。
@@ -61,6 +65,7 @@ sequenceDiagram
 | 仅一侧有条目 | 插入到合并结果 |
 | 同 `id`，`updated_at` 不同 | 较新者胜（`deleted_at` 参与有效时间） |
 | 同 `id`、同时间戳、内容不同 | 记入 `conflicts`，默认保留本地 |
+| 附件 | 按 `attachment.updatedAt` LWW；`attachmentDeletions` tombstone 阻止已删附件被远端恢复（**v1.22.0**） |
 | 分类同名不同 id | 保留本地 id，跳过远端重复名称 |
 
 单元测试：`src/shared/syncMerge.test.ts`、`src/main/crypto/syncBundleCrypto.test.ts` 等。
@@ -78,7 +83,7 @@ sequenceDiagram
 | 自动发布 | 保险库变更 debounce 3s → `publishEncryptedBundle` |
 | 恢复服务 | 解锁后若 `serverEnabled` 为 true → `restoreWifiSyncServerIfNeeded()` |
 
-暴露路径：`/sync/vault.pwdbook`（`SYNC_WEBDAV_PATH`）。
+暴露路径：`/sync/vault.pwdbook`（`SYNC_WEBDAV_PATH`）；**v1.22.0** 附件为 `/sync/attachments/{id}.pwdattach`。
 
 ## Client 模式
 

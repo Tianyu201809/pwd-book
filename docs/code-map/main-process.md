@@ -108,6 +108,15 @@
 
 设置项：`SecuritySettings.launchAtLoginEnabled`，持久化键 `launch_at_login_enabled`（默认 `false`）。
 
+### attachmentService / attachmentSyncService（v1.22.0）
+
+| 模块 | 职责 |
+|------|------|
+| `attachmentService.ts` | 附件 CRUD；AES 加密写入 `{userData}/attachments/{id}.enc`；单文件 ≤ 5 MB、每条条目 ≤ 10 个；打开/另存为经临时解密文件 |
+| `attachmentSyncService.ts` | 同步目录内 `attachments/*.pwdattach` 与 bundle 元数据对齐；pull/push 缺失附件；删除 tombstone 合并 |
+
+限制常量：`MAX_ATTACHMENT_BYTES`、`MAX_ATTACHMENTS_PER_ENTRY`（`attachmentService.ts`）。
+
 ### 同步服务（v1.9.0 Wi-Fi / v1.19.0 文件夹）
 
 Wi-Fi 详见 [wifi-sync.md](./wifi-sync.md)；文件夹详见 [folder-sync.md](./folder-sync.md)。

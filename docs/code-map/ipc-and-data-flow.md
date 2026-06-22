@@ -64,8 +64,18 @@
 | `settings:get` | 否 | `SecuritySettings` |
 | `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
-| `data:export` | 是 | JSON 结构 `ExportPayload` |
-| `data:import` | 是 | 批量导入条目 |
+| `data:export` | 是 | JSON 结构 `ExportPayload`（**v1.22.0** 含 `attachments`、`version: 2`） |
+| `data:import` | 是 | 批量导入条目（**v1.22.0** 可含附件） |
+
+### 条目附件（v1.22.0）
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `attachments:list` | 是 | 列出条目附件元数据 |
+| `attachments:add` | 是 | 系统文件选择器添加附件 |
+| `attachments:delete` | 是 | 删除附件及密文文件 |
+| `attachments:open` | 是 | 解密到临时文件并用系统默认应用打开 |
+| `attachments:save-as` | 是 | 解密并另存为 |
 
 ### 局域网同步（v1.9.0）
 

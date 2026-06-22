@@ -12,8 +12,8 @@ App.vue
 ├── VaultView.vue             # 主工作区（v1.14.0：detached 时隐藏内联详情位）
 │   ├── PanelEdge.vue         # 面板边缘：4px 分割条 + 圆形折叠钮 + 拖拽调宽（v1.17.0；v1.20.0 常驻分割线、Pointer 调宽）
 │   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge；v1.18.0 pointerdown 立即切换分类）
-│   ├── PasswordList.vue      # 搜索、排序、列表操作
-│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0；v1.13.0 密钥显示/隐藏；v1.14.0 弹出小窗口；v1.17.0 PanelEdge）
+│   ├── PasswordList.vue      # 搜索、排序、列表操作；**v1.22.0** 列表/方块布局
+│   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）；附件与自定义字段（**v1.22.0**）；v1.14.0 弹出小窗口；v1.17.0 PanelEdge
 ├── SettingsView.vue          # 设置页 Tab 容器（v1.11.0：安全 Tab 含邮箱备份入口；v1.17.0 浏览器扩展安装向导）
 │   └── browser/BrowserExtensionGuideModal.vue  # 6 步安装引导 + BrowserExtensionGuideVisual 示意图（v1.17.0）
 │   ├── RecoverySettingsPanel.vue
@@ -79,6 +79,8 @@ App.vue
 - 内联模式：左缘 `PanelEdge` 收起/展开（`pwdbook-detail-collapsed`）、拖拽调宽；选中或新建时 `expandDetailPanel`。
 - **在新窗口打开**（v1.14.0）：标题栏 `SquareArrowOutUpRight` → `openDetachedDetail`；小窗口打开后主窗口 `detachedDetailOpen` 隐藏 `.vault-detail-slot`。
 - `detached` prop：全宽展示、无收起边缘；与小窗口共用编辑/保存/TOTP 等逻辑。
+- **附件**（v1.22.0）：`vaultApi.listAttachments` / `addAttachment` 等；只读态可打开/另存为；编辑态可添加/删除。
+- **自定义字段**（v1.22.0）：`shared/customFields.ts` 规范化；编辑态增删行；搜索经 `entrySearch.ts` 索引 name/value。
 
 ### SettingsView.vue
 
@@ -94,7 +96,7 @@ App.vue
 
 列表项右键 / 「⋯」菜单；含 **复制到剪贴板**（`copyEntryData`）、**创建副本**（`duplicateEntry`，标题追加 ` - 副本`）、移动、打开网址/程序等。「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
 
-`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。
+`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。
 
 ## Composables
 

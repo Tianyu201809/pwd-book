@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.21.0**（`package.json`）— 开机自动启动、恢复菜单精简等。
+**当前版本：v1.22.0**（`package.json`）— 条目附件、自定义字段、列表布局切换、SyncBundle v2 等。
 
 ## 文档索引
 
@@ -50,6 +50,9 @@
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
 | 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |
 | 改开机自动启动 | `main/launchAtLogin.ts`、`settingsService.ts`、`SettingsView.vue`；`launch_at_login_enabled`（**v1.21.0**） |
+| 改条目附件 | `attachmentService.ts`、`attachmentSyncService.ts`、`PasswordDetail.vue`；`entry_attachments` 表；`attachments:*` IPC（**v1.22.0**） |
+| 改自定义字段 | `shared/customFields.ts`、`PasswordDetail.vue`、`importNormalize.ts`；`password_entries.custom_fields`（**v1.22.0**） |
+| 改列表布局 | `PasswordList.vue`、`useAppState.ts`；`pwdbook-entry-list-layout`（**v1.22.0**） |
 | 改 TOTP / 密码健康 / 标签筛选 | `shared/totp.ts`、`shared/passwordHealth.ts`、`PasswordDetail.vue`、`PasswordHealthView.vue`、`TagFilterPanel.vue`、`VaultSidebar.vue`、`useAppState.ts` |
 | 改邮箱备份 SMTP 密码 UX | `EmailBackupView.vue`（`smtpPasswordModel`、显隐按钮） |
 | 改经典输入框布局 | `components/ui/UiInput.vue`（`ui-input-classic-wrap` 承载 class/style） |

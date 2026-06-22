@@ -9,7 +9,8 @@ PwdBook **v1.19.0** 起支持参考 Enpass 模式的 **文件夹同步（Folder 
 | 维度 | Wi-Fi 同步（v1.9.0） | 文件夹同步（v1.19.0） |
 |------|----------------------|------------------------|
 | 传输 | 局域网 HTTPS WebDAV + mDNS | 用户自选文件夹（可经云盘传播） |
-| 同步包 | `vault.pwdbook`（AES 加密 SyncBundle） | **相同格式与文件名** |
+| 同步包 | `vault.pwdbook`（AES 加密 SyncBundle **v2**） | **相同格式与文件名** |
+| 附件 | `attachments/*.pwdattach`（**v1.22.0**） | **相同** |
 | 合并策略 | `mergeSyncBundles` LWW | **相同** |
 | 入口 | Sync Hub → 局域网同步 | Sync Hub → 文件夹同步 |
 | 并存 | 两种方式独立配置，可只启用其一 | |

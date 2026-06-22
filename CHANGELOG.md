@@ -4,6 +4,28 @@
 
 ## [Unreleased]
 
+## [1.22.0] - 2026-06-22
+
+### 新增
+
+- **条目附件** — 详情页可为条目添加、打开、另存为、删除附件；文件 AES 加密存于 `{userData}/attachments/*.enc`；每条条目最多 **10** 个、单文件最大 **5 MB**；IPC：`attachments:list` / `add` / `delete` / `open` / `save-as`。
+- **自定义字段** — 详情页可添加任意名称的 name/value 字段（如 PIN、安全问题答案）；每条条目最多 **20** 个；参与搜索与 CSV 导出「自定义字段」列；同步 bundle 含 `customFields`。
+- **列表布局切换** — 条目列表工具栏支持 **列表 / 方块** 两种布局；偏好写入 `localStorage`（`pwdbook-entry-list-layout`）。
+- **同步附件** — Wi-Fi 与文件夹同步支持附件元数据与 `.pwdattach` 加密文件；SyncBundle **`version` 升至 2**；删除 tombstone 参与 LWW 合并（`attachmentSyncService.ts`）。
+
+### 改进
+
+- **JSON 导出/导入** — PwdBook JSON 备份含条目附件（Base64 内嵌）；导入保留原条目 ID 以关联附件；`EXPORT_PAYLOAD_VERSION` 升至 **2**。
+- **导出明文确认** — **设置 → 数据 → 导出数据** 及 **设置 → 安全 → 恢复密钥** 页快捷导出 JSON/Excel 前，弹出明文安全确认对话框。
+
+### 修复
+
+- **详情页 UI** — 附件与自定义字段「添加」按钮样式统一（`detail-section-add-btn`）；自定义字段区块结构与间距修正。
+
+### 文档
+
+- README、CHANGELOG 与 code-map 同步 v1.22.0（附件、自定义字段、布局切换、SyncBundle v2、JSON 附件备份等）。
+
 ## [1.21.0] - 2026-06-16
 
 ### 新增
