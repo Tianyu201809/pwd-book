@@ -276,6 +276,8 @@ export const electronAPI = {
     invoke(IPC.windowToggleAlwaysOnTop),
   getWindowMaximized: (): Promise<boolean> =>
     invoke(IPC.windowGetMaximized),
+  isLaunchAtLoginAvailable: (): Promise<boolean> =>
+    invoke(IPC.launchAtLoginAvailable),
   onWindowMaximizeChanged: (handler: (maximized: boolean) => void): (() => void) => {
     const listener = (_event: Electron.IpcRendererEvent, maximized: boolean): void => handler(maximized)
     ipcRenderer.on(IPC_EVENTS.windowMaximizeChanged, listener)

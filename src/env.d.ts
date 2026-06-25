@@ -163,6 +163,7 @@ declare global {
       getWindowAlwaysOnTop?: () => Promise<boolean>
       toggleWindowAlwaysOnTop?: () => Promise<boolean>
       getWindowMaximized?: () => Promise<boolean>
+      isLaunchAtLoginAvailable?: () => Promise<boolean>
       onWindowMaximizeChanged?: (handler: (maximized: boolean) => void) => () => void
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean

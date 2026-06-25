@@ -595,6 +595,7 @@ export default {
     closeWindowQuit: '退出程序',
     launchAtLogin: '开机自动启动',
     launchAtLoginDesc: '系统登录后自动启动 PwdBook',
+    launchAtLoginPackagedOnly: '此功能仅在安装版中生效，开发模式无法注册系统启动项。',
     quickBar: '悬浮快捷搜索',
     quickBarDesc: '屏幕顶部细长搜索条，Enter 直接打开网址或启动本地程序。快捷键：{accelerator}',
     quickBarOpen: '打开快捷条',

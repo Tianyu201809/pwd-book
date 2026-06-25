@@ -381,6 +381,7 @@ export const IPC = {
   windowGetAlwaysOnTop: 'window:get-always-on-top',
   windowToggleAlwaysOnTop: 'window:toggle-always-on-top',
   windowGetMaximized: 'window:get-maximized',
+  launchAtLoginAvailable: 'launch-at-login:available',
   vaultDataNotifyChanged: 'vault-data:notify-changed',
   attachmentsList: 'attachments:list',
   attachmentsAdd: 'attachments:add',

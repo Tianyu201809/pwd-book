@@ -597,6 +597,7 @@ export default {
     closeWindowQuit: 'Quit application',
     launchAtLogin: 'Start at login',
     launchAtLoginDesc: 'Launch PwdBook automatically when you sign in to the system',
+    launchAtLoginPackagedOnly: 'This only works in the installed app; dev mode cannot register a login item.',
     quickBar: 'Floating quick search',
     quickBarDesc: 'A slim bar at the top of the screen; Enter opens the URL or launches the local program. Shortcut: {accelerator}',
     quickBarOpen: 'Open quick bar',

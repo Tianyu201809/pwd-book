@@ -5,7 +5,7 @@ import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
 import { hideDetailWindowOnLock } from '../detailWindow'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
-import { syncLaunchAtLogin } from '../launchAtLogin'
+import { isLaunchAtLoginAvailable, syncLaunchAtLogin } from '../launchAtLogin'
 import { IPC } from '../../shared/types'
 import type {
   PasswordEntryInput,
@@ -433,6 +433,8 @@ export function registerIpcHandlers(): void {
   )
 
   ipcMain.handle(IPC.settingsGet, () => getSecuritySettings())
+
+  ipcMain.handle(IPC.launchAtLoginAvailable, () => isLaunchAtLoginAvailable())
 
   ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
     const next = updateSecuritySettings(partial)

@@ -62,6 +62,7 @@ const browserGuideOpen = ref(false)
 const extensionsPageHint = ref('')
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
+const launchAtLoginAvailable = ref(true)
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
@@ -194,6 +195,9 @@ const bridgeStatusText = computed(() => {
 onMounted(() => {
   void refreshBridgeStatus()
   void refreshNativeHostInfo()
+  void window.electronAPI?.isLaunchAtLoginAvailable?.().then((available) => {
+    launchAtLoginAvailable.value = available
+  })
 })
 
 watch(
@@ -300,9 +304,16 @@ async function handleReset(): Promise<void> {
                 <p class="row-desc">
                   {{ t('settings.launchAtLoginDesc') }}
                 </p>
+                <p
+                  v-if="!launchAtLoginAvailable"
+                  class="row-desc row-desc--hint"
+                >
+                  {{ t('settings.launchAtLoginPackagedOnly') }}
+                </p>
               </div>
               <UiSwitch
                 :model-value="securitySettings.launchAtLoginEnabled"
+                :disabled="!launchAtLoginAvailable"
                 @update:model-value="onLaunchAtLoginChange"
               />
             </div>
@@ -773,6 +784,11 @@ h3 {
   margin: 2px 0 0;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.row-desc--hint {
+  margin-top: 6px;
+  color: var(--status-warning, #c99700);
 }
 
 .browser-fill-actions {
