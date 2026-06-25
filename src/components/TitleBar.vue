@@ -425,12 +425,32 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-default);
+  background: var(--titlebar-base, var(--bg-surface));
+  border-bottom: 1px solid var(--titlebar-border, var(--border-default));
+  box-shadow: var(--titlebar-shadow, none);
   flex-shrink: 0;
+  isolation: isolate;
+}
+
+.titlebar::before,
+.titlebar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.titlebar::before {
+  background: var(--titlebar-accent-wash, none);
+}
+
+.titlebar::after {
+  background: var(--titlebar-top-shine, none);
 }
 
 .titlebar-left {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -447,6 +467,8 @@ onUnmounted(() => {
 }
 
 .titlebar-actions {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 4px;

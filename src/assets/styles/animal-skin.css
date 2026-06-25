@@ -73,6 +73,12 @@
   background: rgba(247, 243, 223, 0.94);
   backdrop-filter: blur(8px);
   border-bottom: 2px solid var(--border-default);
+  box-shadow: none;
+}
+
+[data-skin="animalIsland"] .titlebar::before,
+[data-skin="animalIsland"] .titlebar::after {
+  display: none;
 }
 
 [data-skin="animalIsland"] .skin-popover {

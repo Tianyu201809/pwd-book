@@ -135,6 +135,24 @@
   --toggle-off: var(--color-ink-600);
   --toggle-knob: var(--text-secondary);
   --btn-primary-text: #0a0c10;
+  --titlebar-base: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-primary) 10%, var(--color-ink-900)) 0%,
+    var(--color-ink-900) 52%,
+    color-mix(in srgb, var(--color-ink-950) 75%, var(--color-ink-900)) 100%
+  );
+  --titlebar-accent-wash: radial-gradient(
+    ellipse 130% 220% at -8% 50%,
+    rgba(var(--accent-rgb), 0.16),
+    transparent 58%
+  );
+  --titlebar-top-shine: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, transparent 100%);
+  --titlebar-hairline: rgba(var(--accent-rgb), 0.45);
+  --titlebar-border: var(--border-default);
+  --titlebar-shadow:
+    inset 0 1px 0 var(--titlebar-hairline),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 1px 0 rgba(0, 0, 0, 0.28);
 }
 
 [data-mode="light"] {
@@ -167,4 +185,22 @@
   --toggle-off: #d1d5db;
   --toggle-knob: #ffffff;
   --btn-primary-text: #ffffff;
+  --titlebar-base: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-primary) 5%, #ffffff) 0%,
+    #ffffff 46%,
+    color-mix(in srgb, var(--bg-app) 55%, #ffffff) 100%
+  );
+  --titlebar-accent-wash: radial-gradient(
+    ellipse 110% 240% at -6% 50%,
+    rgba(var(--accent-rgb), 0.11),
+    transparent 54%
+  );
+  --titlebar-top-shine: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, transparent 42%);
+  --titlebar-hairline: rgba(var(--accent-rgb), 0.28);
+  --titlebar-border: var(--border-default);
+  --titlebar-shadow:
+    inset 0 1px 0 var(--titlebar-hairline),
+    0 1px 0 var(--border-default),
+    0 4px 14px rgba(15, 18, 25, 0.045);
 }
