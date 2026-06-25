@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.23.0**（`package.json`）— 数据库损坏隔离、托盘设置、Windows 开机启动修复、标题栏与最大化 UI 等。
+**当前版本：v1.24.0**（`package.json`）— 产品引导（6 条交互式路径、聚光灯/遮罩）、数据库损坏隔离、托盘设置等。
 
 ## 文档索引
 
@@ -17,6 +17,7 @@
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 | [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
+| [product-tour.md](./product-tour.md) | **v1.24.0** 产品引导、引导中心、`useProductTour`、`data-tour` 锚点 |
 
 ## 相关文档
 
@@ -65,4 +66,5 @@
 | 改托盘打开设置 | `main/tray.ts`（`openSettingsFromTray`）、`useAppState.ts`（`openSettingsFromTray`、`pendingScreenAfterUnlock`）、`App.vue`；`tray:open-settings`（**v1.23.0**） |
 | 改数据库损坏隔离 | `main/db/database.ts`（`isValidSqliteFile`、`quarantineCorruptDatabaseFile`）、`main/index.ts` 启动弹窗（**v1.23.0**） |
 | 改标题栏 / 最大化按钮 | `TitleBar.vue`、`tokens.css`（`--titlebar-*`）；`window:get-maximized` / `window:maximize-changed`（**v1.23.0**） |
+| 改产品引导 / 引导中心 | [product-tour.md](./product-tour.md)、`useProductTour.ts`、`productTourCatalog.ts`、`ProductTourOverlay.vue`、`ProductTourHubModal.vue`；各组件 `data-tour` 锚点 |
 | 改类型定义 | `src/shared/types.ts`、`src/shared/syncTypes.ts`、`src/shared/browserBridgeProtocol.ts` |

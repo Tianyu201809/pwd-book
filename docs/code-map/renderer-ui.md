@@ -6,7 +6,9 @@
 
 ```
 App.vue
-├── TitleBar.vue              # 自定义标题栏、窗口控制（v1.14.0 详情小窗口置顶；v1.20.0 主窗口置顶）
+├── TitleBar.vue              # 自定义标题栏、窗口控制（v1.14.0 详情小窗口置顶；v1.20.0 主窗口置顶；**v1.24.0** 产品学习学士帽）
+├── ProductTourHubModal.vue   # 引导中心（**v1.24.0**，6 条路径卡片）
+├── ProductTourOverlay.vue    # 引导层：聚光灯/遮罩 + 步骤卡片（**v1.24.0**）
 ├── LockScreen.vue            # 锁定页状态机
 │   └── recovery/*            # 恢复流程子组件
 ├── VaultView.vue             # 主工作区（v1.14.0：detached 时隐藏内联详情位）
@@ -48,10 +50,10 @@ App.vue
 
 ### TitleBar.vue
 
-- 自定义无边框标题栏：换肤、快速锁定（主窗口）、**置顶图钉**（**v1.20.0** 主窗口与详情小窗口均显示；`getWindowAlwaysOnTop` / `toggleWindowAlwaysOnTop`）、最小化 / 最大化 / 关闭。
+- 自定义无边框标题栏：换肤、**产品学习**（**v1.24.0**，已解锁时显示学士帽，打开引导中心）、快速锁定（主窗口）、**置顶图钉**（**v1.20.0** 主窗口与详情小窗口均显示；`getWindowAlwaysOnTop` / `toggleWindowAlwaysOnTop`）、最小化 / 最大化 / 关闭。
 - **v1.23.0**：经典皮肤 `--titlebar-base` / `--titlebar-accent-wash` / `--titlebar-top-shine` 渐变层（`tokens.css`）；动森皮肤在 `animal-skin.css` 关闭伪元素；最大化时显示叠窗 **还原** SVG，订阅 `window:maximize-changed`。
-- `detailWindow` prop 为 true 时：隐藏最大化与快速锁定；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
-- 主窗口按钮顺序：换肤 → 锁定（已解锁时）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
+- `detailWindow` prop 为 true 时：隐藏最大化、快速锁定与产品学习；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
+- 主窗口按钮顺序：换肤 → **产品学习**（已解锁）→ 锁定（已解锁时）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
 
 ### QuickBarApp.vue
 
@@ -71,7 +73,7 @@ App.vue
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
 - **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
 - **分类切换**（v1.18.0）：`onItemPointerDown` 在非当前分类上 **立即 `selectCategory`**（先于拖拽阈值判断）；`selectCategory` 将 `selectedEntryId` 置 `null`，右侧详情清空，不再回退列表首条。
-- **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。
+- **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。**v1.24.0** 监听 `pwdbook-tour-prepare` 展开工具区/标签筛选。
 - **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`（**v1.13.0** 起默认 **收起**）。
 - **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
 
@@ -151,6 +153,10 @@ App.vue
 
 轻量 Toast 队列；`ToastHost.vue` 订阅展示。`saveEntry` 成功/失败均调用。
 
+### useProductTour (`src/composables/useProductTour.ts`) — **v1.24.0**
+
+引导状态单例：`openHub` / `startTour` / `nextStep` / `prevStep` / `skipTour`；步骤表来自 `productTourCatalog.ts`；`runStepPrepare` 自动 `navigateTo`、切换设置 Tab、派发 `TOUR_PREPARE_EVENT`；完成路径写入 `localStorage`（`pwdbook-tour-done-{id}`）。详见 [product-tour.md](./product-tour.md)。
+
 ## API 门面
 
 ```
@@ -190,6 +196,7 @@ App.vue
 - `assets/styles/tokens.css` — 设计 token（颜色、间距）；**v1.17.0** 暗黑色阶上移、`--panel-edge-width`
 - `assets/styles/global.css` — 全局布局、`.vault-texture` 背景；**v1.17.0** 暗黑 `.list-item` 背景、`body.category-drag-active` 光标
 - `assets/styles/animal-skin.css` — **v1.17.0** 指针 16px、PanelEdge/窄条背景、`overflow: visible`；**v1.20.0** PanelEdge 常驻 2px 分割线与悬停青绿粗线、展开 `suppressHover`
+- `assets/styles/product-tour.css` — **v1.24.0** 引导层遮罩、聚光灯、引导卡片与 Hub 弹窗样式
 
 ## 类型 re-export
 

@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.23.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.24.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -40,7 +40,7 @@ npm run dev
 
 若你用过 KeePass、Bitwarden 离线库或 1Password 本地 vault，核心思路相同：**主密码 + 本地加密存储**。PwdBook 的差异在于开箱即用的桌面体验、恢复密钥流程，以及可选的加密邮箱灾备。
 
-应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；**v1.20.0** 主窗口标题栏支持 **窗口置顶** 图钉；**v1.21.0** **设置 → 安全** 支持 **开机自动启动**（默认关闭；**v1.23.0** 修复 Windows 含空格安装路径）；**v1.22.0** 条目支持 **附件**、**自定义字段** 与 **列表/方块** 布局切换；**v1.23.0** 托盘菜单可直达 **设置**、数据库损坏时自动隔离备份并创建空库；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）与 **macOS**（DMG，x64 / arm64）。
+应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；**v1.20.0** 主窗口标题栏支持 **窗口置顶** 图钉；**v1.21.0** **设置 → 安全** 支持 **开机自动启动**（默认关闭；**v1.23.0** 修复 Windows 含空格安装路径）；**v1.22.0** 条目支持 **附件**、**自定义字段** 与 **列表/方块** 布局切换；**v1.23.0** 托盘菜单可直达 **设置**、数据库损坏时自动隔离备份并创建空库；**v1.24.0** 标题栏 **产品学习** 提供 6 条交互式引导路径；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）与 **macOS**（DMG，x64 / arm64）。
 
 <p align="center">
   <img src="./docs/images/main.png" alt="PwdBook 主界面：侧栏分类、搜索与条目列表" width="720" />
@@ -123,7 +123,7 @@ npm run dev
 
 ## 功能
 
-功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [同步](#同步-v1190) · [外观](#外观) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
+功能索引：[保险库](#保险库与条目) · [设置](#设置) · [锁定与恢复](#主密码锁定与恢复) · [工具](#工具) · [导入导出](#数据导入导出) · [同步](#同步-v1190) · [外观](#外观) · [产品引导](#产品引导-v1240) · [浏览器扩展](#浏览器扩展chrome--edge) · [系统集成](#窗口与系统集成windows)
 
 以下按用户可见模块整理；实现细节见 [docs/code-map](./docs/code-map/README.md)。
 
@@ -294,6 +294,21 @@ npm run dev
 - **标题栏换肤** — 窗口右上角 **调色板** 图标弹出菜单，一键切换经典 / Animal Island；底部 **更多外观设置** 跳转设置 → 外观（深浅色、强调色等）
 - **语言** — 简体中文、English（`vue-i18n`）
 
+### 产品引导（v1.24.0）
+
+保险库**已解锁**时，标题栏换肤按钮旁显示 **学士帽（产品学习）** 图标，打开 **引导中心**，选择一条学习路径：
+
+| 路径 | 内容 |
+|------|------|
+| 快速认识 | 三栏布局示意、分类导航、列表工具栏 |
+| 分类与标签 | 分类、标签筛选、新建分类、侧栏工具区 |
+| 条目管理 | 搜索、排序/布局、新建条目、详情侧栏 |
+| 实用工具 | 随机密码、密码健康、回收站 |
+| 标题栏快捷 | 换肤、锁定、置顶、学习入口 |
+| 设置中心 | 设置分区、安全选项、数据管理 |
+
+引导层支持聚光灯高亮或整屏遮罩、步骤进度、**← → Enter Esc** 快捷键；已完成路径会标记 ✓（本地 `localStorage`）。详见 [docs/code-map/product-tour.md](./docs/code-map/product-tour.md)。
+
 ### 浏览器扩展（Chrome / Edge）
 
 本地自动填充，**无需联网**（扩展 ↔ 本机 Native Host ↔ PwdBook 主进程，数据仍来自本地 `pwdbook.db`）。
@@ -383,7 +398,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.23.0（当前）
+### v1.24.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1240---2026-06-26)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 引导 | 标题栏 **产品学习** → 引导中心；**6 条**交互式路径（聚光灯 / 三栏示意 / 整屏遮罩） |
+| 交互 | 自动切换页面与设置 Tab、展开侧栏工具区；**← → Enter Esc**；完成状态本地记录 |
+| 修复 | 全视窗/超高锚点引导卡片定位到屏幕外的问题 |
+
+### v1.23.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1230---2026-06-25)**。摘要：
 
@@ -644,6 +669,7 @@ pwd-book/
 | [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0；**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md) | Wi-Fi 局域网同步（v1.9.0） |
 | [docs/code-map/folder-sync.md](./docs/code-map/folder-sync.md) | 文件夹同步（v1.19.0） |
+| [docs/code-map/product-tour.md](./docs/code-map/product-tour.md) | **v1.24.0** 产品引导、引导中心、聚光灯与 `data-tour` 锚点 |
 | [design/design-system.md](./design/design-system.md) | 色彩、字体与组件 Token |
 | [design/recovery-flow.md](./design/recovery-flow.md) | 恢复密钥 UX 与文案规范 |
 
@@ -679,8 +705,11 @@ Electron `app.getPath('userData')` 下的 `pwdbook.db`（Windows 通常为 `%APP
 **如何用快捷键唤起主窗口？**  
 默认 `Alt+Shift+M`（可在 **设置 → 安全 → 快捷键唤起主窗口** 开关）。窗口最小化到托盘时也可通过该快捷键恢复。
 
+**如何重新体验产品引导？**  
+保险库解锁后点击标题栏 **学士帽** 图标打开引导中心；若要清除「已完成」标记，删除浏览器 `localStorage` 中以 `pwdbook-tour-done-` 开头的键。详见 [docs/code-map/product-tour.md](./docs/code-map/product-tour.md)。
+
 **如何参与开发？**  
-从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，标签逻辑见 `src/main/services/tagService.ts` 与 `TagManagePanel.vue`，托盘与关闭逻辑见 `src/main/tray.ts`，快捷条与最近打开见 [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md)，邮箱备份见 `src/main/services/emailBackupService.ts`。
+从 [docs/code-map/README.md](./docs/code-map/README.md) 的「快速定位」表入手；改 IPC 看 `src/main/ipc/handlers.ts`，改 UI 状态看 `src/composables/useAppState.ts`，标签逻辑见 `src/main/services/tagService.ts` 与 `TagManagePanel.vue`，托盘与关闭逻辑见 `src/main/tray.ts`，快捷条与最近打开见 [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md)，产品引导见 [docs/code-map/product-tour.md](./docs/code-map/product-tour.md)，邮箱备份见 `src/main/services/emailBackupService.ts`。
 
 ---
 
