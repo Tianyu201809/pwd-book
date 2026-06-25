@@ -274,6 +274,13 @@ export const electronAPI = {
     invoke(IPC.windowGetAlwaysOnTop),
   toggleWindowAlwaysOnTop: (): Promise<boolean> =>
     invoke(IPC.windowToggleAlwaysOnTop),
+  getWindowMaximized: (): Promise<boolean> =>
+    invoke(IPC.windowGetMaximized),
+  onWindowMaximizeChanged: (handler: (maximized: boolean) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, maximized: boolean): void => handler(maximized)
+    ipcRenderer.on(IPC_EVENTS.windowMaximizeChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.windowMaximizeChanged, listener)
+  },
 
   listAttachments: (entryId: string): Promise<EntryAttachmentMeta[]> =>
     invoke(IPC.attachmentsList, entryId),

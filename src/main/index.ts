@@ -36,7 +36,7 @@ import { stopWifiSyncServer } from './services/wifiSyncService'
 import { getSecuritySettings } from './services/settingsService'
 import { registerSystemAutoLock } from './autoLock'
 import { syncLaunchAtLogin } from './launchAtLogin'
-import { IPC } from '../shared/types'
+import { IPC, IPC_EVENTS } from '../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -84,6 +84,12 @@ function createWindow(): void {
   })
 
   mainWindow.on('close', (event) => handleWindowClose(event))
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send(IPC_EVENTS.windowMaximizeChanged, true)
+  })
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send(IPC_EVENTS.windowMaximizeChanged, false)
+  })
 
   setMainWindow(mainWindow)
 
@@ -186,6 +192,12 @@ if (gotSingleInstanceLock) {
       const next = !win.isAlwaysOnTop()
       win.setAlwaysOnTop(next, 'floating')
       return next
+    })
+
+    ipcMain.handle(IPC.windowGetMaximized, (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      const target = win && win !== mainWindow ? win : mainWindow
+      return target?.isMaximized() ?? false
     })
 
     ipcMain.on('theme-set-native', (_event, mode: 'dark' | 'light' | 'system') => {

@@ -106,6 +106,7 @@ export default {
   titlebar: {
     minimize: 'Minimize to tray',
     maximize: 'Maximize',
+    restore: 'Restore down',
     closeApp: 'Close PwdBook',
     closePrompt: 'Minimize hides the app to the system tray; it keeps running in the background',
     rememberChoice: 'Remember my choice',

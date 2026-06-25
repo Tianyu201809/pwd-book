@@ -28,11 +28,13 @@ const skinMenuRef = ref<HTMLElement | null>(null)
 const skinTriggerRef = ref<HTMLButtonElement | null>(null)
 const popoverStyle = ref<Record<string, string>>({})
 const alwaysOnTop = ref(false)
+const isMaximized = ref(false)
 
 const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
 
 let removeClosePromptListener: (() => void) | undefined
+let removeMaximizeListener: (() => void) | undefined
 
 function minimize(): void {
   window.electronAPI?.minimize()
@@ -40,6 +42,10 @@ function minimize(): void {
 
 function maximize(): void {
   window.electronAPI?.maximize()
+}
+
+async function syncMaximized(): Promise<void> {
+  isMaximized.value = (await window.electronAPI?.getWindowMaximized?.()) ?? false
 }
 
 function applyCloseAction(action: CloseWindowAction): void {
@@ -174,12 +180,17 @@ watch(showSkinMenu, (open) => {
 onMounted(() => {
   void syncAlwaysOnTop()
   if (!props.detailWindow) {
+    void syncMaximized()
     removeClosePromptListener = window.electronAPI?.onClosePrompt(() => openCloseDialog())
+    removeMaximizeListener = window.electronAPI?.onWindowMaximizeChanged?.((maximized) => {
+      isMaximized.value = maximized
+    })
   }
 })
 
 onUnmounted(() => {
   removeClosePromptListener?.()
+  removeMaximizeListener?.()
   unbindSkinMenuOutsideClose()
   window.removeEventListener('resize', updatePopoverPosition)
   document.removeEventListener('keydown', onSkinMenuKeydown)
@@ -315,10 +326,39 @@ onUnmounted(() => {
         v-if="!detailWindow"
         type="button"
         class="win-btn"
-        :aria-label="t('titlebar.maximize')"
+        :aria-label="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
         @click="maximize"
       >
+        <svg
+          v-if="isMaximized"
+          class="win-restore-icon"
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect
+            x="1"
+            y="3"
+            width="6.5"
+            height="6.5"
+            rx="0.75"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <rect
+            x="4.5"
+            y="0.5"
+            width="6.5"
+            height="6.5"
+            rx="0.75"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+        </svg>
         <Square
+          v-else
           :size="12"
           :stroke-width="1.5"
         />
@@ -577,6 +617,11 @@ onUnmounted(() => {
 .win-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.win-restore-icon {
+  display: block;
+  flex-shrink: 0;
 }
 
 .lock-btn:hover {

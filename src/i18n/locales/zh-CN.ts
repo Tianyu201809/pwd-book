@@ -105,6 +105,7 @@ export default {
   titlebar: {
     minimize: '最小化到托盘',
     maximize: '最大化',
+    restore: '还原窗口',
     closeApp: '关闭 PwdBook',
     closePrompt: '最小化将隐藏到系统托盘，程序继续在后台运行',
     rememberChoice: '记住我的选择',

@@ -380,6 +380,7 @@ export const IPC = {
   detailWindowGetAlwaysOnTop: 'detail-window:get-always-on-top',
   windowGetAlwaysOnTop: 'window:get-always-on-top',
   windowToggleAlwaysOnTop: 'window:toggle-always-on-top',
+  windowGetMaximized: 'window:get-maximized',
   vaultDataNotifyChanged: 'vault-data:notify-changed',
   attachmentsList: 'attachments:list',
   attachmentsAdd: 'attachments:add',
@@ -397,6 +398,7 @@ export const IPC_EVENTS = {
   detailWindowOpened: 'detail-window:opened',
   detailWindowClosed: 'detail-window:closed',
   vaultDataChanged: 'vault-data:changed',
+  windowMaximizeChanged: 'window:maximize-changed',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [
