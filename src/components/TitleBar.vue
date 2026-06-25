@@ -206,7 +206,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="titlebar titlebar-drag">
+  <header
+    class="titlebar titlebar-drag"
+    :class="{ 'titlebar--animal': isAnimalIsland }"
+  >
     <div class="titlebar-left">
       <ShieldCheck
         class="icon-accent titlebar-no-drag"
@@ -451,11 +454,14 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
+  flex-shrink: 0;
+  isolation: isolate;
+}
+
+.titlebar:not(.titlebar--animal) {
   background: var(--titlebar-base, var(--bg-surface));
   border-bottom: 1px solid var(--titlebar-border, var(--border-default));
   box-shadow: var(--titlebar-shadow, none);
-  flex-shrink: 0;
-  isolation: isolate;
 }
 
 .titlebar::before,
@@ -466,12 +472,25 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.titlebar::before {
+.titlebar:not(.titlebar--animal)::before {
   background: var(--titlebar-accent-wash, none);
 }
 
-.titlebar::after {
+.titlebar:not(.titlebar--animal)::after {
   background: var(--titlebar-top-shine, none);
+}
+
+.titlebar--animal {
+  z-index: 200;
+  background: var(--titlebar-base);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--titlebar-border);
+  box-shadow: none;
+}
+
+.titlebar--animal::before,
+.titlebar--animal::after {
+  display: none;
 }
 
 .titlebar-left {

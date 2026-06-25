@@ -30,6 +30,13 @@
   --btn-primary-text: #fff;
   --shadow-panel: 0 8px 32px rgba(114, 93, 66, 0.12);
   --panel-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  /* 动森固定 light，须覆盖 tokens.css [data-mode="light"] 的经典标题栏变量 */
+  --titlebar-base: rgba(247, 243, 223, 0.94);
+  --titlebar-accent-wash: none;
+  --titlebar-top-shine: none;
+  --titlebar-shadow: none;
+  --titlebar-hairline: transparent;
+  --titlebar-border: rgba(114, 93, 66, 0.15);
 }
 
 [data-skin="animalIsland"] body {
@@ -65,20 +72,6 @@
 
 [data-skin="animalIsland"] .font-display {
   font-family: "Zen Maru Gothic", "Nunito", "Noto Sans SC", sans-serif;
-}
-
-[data-skin="animalIsland"] .titlebar {
-  position: relative;
-  z-index: 200;
-  background: rgba(247, 243, 223, 0.94);
-  backdrop-filter: blur(8px);
-  border-bottom: 2px solid var(--border-default);
-  box-shadow: none;
-}
-
-[data-skin="animalIsland"] .titlebar::before,
-[data-skin="animalIsland"] .titlebar::after {
-  display: none;
 }
 
 [data-skin="animalIsland"] .skin-popover {
