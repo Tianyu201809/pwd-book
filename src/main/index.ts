@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
-import { initDatabase } from './db/database'
+import { consumeQuarantinedDatabasePath, initDatabase } from './db/database'
 import { registerIpcHandlers } from './ipc/handlers'
 import {
   destroyTray,
@@ -125,6 +125,18 @@ if (gotSingleInstanceLock) {
 
   app.whenReady().then(async () => {
     await initDatabase()
+    const quarantinedDbPath = consumeQuarantinedDatabasePath()
+    if (quarantinedDbPath) {
+      void dialog.showMessageBox({
+        type: 'warning',
+        title: 'PwdBook',
+        message: '本地数据库文件已损坏',
+        detail:
+          `检测到 pwdbook.db 不是有效的 SQLite 文件，已备份至：\n${quarantinedDbPath}\n\n` +
+          '应用已创建新的空数据库。若您有文件夹同步备份（vault.pwdbook）或导出文件，可在解锁后通过导入/同步恢复数据。',
+        buttons: ['我知道了'],
+      })
+    }
     if (isScreenshotMode()) {
       setupScreenshotFixture()
     }
@@ -199,6 +211,19 @@ if (gotSingleInstanceLock) {
         showFromTray()
       }
     })
+  }).catch((error: unknown) => {
+    const detail = error instanceof Error ? error.message : String(error)
+    void dialog
+      .showMessageBox({
+        type: 'error',
+        title: 'PwdBook',
+        message: '启动失败',
+        detail: `数据库初始化失败：${detail}`,
+        buttons: ['退出'],
+      })
+      .finally(() => {
+        app.quit()
+      })
   })
 
   app.on('window-all-closed', () => {

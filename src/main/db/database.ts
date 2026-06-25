@@ -8,6 +8,28 @@ import { appError, ErrorCode } from '../../shared/errors'
 let sqlPromise: Promise<SqlJsStatic> | null = null
 let db: Database | null = null
 let dbPath = ''
+let lastQuarantinedDbPath: string | null = null
+
+const SQLITE_HEADER = 'SQLite format 3\u0000'
+
+function isValidSqliteFile(buffer: Buffer): boolean {
+  if (buffer.length < 16) return false
+  return buffer.subarray(0, 16).toString('binary') === SQLITE_HEADER
+}
+
+function quarantineCorruptDatabaseFile(): string {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const backupPath = `${dbPath}.corrupt-${timestamp}`
+  fs.renameSync(dbPath, backupPath)
+  lastQuarantinedDbPath = backupPath
+  return backupPath
+}
+
+export function consumeQuarantinedDatabasePath(): string | null {
+  const path = lastQuarantinedDbPath
+  lastQuarantinedDbPath = null
+  return path
+}
 
 function getWasmDirectory(): string {
   if (app.isPackaged) {
@@ -45,7 +67,12 @@ export async function initDatabase(): Promise<Database> {
 
   if (fs.existsSync(dbPath)) {
     const fileBuffer = fs.readFileSync(dbPath)
-    db = new SQL.Database(fileBuffer)
+    if (!isValidSqliteFile(fileBuffer)) {
+      quarantineCorruptDatabaseFile()
+      db = new SQL.Database()
+    } else {
+      db = new SQL.Database(fileBuffer)
+    }
   } else {
     db = new SQL.Database()
   }
