@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './animal-skin.css';
+@import './product-tour.css';
 
 /* 保险库列表滚动：经典 / 动森共用 flex 高度链 */
 .vault-view,

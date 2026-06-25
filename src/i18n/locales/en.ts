@@ -118,6 +118,160 @@ export default {
     pinAlwaysOnTop: 'Keep window on top',
     unpinAlwaysOnTop: 'Stop keeping window on top',
   },
+  productTour: {
+    openHub: 'Product tour',
+    hubTitle: 'Explore PwdBook',
+    hubSubtitle: 'Pick a guided path — interactive highlights help you learn core features fast.',
+    hubHint: 'Reopen anytime from the graduation cap in the title bar. Completed paths show a checkmark.',
+    skip: 'Skip tour',
+    prev: 'Back',
+    next: 'Next',
+    finish: 'Done',
+    completed: 'Completed',
+    stepOf: 'Step {current} of {total}',
+    tours: {
+      intro: {
+        title: 'Quick tour',
+        desc: 'Three-column layout, categories, and list — the big picture in one minute.',
+        duration: '~1 min',
+      },
+      organize: {
+        title: 'Categories & tags',
+        desc: 'Category nav, tag filters, and the utilities section.',
+        duration: '~1 min',
+      },
+      entries: {
+        title: 'Manage entries',
+        desc: 'Search, sort, layout toggle, and the detail sidebar.',
+        duration: '~2 min',
+      },
+      tools: {
+        title: 'Utilities',
+        desc: 'Password generator, health check, trash, and more.',
+        duration: '~1 min',
+      },
+      titlebar: {
+        title: 'Title bar',
+        desc: 'Skin, lock, pin, and the learn button.',
+        duration: '~1 min',
+      },
+      settings: {
+        title: 'Settings',
+        desc: 'Security, backup, import, and data management.',
+        duration: '~2 min',
+      },
+    },
+    steps: {
+      intro: {
+        welcome: {
+          title: 'Welcome to PwdBook',
+          body: 'Spotlight highlights will walk you through the vault. Skip anytime, or use ← → to move between steps.',
+        },
+        layout: {
+          title: 'Three-column workspace',
+          body: 'Categories and tools on the left, entry list in the center, details on the right — your daily password hub.',
+        },
+        categories: {
+          title: 'Category navigation',
+          body: 'Switch categories to filter entries; drag to reorder. Use the sidebar search to find a category quickly.',
+        },
+        list: {
+          title: 'List toolbar',
+          body: 'Search entries, create new ones, change sort order, and switch list/grid layout. Selecting an entry opens details on the right.',
+        },
+      },
+      organize: {
+        categories: {
+          title: 'Browse by category',
+          body: 'All, Favorites, and custom categories organize your vault. Counts appear on the right.',
+        },
+        tagFilter: {
+          title: 'Filter by tags',
+          body: 'Expand to multi-select tags (AND logic). Combine with categories; tag search supports Pinyin initials.',
+        },
+        newCategory: {
+          title: 'Quick new category',
+          body: 'Tap + to create a category without opening settings. New entries can be assigned to it immediately.',
+        },
+        utilities: {
+          title: 'Tools & settings',
+          body: 'The bottom section holds password tools, trash, and settings. Collapsed by default — click the header to expand.',
+        },
+      },
+      entries: {
+        search: {
+          title: 'Smart search',
+          body: 'Matches title, username, URL, notes, and custom fields — including Pinyin initials (e.g. cs → 测试).',
+        },
+        sortLayout: {
+          title: 'Sort & layout',
+          body: 'The sliders button cycles recent / title / created sort. Icons on the right toggle list vs grid layout.',
+        },
+        newEntry: {
+          title: 'New entry',
+          body: 'Creates an entry in edit mode: generate passwords, add TOTP, attachments, and custom fields.',
+        },
+        detail: {
+          title: 'Detail sidebar',
+          body: 'Existing entries open read-only; tap Edit to change. Copy fields, favorite, pop out a window, or resize the panel.',
+        },
+      },
+      tools: {
+        utilities: {
+          title: 'Utilities expanded',
+          body: 'The tour expanded Tools & settings for you — less common but important actions live here.',
+        },
+        passwordGen: {
+          title: 'Password generator',
+          body: 'Set length and character sets for strong passwords; also available when creating entries.',
+        },
+        passwordHealth: {
+          title: 'Password health',
+          body: 'Locally analyzes weak and reused passwords; jump to entries from the report to fix them.',
+        },
+        trash: {
+          title: 'Trash',
+          body: 'Deleted entries are soft-deleted for a retention period — restore or purge permanently from here.',
+        },
+      },
+      titlebar: {
+        skin: {
+          title: 'Switch skin',
+          body: 'Toggle Classic vault vs Animal Island; open appearance settings for theme, accent, and language.',
+        },
+        lock: {
+          title: 'Quick lock',
+          body: 'Clears the session key and returns to the lock screen — use when stepping away.',
+        },
+        pin: {
+          title: 'Always on top',
+          body: 'Keeps PwdBook above other windows while you copy credentials.',
+        },
+        learn: {
+          title: 'Learn anytime',
+          body: 'This button reopens the tour hub so you can replay any module whenever you need a refresher.',
+        },
+      },
+      settings: {
+        open: {
+          title: 'Open settings',
+          body: 'Settings at the bottom of the sidebar opens the full page; the tray menu also has a shortcut.',
+        },
+        nav: {
+          title: 'Settings sections',
+          body: 'Tabs for Security, Appearance, Data, and About — features grouped by topic.',
+        },
+        security: {
+          title: 'Security',
+          body: 'Launch at login, auto-lock, clipboard clearing, quick bar, browser autofill, and recovery key.',
+        },
+        data: {
+          title: 'Data',
+          body: 'Export JSON/CSV/Excel, import from other apps, sync vaults, or wipe local data.',
+        },
+      },
+    },
+  },
   lock: {
     createMasterPassword: 'Create master password',
     unlockVault: 'Enter master password to unlock',

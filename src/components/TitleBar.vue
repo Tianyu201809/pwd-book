@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin } from 'lucide-vue-next'
+import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { useTheme } from '@/composables/useTheme'
+import { useProductTour } from '@/composables/useProductTour'
 import type { CloseWindowAction } from '@/shared/types'
 import type { ThemeSkin } from '@/types'
 
@@ -20,6 +21,7 @@ const props = withDefaults(
 const { t } = useI18n()
 const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, lock } = useAppState()
 const { skin, skinOptions, setSkin, isAnimalIsland } = useTheme()
+const { openHub, isActive: tourActive } = useProductTour()
 
 const showCloseDialog = ref(false)
 const rememberChoice = ref(false)
@@ -32,6 +34,12 @@ const isMaximized = ref(false)
 
 const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
+const canOpenLearn = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
+
+function openLearnHub(): void {
+  showSkinMenu.value = false
+  openHub()
+}
 
 let removeClosePromptListener: (() => void) | undefined
 let removeMaximizeListener: (() => void) | undefined
@@ -216,6 +224,7 @@ onUnmounted(() => {
           ref="skinTriggerRef"
           type="button"
           class="win-btn skin-trigger titlebar-no-drag"
+          data-tour="titlebar-skin"
           :class="{ 'skin-trigger--open': showSkinMenu, 'skin-trigger--animal': isAnimalIsland }"
           :aria-label="t('titlebar.skinMenu')"
           :aria-expanded="showSkinMenu"
@@ -282,9 +291,25 @@ onUnmounted(() => {
         </Teleport>
       </div>
       <button
+        v-if="canOpenLearn"
+        type="button"
+        class="win-btn learn-btn"
+        :class="{ 'learn-btn--active': tourActive }"
+        data-tour="titlebar-learn"
+        :aria-label="t('productTour.openHub')"
+        :title="t('productTour.openHub')"
+        @click="openLearnHub"
+      >
+        <GraduationCap
+          :size="14"
+          :stroke-width="1.5"
+        />
+      </button>
+      <button
         v-if="!detailWindow && canQuickLock"
         type="button"
         class="win-btn lock-btn"
+        data-tour="titlebar-lock"
         :aria-label="t('titlebar.quickLock')"
         @click="lock"
       >
@@ -296,6 +321,7 @@ onUnmounted(() => {
       <button
         type="button"
         class="win-btn titlebar-always-on-top-btn"
+        data-tour="titlebar-pin"
         :class="{ 'always-on-top-btn--active': alwaysOnTop }"
         :aria-label="alwaysOnTop ? t('titlebar.unpinAlwaysOnTop') : t('titlebar.pinAlwaysOnTop')"
         :aria-pressed="alwaysOnTop"
@@ -648,6 +674,38 @@ onUnmounted(() => {
 
 .lock-btn:hover {
   color: var(--accent-primary);
+}
+
+.learn-btn {
+  position: relative;
+}
+
+.learn-btn:hover,
+.learn-btn--active {
+  color: var(--accent-primary);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+.learn-btn--active::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  pointer-events: none;
+  animation: learn-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes learn-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
 }
 
 .always-on-top-btn--active,

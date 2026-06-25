@@ -268,7 +268,10 @@ async function handleReset(): Promise<void> {
         <h2 class="font-display sidebar-title">
           {{ t('settings.title') }}
         </h2>
-        <nav class="settings-nav">
+        <nav
+          class="settings-nav"
+          data-tour="settings-nav"
+        >
           <button
             v-for="tab in tabs"
             :key="tab.id"
@@ -293,6 +296,7 @@ async function handleReset(): Promise<void> {
         <div
           v-if="activeTab === 'security'"
           class="panel"
+          data-tour="settings-security"
         >
           <h3>{{ t('settings.security') }}</h3>
           <UiCard class="settings-card">
@@ -570,6 +574,7 @@ async function handleReset(): Promise<void> {
         <div
           v-else-if="activeTab === 'data'"
           class="panel"
+          data-tour="settings-data"
         >
           <h3>{{ t('settings.data') }}</h3>
           <p

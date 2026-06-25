@@ -188,8 +188,14 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       'list-panel--grid': listLayoutMode === 'grid',
     }"
   >
-    <div class="list-toolbar">
-      <div class="search-wrap">
+    <div
+      class="list-toolbar"
+      data-tour="list-toolbar"
+    >
+      <div
+        class="search-wrap"
+        data-tour="list-search"
+      >
         <Search
           v-if="!isAnimalIsland"
           class="search-icon"
@@ -218,6 +224,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
       <UiButton
         variant="primary"
         class="vault-new-btn"
+        data-tour="list-new-entry"
         :class="{ 'new-entry-btn': !isAnimalIsland }"
         @click="startCreateEntry"
       >
@@ -229,84 +236,89 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         </template>
         {{ t('vault.newEntry') }}
       </UiButton>
-      <div class="sort-menu-wrap">
-        <UiButton
-          :variant="isAnimalIsland ? 'primary' : 'ghost'"
-          class="vault-filter-btn"
-          :class="{
-            'filter-btn': !isAnimalIsland,
-            active: showSortMenu && !isAnimalIsland,
-            'vault-filter-btn--active': showSortMenu && isAnimalIsland,
-          }"
-          :title="t('vault.sortBy')"
-          :aria-label="t('vault.sortBy')"
-          @click="toggleSortMenu"
+      <div
+        class="list-toolbar-actions"
+        data-tour="list-actions"
+      >
+        <div class="sort-menu-wrap">
+          <UiButton
+            :variant="isAnimalIsland ? 'primary' : 'ghost'"
+            class="vault-filter-btn"
+            :class="{
+              'filter-btn': !isAnimalIsland,
+              active: showSortMenu && !isAnimalIsland,
+              'vault-filter-btn--active': showSortMenu && isAnimalIsland,
+            }"
+            :title="t('vault.sortBy')"
+            :aria-label="t('vault.sortBy')"
+            @click="toggleSortMenu"
+          >
+            <template #icon>
+              <SlidersHorizontal
+                :size="16"
+                :stroke-width="1.5"
+              />
+            </template>
+          </UiButton>
+          <div
+            v-if="showSortMenu"
+            class="sort-menu surface-card"
+            @click.stop
+          >
+            <p class="sort-menu-title">
+              {{ t('vault.sortBy') }}
+            </p>
+            <button
+              v-for="option in sortOptions"
+              :key="option.id"
+              type="button"
+              class="sort-menu-item"
+              :class="{ active: listSortOrder === option.id }"
+              @click="handleSort(option.id, $event)"
+            >
+              {{ option.label }}
+              <Check
+                v-if="listSortOrder === option.id"
+                :size="14"
+                :stroke-width="2"
+              />
+            </button>
+          </div>
+        </div>
+        <div
+          class="layout-toggle"
+          role="group"
+          :aria-label="t('vault.layoutToggle')"
         >
-          <template #icon>
-            <SlidersHorizontal
+          <button
+            type="button"
+            class="layout-toggle-btn"
+            :class="{ active: listLayoutMode === 'list' }"
+            :title="t('vault.layoutList')"
+            :aria-label="t('vault.layoutList')"
+            :aria-pressed="listLayoutMode === 'list'"
+            @click="handleLayout('list')"
+          >
+            <LayoutList
               :size="16"
               :stroke-width="1.5"
             />
-          </template>
-        </UiButton>
-        <div
-          v-if="showSortMenu"
-          class="sort-menu surface-card"
-          @click.stop
-        >
-          <p class="sort-menu-title">
-            {{ t('vault.sortBy') }}
-          </p>
+          </button>
           <button
-            v-for="option in sortOptions"
-            :key="option.id"
             type="button"
-            class="sort-menu-item"
-            :class="{ active: listSortOrder === option.id }"
-            @click="handleSort(option.id, $event)"
+            class="layout-toggle-btn"
+            :class="{ active: listLayoutMode === 'grid' }"
+            :title="t('vault.layoutGrid')"
+            :aria-label="t('vault.layoutGrid')"
+            :aria-pressed="listLayoutMode === 'grid'"
+            @click="handleLayout('grid')"
           >
-            {{ option.label }}
-            <Check
-              v-if="listSortOrder === option.id"
-              :size="14"
-              :stroke-width="2"
+            <LayoutGrid
+              :size="16"
+              :stroke-width="1.5"
             />
           </button>
         </div>
-      </div>
-      <div
-        class="layout-toggle"
-        role="group"
-        :aria-label="t('vault.layoutToggle')"
-      >
-        <button
-          type="button"
-          class="layout-toggle-btn"
-          :class="{ active: listLayoutMode === 'list' }"
-          :title="t('vault.layoutList')"
-          :aria-label="t('vault.layoutList')"
-          :aria-pressed="listLayoutMode === 'list'"
-          @click="handleLayout('list')"
-        >
-          <LayoutList
-            :size="16"
-            :stroke-width="1.5"
-          />
-        </button>
-        <button
-          type="button"
-          class="layout-toggle-btn"
-          :class="{ active: listLayoutMode === 'grid' }"
-          :title="t('vault.layoutGrid')"
-          :aria-label="t('vault.layoutGrid')"
-          :aria-pressed="listLayoutMode === 'grid'"
-          @click="handleLayout('grid')"
-        >
-          <LayoutGrid
-            :size="16"
-            :stroke-width="1.5"
-          />
-        </button>
       </div>
     </div>
 
@@ -581,6 +593,13 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   gap: 12px;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border-default);
+}
+
+.list-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .search-wrap {

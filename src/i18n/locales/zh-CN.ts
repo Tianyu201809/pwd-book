@@ -117,6 +117,160 @@ export default {
     pinAlwaysOnTop: '窗口置顶',
     unpinAlwaysOnTop: '取消窗口置顶',
   },
+  productTour: {
+    openHub: '产品学习',
+    hubTitle: '探索 PwdBook',
+    hubSubtitle: '选择一条引导路径，用交互式高亮快速熟悉核心功能。',
+    hubHint: '可随时点击标题栏学士帽按钮重新打开；已完成的路径会显示勾选标记。',
+    skip: '跳过引导',
+    prev: '上一步',
+    next: '下一步',
+    finish: '完成',
+    completed: '已完成',
+    stepOf: '第 {current} / {total} 步',
+    tours: {
+      intro: {
+        title: '快速认识',
+        desc: '三栏布局、分类与列表，一分钟建立整体印象。',
+        duration: '约 1 分钟',
+      },
+      organize: {
+        title: '分类与标签',
+        desc: '分类导航、标签筛选与侧栏工具区。',
+        duration: '约 1 分钟',
+      },
+      entries: {
+        title: '条目管理',
+        desc: '搜索、排序、布局切换与详情侧栏。',
+        duration: '约 2 分钟',
+      },
+      tools: {
+        title: '实用工具',
+        desc: '随机密码、密码健康、回收站等侧栏工具。',
+        duration: '约 1 分钟',
+      },
+      titlebar: {
+        title: '标题栏快捷',
+        desc: '换肤、锁定、置顶与学习入口。',
+        duration: '约 1 分钟',
+      },
+      settings: {
+        title: '设置中心',
+        desc: '安全选项、备份导入与数据管理。',
+        duration: '约 2 分钟',
+      },
+    },
+    steps: {
+      intro: {
+        welcome: {
+          title: '欢迎使用 PwdBook',
+          body: '接下来会用高亮聚光灯带你浏览本地密码库的核心区域。你可以随时跳过，或按 ← → 键切换步骤。',
+        },
+        layout: {
+          title: '三栏工作区',
+          body: '左侧是分类与工具，中间是条目列表，右侧是详情。这是日常管理密码的主界面。',
+        },
+        categories: {
+          title: '分类导航',
+          body: '点击分类切换条目范围；长按拖动可调整顺序。侧栏搜索可快速过滤分类名称。',
+        },
+        list: {
+          title: '列表工具栏',
+          body: '在这里搜索条目、新建密码、切换排序与列表/方块布局。选中条目后右侧会显示详情。',
+        },
+      },
+      organize: {
+        categories: {
+          title: '按分类浏览',
+          body: '「全部」「收藏」与自定义分类帮助你组织条目。条目数显示在右侧角标上。',
+        },
+        tagFilter: {
+          title: '按标签筛选',
+          body: '展开后可多选标签（AND 逻辑），与分类组合使用，快速缩小范围。支持拼音首字母搜索标签。',
+        },
+        newCategory: {
+          title: '快速新建分类',
+          body: '点击「+」无需进入设置即可创建分类，新建条目时可归入该分类。',
+        },
+        utilities: {
+          title: '工具与设置',
+          body: '侧栏底部收纳随机密码、密码健康、回收站与设置入口。默认收起，点击标题可展开。',
+        },
+      },
+      entries: {
+        search: {
+          title: '智能搜索',
+          body: '搜索标题、用户名、网址、备注与自定义字段；支持拼音首字母（如 cs 匹配「测试」）。',
+        },
+        sortLayout: {
+          title: '排序与布局',
+          body: '漏斗按钮切换「最近使用 / 标题 / 创建时间」；右侧图标在列表与方块布局间切换。',
+        },
+        newEntry: {
+          title: '新建条目',
+          body: '点击新建后右侧进入编辑模式，可生成随机密码、添加 TOTP、附件与自定义字段。',
+        },
+        detail: {
+          title: '详情侧栏',
+          body: '已有条目默认只读，点「编辑」后修改。可复制字段、收藏、弹出小窗口或调整侧栏宽度。',
+        },
+      },
+      tools: {
+        utilities: {
+          title: '展开工具区',
+          body: '引导已为你展开「工具与设置」。这里集中了不常用但重要的功能入口。',
+        },
+        passwordGen: {
+          title: '随机密码',
+          body: '配置长度与字符集，一键生成强密码；也可在新建条目时直接填入。',
+        },
+        passwordHealth: {
+          title: '密码健康',
+          body: '本地分析弱密码与重复密码，点击结果可跳转到对应条目进行修改。',
+        },
+        trash: {
+          title: '回收站',
+          body: '删除的条目会软删除保留一段时间，可在回收站还原或彻底删除。',
+        },
+      },
+      titlebar: {
+        skin: {
+          title: '一键换肤',
+          body: '在经典保险库与 Animal Island 皮肤间切换；也可进入外观设置调整深浅色与强调色。',
+        },
+        lock: {
+          title: '快速锁定',
+          body: '立即清除内存中的会话密钥并回到锁定页，离开座位时建议使用。',
+        },
+        pin: {
+          title: '窗口置顶',
+          body: '让 PwdBook 始终浮在其他窗口之上，填写密码时更方便对照。',
+        },
+        learn: {
+          title: '随时回来学习',
+          body: '这就是学习入口。任何时候都可以从这里重新打开引导中心，复习任意功能模块。',
+        },
+      },
+      settings: {
+        open: {
+          title: '进入设置',
+          body: '侧栏底部的「设置」按钮会打开完整设置页；托盘右键菜单也提供快捷入口。',
+        },
+        nav: {
+          title: '设置分区',
+          body: '左侧 Tab 分为安全、外观、数据与关于。不同主题的功能按区归类，便于查找。',
+        },
+        security: {
+          title: '安全选项',
+          body: '配置开机启动、自动锁定、剪贴板清除、快捷搜索与浏览器自动填充等安全相关行为。',
+        },
+        data: {
+          title: '数据管理',
+          body: '导出 JSON/CSV/Excel 备份、从其他应用导入、同步保险库或清除全部本地数据。',
+        },
+      },
+    },
+  },
   lock: {
     createMasterPassword: '创建主密码',
     unlockVault: '输入主密码以解锁保险库',

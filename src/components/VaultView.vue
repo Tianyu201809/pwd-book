@@ -12,9 +12,15 @@ const { detachedDetailOpen } = useAppState()
 
 <template>
   <div class="vault-view">
-    <div class="vault-body">
-      <VaultSidebar />
-      <div class="vault-list-column">
+    <div
+      class="vault-body"
+      data-tour="vault-layout"
+    >
+      <VaultSidebar data-tour="vault-col-sidebar" />
+      <div
+        class="vault-list-column"
+        data-tour="vault-col-list"
+      >
         <PasswordList class="vault-password-list" />
         <div
           v-if="isAnimalIsland"
@@ -28,6 +34,7 @@ const { detachedDetailOpen } = useAppState()
       </div>
       <div
         class="vault-detail-slot"
+        data-tour="vault-col-detail"
         :class="{ 'is-detached': detachedDetailOpen }"
       >
         <PasswordDetail />

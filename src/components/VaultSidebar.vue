@@ -15,6 +15,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { textMatchesQuery } from '@/shared/searchMatch'
+import { TOUR_PREPARE_EVENT, type TourPrepareAction } from '@/shared/productTourTypes'
 import type { FilterCategory } from '@/types'
 
 const WIDTH_STORAGE_KEY = 'pwdbook-sidebar-width'
@@ -463,6 +464,18 @@ function toggleTagFilter(): void {
   localStorage.setItem(TAG_FILTER_EXPANDED_STORAGE_KEY, String(tagFilterExpanded.value))
 }
 
+function onTourPrepare(event: Event): void {
+  const action = (event as CustomEvent<{ action: TourPrepareAction }>).detail?.action
+  if (action === 'expand-utilities' && !utilitiesExpanded.value) {
+    utilitiesExpanded.value = true
+    localStorage.setItem(UTILITIES_EXPANDED_STORAGE_KEY, 'true')
+  }
+  if (action === 'expand-tag-filter' && !tagFilterExpanded.value) {
+    tagFilterExpanded.value = true
+    localStorage.setItem(TAG_FILTER_EXPANDED_STORAGE_KEY, 'true')
+  }
+}
+
 watch(sidebarCollapsed, () => {
   nextTick(() => {
     clampSidebarWidth()
@@ -475,6 +488,7 @@ onMounted(() => {
   window.addEventListener('resize', onVaultLayoutResize)
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
+  window.addEventListener(TOUR_PREPARE_EVENT, onTourPrepare)
 })
 
 onBeforeUnmount(() => {
@@ -483,6 +497,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', onVaultLayoutResize)
   document.removeEventListener('click', onDocumentClick)
   document.removeEventListener('keydown', onDocumentKeydown)
+  window.removeEventListener(TOUR_PREPARE_EVENT, onTourPrepare)
 })
 </script>
 
@@ -535,6 +550,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="category-add-btn"
+            data-tour="sidebar-new-category"
             :title="t('category.newCategory')"
             :aria-label="t('category.newCategory')"
             @click="openCreateCategory"
@@ -550,6 +566,7 @@ onBeforeUnmount(() => {
       <nav
         ref="sidebarNavRef"
         class="sidebar-nav"
+        data-tour="sidebar-categories"
       >
         <TransitionGroup
           name="sort"
@@ -594,6 +611,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="utilities-toggle tag-filter-toggle"
+          data-tour="sidebar-tag-filter"
           :aria-expanded="tagFilterExpanded"
           :title="tagFilterExpanded ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
           @click="toggleTagFilter"
@@ -640,7 +658,10 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div class="sidebar-utilities">
+      <div
+        class="sidebar-utilities"
+        data-tour="sidebar-utilities"
+      >
         <button
           type="button"
           class="utilities-toggle"
@@ -681,6 +702,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="nav-item"
+                data-tour="tool-password-gen"
                 :title="t('tools.passwordGenDesc')"
                 @click="openPasswordGen()"
               >
@@ -695,6 +717,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="nav-item"
+                data-tour="tool-password-health"
                 :title="t('tools.passwordHealth.desc')"
                 @click="openPasswordHealth()"
               >
@@ -711,6 +734,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="nav-item"
+                data-tour="tool-trash"
                 @click="openTrash"
               >
                 <IconBadge v-bind="NAV_ICON_STYLES.trash">
@@ -728,6 +752,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="nav-item"
+                data-tour="sidebar-settings"
                 @click="navigateTo('settings')"
               >
                 <IconBadge v-bind="NAV_ICON_STYLES.settings">

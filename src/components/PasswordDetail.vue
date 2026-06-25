@@ -644,6 +644,7 @@ watch(detailCollapsed, () => {
   <aside
     v-if="showPanel"
     class="detail-shell"
+    data-tour="detail-panel"
     :class="{
       detached: props.detached,
       collapsed: !props.detached && detailCollapsed,

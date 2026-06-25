@@ -21,6 +21,8 @@ import TrashView from '@/components/TrashView.vue'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import AnimalBackdrop from '@/components/AnimalBackdrop.vue'
+import ProductTourHubModal from '@/components/tour/ProductTourHubModal.vue'
+import ProductTourOverlay from '@/components/tour/ProductTourOverlay.vue'
 import { initScreenshotBridge } from '@/composables/useScreenshotBridge'
 
 const { t } = useI18n()
@@ -128,6 +130,8 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
         @confirm="confirmScheduledBackup"
       />
       <ToastHost />
+      <ProductTourHubModal />
+      <ProductTourOverlay />
     </div>
   </Cursor>
   <div
@@ -158,6 +162,8 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
       @confirm="confirmScheduledBackup"
     />
     <ToastHost />
+    <ProductTourHubModal />
+    <ProductTourOverlay />
   </div>
 </template>
 
