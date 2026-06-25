@@ -410,109 +410,109 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           :class="{ 'list-item-active': !isCreating && selectedEntryId === entry.id }"
           @contextmenu="handleContextMenu(entry, $event)"
         >
-        <button
-          type="button"
-          class="list-item-main"
-          @click="handleSelect(entry.id)"
-        >
-          <CategoryIconView
-            v-if="entry.displayIcon"
-            :name="entry.displayIcon"
-            :badge-size="36"
-            :size="16"
-          />
-          <div
-            v-else
-            class="avatar"
-            :style="{ background: entry.avatar?.color ?? getAvatarMeta(entry.title).color }"
+          <button
+            type="button"
+            class="list-item-main"
+            @click="handleSelect(entry.id)"
           >
-            {{ entry.avatar?.text ?? getAvatarMeta(entry.title).text }}
-          </div>
-          <div class="meta">
-            <div class="title-row">
-              <span class="entry-title">
-                <SearchHighlightText
-                  v-if="activeSearchQuery"
-                  :text="entry.title"
-                  :query="activeSearchQuery"
-                />
-                <template v-else>{{ entry.title }}</template>
-              </span>
-              <div
-                v-if="entry.tags.length"
-                class="entry-tags"
-              >
-                <span
-                  v-for="(tag, index) in entry.tags"
-                  :key="`${entry.id}-tag-${index}`"
-                  class="tag"
-                >
+            <CategoryIconView
+              v-if="entry.displayIcon"
+              :name="entry.displayIcon"
+              :badge-size="36"
+              :size="16"
+            />
+            <div
+              v-else
+              class="avatar"
+              :style="{ background: entry.avatar?.color ?? getAvatarMeta(entry.title).color }"
+            >
+              {{ entry.avatar?.text ?? getAvatarMeta(entry.title).text }}
+            </div>
+            <div class="meta">
+              <div class="title-row">
+                <span class="entry-title">
                   <SearchHighlightText
                     v-if="activeSearchQuery"
-                    :text="tag"
+                    :text="entry.title"
                     :query="activeSearchQuery"
                   />
-                  <template v-else>{{ tag }}</template>
+                  <template v-else>{{ entry.title }}</template>
                 </span>
+                <div
+                  v-if="entry.tags.length"
+                  class="entry-tags"
+                >
+                  <span
+                    v-for="(tag, index) in entry.tags"
+                    :key="`${entry.id}-tag-${index}`"
+                    class="tag"
+                  >
+                    <SearchHighlightText
+                      v-if="activeSearchQuery"
+                      :text="tag"
+                      :query="activeSearchQuery"
+                    />
+                    <template v-else>{{ tag }}</template>
+                  </span>
+                </div>
+              </div>
+              <div class="meta-secondary">
+                <p class="username">
+                  <SearchHighlightText
+                    v-if="activeSearchQuery && (entry.username || entry.url)"
+                    :text="entry.username || entry.url"
+                    :query="activeSearchQuery"
+                  />
+                  <template v-else>
+                    {{ entry.username || entry.url || t('vault.noAccount') }}
+                  </template>
+                </p>
+                <span
+                  v-if="!isCompactList"
+                  class="time"
+                  :title="entry.lastUsedLabel"
+                >{{ entry.lastUsedLabel }}</span>
               </div>
             </div>
-            <div class="meta-secondary">
-              <p class="username">
-                <SearchHighlightText
-                  v-if="activeSearchQuery && (entry.username || entry.url)"
-                  :text="entry.username || entry.url"
-                  :query="activeSearchQuery"
-                />
-                <template v-else>
-                  {{ entry.username || entry.url || t('vault.noAccount') }}
-                </template>
-              </p>
-              <span
-                v-if="!isCompactList"
-                class="time"
-                :title="entry.lastUsedLabel"
-              >{{ entry.lastUsedLabel }}</span>
-            </div>
-          </div>
-        </button>
+          </button>
 
-        <div class="list-item-side">
-          <span
-            v-if="entry.isFavorite"
-            class="favorite-indicator"
-            :title="t('common.favorite')"
-            :aria-label="t('common.favorite')"
-          >
-            <Star
-              :size="14"
-              :stroke-width="1.5"
-              fill="currentColor"
-            />
-          </span>
-          <div class="action-menu-wrap">
-            <button
-              type="button"
-              class="action-trigger"
-              @click="toggleMenu(entry.id, $event)"
+          <div class="list-item-side">
+            <span
+              v-if="entry.isFavorite"
+              class="favorite-indicator"
+              :title="t('common.favorite')"
+              :aria-label="t('common.favorite')"
             >
-              <MoreHorizontal
-                :size="16"
+              <Star
+                :size="14"
                 :stroke-width="1.5"
+                fill="currentColor"
               />
-            </button>
-            <div
-              v-if="openMenuId === entry.id"
-              class="action-menu menu-popover surface-card"
-              @click.stop
-            >
-              <EntryListMenu
-                :entry="entry"
-                @action="closeMenus"
-                @delete="handleDeleteRequest"
-              />
+            </span>
+            <div class="action-menu-wrap">
+              <button
+                type="button"
+                class="action-trigger"
+                @click="toggleMenu(entry.id, $event)"
+              >
+                <MoreHorizontal
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+              </button>
+              <div
+                v-if="openMenuId === entry.id"
+                class="action-menu menu-popover surface-card"
+                @click.stop
+              >
+                <EntryListMenu
+                  :entry="entry"
+                  @action="closeMenus"
+                  @delete="handleDeleteRequest"
+                />
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </template>
     </div>
@@ -594,6 +594,8 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .search-wrap :deep(.input-field) {
