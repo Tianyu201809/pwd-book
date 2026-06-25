@@ -63,6 +63,7 @@
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
 | `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
+| `launch-at-login:available` | 否 | 是否可注册系统登录项（`app.isPackaged`，**v1.23.0**） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
 | `data:export` | 是 | JSON 结构 `ExportPayload`（**v1.22.0** 含 `attachments`、`version: 2`） |
 | `data:import` | 是 | 批量导入条目（**v1.22.0** 可含附件） |
@@ -140,6 +141,16 @@
 
 主窗口与详情小窗口 `TitleBar.vue` 均调用上述通道；小窗口仍保留 `detail-window:*` 兼容实现。
 
+### 窗口最大化状态（v1.23.0）
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `window:get-maximized` | 否 | 查询 sender 所在窗口是否 `isMaximized()` |
+
+| 事件 | 方向 | 说明 |
+|------|------|------|
+| `window:maximize-changed` | send | 主窗口最大化/还原时广播 `boolean`；`TitleBar` 切换最大化/还原图标 |
+
 ### 窗口（非 IPC handle）
 
 | 事件 | 方向 | 说明 |
@@ -161,6 +172,8 @@
 | `detail-window:opened` | send | **v1.14.0** 小窗口已打开（主窗口收起内联详情位） |
 | `detail-window:closed` | send | **v1.14.0** 小窗口已关闭（主窗口恢复内联详情） |
 | `vault-data:changed` | send | **v1.14.0** 保险库数据变更，各窗口 `refreshVaultData` |
+| `tray:open-settings` | send | **v1.23.0** 托盘菜单「设置」；渲染进程 `openSettingsFromTray()` |
+| `window:maximize-changed` | send | **v1.23.0** 主窗口最大化状态变更（见上表） |
 
 ## 解锁流程
 

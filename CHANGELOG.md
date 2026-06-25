@@ -4,6 +4,28 @@
 
 ## [Unreleased]
 
+## [1.23.0] - 2026-06-25
+
+### 新增
+
+- **托盘设置入口** — 系统托盘右键菜单新增 **设置**；已解锁时直接进入 **设置** 页；锁定态会先打开锁定页，解锁后自动跳转 **设置 → 安全**（`tray:open-settings` / `openSettingsFromTray`）。
+
+### 改进
+
+- **标题栏视觉** — 经典皮肤标题栏使用 `--titlebar-*` 渐变、强调色光晕与内阴影；最大化时按钮切换为 **还原** 叠窗图标（`window:get-maximized` / `window:maximize-changed`）。
+- **开机自动启动（Windows）** — 安装路径含空格时通过 `reg.exe` 写入 `HKCU\...\Run` 并加引号，修复无法随系统登录启动的问题；macOS 等仍用 `app.setLoginItemSettings`。
+- **开发模式提示** — **设置 → 安全 → 开机自动启动** 在开发模式下禁用开关并显示「仅安装版生效」说明（`launch-at-login:available` IPC）。
+
+### 修复
+
+- **数据库损坏** — 启动时若 `pwdbook.db` 非有效 SQLite 文件，自动重命名为 `pwdbook.db.corrupt-{timestamp}` 并创建空库，弹窗提示备份路径与恢复方式；`initDatabase` 失败时不再无提示卡死，改为错误对话框后退出。
+- **搜索框放大镜** — 条目列表搜索前缀图标设为 `pointer-events: none`，避免遮挡输入框点击。
+- **动森标题栏** — Animal Island 皮肤关闭经典渐变伪元素，保留原有半透明底与 2px 底边。
+
+### 文档
+
+- README、CHANGELOG 与 code-map 同步 v1.23.0（损坏库隔离、托盘设置、Windows 开机启动、标题栏与最大化 IPC 等）。
+
 ## [1.22.0] - 2026-06-22
 
 ### 新增

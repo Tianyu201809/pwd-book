@@ -49,6 +49,7 @@ App.vue
 ### TitleBar.vue
 
 - 自定义无边框标题栏：换肤、快速锁定（主窗口）、**置顶图钉**（**v1.20.0** 主窗口与详情小窗口均显示；`getWindowAlwaysOnTop` / `toggleWindowAlwaysOnTop`）、最小化 / 最大化 / 关闭。
+- **v1.23.0**：经典皮肤 `--titlebar-base` / `--titlebar-accent-wash` / `--titlebar-top-shine` 渐变层（`tokens.css`）；动森皮肤在 `animal-skin.css` 关闭伪元素；最大化时显示叠窗 **还原** SVG，订阅 `window:maximize-changed`。
 - `detailWindow` prop 为 true 时：隐藏最大化与快速锁定；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
 - 主窗口按钮顺序：换肤 → 锁定（已解锁时）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
 
@@ -96,7 +97,7 @@ App.vue
 
 列表项右键 / 「⋯」菜单；含 **复制到剪贴板**（`copyEntryData`）、**创建副本**（`duplicateEntry`，标题追加 ` - 副本`）、移动、打开网址/程序等。「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
 
-`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。
+`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。**v1.23.0** 搜索前缀放大镜 `pointer-events: none`，避免遮挡输入框点击。
 
 ## Composables
 
@@ -108,7 +109,8 @@ App.vue
 |-----------|------|
 | `screen` | `'lock' \| 'vault' \| 'settings' \| 'email-backup' \| 'sync' \| 'wifi-sync' \| 'folder-sync' \| 'password-gen' \| 'password-health' \| 'trash'` |
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
-| `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期 |
+| `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期；**v1.23.0** `resolveScreenAfterAuth` 在解锁/恢复后消费 `pendingScreenAfterUnlock` |
+| `openSettingsFromTray` | **v1.23.0** 托盘「设置」：已解锁 → `settings`；锁定 → 设 pending 并显示锁定页 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
 | `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
 | `loadEntries` / `selectEntry` | 列表与选中项；`selectEntry` 同步 `detail-window:select-entry`；**v1.18.0** `selectedEntry` 仅在 `selectedEntryId` 有值时解析，切换分类不自动选中首条 |

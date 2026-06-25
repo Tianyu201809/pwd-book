@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.22.0**（`package.json`）— 条目附件、自定义字段、列表布局切换、SyncBundle v2 等。
+**当前版本：v1.23.0**（`package.json`）— 数据库损坏隔离、托盘设置、Windows 开机启动修复、标题栏与最大化 UI 等。
 
 ## 文档索引
 
@@ -49,7 +49,7 @@
 | 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
 | 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |
-| 改开机自动启动 | `main/launchAtLogin.ts`、`settingsService.ts`、`SettingsView.vue`；`launch_at_login_enabled`（**v1.21.0**） |
+| 改开机自动启动 | `main/launchAtLogin.ts`、`settingsService.ts`、`SettingsView.vue`；`launch_at_login_enabled`（**v1.21.0**；**v1.23.0** Windows `reg.exe` Run 项加引号、`launch-at-login:available`） |
 | 改条目附件 | `attachmentService.ts`、`attachmentSyncService.ts`、`PasswordDetail.vue`；`entry_attachments` 表；`attachments:*` IPC（**v1.22.0**） |
 | 改自定义字段 | `shared/customFields.ts`、`PasswordDetail.vue`、`importNormalize.ts`；`password_entries.custom_fields`（**v1.22.0**） |
 | 改列表布局 | `PasswordList.vue`、`useAppState.ts`；`pwdbook-entry-list-layout`（**v1.22.0**） |
@@ -62,4 +62,7 @@
 | 改文件夹同步 / Sync Hub | [folder-sync.md](./folder-sync.md)、`folderSyncService.ts`、`SyncHubView.vue`、`FolderSyncView.vue` |
 | 改 Wi-Fi 同步冲突 UI | `WifiSyncView.vue`、`FolderSyncView.vue`、`sync/SyncConflictModal.vue`、`shared/syncMerge.ts` |
 | 改托盘文案 / 语言 | `shared/trayLabels.ts`、`main/tray.ts`；`app_settings.ui_locale` |
+| 改托盘打开设置 | `main/tray.ts`（`openSettingsFromTray`）、`useAppState.ts`（`openSettingsFromTray`、`pendingScreenAfterUnlock`）、`App.vue`；`tray:open-settings`（**v1.23.0**） |
+| 改数据库损坏隔离 | `main/db/database.ts`（`isValidSqliteFile`、`quarantineCorruptDatabaseFile`）、`main/index.ts` 启动弹窗（**v1.23.0**） |
+| 改标题栏 / 最大化按钮 | `TitleBar.vue`、`tokens.css`（`--titlebar-*`）；`window:get-maximized` / `window:maximize-changed`（**v1.23.0**） |
 | 改类型定义 | `src/shared/types.ts`、`src/shared/syncTypes.ts`、`src/shared/browserBridgeProtocol.ts` |

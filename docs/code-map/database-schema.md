@@ -4,6 +4,8 @@
 
 初始化：`src/main/db/database.ts` → `initDatabase()`。
 
+**损坏文件隔离（v1.23.0）**：若磁盘上的 `pwdbook.db` 缺少 SQLite 魔数，启动时重命名为同目录 `pwdbook.db.corrupt-{timestamp}` 并创建新空库；原文件保留供手动恢复。初始化抛错时主进程弹窗后退出，避免无响应卡死。
+
 ## 表：password_entries
 
 | 列 | 类型 | 说明 |
@@ -108,6 +110,8 @@
 
 | 路径 | 说明 |
 |------|------|
+| `{userData}/pwdbook.db` | 主 SQLite 库（sql.js 内存 + 刷盘） |
+| `{userData}/pwdbook.db.corrupt-*` | 损坏库备份（v1.23.0 自动隔离） |
 | `{userData}/attachments/{id}.enc` | 条目附件密文（v1.22.0） |
 | `{userData}/native-bridge.json` | Bridge 监听端口与 `token`（`browserFillEnabled` 时生成） |
 | `{userData}/native-host/com.pwdbook.app.json` | Chrome Native Messaging 清单（设置页注册后） |

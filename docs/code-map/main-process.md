@@ -96,17 +96,18 @@
 
 在 `main/index.ts` 的 `app.whenReady()` 中调用 `registerSystemAutoLock()`。
 
-### launchAtLogin（v1.21.0）
+### launchAtLogin（v1.21.0；**v1.23.0** Windows 修复）
 
 `src/main/launchAtLogin.ts` — 系统登录后自动启动。
 
 | 函数 / 行为 | 说明 |
 |-------------|------|
-| `syncLaunchAtLogin(enabled)` | 调用 `app.setLoginItemSettings({ openAtLogin: enabled })` |
-| 生效条件 | `app.isPackaged` 为真；截图模式（`isScreenshotMode()`）跳过 |
+| `isLaunchAtLoginAvailable()` | `app.isPackaged && !isScreenshotMode()`；供设置页禁用开关与提示文案 |
+| `syncLaunchAtLogin(enabled)` | **Windows**：`reg.exe` 写入/删除 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`，值为带引号的 `process.execPath`；**其他平台**：`app.setLoginItemSettings({ openAtLogin, path: process.execPath })` |
+| `formatWindowsLoginCommand(exePath)` | 为含空格路径加引号；路径含 `"` 时抛错（单元测试见 `launchAtLogin.test.ts`） |
 | 触发时机 | `app.whenReady()` 读取 `getSecuritySettings().launchAtLoginEnabled`；`settings:update` 变更该字段时同步 |
 
-设置项：`SecuritySettings.launchAtLoginEnabled`，持久化键 `launch_at_login_enabled`（默认 `false`）。
+设置项：`SecuritySettings.launchAtLoginEnabled`，持久化键 `launch_at_login_enabled`（默认 `false`）。IPC：`launch-at-login:available`。
 
 ### attachmentService / attachmentSyncService（v1.22.0）
 
@@ -150,6 +151,7 @@ SyncBundle 整包 AES-256-GCM；魔数 `PBKS`，版本字节 `1`。
 ### database.ts
 
 - 启动时 `initSqlJs`，WASM 路径：`node_modules/sql.js/dist`
+- **v1.23.0** 损坏检测：读取 `pwdbook.db` 后校验 SQLite 文件头（`SQLite format 3\0`）；无效则 `rename` 为 `pwdbook.db.corrupt-{ISO-timestamp}`，创建空内存库；`consumeQuarantinedDatabasePath()` 供 `main/index.ts` 弹窗提示
 - 建表：`app_settings`、`password_entries`
 - `seedAndMigrateCategories` — 默认分类种子与 legacy 迁移
 - `migrateEntryDisplayIcon` — 运行时 `ALTER TABLE` 添加 `display_icon`
@@ -178,3 +180,9 @@ SyncBundle 整包 AES-256-GCM；魔数 `PBKS`，版本字节 `1`。
 - `contextIsolation: true`，`nodeIntegration: false`
 - 额外 `ipcMain.on`：`window-minimize/maximize/close`、`theme-set-native`
 - **v1.20.0** `ipcMain.handle`：`window:get-always-on-top`、`window:toggle-always-on-top`（`BrowserWindow.fromWebContents(event.sender)`）
+- **v1.23.0** `ipcMain.handle`：`window:get-maximized`；主窗口 `maximize` / `unmaximize` 广播 `window:maximize-changed`；`initDatabase` 后若存在隔离路径则 `dialog.showMessageBox`；`whenReady().catch` 显示启动失败对话框后 `app.quit()`
+
+### tray.ts（**v1.23.0** 设置入口）
+
+- `rebuildTrayMenu()` — 菜单项：显示主窗口、快捷搜索（若启用）、**设置**、退出；文案来自 `shared/trayLabels.ts`（随 `ui_locale` 切换）
+- `openSettingsFromTray()` — `showFromTray()` 后向主窗口发送 `tray:open-settings`；渲染进程 `useAppState.openSettingsFromTray()` 处理（已解锁 → `navigateTo('settings')`；锁定 → `pendingScreenAfterUnlock = 'settings'`）
