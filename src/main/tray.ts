@@ -5,6 +5,7 @@ import { getSetting } from './db/helpers'
 import { getSecuritySettings } from './services/settingsService'
 import { showQuickBar } from './quickBar'
 import { getTrayLabels, UI_LOCALE_SETTING_KEY, type TrayLocale } from '../shared/trayLabels'
+import { IPC_EVENTS } from '../shared/types'
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -71,6 +72,7 @@ export function rebuildTrayMenu(): void {
     ...(quickBarEnabled
       ? [{ label: labels.quickSearch, click: () => showQuickBar() } as Electron.MenuItemConstructorOptions]
       : []),
+    { label: labels.settings, click: () => openSettingsFromTray() },
     { type: 'separator' },
     { label: labels.quit, click: () => requestQuit() },
   ])
@@ -105,6 +107,12 @@ export function showFromTray(): void {
   }
   mainWindow.show()
   mainWindow.focus()
+}
+
+export function openSettingsFromTray(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  showFromTray()
+  mainWindow.webContents.send(IPC_EVENTS.trayOpenSettings)
 }
 
 export function destroyTray(): void {

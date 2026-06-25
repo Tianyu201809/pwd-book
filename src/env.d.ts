@@ -165,6 +165,7 @@ declare global {
       getWindowMaximized?: () => Promise<boolean>
       isLaunchAtLoginAvailable?: () => Promise<boolean>
       onWindowMaximizeChanged?: (handler: (maximized: boolean) => void) => () => void
+      onTrayOpenSettings?: (handler: () => void) => () => void
     }
     __PWD_BOOK_SCREENSHOT_READY__?: boolean
   }

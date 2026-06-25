@@ -47,6 +47,7 @@ import type {
 import type { ExportAttachment } from '@/shared/types'
 
 const screen = ref<AppScreen>('lock')
+const pendingScreenAfterUnlock = ref<AppScreen | null>(null)
 const settingsTab = ref<SettingsTab>('security')
 const vaultStatus = ref<VaultStatus>({
   initialized: false,
@@ -365,7 +366,7 @@ async function unlock(masterPassword: string): Promise<boolean> {
     vaultStatus.value = await vaultApi.unlockVault({ masterPassword })
     await refreshVaultData()
     await loadEmailBackupSettings()
-    screen.value = 'vault'
+    resolveScreenAfterAuth('vault')
     touchActivity()
     return true
   } catch (error) {
@@ -380,9 +381,18 @@ async function refreshVaultStatus(): Promise<void> {
   vaultStatus.value = await vaultApi.getVaultStatus()
 }
 
+function resolveScreenAfterAuth(defaultScreen: AppScreen = 'vault'): void {
+  const pending = pendingScreenAfterUnlock.value
+  pendingScreenAfterUnlock.value = null
+  screen.value = pending ?? defaultScreen
+  if (pending === 'settings') {
+    settingsTab.value = 'security'
+  }
+}
+
 async function enterVault(): Promise<void> {
   await refreshVaultData()
-  screen.value = 'vault'
+  resolveScreenAfterAuth('vault')
   touchActivity()
 }
 
@@ -444,7 +454,7 @@ async function resetMasterPasswordWithRecovery(
       confirmPassword,
     })
     await refreshVaultData()
-    screen.value = 'vault'
+    resolveScreenAfterAuth('vault')
     touchActivity()
     return true
   } catch (error) {
@@ -492,6 +502,15 @@ function navigateTo(next: AppScreen, tab: SettingsTab = 'security'): void {
   screen.value = next
   if (next === 'settings') settingsTab.value = tab
   touchActivity()
+}
+
+function openSettingsFromTray(): void {
+  if (vaultStatus.value.unlocked) {
+    navigateTo('settings')
+    return
+  }
+  pendingScreenAfterUnlock.value = 'settings'
+  screen.value = 'lock'
 }
 
 function openEmailBackup(): void {
@@ -1287,6 +1306,7 @@ export function useAppState() {
     resetMasterPasswordWithRecovery,
     resetVaultFromLock,
     navigateTo,
+    openSettingsFromTray,
     selectCategory,
     toggleTagFilter,
     clearTagFilters,

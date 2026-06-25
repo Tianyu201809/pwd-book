@@ -283,6 +283,11 @@ export const electronAPI = {
     ipcRenderer.on(IPC_EVENTS.windowMaximizeChanged, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.windowMaximizeChanged, listener)
   },
+  onTrayOpenSettings: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.trayOpenSettings, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.trayOpenSettings, listener)
+  },
 
   listAttachments: (entryId: string): Promise<EntryAttachmentMeta[]> =>
     invoke(IPC.attachmentsList, entryId),

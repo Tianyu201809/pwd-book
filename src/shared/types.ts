@@ -400,6 +400,7 @@ export const IPC_EVENTS = {
   detailWindowClosed: 'detail-window:closed',
   vaultDataChanged: 'vault-data:changed',
   windowMaximizeChanged: 'window:maximize-changed',
+  trayOpenSettings: 'tray:open-settings',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [
