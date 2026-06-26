@@ -367,18 +367,17 @@ onUnmounted(() => {
           fill="none"
           aria-hidden="true"
         >
+          <!-- 后层窗口：仅绘制未被前层遮挡的 L 形边，避免交叉处双线 -->
+          <path
+            d="M4.5 3V1.25A0.75 0.75 0 0 1 5.25 0.5H10.25A0.75 0.75 0 0 1 11 1.25V6.25A0.75 0.75 0 0 1 10.25 7H7.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
           <rect
             x="1"
             y="3"
-            width="6.5"
-            height="6.5"
-            rx="0.75"
-            stroke="currentColor"
-            stroke-width="1.5"
-          />
-          <rect
-            x="4.5"
-            y="0.5"
             width="6.5"
             height="6.5"
             rx="0.75"
