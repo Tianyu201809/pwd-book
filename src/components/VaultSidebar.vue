@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Settings, Lock, Sparkles, ChevronDown, Search, Plus, Wrench, Pencil, Trash2, ArchiveRestore, ShieldAlert, Hash } from 'lucide-vue-next'
+import { Search, Plus, Pencil, Trash2, Box, Layers, FolderOpen, Settings, Sparkles, ShieldAlert, Hash, ArchiveRestore } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
-import TagFilterPanel from '@/components/TagFilterPanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
-import IconBadge from '@/components/IconBadge.vue'
-import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 import VaultClock from '@/components/VaultClock.vue'
 import { UiInput } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
@@ -105,16 +102,13 @@ type SidebarCategoryItem = {
 
 const {
   categories,
-  vaultTags,
   selectedCategory,
-  selectedTagFilters,
   selectCategory,
   navigateTo,
   openPasswordGen,
   openPasswordHealth,
   openTrash,
   vaultStatus,
-  lock,
   reorderSidebarCategories,
   deleteCategory,
   loading,
@@ -126,6 +120,9 @@ const { isAnimalIsland } = useTheme()
 
 const categorySearchQuery = ref('')
 const categoryManagePanelRef = ref<InstanceType<typeof CategoryManagePanel> | null>(null)
+const tagManagePanelRef = ref<InstanceType<typeof TagManagePanel> | null>(null)
+const showToolboxMenu = ref(false)
+const showManageMenu = ref(false)
 const sidebarNavRef = ref<HTMLElement | null>(null)
 const dragFromIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
@@ -139,8 +136,6 @@ const contextMenuRef = ref<HTMLElement | null>(null)
 const BODY_DRAG_CLASS = 'category-drag-active'
 const DRAG_ACTIVATION_PX = 15
 const VIEWPORT_MENU_PADDING = 8
-const UTILITIES_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-utilities-expanded'
-const TAG_FILTER_EXPANDED_STORAGE_KEY = 'pwdbook-sidebar-tag-filter-expanded'
 
 const sidebarCollapsed = ref(readSidebarCollapsed())
 const panelWidth = ref(loadSidebarWidth())
@@ -263,26 +258,76 @@ async function confirmContextDelete(): Promise<void> {
   }
 }
 
+function closeFooterMenus(): void {
+  showToolboxMenu.value = false
+  showManageMenu.value = false
+}
+
+function toggleToolboxMenu(event: MouseEvent): void {
+  event.stopPropagation()
+  showManageMenu.value = false
+  showToolboxMenu.value = !showToolboxMenu.value
+}
+
+function toggleManageMenu(event: MouseEvent): void {
+  event.stopPropagation()
+  showToolboxMenu.value = false
+  showManageMenu.value = !showManageMenu.value
+}
+
+function openCategoryManage(): void {
+  closeFooterMenus()
+  categoryManagePanelRef.value?.openManageDialog()
+}
+
+function openTagManage(): void {
+  closeFooterMenus()
+  tagManagePanelRef.value?.openManageDialog()
+}
+
+function handleToolPasswordGen(): void {
+  closeFooterMenus()
+  openPasswordGen()
+}
+
+function handleToolPasswordHealth(): void {
+  closeFooterMenus()
+  openPasswordHealth()
+}
+
+function handleToolTrash(): void {
+  closeFooterMenus()
+  openTrash()
+}
+
+function openSettings(): void {
+  closeFooterMenus()
+  navigateTo('settings')
+}
+
+function onTourPrepare(event: Event): void {
+  const action = (event as CustomEvent<{ action: TourPrepareAction }>).detail?.action
+  if (action === 'expand-utilities') {
+    showManageMenu.value = false
+    showToolboxMenu.value = true
+  }
+}
+
 function onDocumentClick(): void {
   closeContextMenu()
+  closeFooterMenus()
 }
 
 function onDocumentKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') closeContextMenu()
+  if (event.key === 'Escape') {
+    closeContextMenu()
+    closeFooterMenus()
+  }
 }
 
-function readUtilitiesExpanded(): boolean {
-  const stored = localStorage.getItem(UTILITIES_EXPANDED_STORAGE_KEY)
-  return stored === null ? false : stored === 'true'
+function openCreateCategory(): void {
+  categoryManagePanelRef.value?.openCreateDialog()
 }
-
-function readTagFilterExpanded(): boolean {
-  const stored = localStorage.getItem(TAG_FILTER_EXPANDED_STORAGE_KEY)
-  return stored === null ? false : stored === 'true'
-}
-
-const utilitiesExpanded = ref(readUtilitiesExpanded())
-const tagFilterExpanded = ref(readTagFilterExpanded())
 
 const isDragging = computed(() => dragFromIndex.value !== null && dragMoved.value)
 
@@ -450,32 +495,6 @@ function onNavClick(categoryId: FilterCategory, event: MouseEvent): void {
   selectCategory(categoryId)
 }
 
-function openCreateCategory(): void {
-  categoryManagePanelRef.value?.openCreateDialog()
-}
-
-function toggleUtilities(): void {
-  utilitiesExpanded.value = !utilitiesExpanded.value
-  localStorage.setItem(UTILITIES_EXPANDED_STORAGE_KEY, String(utilitiesExpanded.value))
-}
-
-function toggleTagFilter(): void {
-  tagFilterExpanded.value = !tagFilterExpanded.value
-  localStorage.setItem(TAG_FILTER_EXPANDED_STORAGE_KEY, String(tagFilterExpanded.value))
-}
-
-function onTourPrepare(event: Event): void {
-  const action = (event as CustomEvent<{ action: TourPrepareAction }>).detail?.action
-  if (action === 'expand-utilities' && !utilitiesExpanded.value) {
-    utilitiesExpanded.value = true
-    localStorage.setItem(UTILITIES_EXPANDED_STORAGE_KEY, 'true')
-  }
-  if (action === 'expand-tag-filter' && !tagFilterExpanded.value) {
-    tagFilterExpanded.value = true
-    localStorage.setItem(TAG_FILTER_EXPANDED_STORAGE_KEY, 'true')
-  }
-}
-
 watch(sidebarCollapsed, () => {
   nextTick(() => {
     clampSidebarWidth()
@@ -604,182 +623,153 @@ onBeforeUnmount(() => {
         </TransitionGroup>
       </nav>
 
-      <div
-        v-if="vaultTags.length"
-        class="sidebar-tags"
-      >
-        <button
-          type="button"
-          class="utilities-toggle tag-filter-toggle"
-          data-tour="sidebar-tag-filter"
-          :aria-expanded="tagFilterExpanded"
-          :title="tagFilterExpanded ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
-          @click="toggleTagFilter"
-        >
-          <span class="utilities-toggle-leading">
-            <span
-              class="utilities-toggle-icon-wrap"
-              aria-hidden="true"
-            >
-              <Hash
-                class="utilities-toggle-icon"
-                :size="15"
-                :stroke-width="1.5"
-              />
-            </span>
-            <span class="utilities-toggle-label">
-              {{ t('vault.tagFilterTitle') }}
-              <span
-                v-if="selectedTagFilters.length"
-                class="tag-filter-active-badge"
-              >
-                {{ selectedTagFilters.length }}
-              </span>
-            </span>
-          </span>
-          <ChevronDown
-            class="utilities-chevron"
-            :class="{ open: tagFilterExpanded }"
-            :size="14"
-            :stroke-width="1.5"
-          />
-        </button>
-
-        <div
-          class="utilities-collapse"
-          :class="{ 'utilities-collapse--open': tagFilterExpanded }"
-        >
-          <div
-            class="utilities-body tag-filter-body"
-            :inert="!tagFilterExpanded || undefined"
-          >
-            <TagFilterPanel />
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="sidebar-utilities"
+      <footer
+        class="sidebar-footer"
         data-tour="sidebar-utilities"
       >
-        <button
-          type="button"
-          class="utilities-toggle"
-          :aria-expanded="utilitiesExpanded"
-          :title="utilitiesExpanded ? t('vault.collapseUtilities') : t('vault.expandUtilities')"
-          @click="toggleUtilities"
-        >
-          <span class="utilities-toggle-leading">
-            <span
-              class="utilities-toggle-icon-wrap"
-              aria-hidden="true"
+        <div class="sidebar-footer-rail">
+          <div class="sidebar-footer-slot">
+            <button
+              type="button"
+              class="sidebar-icon-btn sidebar-icon-btn--toolbox"
+              :class="{ 'sidebar-icon-btn--active': showToolboxMenu }"
+              :data-tip="t('tools.toolbox')"
+              :aria-label="t('tools.toolbox')"
+              :aria-expanded="showToolboxMenu"
+              @click="toggleToolboxMenu"
             >
-              <Wrench
-                class="utilities-toggle-icon"
-                :size="15"
-                :stroke-width="1.5"
+              <Box
+                :size="16"
+                :stroke-width="1.75"
               />
-            </span>
-            <span class="utilities-toggle-label">{{ t('tools.sectionLabel') }}</span>
-          </span>
-          <ChevronDown
-            class="utilities-chevron"
-            :class="{ open: utilitiesExpanded }"
-            :size="14"
-            :stroke-width="1.5"
-          />
-        </button>
-
-        <div
-          class="utilities-collapse"
-          :class="{ 'utilities-collapse--open': utilitiesExpanded }"
-        >
-          <div
-            class="utilities-body"
-            :inert="!utilitiesExpanded || undefined"
-          >
-            <div class="sidebar-bottom">
-              <button
-                type="button"
-                class="nav-item"
-                data-tour="tool-password-gen"
-                :title="t('tools.passwordGenDesc')"
-                @click="openPasswordGen()"
+            </button>
+            <Transition name="sidebar-footer-popover">
+              <div
+                v-if="showToolboxMenu"
+                class="sidebar-footer-popover sidebar-footer-popover--menu"
+                @click.stop
               >
-                <IconBadge v-bind="NAV_ICON_STYLES.passwordGen">
+                <button
+                  type="button"
+                  class="sidebar-menu-item sidebar-menu-item--gen"
+                  data-tour="tool-password-gen"
+                  @click="handleToolPasswordGen"
+                >
                   <Sparkles
                     :size="14"
-                    :stroke-width="1.5"
+                    :stroke-width="1.75"
                   />
-                </IconBadge>
-                {{ t('tools.passwordGenTitle') }}
-              </button>
-              <button
-                type="button"
-                class="nav-item"
-                data-tour="tool-password-health"
-                :title="t('tools.passwordHealth.desc')"
-                @click="openPasswordHealth()"
-              >
-                <IconBadge v-bind="NAV_ICON_STYLES.shield">
+                  <span class="sidebar-menu-item-label">{{ t('tools.passwordGenTitle') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="sidebar-menu-item sidebar-menu-item--health"
+                  data-tour="tool-password-health"
+                  @click="handleToolPasswordHealth"
+                >
                   <ShieldAlert
                     :size="14"
-                    :stroke-width="1.5"
+                    :stroke-width="1.75"
                   />
-                </IconBadge>
-                {{ t('tools.passwordHealth.title') }}
-              </button>
-              <CategoryManagePanel ref="categoryManagePanelRef" />
-              <TagManagePanel />
-              <button
-                type="button"
-                class="nav-item"
-                data-tour="tool-trash"
-                @click="openTrash"
+                  <span class="sidebar-menu-item-label">{{ t('tools.passwordHealth.title') }}</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+          <div class="sidebar-footer-slot">
+            <button
+              type="button"
+              class="sidebar-icon-btn sidebar-icon-btn--manage"
+              :class="{ 'sidebar-icon-btn--active': showManageMenu }"
+              :data-tip="t('tools.manageGroup')"
+              :aria-label="t('tools.manageGroup')"
+              :aria-expanded="showManageMenu"
+              @click="toggleManageMenu"
+            >
+              <Layers
+                :size="16"
+                :stroke-width="1.75"
+              />
+            </button>
+            <Transition name="sidebar-footer-popover">
+              <div
+                v-if="showManageMenu"
+                class="sidebar-footer-popover sidebar-footer-popover--menu"
+                @click.stop
               >
-                <IconBadge v-bind="NAV_ICON_STYLES.trash">
-                  <ArchiveRestore
+                <button
+                  type="button"
+                  class="sidebar-menu-item sidebar-menu-item--category"
+                  @click="openCategoryManage"
+                >
+                  <FolderOpen
                     :size="14"
-                    :stroke-width="1.5"
+                    :stroke-width="1.75"
                   />
-                </IconBadge>
-                {{ t('vault.trash') }}
-                <span
-                  v-if="vaultStatus.trashCount > 0"
-                  class="nav-badge"
-                >{{ vaultStatus.trashCount }}</span>
-              </button>
-              <button
-                type="button"
-                class="nav-item"
-                data-tour="sidebar-settings"
-                @click="navigateTo('settings')"
-              >
-                <IconBadge v-bind="NAV_ICON_STYLES.settings">
-                  <Settings
+                  <span class="sidebar-menu-item-label">{{ t('category.manage') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="sidebar-menu-item sidebar-menu-item--tag"
+                  @click="openTagManage"
+                >
+                  <Hash
                     :size="14"
-                    :stroke-width="1.5"
+                    :stroke-width="1.75"
                   />
-                </IconBadge>
-                {{ t('vault.settings') }}
-              </button>
-              <button
-                type="button"
-                class="nav-item lock-btn"
-                @click="lock"
-              >
-                <IconBadge v-bind="NAV_ICON_STYLES.lock">
-                  <Lock
-                    :size="14"
-                    :stroke-width="1.5"
-                  />
-                </IconBadge>
-                {{ t('vault.lock') }}
-              </button>
-            </div>
+                  <span class="sidebar-menu-item-label">{{ t('tag.manage') }}</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+          <div class="sidebar-footer-slot">
+            <button
+              type="button"
+              class="sidebar-icon-btn sidebar-icon-btn--trash"
+              :data-tip="t('vault.trash')"
+              :aria-label="t('vault.trash')"
+              data-tour="tool-trash"
+              @click="handleToolTrash"
+            >
+              <ArchiveRestore
+                :size="16"
+                :stroke-width="1.75"
+              />
+              <span
+                v-if="vaultStatus.trashCount > 0"
+                class="sidebar-icon-btn-badge"
+              >{{ vaultStatus.trashCount > 99 ? '99+' : vaultStatus.trashCount }}</span>
+            </button>
+          </div>
+
+          <div class="sidebar-footer-slot">
+            <button
+              type="button"
+              class="sidebar-icon-btn sidebar-icon-btn--settings"
+              :data-tip="t('vault.settings')"
+              :aria-label="t('titlebar.openSettings')"
+              data-tour="sidebar-settings"
+              @click="openSettings"
+            >
+              <Settings
+                :size="16"
+                :stroke-width="1.75"
+              />
+            </button>
           </div>
         </div>
-      </div>
+      </footer>
+
+      <CategoryManagePanel
+        ref="categoryManagePanelRef"
+        :show-trigger="false"
+      />
+      <TagManagePanel
+        ref="tagManagePanelRef"
+        :show-trigger="false"
+      />
     </div>
 
     <PanelEdge
@@ -903,6 +893,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-top {
+  flex-shrink: 0;
   padding: 10px 12px 4px;
 }
 
@@ -956,153 +947,14 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-nav {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
-  padding: 0 12px;
+  padding: 0 12px 12px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   user-select: none;
   -webkit-user-select: none;
-}
-
-.sidebar-top,
-.sidebar-utilities {
-  flex-shrink: 0;
-}
-
-.sidebar-tags {
-  flex-shrink: 0;
-  position: relative;
-  z-index: 2;
-  border-top: 1px solid var(--border-default);
-}
-
-.tag-filter-body {
-  padding: 0 12px;
-  overflow: hidden;
-}
-
-.utilities-collapse--open .tag-filter-body {
-  padding-bottom: 10px;
-  overflow: visible;
-}
-
-.tag-filter-active-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  margin-left: 6px;
-  padding: 0 4px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--text-on-accent, #fff);
-  background: var(--accent-primary);
-  vertical-align: middle;
-}
-
-.sidebar-utilities {
-  border-top: 1px solid var(--border-default);
-}
-
-.utilities-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 12px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.15s, background-color 0.15s;
-}
-
-.utilities-toggle:hover {
-  color: var(--text-secondary);
-  background: var(--bg-hover);
-}
-
-.utilities-toggle-label {
-  margin: 0;
-  padding: 0;
-  line-height: 1.2;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.utilities-toggle-leading {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.utilities-toggle-icon-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-}
-
-.utilities-toggle-icon {
-  display: block;
-  flex-shrink: 0;
-  color: var(--text-muted);
-  transition: color 0.15s;
-}
-
-.utilities-toggle:hover .utilities-toggle-label,
-.utilities-toggle:hover .utilities-toggle-icon {
-  color: var(--text-secondary);
-}
-
-.utilities-chevron {
-  flex-shrink: 0;
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.utilities-chevron.open {
-  transform: rotate(180deg);
-}
-
-.utilities-collapse {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.utilities-collapse--open {
-  grid-template-rows: 1fr;
-}
-
-.utilities-body {
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.22s ease;
-}
-
-.utilities-collapse--open .utilities-body {
-  opacity: 1;
-  transition: opacity 0.28s ease 0.06s;
-}
-
-.sidebar--animal .utilities-toggle {
-  padding: 8px 12px 6px;
 }
 
 .sort-list {
@@ -1163,27 +1015,222 @@ onBeforeUnmount(() => {
   color: var(--accent-primary);
 }
 
-.sidebar-bottom {
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--border-default);
+.sidebar-footer {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 4;
+  padding: 6px 12px 8px;
+  border-top: 1px solid color-mix(in srgb, var(--accent-primary) 16%, var(--border-default));
+  background: color-mix(in srgb, var(--accent-subtle) 25%, var(--bg-surface));
 }
 
-.nav-badge {
-  margin-left: auto;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--accent-subtle);
-  color: var(--accent-primary);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 18px;
+.sidebar-footer-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.sidebar-footer-slot {
+  position: relative;
+  min-width: 0;
+  display: flex;
+}
+
+.sidebar-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.sidebar-icon-btn:hover {
+  background: color-mix(in srgb, var(--accent-muted) 40%, var(--bg-hover));
+}
+
+.sidebar-icon-btn:active {
+  transform: scale(0.94);
+}
+
+.sidebar-icon-btn--active {
+  background: color-mix(in srgb, var(--accent-muted) 55%, transparent);
+}
+
+.sidebar-icon-btn--toolbox {
+  color: #7c3aed;
+}
+
+.sidebar-icon-btn--manage {
+  color: #0d9488;
+}
+
+.sidebar-icon-btn--category {
+  color: #0891b2;
+}
+
+.sidebar-icon-btn--tag {
+  color: #ea580c;
+}
+
+.sidebar-icon-btn--gen {
+  color: #ca8a04;
+}
+
+.sidebar-icon-btn--health {
+  color: #059669;
+}
+
+.sidebar-icon-btn--trash {
+  color: #dc2626;
+}
+
+.sidebar-icon-btn--settings {
+  color: #64748b;
+}
+
+.sidebar-icon-btn-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 99px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
   text-align: center;
+  color: #fff;
+  background: #dc2626;
+  box-shadow: 0 0 0 1.5px var(--bg-surface);
+  pointer-events: none;
 }
 
-.lock-btn:hover {
-  color: var(--status-danger);
+.sidebar-icon-btn[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 30;
+  max-width: 120px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+}
+
+.sidebar-icon-btn[data-tip]:hover::after,
+.sidebar-icon-btn[data-tip]:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.sidebar-footer-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 25;
+  min-width: 100%;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.05),
+    0 10px 24px rgba(15, 23, 42, 0.1);
+}
+
+.sidebar-footer-popover--menu {
+  width: max(100%, 168px);
+}
+
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.sidebar-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+.sidebar-menu-item-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.sidebar-menu-item--gen {
+  color: #ca8a04;
+}
+
+.sidebar-menu-item--health {
+  color: #059669;
+}
+
+.sidebar-menu-item--category {
+  color: #0891b2;
+}
+
+.sidebar-menu-item--tag {
+  color: #ea580c;
+}
+
+.sidebar-footer-popover-enter-active,
+.sidebar-footer-popover-leave-active {
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+}
+
+.sidebar-footer-popover-enter-from,
+.sidebar-footer-popover-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.sidebar--animal .sidebar-footer {
+  padding: 6px 10px 8px;
+}
+
+.sidebar--animal .sidebar-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
 }
 
 .category-context-menu {

@@ -243,7 +243,6 @@ export const PRODUCT_TOURS: ProductTourDefinition[] = [
         bodyKey: 'productTour.steps.settings.open.body',
         placement: 'right',
         screen: 'vault',
-        prepare: ['expand-utilities'],
       },
       {
         id: 'nav',

@@ -3,6 +3,12 @@ export type NavIconStyle = {
   bg: string
 }
 
+/** Theme-aware badge; resolves via CSS variables for classic / animal skins */
+export const THEME_ACCENT_BADGE: NavIconStyle = {
+  color: 'var(--accent-primary)',
+  bg: 'var(--accent-muted)',
+}
+
 /** Pastel badge colors aligned with categoryIcons palette */
 export const NAV_ICON_STYLES = {
   layers: { color: '#0d9488', bg: 'rgba(13, 148, 136, 0.14)' },

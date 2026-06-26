@@ -180,7 +180,7 @@ function onTagRowClick(name: string): void {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: min(200px, 32vh);
+  max-height: min(220px, 40vh);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;

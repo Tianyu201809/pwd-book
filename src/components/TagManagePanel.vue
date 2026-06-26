@@ -8,6 +8,15 @@ import { UiInput, UiButton } from '@/components/ui'
 import IconBadge from '@/components/IconBadge.vue'
 import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 
+const props = withDefaults(
+  defineProps<{
+    showTrigger?: boolean
+  }>(),
+  {
+    showTrigger: true,
+  },
+)
+
 const { vaultTags, createTag, updateTag, deleteTag, loading, errorMessage, clearError } = useAppState()
 
 const { t } = useI18n()
@@ -130,10 +139,15 @@ async function confirmDelete(tag: { name: string; entryCount: number }): Promise
     localError.value = errorMessage.value
   }
 }
+
+defineExpose({
+  openManageDialog,
+})
 </script>
 
 <template>
   <button
+    v-if="props.showTrigger"
     type="button"
     class="nav-item manage-trigger"
     @click="openManageDialog"

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star, LayoutList, LayoutGrid } from 'lucide-vue-next'
+import { Search, SlidersHorizontal, MoreHorizontal, Check, Plus, Star, LayoutList, LayoutGrid, Hash } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import EntryListMenu from '@/components/EntryListMenu.vue'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
+import TagFilterPanel from '@/components/TagFilterPanel.vue'
 import { UiInput, UiButton, UiModal } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { getAvatarMeta } from '@/shared/utils'
+import { TOUR_PREPARE_EVENT, type TourPrepareAction } from '@/shared/productTourTypes'
 import type { ListLayoutMode, ListSortOrder, PasswordEntry } from '@/types'
 
 const {
@@ -24,6 +26,8 @@ const {
   touchActivity,
   startCreateEntry,
   removeEntry,
+  vaultTags,
+  selectedTagFilters,
 } = useAppState()
 
 const { t } = useI18n()
@@ -39,6 +43,7 @@ const activeSearchQuery = computed(() => searchQuery.value.trim())
 
 const openMenuId = ref<string | null>(null)
 const showSortMenu = ref(false)
+const showTagFilterMenu = ref(false)
 const contextMenu = ref<{ entry: PasswordEntry; x: number; y: number } | null>(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
 const listPanelRef = ref<HTMLElement | null>(null)
@@ -54,6 +59,7 @@ let listResizeObserver: ResizeObserver | null = null
 function toggleMenu(id: string, event: MouseEvent): void {
   event.stopPropagation()
   showSortMenu.value = false
+  showTagFilterMenu.value = false
   contextMenu.value = null
   openMenuId.value = openMenuId.value === id ? null : id
 }
@@ -62,13 +68,31 @@ function toggleSortMenu(event: MouseEvent): void {
   event.stopPropagation()
   openMenuId.value = null
   contextMenu.value = null
+  showTagFilterMenu.value = false
   showSortMenu.value = !showSortMenu.value
+}
+
+function toggleTagFilterMenu(event: MouseEvent): void {
+  event.stopPropagation()
+  openMenuId.value = null
+  contextMenu.value = null
+  showSortMenu.value = false
+  showTagFilterMenu.value = !showTagFilterMenu.value
 }
 
 function closeMenus(): void {
   openMenuId.value = null
   showSortMenu.value = false
+  showTagFilterMenu.value = false
   contextMenu.value = null
+}
+
+function onTourPrepare(event: Event): void {
+  const action = (event as CustomEvent<{ action: TourPrepareAction }>).detail?.action
+  if (action === 'expand-tag-filter') {
+    showSortMenu.value = false
+    showTagFilterMenu.value = true
+  }
 }
 
 function handleDeleteRequest(entry: PasswordEntry): void {
@@ -104,6 +128,7 @@ function updateCompactList(width: number): void {
 onMounted(() => {
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onKeydown)
+  window.addEventListener(TOUR_PREPARE_EVENT, onTourPrepare)
 
   listResizeObserver = new ResizeObserver((entries) => {
     const width = entries[0]?.contentRect.width ?? 0
@@ -118,6 +143,7 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
   document.removeEventListener('keydown', onKeydown)
+  window.removeEventListener(TOUR_PREPARE_EVENT, onTourPrepare)
   listResizeObserver?.disconnect()
   listResizeObserver = null
 })
@@ -169,6 +195,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   event.stopPropagation()
   openMenuId.value = null
   showSortMenu.value = false
+  showTagFilterMenu.value = false
   selectEntry(entry.id)
   contextMenu.value = {
     entry,
@@ -240,6 +267,48 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
         class="list-toolbar-actions"
         data-tour="list-actions"
       >
+        <div
+          v-if="vaultTags.length"
+          class="toolbar-popover-wrap"
+        >
+          <UiButton
+            :variant="isAnimalIsland ? 'primary' : 'ghost'"
+            class="vault-filter-btn toolbar-icon-btn"
+            :class="{
+              'filter-btn': !isAnimalIsland,
+              active: showTagFilterMenu && !isAnimalIsland,
+              'vault-filter-btn--active': showTagFilterMenu && isAnimalIsland,
+              'toolbar-icon-btn--filtered': selectedTagFilters.length > 0,
+            }"
+            data-tour="sidebar-tag-filter"
+            :title="showTagFilterMenu ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
+            :aria-label="t('vault.tagFilterTitle')"
+            :aria-expanded="showTagFilterMenu"
+            @click="toggleTagFilterMenu"
+          >
+            <template #icon>
+              <Hash
+                :size="16"
+                :stroke-width="1.5"
+              />
+            </template>
+            <span
+              v-if="selectedTagFilters.length"
+              class="toolbar-icon-badge"
+            >{{ selectedTagFilters.length }}</span>
+          </UiButton>
+          <div
+            v-if="showTagFilterMenu"
+            class="toolbar-popover toolbar-popover--tag surface-card"
+            @click.stop
+          >
+            <p class="toolbar-popover-title">
+              {{ t('vault.tagFilterTitle') }}
+            </p>
+            <TagFilterPanel />
+          </div>
+        </div>
+
         <div class="sort-menu-wrap">
           <UiButton
             :variant="isAnimalIsland ? 'primary' : 'ghost'"
@@ -689,6 +758,64 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
 
 .sort-menu-item.active {
   color: var(--accent-primary);
+}
+
+.toolbar-popover-wrap {
+  position: relative;
+}
+
+.toolbar-icon-btn {
+  position: relative;
+}
+
+.toolbar-icon-btn--filtered:not(.active):not(.vault-filter-btn--active) {
+  color: var(--accent-primary);
+}
+
+.toolbar-icon-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 99px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-on-accent, #fff);
+  background: var(--accent-primary);
+  pointer-events: none;
+}
+
+.toolbar-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  padding: 10px;
+  border-radius: var(--radius-lg, 12px);
+}
+
+.toolbar-popover--tag {
+  width: min(280px, calc(100vw - 48px));
+  max-height: min(360px, 52vh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.toolbar-popover-title {
+  margin: 0 0 8px;
+  padding: 2px 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .list-scroll {

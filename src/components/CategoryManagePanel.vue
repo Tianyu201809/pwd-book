@@ -19,6 +19,15 @@ import IconPickerModal from '@/components/IconPickerModal.vue'
 import { UiInput, UiButton } from '@/components/ui'
 import { textMatchesQuery } from '@/shared/searchMatch'
 
+const props = withDefaults(
+  defineProps<{
+    showTrigger?: boolean
+  }>(),
+  {
+    showTrigger: true,
+  },
+)
+
 const { createCategory, updateCategory, deleteCategory, customCategories, loading, errorMessage, clearError } =
   useAppState()
 
@@ -230,6 +239,7 @@ defineExpose({
 
 <template>
   <button
+    v-if="props.showTrigger"
     type="button"
     class="nav-item manage-trigger"
     @click="openManageDialog"
