@@ -186,8 +186,7 @@ async function submitCategory(): Promise<void> {
     icon: selectedIcon.value,
   })
   if (ok) {
-    dialogMode.value = 'list'
-    categoryName.value = ''
+    closeManageDialog()
     return
   }
   localError.value = errorMessage.value

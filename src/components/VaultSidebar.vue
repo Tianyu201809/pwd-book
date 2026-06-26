@@ -7,7 +7,7 @@ import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import VaultClock from '@/components/VaultClock.vue'
-import { UiInput } from '@/components/ui'
+import { UiButton, UiInput, UiModal } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
@@ -131,8 +131,15 @@ const dragMoved = ref(false)
 const suppressNextClick = ref(false)
 const activePointerId = ref<number | null>(null)
 const dragStartPoint = ref<{ x: number; y: number } | null>(null)
-const contextMenu = ref<{ category: SidebarCategoryItem; x: number; y: number; confirmDelete: boolean } | null>(null)
+const contextMenu = ref<{ category: SidebarCategoryItem; x: number; y: number } | null>(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
+const deleteConfirmCategory = ref<SidebarCategoryItem | null>(null)
+const showDeleteConfirm = computed({
+  get: () => deleteConfirmCategory.value !== null,
+  set: (open: boolean) => {
+    if (!open) deleteConfirmCategory.value = null
+  },
+})
 const BODY_DRAG_CLASS = 'category-drag-active'
 const DRAG_ACTIVATION_PX = 15
 const VIEWPORT_MENU_PADDING = 8
@@ -223,7 +230,6 @@ function handleCategoryContextMenu(category: SidebarCategoryItem, event: MouseEv
     category,
     x: event.clientX,
     y: event.clientY,
-    confirmDelete: false,
   }
   nextTick(adjustContextMenuPosition)
 }
@@ -238,20 +244,19 @@ function handleEditCategory(): void {
 
 function startContextDelete(): void {
   if (!contextMenu.value || contextMenu.value.category.count > 0) return
-  contextMenu.value = { ...contextMenu.value, confirmDelete: true }
-  nextTick(adjustContextMenuPosition)
+  deleteConfirmCategory.value = contextMenu.value.category
+  closeContextMenu()
 }
 
-function cancelContextDelete(): void {
-  if (!contextMenu.value) return
-  contextMenu.value = { ...contextMenu.value, confirmDelete: false }
+function cancelDeleteConfirm(): void {
+  deleteConfirmCategory.value = null
 }
 
-async function confirmContextDelete(): Promise<void> {
-  const category = contextMenu.value?.category
+async function confirmDeleteCategory(): Promise<void> {
+  const category = deleteConfirmCategory.value
   if (!category || category.count > 0) return
 
-  closeContextMenu()
+  cancelDeleteConfirm()
   const ok = await deleteCategory(category.id)
   if (!ok) {
     showToast(errorMessage.value || t('errors.cannot_delete_category', { name: category.label }), 'error')
@@ -807,61 +812,66 @@ onBeforeUnmount(() => {
       :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
       @click.stop
     >
-      <template v-if="!contextMenu.confirmDelete">
-        <button
-          type="button"
-          class="context-menu-item"
-          @click="handleEditCategory"
-        >
-          <Pencil
-            :size="14"
-            :stroke-width="1.5"
-          />
-          {{ t('common.edit') }}
-        </button>
-        <button
-          type="button"
-          class="context-menu-item context-menu-item--danger"
-          :class="{ 'context-menu-item--disabled': contextMenu.category.count > 0 }"
-          :disabled="contextMenu.category.count > 0"
-          :title="
-            contextMenu.category.count > 0
-              ? t('category.hasEntriesHint', { count: contextMenu.category.count })
-              : t('category.deleteCategory')
-          "
-          @click="startContextDelete"
-        >
-          <Trash2
-            :size="14"
-            :stroke-width="1.5"
-          />
-          {{ t('common.delete') }}
-        </button>
-      </template>
-      <template v-else>
-        <p class="context-menu-confirm">
-          {{ t('category.deleteConfirm', { name: contextMenu.category.label }) }}
-        </p>
-        <div class="context-menu-confirm-actions">
-          <button
-            type="button"
-            class="context-menu-item"
-            @click="cancelContextDelete"
-          >
-            {{ t('common.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="context-menu-item context-menu-item--danger"
-            :disabled="loading"
-            @click="confirmContextDelete"
-          >
-            {{ t('common.delete') }}
-          </button>
-        </div>
-      </template>
+      <button
+        type="button"
+        class="context-menu-item"
+        @click="handleEditCategory"
+      >
+        <Pencil
+          :size="14"
+          :stroke-width="1.5"
+        />
+        {{ t('common.edit') }}
+      </button>
+      <button
+        type="button"
+        class="context-menu-item context-menu-item--danger"
+        :class="{ 'context-menu-item--disabled': contextMenu.category.count > 0 }"
+        :disabled="contextMenu.category.count > 0"
+        :title="
+          contextMenu.category.count > 0
+            ? t('category.hasEntriesHint', { count: contextMenu.category.count })
+            : t('category.deleteCategory')
+        "
+        @click="startContextDelete"
+      >
+        <Trash2
+          :size="14"
+          :stroke-width="1.5"
+        />
+        {{ t('common.delete') }}
+      </button>
     </div>
   </Teleport>
+
+  <UiModal
+    v-model:open="showDeleteConfirm"
+    :title="t('category.deleteCategory')"
+    :width="400"
+    :show-footer="false"
+    @close="cancelDeleteConfirm"
+  >
+    <p class="confirm-modal-body delete-confirm-text">
+      {{ t('category.deleteConfirm', { name: deleteConfirmCategory?.label ?? '' }) }}
+    </p>
+    <template #footer>
+      <div class="confirm-modal-actions">
+        <UiButton
+          variant="default"
+          @click="cancelDeleteConfirm"
+        >
+          {{ t('common.cancel') }}
+        </UiButton>
+        <UiButton
+          variant="danger"
+          :loading="loading"
+          @click="confirmDeleteCategory"
+        >
+          {{ t('common.delete') }}
+        </UiButton>
+      </div>
+    </template>
+  </UiModal>
 </template>
 
 <style scoped>
@@ -1289,22 +1299,23 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-.context-menu-confirm {
+.delete-confirm-text {
   margin: 0;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--status-danger);
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
 }
 
-.context-menu-confirm-actions {
+.confirm-modal-actions {
   display: flex;
-  gap: 4px;
-  padding: 0 4px 4px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
-.context-menu-confirm-actions .context-menu-item {
-  flex: 1;
-  justify-content: center;
+.confirm-modal-actions :deep(.ui-classic-btn) {
+  min-width: 96px;
+  padding: 10px 22px;
 }
 </style>

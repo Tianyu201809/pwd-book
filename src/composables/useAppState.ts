@@ -990,6 +990,7 @@ async function createCategory(input: CategoryInput): Promise<boolean> {
     await refreshVaultData()
     selectedCategory.value = created.id
     touchActivity()
+    showToast(i18n.global.t('category.createSuccess', { name: created.name }), 'success')
     return true
   } catch (error) {
     setError(error)
@@ -1019,6 +1020,10 @@ async function updateCategory(id: string, input: CategoryInput): Promise<boolean
 async function deleteCategory(id: string): Promise<boolean> {
   loading.value = true
   clearError()
+  const categoryName =
+    customCategories.value.find((category) => category.id === id)?.label ??
+    categories.value.find((category) => category.id === id)?.label ??
+    id
   try {
     await vaultApi.deleteCategory(id)
     if (selectedCategory.value === id) {
@@ -1027,6 +1032,7 @@ async function deleteCategory(id: string): Promise<boolean> {
     await refreshVaultData()
     notifyOtherWindowsVaultChanged()
     touchActivity()
+    showToast(i18n.global.t('category.deleteSuccess', { name: categoryName }), 'success')
     return true
   } catch (error) {
     setError(error)
