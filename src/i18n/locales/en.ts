@@ -188,15 +188,15 @@ export default {
         },
         tagFilter: {
           title: 'Filter by tags',
-          body: 'Expand to multi-select tags (AND logic). Combine with categories; tag search supports Pinyin initials.',
+          body: 'Use the # button in the list toolbar to filter by tags (AND logic). Combine with categories; tag search supports Pinyin initials.',
         },
         newCategory: {
           title: 'Quick new category',
           body: 'Tap + to create a category without opening settings. New entries can be assigned to it immediately.',
         },
         utilities: {
-          title: 'Tools & settings',
-          body: 'The bottom section holds password tools, trash, and settings. Collapsed by default — click the header to expand.',
+          title: 'Sidebar footer',
+          body: 'Four icons at the bottom: Toolbox, Manage (categories/tags), Trash, and Settings. Hover for labels; some open a popover menu.',
         },
       },
       entries: {
@@ -219,8 +219,8 @@ export default {
       },
       tools: {
         utilities: {
-          title: 'Utilities expanded',
-          body: 'The tour expanded Tools & settings for you — less common but important actions live here.',
+          title: 'Toolbox',
+          body: 'Tap the toolbox icon at the bottom for password generator, health check, and other utilities. Hover icons for labels.',
         },
         passwordGen: {
           title: 'Password generator',

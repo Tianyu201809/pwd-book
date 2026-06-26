@@ -20,12 +20,27 @@ function dispatchPrepare(actions: TourPrepareAction[]): void {
   }
 }
 
+function cleanupTourUi(): void {
+  dispatchPrepare(['collapse-footer-menus', 'collapse-list-menus'])
+}
+
 function isTourCompleted(id: string): boolean {
   return localStorage.getItem(`${TOUR_COMPLETED_STORAGE_PREFIX}${id}`) === '1'
 }
 
 function markTourCompleted(id: string): void {
   localStorage.setItem(`${TOUR_COMPLETED_STORAGE_PREFIX}${id}`, '1')
+}
+
+async function waitForTourTarget(step: ProductTourStep): Promise<void> {
+  const selectors = [step.target, step.fallbackTarget].filter(Boolean) as string[]
+  if (selectors.length === 0) return
+
+  const deadline = Date.now() + 500
+  while (Date.now() < deadline) {
+    if (selectors.some((sel) => document.querySelector(sel))) return
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+  }
 }
 
 async function runStepPrepare(step: ProductTourStep): Promise<void> {
@@ -55,8 +70,16 @@ async function runStepPrepare(step: ProductTourStep): Promise<void> {
 
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)))
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)))
-  const settleMs = step.settingsTab ? 180 : 80
+  const hasPopoverPrepare = step.prepare?.some(
+    (action) =>
+      action === 'expand-utilities' ||
+      action === 'expand-toolbox' ||
+      action === 'expand-manage' ||
+      action === 'expand-tag-filter',
+  )
+  const settleMs = step.settingsTab ? 180 : hasPopoverPrepare ? 160 : 80
   await new Promise((resolve) => setTimeout(resolve, settleMs))
+  await waitForTourTarget(step)
 }
 
 export function useProductTour() {
@@ -135,12 +158,14 @@ export function useProductTour() {
     if (activeTourId.value) {
       markTourCompleted(activeTourId.value)
     }
+    cleanupTourUi()
     activeTourId.value = null
     stepIndex.value = 0
     transitioning.value = false
   }
 
   function skipTour(): void {
+    cleanupTourUi()
     activeTourId.value = null
     stepIndex.value = 0
     transitioning.value = false

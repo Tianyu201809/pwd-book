@@ -8,6 +8,7 @@ import type { TourPlacement } from '@/shared/productTourTypes'
 
 const CARD_MARGIN = 16
 const VIEWPORT_PAD = 12
+const BOTTOM_ANCHOR_RATIO = 0.62
 
 const { t } = useI18n()
 const {
@@ -32,6 +33,7 @@ const targetRect = ref<{ top: number; left: number; width: number; height: numbe
 const columnHints = ref<Array<{ top: number; left: number; width: number; height: number; label: string }>>([])
 const cardStyle = ref<Record<string, string>>({})
 const useFullBackdrop = ref(false)
+const cardAnchoredToTarget = ref(true)
 
 const COLUMN_HINT_SELECTORS = [
   { selector: '[data-tour="vault-col-sidebar"]', label: '1' },
@@ -151,7 +153,15 @@ function resolveTargetElement(): Element | null {
 }
 
 function scrollTourTargetIntoView(): void {
-  resolveTargetElement()?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' })
+  const el = resolveTargetElement()
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const nearBottom = rect.top > window.innerHeight * 0.62
+  el.scrollIntoView({
+    block: nearBottom ? 'nearest' : 'center',
+    inline: 'nearest',
+    behavior: 'instant',
+  })
 }
 
 function queryTargetRect(): DOMRect | null {
@@ -160,17 +170,30 @@ function queryTargetRect(): DOMRect | null {
   return el.getBoundingClientRect()
 }
 
+/** 视口底部目标自动改用 top，避免卡片居中而聚光灯留在底部 */
+function resolveLayoutPlacement(configured: TourPlacement, rect: DOMRect | null): TourPlacement {
+  if (!rect || configured === 'center') return configured
+  if (rect.top >= window.innerHeight * BOTTOM_ANCHOR_RATIO) {
+    if (configured === 'right' || configured === 'left' || configured === 'bottom') {
+      return 'top'
+    }
+  }
+  return configured
+}
+
 function layoutCard(placement: TourPlacement, rect: DOMRect | null): void {
   const card = cardRef.value
   if (!card) return
 
   if (!rect || placement === 'center') {
+    cardAnchoredToTarget.value = false
     applyCenterCardStyle()
     return
   }
 
   const anchor = intersectViewport(rect)
   if (anchor.width <= 0 || anchor.height <= 0) {
+    cardAnchoredToTarget.value = false
     applyCenterCardStyle()
     return
   }
@@ -234,11 +257,13 @@ function layoutCard(placement: TourPlacement, rect: DOMRect | null): void {
       left = tryRight
       resolvedPlacement = 'right'
     } else {
-      top = vh / 2 - cardH / 2
-      left = vw / 2 - cardW / 2
-      resolvedPlacement = 'center'
+      cardAnchoredToTarget.value = false
+      applyCenterCardStyle()
+      return
     }
   }
+
+  cardAnchoredToTarget.value = true
 
   top = clamp(top, VIEWPORT_PAD, Math.max(VIEWPORT_PAD, vh - cardH - VIEWPORT_PAD))
   left = clamp(left, VIEWPORT_PAD, Math.max(VIEWPORT_PAD, vw - cardW - VIEWPORT_PAD))
@@ -259,6 +284,7 @@ async function updateLayout(): Promise<void> {
   columnHints.value = []
   useFullBackdrop.value = false
   targetRect.value = null
+  cardAnchoredToTarget.value = true
 
   if (!step?.target) {
     useFullBackdrop.value = true
@@ -309,9 +335,15 @@ async function updateLayout(): Promise<void> {
     gsap.set(cardRef.value, { autoAlpha: 1, visibility: 'visible' })
   }
   await nextTick()
-  layoutCard(resolvedCardPlacement.value, anchor ?? raw)
+  const layoutPlacement = resolveLayoutPlacement(resolvedCardPlacement.value, anchor ?? raw)
+  layoutCard(layoutPlacement, anchor ?? raw)
   await nextTick()
-  layoutCard(resolvedCardPlacement.value, anchor ?? raw)
+  layoutCard(layoutPlacement, anchor ?? raw)
+
+  if (!cardAnchoredToTarget.value) {
+    useFullBackdrop.value = true
+    targetRect.value = null
+  }
 }
 
 function animateStepIn(): void {
@@ -403,6 +435,10 @@ watch([activeStep, isActive], async () => {
   animateStepIn()
 }, { flush: 'post' })
 
+watch(isActive, (active) => {
+  document.documentElement.classList.toggle('product-tour-active', active)
+}, { immediate: true })
+
 watch(transitioning, (v) => {
   if (v && cardRef.value) {
     gsap.to(cardRef.value, { autoAlpha: 0.55, scale: 0.98, duration: 0.18, ease: 'power2.in' })
@@ -425,6 +461,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', onResize)
   window.removeEventListener('scroll', onResize, true)
   document.removeEventListener('keydown', onKeydown)
+  document.documentElement.classList.remove('product-tour-active')
   killAnimations()
 })
 </script>
@@ -458,7 +495,7 @@ onUnmounted(() => {
           <span class="tour-column-hint__badge">{{ hint.label }}</span>
         </div>
         <div
-          v-if="targetRect && !useFullBackdrop"
+          v-if="targetRect && !useFullBackdrop && cardAnchoredToTarget"
           ref="spotlightRef"
           class="tour-spotlight"
           :style="{

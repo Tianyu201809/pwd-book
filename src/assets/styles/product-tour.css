@@ -481,3 +481,9 @@
 [data-skin='animalIsland'] .tour-spotlight {
   border-radius: 16px;
 }
+
+.product-tour-active .sidebar-icon-btn[data-tip]::after {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

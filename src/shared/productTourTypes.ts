@@ -4,7 +4,11 @@ export type TourPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center'
 
 export type TourPrepareAction =
   | 'expand-utilities'
+  | 'expand-toolbox'
+  | 'expand-manage'
+  | 'collapse-footer-menus'
   | 'expand-tag-filter'
+  | 'collapse-list-menus'
   | 'expand-detail'
   | 'select-first-entry'
 

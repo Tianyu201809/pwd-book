@@ -93,6 +93,13 @@ function onTourPrepare(event: Event): void {
     showSortMenu.value = false
     showTagFilterMenu.value = true
   }
+  if (action === 'collapse-list-menus') {
+    closeMenus()
+  }
+}
+
+function isProductTourActive(): boolean {
+  return document.documentElement.classList.contains('product-tour-active')
 }
 
 function handleDeleteRequest(entry: PasswordEntry): void {
@@ -114,6 +121,7 @@ async function confirmDeleteEntry(): Promise<void> {
 }
 
 function onDocumentClick(): void {
+  if (document.documentElement.classList.contains('product-tour-active')) return
   closeMenus()
 }
 
@@ -280,7 +288,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
               'vault-filter-btn--active': showTagFilterMenu && isAnimalIsland,
               'toolbar-icon-btn--filtered': selectedTagFilters.length > 0,
             }"
-            data-tour="sidebar-tag-filter"
+            data-tour="list-tag-filter"
             :title="showTagFilterMenu ? t('vault.collapseTagFilter') : t('vault.expandTagFilter')"
             :aria-label="t('vault.tagFilterTitle')"
             :aria-expanded="showTagFilterMenu"
@@ -300,6 +308,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           <div
             v-if="showTagFilterMenu"
             class="toolbar-popover toolbar-popover--tag surface-card"
+            data-tour="list-tag-filter-panel"
             @click.stop
           >
             <p class="toolbar-popover-title">

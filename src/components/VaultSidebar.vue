@@ -305,15 +305,27 @@ function openSettings(): void {
   navigateTo('settings')
 }
 
+function isProductTourActive(): boolean {
+  return document.documentElement.classList.contains('product-tour-active')
+}
+
 function onTourPrepare(event: Event): void {
   const action = (event as CustomEvent<{ action: TourPrepareAction }>).detail?.action
-  if (action === 'expand-utilities') {
+  if (action === 'expand-utilities' || action === 'expand-toolbox') {
     showManageMenu.value = false
     showToolboxMenu.value = true
+  }
+  if (action === 'expand-manage') {
+    showToolboxMenu.value = false
+    showManageMenu.value = true
+  }
+  if (action === 'collapse-footer-menus') {
+    closeFooterMenus()
   }
 }
 
 function onDocumentClick(): void {
+  if (isProductTourActive()) return
   closeContextMenu()
   closeFooterMenus()
 }
@@ -633,6 +645,7 @@ onBeforeUnmount(() => {
               type="button"
               class="sidebar-icon-btn sidebar-icon-btn--toolbox"
               :class="{ 'sidebar-icon-btn--active': showToolboxMenu }"
+              data-tour="sidebar-toolbox"
               :data-tip="t('tools.toolbox')"
               :aria-label="t('tools.toolbox')"
               :aria-expanded="showToolboxMenu"
@@ -647,6 +660,7 @@ onBeforeUnmount(() => {
               <div
                 v-if="showToolboxMenu"
                 class="sidebar-footer-popover sidebar-footer-popover--menu"
+                data-tour="sidebar-toolbox-panel"
                 @click.stop
               >
                 <button
@@ -682,6 +696,7 @@ onBeforeUnmount(() => {
               type="button"
               class="sidebar-icon-btn sidebar-icon-btn--manage"
               :class="{ 'sidebar-icon-btn--active': showManageMenu }"
+              data-tour="sidebar-manage"
               :data-tip="t('tools.manageGroup')"
               :aria-label="t('tools.manageGroup')"
               :aria-expanded="showManageMenu"
@@ -696,6 +711,7 @@ onBeforeUnmount(() => {
               <div
                 v-if="showManageMenu"
                 class="sidebar-footer-popover sidebar-footer-popover--menu"
+                data-tour="sidebar-manage-panel"
                 @click.stop
               >
                 <button
@@ -1021,7 +1037,6 @@ onBeforeUnmount(() => {
   z-index: 4;
   padding: 6px 12px 8px;
   border-top: 1px solid color-mix(in srgb, var(--accent-primary) 16%, var(--border-default));
-  background: color-mix(in srgb, var(--accent-subtle) 25%, var(--bg-surface));
 }
 
 .sidebar-footer-rail {
