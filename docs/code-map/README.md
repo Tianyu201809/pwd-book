@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.24.0**（`package.json`）— 产品引导（6 条交互式路径、聚光灯/遮罩）、数据库损坏隔离、托盘设置等。
+**当前版本：v1.25.0**（`package.json`）— 侧栏底部图标栏、标签筛选迁至列表工具栏、分类 Toast/确认弹窗、引导锚点适配等。
 
 ## 文档索引
 
@@ -17,7 +17,7 @@
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 | [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
-| [product-tour.md](./product-tour.md) | **v1.24.0** 产品引导、引导中心、`useProductTour`、`data-tour` 锚点 |
+| [product-tour.md](./product-tour.md) | **v1.24.0** 产品引导；**v1.25.0** 侧栏/列表 `data-tour` 与 `TOUR_PREPARE` 更新 |
 
 ## 相关文档
 

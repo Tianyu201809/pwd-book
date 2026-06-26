@@ -70,12 +70,13 @@ App.vue
 
 ### VaultSidebar.vue
 
-- 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删，二次确认）。
+- 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删；**v1.25.0** 改用 `UiModal` 二次确认）。
 - **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
 - **分类切换**（v1.18.0）：`onItemPointerDown` 在非当前分类上 **立即 `selectCategory`**（先于拖拽阈值判断）；`selectCategory` 将 `selectedEntryId` 置 `null`，右侧详情清空，不再回退列表首条。
-- **工具与设置** 折叠区（v1.11.0）：**随机密码**、**密码健康**（v1.12.0）为 `nav-item` + `IconBadge`；底部管理项（分类/标签/回收站/设置/锁定）均使用 `NAV_ICON_STYLES` 彩色徽章。邮箱备份入口已移至 **设置 → 安全**。**v1.24.0** 监听 `pwdbook-tour-prepare` 展开工具区/标签筛选。
-- **按标签筛选**（v1.12.0）：分类列表下方独立折叠区，`TagFilterPanel` 提供搜索 + 多选（AND）；`selectedTagFilters` 由 `useAppState` 驱动 `filteredEntries`；展开状态 `pwdbook-sidebar-tag-filter-expanded`（**v1.13.0** 起默认 **收起**）。
+- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。
 - **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
+
+> **v1.25.0 前**：「工具与设置」折叠区 + 侧栏内 `TagFilterPanel`（`pwdbook-sidebar-utilities-expanded` / `pwdbook-sidebar-tag-filter-expanded`）— 已移除，标签筛选迁至 `PasswordList.vue`。
 
 ### PasswordDetail.vue（内联 / detached）
 
@@ -99,7 +100,7 @@ App.vue
 
 列表项右键 / 「⋯」菜单；含 **复制到剪贴板**（`copyEntryData`）、**创建副本**（`duplicateEntry`，标题追加 ` - 副本`）、移动、打开网址/程序等。「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
 
-`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。**v1.23.0** 搜索前缀放大镜 `pointer-events: none`，避免遮挡输入框点击。
+`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。**v1.23.0** 搜索前缀放大镜 `pointer-events: none`，避免遮挡输入框点击。**v1.25.0** 工具栏 **#** 按钮展开 `TagFilterPanel` popover（`list-tag-filter` / `list-tag-filter-panel`）；监听 `TOUR_PREPARE_EVENT` 的 `expand-tag-filter` / `collapse-list-menus`。
 
 ## Composables
 
@@ -120,7 +121,7 @@ App.vue
 | `detailCollapsed` / `setDetailCollapsed` / `expandDetailPanel` | 内联详情收起状态（`pwdbook-detail-collapsed`） |
 | `handleDetailWindowOpened` / `handleDetailWindowClosed` | 响应小窗口开/关，恢复内联详情展开 |
 | `refreshVaultData` | 重载条目；小窗口订阅 `vault-data:changed` |
-| 分类 | `createCategory`、`reorderSidebarCategories` 等 |
+| 分类 | `createCategory`、`updateCategory`、`deleteCategory`（**v1.25.0** 成功 Toast）、`reorderSidebarCategories` 等 |
 | `exportData` / `importData` | PwdBook JSON 备份导入 |
 | `previewImportData` / `commitImportData` | 多来源导入（含 PwdBook CSV）预览与提交 |
 | `exportDataAsCsv` | PwdBook / 第三方 CSV 导出 |
@@ -129,7 +130,7 @@ App.vue
 | `startWifiSyncServer` / `pullWifiSyncMerge` | Wi-Fi 服务端开关、客户端拉取合并 |
 | `pickFolderSyncDirectory` / `connectFolderSync` / `syncFolderNow` | 文件夹选择、连接、手动同步（v1.19.0） |
 | `disconnectFolderSync` / `updateFolderSyncAutoSync` | 断开文件夹同步、自动同步开关 |
-| `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 侧栏标签多选筛选（v1.12.0，AND 逻辑） |
+| `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 标签多选筛选（v1.12.0，AND 逻辑）；**v1.25.0** UI 入口在列表工具栏 |
 | `openPasswordHealth` | 密码健康页导航（v1.12.0） |
 
 错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。**v1.18.0** 主进程 `wrap` 与 Preload `invoke` 重抛时附带 `{ cause: error }`，便于 DevTools 追溯。
