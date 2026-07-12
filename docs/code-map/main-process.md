@@ -49,7 +49,7 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
 
 ### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
 

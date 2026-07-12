@@ -2,6 +2,8 @@
 
 本文档说明悬浮快捷搜索条（Quick Bar）、「最近打开」列表、全局快捷键的实现与调试要点。
 
+**v1.26.0**：网站条目定位主窗口（`quickbar:focus-entry`）；`quickBarRecentLimit`（5–20）同时约束最近打开与搜索结果；结果区固定高度滚动；`before-quit` / `markQuitting` 保证 macOS 可退出。
+
 ## 模块一览
 
 | 模块 | 路径 | 职责 |

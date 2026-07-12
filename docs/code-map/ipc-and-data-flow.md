@@ -43,7 +43,7 @@
 | `quickbar:list-recent` | 是 | 返回快捷条「最近打开」条目（独立 ID 列表，条数由 `quickBarRecentLimit` 决定，默认 5、最大 20） |
 | `quickbar:remove-recent` | 是 | 从最近打开移除指定 id |
 
-快捷条窗口控制为 `send` 通道（`quickbar:hide/show/resize/show-main`），详见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)。
+快捷条窗口控制为 `send` 通道（`quickbar:hide/show/resize/show-main/focus-entry`），详见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)。
 
 ### 分类
 
@@ -166,6 +166,7 @@
 |------|------|------|
 | `email-backup:scheduled-due` | send | 定时邮箱备份到期，弹出主密码确认 |
 | `quickbar:shown` | send | 快捷条已显示 |
+| `quickbar:focus-entry` | send | **v1.26.0** 快捷条网站条目：主进程显示主窗口后广播 entryId，渲染进程 `focusEntryFromQuickBar` |
 | `theme:changed` | send | 主题变更通知 |
 | `session:system-lock` | send | **v1.8.0** 系统锁屏且已选「跟随系统锁屏」；主进程已 `lockVault()`，渲染进程同步 UI |
 | `detail-window:select-entry` | send | **v1.14.0** 主/小窗口切换选中条目 |

@@ -57,10 +57,10 @@ App.vue
 
 ### QuickBarApp.vue
 
-- 无搜索词时展示「最近打开」（`listQuickBarRecent`），最多 5 条，可手动移除。
-- 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**）；↑↓ / Enter 选择并 `launchEntry`。
+- 无搜索词时展示「最近打开」（`listQuickBarRecent`），条数由 `quickBarRecentLimit` 决定（默认 5，最大 20；**v1.26.0**），可手动移除。
+- 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**），上限与最近打开相同（**v1.26.0**）；↑↓ / Enter 经 `launchEntry`：**本地程序**启动，**仅网址**则 `quickBarFocusEntry` 打开主窗口并 `selectEntry`。
+- **v1.26.0** 结果区固定 `max-height` 可滚动；↑↓ 时 `scrollIntoView`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
-
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
 - 侧栏（`placement="after"`）与详情（`placement="before"`）共用的 **4px 边缘**：悬停/收起/调宽时显示 **圆形描边箭头** 折叠钮；分割线在钮位挖空，`z-index` 高于邻列。
@@ -90,6 +90,7 @@ App.vue
 
 - 四个 Tab（安全 / 外观 / 数据 / 关于）；Tab 图标使用 `IconBadge`（v1.11.0）。
 - **安全** Tab 含 **打开邮箱备份** 按钮（`openEmailBackup`）；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
+- **v1.26.0** 快捷条开启时展示「快捷条显示条数」下拉（5–20 → `quickBarRecentLimit`）。
 - **浏览器扩展安装向导**（v1.17.0）：`BrowserExtensionGuideModal`（6 步、GSAP 动效、`BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page` → `browserLaunchService.openBrowserExtensionsPage`（复制 `chrome://extensions` / `edge://extensions` 到剪贴板）。
 
 ### UiInput.vue（`components/ui/`）
@@ -114,6 +115,7 @@ App.vue
 | `bootstrap()` | 启动：读 vault 状态、设置、分类、侧边栏顺序 |
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期；**v1.23.0** `resolveScreenAfterAuth` 在解锁/恢复后消费 `pendingScreenAfterUnlock` |
 | `openSettingsFromTray` | **v1.23.0** 托盘「设置」：已解锁 → `settings`；锁定 → 设 pending 并显示锁定页 |
+| `focusEntryFromQuickBar` | **v1.26.0** 快捷条网站条目：`navigateTo('vault')` + 清空筛选 + `selectEntry` |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
 | `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
 | `loadEntries` / `selectEntry` | 列表与选中项；`selectEntry` 同步 `detail-window:select-entry`；**v1.18.0** `selectedEntry` 仅在 `selectedEntryId` 有值时解析，切换分类不自动选中首条 |

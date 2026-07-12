@@ -78,6 +78,7 @@
 | `trash_retention_days` | 回收站保留天数，默认 `30`（v1.7.0） |
 | `quick_bar_enabled` | 快捷搜索条开关 |
 | `quick_bar_accelerator` | 快捷条快捷键，默认 `Alt+Shift+P` |
+| `quick_bar_recent_limit` | 快捷条最近打开/搜索结果条数（5–20，默认 5；**v1.26.0**） |
 | `main_window_shortcut_enabled` | 主窗口全局快捷键开关 |
 | `main_window_shortcut_accelerator` | 主窗口快捷键，默认 `Alt+Shift+M` |
 | `browser_fill_enabled` | 浏览器自动填充桥接开关（v1.6.0） |
