@@ -10,6 +10,11 @@ import { showToast } from '@/composables/useToast'
 import { syncThemeFromStorage, useTheme } from '@/composables/useTheme'
 import { filterEntriesBySearch } from '@/shared/entrySearch'
 import { launchEntry } from '@/shared/launchEntry'
+import {
+  clampQuickBarRecentLimit,
+  QUICK_BAR_RECENT_LIMIT_DEFAULT,
+  QUICK_BAR_RESULTS_MAX_HEIGHT_PX,
+} from '@/shared/quickBarLimits'
 import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
 import type { PasswordEntry } from '@/types'
 
@@ -24,13 +29,17 @@ function refreshChrome(): void {
 const query = ref('')
 const entries = ref<PasswordEntry[]>([])
 const recentEntries = ref<PasswordEntry[]>([])
+const listLimit = ref(QUICK_BAR_RECENT_LIMIT_DEFAULT)
 const unlocked = ref(false)
 const loading = ref(true)
 const activeIndex = ref(0)
 const rootRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
+const resultsListRef = ref<HTMLElement | null>(null)
 
-const results = computed(() => filterEntriesBySearch(entries.value, query.value, 12))
+const results = computed(() =>
+  filterEntriesBySearch(entries.value, query.value, listLimit.value),
+)
 
 const listItems = computed(() =>
   query.value.trim() ? results.value : recentEntries.value,
@@ -63,6 +72,10 @@ async function refreshEntries(): Promise<void> {
     unlocked.value = Boolean(status?.unlocked)
     if (unlocked.value) {
       const api = window.electronAPI
+      const settings = await api?.getSettings()
+      listLimit.value = clampQuickBarRecentLimit(
+        settings?.quickBarRecentLimit ?? QUICK_BAR_RECENT_LIMIT_DEFAULT,
+      )
       entries.value = (await api?.listEntries()) ?? []
       recentEntries.value = (await api?.listQuickBarRecent()) ?? []
     } else {
@@ -78,6 +91,15 @@ function reportHeight(): void {
   nextTick(() => {
     const height = rootRef.value?.offsetHeight ?? 52
     window.electronAPI?.resizeQuickBar?.(height)
+  })
+}
+
+function scrollActiveIntoView(): void {
+  nextTick(() => {
+    const active = resultsListRef.value?.querySelector('.quickbar-result--active')
+    if (active instanceof HTMLElement) {
+      active.scrollIntoView({ block: 'nearest' })
+    }
   })
 }
 
@@ -136,9 +158,11 @@ function onKeydown(event: KeyboardEvent): void {
   if (event.key === 'ArrowDown') {
     event.preventDefault()
     activeIndex.value = Math.min(activeIndex.value + 1, listItems.value.length - 1)
+    scrollActiveIntoView()
   } else if (event.key === 'ArrowUp') {
     event.preventDefault()
     activeIndex.value = Math.max(activeIndex.value - 1, 0)
+    scrollActiveIntoView()
   } else if (event.key === 'Enter') {
     event.preventDefault()
     onSelectActive()
@@ -225,8 +249,10 @@ onUnmounted(() => {
 
     <ul
       v-if="showList && listItems.length"
+      ref="resultsListRef"
       class="quickbar-results"
       :class="{ 'quickbar-results--top-border': !showRecent }"
+      :style="{ maxHeight: `${QUICK_BAR_RESULTS_MAX_HEIGHT_PX}px` }"
       role="listbox"
     >
       <li

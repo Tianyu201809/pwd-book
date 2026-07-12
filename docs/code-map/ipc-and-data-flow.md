@@ -40,7 +40,7 @@
 
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
-| `quickbar:list-recent` | 是 | 返回快捷条「最近打开」条目（独立 ID 列表，最多 5） |
+| `quickbar:list-recent` | 是 | 返回快捷条「最近打开」条目（独立 ID 列表，条数由 `quickBarRecentLimit` 决定，默认 5、最大 20） |
 | `quickbar:remove-recent` | 是 | 从最近打开移除指定 id |
 
 快捷条窗口控制为 `send` 通道（`quickbar:hide/show/resize/show-main`），详见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)。

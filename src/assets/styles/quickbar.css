@@ -93,7 +93,10 @@ body.quickbar-body {
   margin: 0;
   padding: 4px 6px 8px;
   max-height: 320px;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .quickbar-results--top-border {

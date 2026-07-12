@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   closeWindowAction: 'ask',
   quickBarEnabled: true,
   quickBarAccelerator: 'Alt+Shift+P',
+  quickBarRecentLimit: 5,
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
   browserFillEnabled: false,

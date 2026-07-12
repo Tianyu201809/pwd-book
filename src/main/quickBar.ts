@@ -1,5 +1,6 @@
 import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
+import { QUICK_BAR_RESULTS_MAX_HEIGHT_PX } from '../shared/quickBarLimits'
 import { IPC_EVENTS } from '../shared/types'
 import { getSecuritySettings } from './services/settingsService'
 import { isUnlocked } from './services/sessionService'
@@ -8,6 +9,8 @@ import { focusEntryFromQuickBar, showFromTray } from './tray'
 const QUICK_BAR_WIDTH = 560
 const QUICK_BAR_COLLAPSED_HEIGHT = 52
 const QUICK_BAR_TOP_OFFSET = 28
+/** 搜索条 + 分区标题 + 结果区 max-height，窗口不再随条目无限增高 */
+const QUICK_BAR_MAX_HEIGHT = QUICK_BAR_COLLAPSED_HEIGHT + 40 + QUICK_BAR_RESULTS_MAX_HEIGHT_PX
 
 let quickBarWindow: BrowserWindow | null = null
 let registeredAccelerator: string | null = null
@@ -158,7 +161,7 @@ export function registerQuickBarIpc(): void {
     if (!quickBarWindow || quickBarWindow.isDestroyed()) return
     const nextHeight = Math.max(
       QUICK_BAR_COLLAPSED_HEIGHT,
-      Math.min(Math.round(height), 420),
+      Math.min(Math.round(height), QUICK_BAR_MAX_HEIGHT),
     )
     const bounds = quickBarWindow.getBounds()
     quickBarWindow.setBounds({

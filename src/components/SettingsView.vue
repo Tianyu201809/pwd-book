@@ -75,6 +75,7 @@ const activeTab = computed(() => settingsTab.value)
 
 const autoLockOptions = [5, 15, 30, 60, 120]
 const trashRetentionOptions = [7, 14, 30, 60, 90]
+const quickBarRecentLimitOptions = Array.from({ length: 16 }, (_, index) => index + 5)
 
 const autoLockSelectOptions = computed(() => [
   ...autoLockOptions.map((minutes) => ({
@@ -91,6 +92,13 @@ const trashRetentionSelectOptions = computed(() =>
   trashRetentionOptions.map((days) => ({
     value: String(days),
     label: t('common.days', { n: days }),
+  })),
+)
+
+const quickBarRecentLimitSelectOptions = computed(() =>
+  quickBarRecentLimitOptions.map((n) => ({
+    value: String(n),
+    label: t('settings.quickBarRecentLimitOption', { n }),
   })),
 )
 
@@ -122,6 +130,10 @@ async function onTrashRetentionChange(value: string): Promise<void> {
 
 async function onQuickBarEnabledChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ quickBarEnabled: enabled })
+}
+
+async function onQuickBarRecentLimitChange(value: string): Promise<void> {
+  await updateSecuritySettings({ quickBarRecentLimit: Number(value) })
 }
 
 async function onMainWindowShortcutEnabledChange(enabled: boolean): Promise<void> {
@@ -408,6 +420,25 @@ async function handleReset(): Promise<void> {
               <UiSwitch
                 :model-value="securitySettings.quickBarEnabled"
                 @update:model-value="onQuickBarEnabledChange"
+              />
+            </div>
+            <div
+              v-if="securitySettings.quickBarEnabled"
+              class="row"
+            >
+              <div>
+                <p class="row-title">
+                  {{ t('settings.quickBarRecentLimit') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.quickBarRecentLimitDesc') }}
+                </p>
+              </div>
+              <UiSelect
+                :model-value="String(securitySettings.quickBarRecentLimit)"
+                class="settings-select"
+                :options="quickBarRecentLimitSelectOptions"
+                @update:model-value="onQuickBarRecentLimitChange"
               />
             </div>
             <div class="row">

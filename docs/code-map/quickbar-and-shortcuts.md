@@ -34,15 +34,17 @@
 ### 存储
 
 - **键**：`app_settings.quick_bar_recent_ids`
-- **值**：JSON 字符串数组，最多 5 个条目 id，**顺序即展示顺序**（索引 0 为最近）。
+- **值**：JSON 字符串数组，最多 `quickBarRecentLimit`（默认 5，最大 20）个条目 id，**顺序即展示顺序**（索引 0 为最近）。
+- **条数设置**：`app_settings.quick_bar_recent_limit`
 
 ### 写入时机
 
 | 操作 | 函数 | 行为 |
 |------|------|------|
-| 打开条目（网址/本地程序） | `touchEntry()` → `recordQuickBarRecentEntry()` | 插入队首，去重，截断至 5 |
+| 打开条目（本地程序 / 网站定位） | `touchEntry()` → `recordQuickBarRecentEntry()` | 插入队首，去重，截断至当前 `quickBarRecentLimit` |
 | 快捷条内手动移除 | `removeQuickBarRecentEntry()` | 从数组删除该 id |
-| 首次迁移（无存储键） | `seedQuickBarRecentIfEmpty()` | 从 `last_used_at` 非空条目取前 5 条 id 写入 |
+| 首次迁移（无存储键） | `seedQuickBarRecentIfEmpty()` | 从 `last_used_at` 非空条目取前 N 条 id 写入 |
+| 调低条数上限 | `truncateQuickBarRecentToLimit()` | 按新上限截断已存 ID |
 
 ### 读取
 
@@ -67,10 +69,12 @@
 
 ## 用户可见行为
 
-1. **最多 5 条**最近打开；分类子菜单（主列表右键「移动到」）同样最多展示 5 条，超出滚动。
+1. **最多 N 条**最近打开（`quickBarRecentLimit`，默认 5，范围 5–20）；分类子菜单（主列表右键「移动到」）同样最多展示 5 条，超出滚动。
 2. **手动移除**后列表减 1（例如 5→4），**不会**被数据库中其他 `last_used_at` 条目自动补位。
-3. **再次打开**任意条目（主窗口或快捷条）后，该条目加入最近打开；满 5 条时挤掉最旧的一项。
+3. **再次打开**任意条目（主窗口或快捷条）后，该条目加入最近打开；满 N 条时挤掉最旧的一项。
 4. **全部移除**后列表为空，保持为空，直到用户再次打开条目。
+5. **结果列表**固定 `max-height`（约 7 行）并可滚动；窗口高度不再随条目无限增高。
+6. **搜索结果**与「最近打开」共用同一条数上限 N。
 
 ## IPC 与 preload
 
@@ -80,8 +84,7 @@
 | `quickbar:remove-recent` | invoke | 移除 id，返回更新后的列表 |
 | `quickbar:hide` / `quickbar:show` | send | 隐藏/显示快捷条 |
 | `quickbar:show-main` | send | 显示主窗口（锁定态引导） |
-| `quickbar:focus-entry` | send | 显示主窗口并定位到指定条目（网站条目） |
-| `quickbar:focus-entry` | 事件（主→渲染） | 主窗口收到后 `navigateTo('vault')` + `selectEntry` |
+| `quickbar:focus-entry` | send / 事件 | 快捷条 → 主进程显示主窗口，再广播至主窗口渲染进程定位条目 |
 | `quickbar:resize` | send | 动态高度 |
 | `quickbar:shown` | 事件 | 快捷条显示时通知渲染进程刷新 |
 

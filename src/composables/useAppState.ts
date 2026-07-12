@@ -64,6 +64,7 @@ const securitySettings = ref<SecuritySettings>({
   browserFillEnabled: false,
   quickBarEnabled: true,
   quickBarAccelerator: 'Alt+Shift+P',
+  quickBarRecentLimit: 5,
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
   trashRetentionDays: 30,

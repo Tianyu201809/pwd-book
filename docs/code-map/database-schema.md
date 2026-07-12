@@ -96,7 +96,8 @@
 
 | Key | 说明 |
 |-----|------|
-| `quick_bar_recent_ids` | JSON：`string[]`，快捷条「最近打开」条目 id，最多 5；**空数组表示用户已清空**，不会自动从历史补位 |
+| `quick_bar_recent_ids` | JSON：`string[]`，快捷条「最近打开」条目 id，最多 `quick_bar_recent_limit`（默认 5，最大 20）；**空数组表示用户已清空**，不会自动从历史补位 |
+| `quick_bar_recent_limit` | 快捷条最近打开/搜索结果一次展示条数（5–20，默认 5） |
 
 ### 分类数据
 
