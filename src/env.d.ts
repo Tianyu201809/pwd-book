@@ -144,8 +144,10 @@ declare global {
       hideQuickBar?: () => void
       showQuickBar?: () => void
       quickBarShowMain?: () => void
+      quickBarFocusEntry?: (entryId: string) => void
       resizeQuickBar?: (height: number) => void
       onQuickBarShown?: (handler: () => void) => () => void
+      onQuickBarFocusEntry?: (handler: (entryId: string) => void) => () => void
       notifyThemeChanged?: () => void
       onThemeChanged?: (handler: () => void) => () => void
       setQuickBarBackground?: (color: string) => void

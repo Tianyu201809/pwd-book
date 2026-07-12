@@ -755,7 +755,7 @@ export default {
     launchAtLoginDesc: '系统登录后自动启动 PwdBook',
     launchAtLoginPackagedOnly: '此功能仅在安装版中生效，开发模式无法注册系统启动项。',
     quickBar: '悬浮快捷搜索',
-    quickBarDesc: '屏幕顶部细长搜索条，Enter 直接打开网址或启动本地程序。快捷键：{accelerator}',
+    quickBarDesc: '屏幕顶部细长搜索条；本地程序直接启动，网站条目则打开主窗口并定位。快捷键：{accelerator}',
     quickBarOpen: '打开快捷条',
     emailBackupOpen: '打开邮箱备份',
     mainWindowShortcut: '快捷键唤起主窗口',

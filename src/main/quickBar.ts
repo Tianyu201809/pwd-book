@@ -3,7 +3,7 @@ import { join } from 'path'
 import { IPC_EVENTS } from '../shared/types'
 import { getSecuritySettings } from './services/settingsService'
 import { isUnlocked } from './services/sessionService'
-import { showFromTray } from './tray'
+import { focusEntryFromQuickBar, showFromTray } from './tray'
 
 const QUICK_BAR_WIDTH = 560
 const QUICK_BAR_COLLAPSED_HEIGHT = 52
@@ -144,6 +144,9 @@ export function registerQuickBarIpc(): void {
   ipcMain.on('quickbar:hide', () => hideQuickBar())
   ipcMain.on('quickbar:show', () => showQuickBar())
   ipcMain.on('quickbar:show-main', () => showFromTray())
+  ipcMain.on('quickbar:focus-entry', (_event, entryId: string) => {
+    focusEntryFromQuickBar(entryId)
+  })
   ipcMain.on('theme:notify-change', () => notifyQuickBarThemeSync())
   ipcMain.on('quickbar:set-background', (_event, color: string) => {
     if (!quickBarWindow || quickBarWindow.isDestroyed()) return

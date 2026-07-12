@@ -115,6 +115,14 @@ export function openSettingsFromTray(): void {
   mainWindow.webContents.send(IPC_EVENTS.trayOpenSettings)
 }
 
+/** 显示主窗口并通知渲染进程定位到指定条目（快捷条网站条目）。 */
+export function focusEntryFromQuickBar(entryId: string): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  if (typeof entryId !== 'string' || !entryId.trim()) return
+  showFromTray()
+  mainWindow.webContents.send(IPC_EVENTS.quickBarFocusEntry, entryId.trim())
+}
+
 export function destroyTray(): void {
   tray?.destroy()
   tray = null

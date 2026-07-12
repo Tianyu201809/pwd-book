@@ -38,6 +38,7 @@ const {
   handleDetailWindowClosed,
   refreshVaultData,
   openSettingsFromTray,
+  focusEntryFromQuickBar,
 } = useAppState()
 
 useAutoLock()
@@ -48,6 +49,7 @@ let removeDetailWindowOpenedListener: (() => void) | undefined
 let removeDetailWindowClosedListener: (() => void) | undefined
 let removeVaultDataListener: (() => void) | undefined
 let removeTrayOpenSettingsListener: (() => void) | undefined
+let removeQuickBarFocusEntryListener: (() => void) | undefined
 const scheduledBackupLoading = ref(false)
 const scheduledMasterModalRef = ref<InstanceType<typeof MasterPasswordConfirmModal> | null>(null)
 
@@ -74,6 +76,9 @@ onMounted(async () => {
   removeTrayOpenSettingsListener = window.electronAPI?.onTrayOpenSettings?.(() => {
     openSettingsFromTray()
   })
+  removeQuickBarFocusEntryListener = window.electronAPI?.onQuickBarFocusEntry?.((entryId) => {
+    focusEntryFromQuickBar(entryId)
+  })
   await bootstrap()
 })
 
@@ -85,6 +90,7 @@ onUnmounted(() => {
   removeDetailWindowClosedListener?.()
   removeVaultDataListener?.()
   removeTrayOpenSettingsListener?.()
+  removeQuickBarFocusEntryListener?.()
 })
 
 async function confirmScheduledBackup(masterPassword: string): Promise<void> {

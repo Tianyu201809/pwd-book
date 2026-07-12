@@ -513,6 +513,22 @@ function openSettingsFromTray(): void {
   screen.value = 'lock'
 }
 
+/** 快捷条选中网站条目：回到保险库并定位到该条目。 */
+function focusEntryFromQuickBar(entryId: string): void {
+  if (!entryId.trim()) return
+  if (!vaultStatus.value.unlocked) {
+    screen.value = 'lock'
+    return
+  }
+  navigateTo('vault')
+  searchQuery.value = ''
+  selectedCategory.value = 'all'
+  selectedTagFilters.value = []
+  void refreshEntries().then(() => {
+    selectEntry(entryId)
+  })
+}
+
 function openEmailBackup(): void {
   navigateTo('email-backup')
   void loadEmailBackupSettings()
@@ -1313,6 +1329,7 @@ export function useAppState() {
     resetVaultFromLock,
     navigateTo,
     openSettingsFromTray,
+    focusEntryFromQuickBar,
     selectCategory,
     toggleTagFilter,
     clearTagFilters,

@@ -401,6 +401,7 @@ export const IPC_EVENTS = {
   vaultDataChanged: 'vault-data:changed',
   windowMaximizeChanged: 'window:maximize-changed',
   trayOpenSettings: 'tray:open-settings',
+  quickBarFocusEntry: 'quickbar:focus-entry',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

@@ -88,9 +88,13 @@ function focusMain(): void {
 
 async function activateEntry(entry: PasswordEntry): Promise<void> {
   const api = window.electronAPI
-  if (!api) return
+  if (!api?.openLocalProgram || !api.touchEntry) return
   try {
-    const kind = await launchEntry(entry, api)
+    const kind = await launchEntry(entry, {
+      openLocalProgram: (programPath) => api.openLocalProgram(programPath),
+      touchEntry: (entryId) => api.touchEntry(entryId),
+      focusEntryInMain: (entryId) => api.quickBarFocusEntry?.(entryId),
+    })
     if (kind === 'none') {
       showToast(t('quickBar.noLaunchTarget'), 'error')
       return

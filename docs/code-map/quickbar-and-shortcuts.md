@@ -9,7 +9,7 @@
 | 快捷条窗口 | `src/main/quickBar.ts` | 置顶 BrowserWindow、显示/隐藏、快捷条全局快捷键 |
 | 主窗口快捷键 | `src/main/mainWindowShortcut.ts` | 全局快捷键唤起主窗口 |
 | 最近打开 | `src/main/services/quickBarRecentService.ts` | 快捷条专用最近列表（与 `last_used_at` 分离） |
-| 快捷条 UI | `src/components/QuickBarApp.vue` | 搜索、最近打开、移除、Enter 启动 |
+| 快捷条 UI | `src/components/QuickBarApp.vue` | 搜索、最近打开、移除；Enter 启动本地程序或定位主窗口网站条目 |
 | 样式 | `src/assets/styles/quickbar.css` | 快捷条独立样式（含选中高亮） |
 | 渲染入口 | `src/renderer/quickbar.html` + `quickbar.ts` | 独立 Vue 应用 |
 
@@ -80,6 +80,8 @@
 | `quickbar:remove-recent` | invoke | 移除 id，返回更新后的列表 |
 | `quickbar:hide` / `quickbar:show` | send | 隐藏/显示快捷条 |
 | `quickbar:show-main` | send | 显示主窗口（锁定态引导） |
+| `quickbar:focus-entry` | send | 显示主窗口并定位到指定条目（网站条目） |
+| `quickbar:focus-entry` | 事件（主→渲染） | 主窗口收到后 `navigateTo('vault')` + `selectEntry` |
 | `quickbar:resize` | send | 动态高度 |
 | `quickbar:shown` | 事件 | 快捷条显示时通知渲染进程刷新 |
 

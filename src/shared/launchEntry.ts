@@ -1,11 +1,11 @@
-import { normalizeExternalUrl } from './utils'
 import type { PasswordEntry } from './types'
 
 export type LaunchEntryKind = 'program' | 'url' | 'none'
 
 export interface LaunchEntryApi {
   openLocalProgram: (programPath: string) => Promise<void>
-  openExternal: (url: string) => Promise<void>
+  /** 打开主窗口并定位到目标条目（网站条目，不再直接打开浏览器）。 */
+  focusEntryInMain: (entryId: string) => void
   touchEntry: (entryId: string) => Promise<void>
 }
 
@@ -15,7 +15,9 @@ export function resolveLaunchKind(entry: PasswordEntry): LaunchEntryKind {
   return 'none'
 }
 
-/** 优先本地程序，否则打开网址。 */
+/**
+ * 快捷条启动条目：优先本地程序；否则（网站）打开主窗口并定位条目。
+ */
 export async function launchEntry(
   entry: PasswordEntry,
   api: LaunchEntryApi,
@@ -28,9 +30,8 @@ export async function launchEntry(
   }
 
   if (entry.url.trim()) {
-    const target = normalizeExternalUrl(entry.url)
-    await api.openExternal(target)
     await api.touchEntry(entry.id)
+    api.focusEntryInMain(entry.id)
     return 'url'
   }
 
