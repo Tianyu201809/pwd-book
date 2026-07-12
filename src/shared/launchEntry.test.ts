@@ -35,12 +35,12 @@ describe('resolveLaunchKind', () => {
     ).toBe('program')
   })
 
-  it('returns url when only website is set', () => {
-    expect(resolveLaunchKind(makeEntry({ url: 'https://example.com' }))).toBe('url')
+  it('returns focus when only website is set', () => {
+    expect(resolveLaunchKind(makeEntry({ url: 'https://example.com' }))).toBe('focus')
   })
 
-  it('returns none when neither is set', () => {
-    expect(resolveLaunchKind(makeEntry())).toBe('none')
+  it('returns focus when neither program nor url is set', () => {
+    expect(resolveLaunchKind(makeEntry())).toBe('focus')
   })
 })
 
@@ -59,7 +59,7 @@ describe('launchEntry', () => {
     expect(api.focusEntryInMain).not.toHaveBeenCalled()
   })
 
-  it('focuses main window for website entries instead of opening browser', async () => {
+  it('focuses main window for website entries', async () => {
     const api = {
       openLocalProgram: vi.fn().mockResolvedValue(undefined),
       focusEntryInMain: vi.fn(),
@@ -67,22 +67,22 @@ describe('launchEntry', () => {
     }
     const entry = makeEntry({ url: 'https://example.com' })
 
-    await expect(launchEntry(entry, api)).resolves.toBe('url')
+    await expect(launchEntry(entry, api)).resolves.toBe('focus')
     expect(api.focusEntryInMain).toHaveBeenCalledWith('entry-1')
     expect(api.touchEntry).toHaveBeenCalledWith('entry-1')
     expect(api.openLocalProgram).not.toHaveBeenCalled()
   })
 
-  it('returns none when there is no launch target', async () => {
+  it('focuses main window when entry has no program and no url', async () => {
     const api = {
       openLocalProgram: vi.fn().mockResolvedValue(undefined),
       focusEntryInMain: vi.fn(),
       touchEntry: vi.fn().mockResolvedValue(undefined),
     }
 
-    await expect(launchEntry(makeEntry(), api)).resolves.toBe('none')
+    await expect(launchEntry(makeEntry(), api)).resolves.toBe('focus')
+    expect(api.focusEntryInMain).toHaveBeenCalledWith('entry-1')
+    expect(api.touchEntry).toHaveBeenCalledWith('entry-1')
     expect(api.openLocalProgram).not.toHaveBeenCalled()
-    expect(api.focusEntryInMain).not.toHaveBeenCalled()
-    expect(api.touchEntry).not.toHaveBeenCalled()
   })
 })

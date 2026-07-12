@@ -58,7 +58,7 @@ App.vue
 ### QuickBarApp.vue
 
 - 无搜索词时展示「最近打开」（`listQuickBarRecent`），条数由 `quickBarRecentLimit` 决定（默认 5，最大 20；**v1.26.0**），可手动移除。
-- 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**），上限与最近打开相同（**v1.26.0**）；↑↓ / Enter 经 `launchEntry`：**本地程序**启动，**仅网址**则 `quickBarFocusEntry` 打开主窗口并 `selectEntry`。
+- 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**），上限与最近打开相同（**v1.26.0**）；↑↓ / Enter 经 `launchEntry`：**本地程序**启动，否则 `quickBarFocusEntry` 打开主窗口并 `selectEntry`（含无网址/无程序）。
 - **v1.26.0** 结果区固定 `max-height` 可滚动；↑↓ 时 `scrollIntoView`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）

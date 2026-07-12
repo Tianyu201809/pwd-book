@@ -296,7 +296,6 @@ export default {
     removeFromRecent: '从最近打开中移除',
     locked: '保险库已锁定，点击打开主窗口解锁',
     noMatch: '没有匹配的条目',
-    noLaunchTarget: '该条目未配置本地程序或网址',
   },
   vault: {
     newEntry: '新建条目',
@@ -755,7 +754,7 @@ export default {
     launchAtLoginDesc: '系统登录后自动启动 PwdBook',
     launchAtLoginPackagedOnly: '此功能仅在安装版中生效，开发模式无法注册系统启动项。',
     quickBar: '悬浮快捷搜索',
-    quickBarDesc: '屏幕顶部细长搜索条；本地程序直接启动，网站条目则打开主窗口并定位。快捷键：{accelerator}',
+    quickBarDesc: '屏幕顶部细长搜索条；本地程序直接启动，否则打开主窗口并定位条目。快捷键：{accelerator}',
     quickBarOpen: '打开快捷条',
     quickBarRecentLimit: '快捷条显示条数',
     quickBarRecentLimitDesc: '最近打开与搜索结果一次最多显示的条目数（5–20）',

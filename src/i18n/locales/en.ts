@@ -297,7 +297,6 @@ export default {
     removeFromRecent: 'Remove from recently opened',
     locked: 'Vault is locked — click to open the main window',
     noMatch: 'No matching entries',
-    noLaunchTarget: 'This entry has no program path or URL configured',
   },
   vault: {
     newEntry: 'New entry',
@@ -757,7 +756,7 @@ export default {
     launchAtLoginDesc: 'Launch PwdBook automatically when you sign in to the system',
     launchAtLoginPackagedOnly: 'This only works in the installed app; dev mode cannot register a login item.',
     quickBar: 'Floating quick search',
-    quickBarDesc: 'A slim bar at the top of the screen; Enter launches a local program, or opens the main window and focuses a website entry. Shortcut: {accelerator}',
+    quickBarDesc: 'A slim bar at the top of the screen; Enter launches a local program, or opens the main window and focuses the entry. Shortcut: {accelerator}',
     quickBarOpen: 'Open quick bar',
     quickBarRecentLimit: 'Quick bar item limit',
     quickBarRecentLimitDesc: 'Max items shown at once for recent opens and search results (5–20)',
