@@ -23,8 +23,13 @@ export function getIsQuitting(): boolean {
   return isQuitting
 }
 
-export function requestQuit(): void {
+/** 标记即将退出，使窗口 close 不再 preventDefault（Cmd+Q / Dock 退出必需）。 */
+export function markQuitting(): void {
   isQuitting = true
+}
+
+export function requestQuit(): void {
+  markQuitting()
   destroyTray()
   app.quit()
 }

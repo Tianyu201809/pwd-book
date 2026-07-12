@@ -8,6 +8,7 @@ import {
   getIsQuitting,
   handleWindowClose,
   hideToTray,
+  markQuitting,
   requestQuit,
   setMainWindow,
   showFromTray,
@@ -239,11 +240,14 @@ if (gotSingleInstanceLock) {
   })
 
   app.on('window-all-closed', () => {
-    if (!getIsQuitting()) return
-    if (process.platform !== 'darwin') app.quit()
+    // macOS：未主动退出时保持后台（托盘）；已标记退出则一并退出
+    if (process.platform === 'darwin' && !getIsQuitting()) return
+    app.quit()
   })
 
   app.on('before-quit', () => {
+    // Cmd+Q / Dock「退出」不会经过 requestQuit，必须在此标记，否则 close 拦截会取消退出
+    markQuitting()
     unregisterQuickBarShortcut()
     unregisterMainWindowShortcut()
     destroyQuickBar()

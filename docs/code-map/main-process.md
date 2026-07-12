@@ -186,3 +186,4 @@ SyncBundle 整包 AES-256-GCM；魔数 `PBKS`，版本字节 `1`。
 
 - `rebuildTrayMenu()` — 菜单项：显示主窗口、快捷搜索（若启用）、**设置**、退出；文案来自 `shared/trayLabels.ts`（随 `ui_locale` 切换）
 - `openSettingsFromTray()` — `showFromTray()` 后向主窗口发送 `tray:open-settings`；渲染进程 `useAppState.openSettingsFromTray()` 处理（已解锁 → `navigateTo('settings')`；锁定 → `pendingScreenAfterUnlock = 'settings'`）
+- **退出**：`requestQuit()` / `before-quit` 均会 `markQuitting()`，避免 macOS Cmd+Q、Dock「退出」时被 `handleWindowClose` 的 `preventDefault` 取消
