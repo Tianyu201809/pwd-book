@@ -110,10 +110,11 @@ function focusMain(): void {
 
 async function activateEntry(entry: PasswordEntry): Promise<void> {
   const api = window.electronAPI
-  if (!api?.openLocalProgram || !api.touchEntry) return
+  if (!api?.openLocalProgram || !api.openExternal || !api.touchEntry) return
   try {
     await launchEntry(entry, {
       openLocalProgram: (programPath) => api.openLocalProgram(programPath),
+      openExternal: (url) => api.openExternal(url),
       touchEntry: (entryId) => api.touchEntry(entryId),
       focusEntryInMain: (entryId) => api.quickBarFocusEntry?.(entryId),
     })

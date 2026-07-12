@@ -2,7 +2,7 @@
 
 本文档说明悬浮快捷搜索条（Quick Bar）、「最近打开」列表、全局快捷键的实现与调试要点。
 
-**v1.26.0**：无本地程序时定位主窗口（`quickbar:focus-entry`，含无网址条目）；`quickBarRecentLimit`（5–20）同时约束最近打开与搜索结果；结果区固定高度滚动；`before-quit` / `markQuitting` 保证 macOS 可退出。
+**v1.26.0**：启动优先级为本地程序 → 打开网址 → 无目标时 `quickbar:focus-entry` 定位主窗口；`quickBarRecentLimit`（5–20）同时约束最近打开与搜索结果；结果区固定高度滚动；`before-quit` / `markQuitting` 保证 macOS 可退出。
 
 ## 模块一览
 
@@ -11,7 +11,7 @@
 | 快捷条窗口 | `src/main/quickBar.ts` | 置顶 BrowserWindow、显示/隐藏、快捷条全局快捷键 |
 | 主窗口快捷键 | `src/main/mainWindowShortcut.ts` | 全局快捷键唤起主窗口 |
 | 最近打开 | `src/main/services/quickBarRecentService.ts` | 快捷条专用最近列表（与 `last_used_at` 分离） |
-| 快捷条 UI | `src/components/QuickBarApp.vue` | 搜索、最近打开、移除；Enter 启动本地程序或定位主窗口网站条目 |
+| 快捷条 UI | `src/components/QuickBarApp.vue` | 搜索、最近打开、移除；Enter：程序 → 网址 → 定位主窗口 |
 | 样式 | `src/assets/styles/quickbar.css` | 快捷条独立样式（含选中高亮） |
 | 渲染入口 | `src/renderer/quickbar.html` + `quickbar.ts` | 独立 Vue 应用 |
 
