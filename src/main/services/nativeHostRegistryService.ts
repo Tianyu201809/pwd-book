@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { app } from 'electron'
+import { app, shell } from 'electron'
 import { appError, ErrorCode } from '../../shared/errors'
 import { getSetting, setSetting } from '../db/helpers'
 import type { NativeHostRegistrationInfo } from '../../shared/browserBridgeProtocol'
@@ -20,6 +20,24 @@ function resolveBundledNativeHostDir(): string {
     return path.join(process.resourcesPath, 'native-host')
   }
   return path.join(app.getAppPath(), 'native-host')
+}
+
+export function resolveBundledExtensionDir(): string {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'extension')
+  }
+  return path.join(app.getAppPath(), 'extension')
+}
+
+export async function openBundledExtensionDir(): Promise<void> {
+  const dir = resolveBundledExtensionDir()
+  if (!fs.existsSync(dir)) {
+    throw appError(ErrorCode.EXTENSION_DIR_NOT_FOUND)
+  }
+  const errorMessage = await shell.openPath(dir)
+  if (errorMessage) {
+    throw appError(ErrorCode.EXTENSION_DIR_OPEN_FAILED)
+  }
 }
 
 export function getUserNativeHostDir(): string {

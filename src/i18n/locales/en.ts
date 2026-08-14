@@ -78,6 +78,8 @@ export default {
     invalid_extension_id: 'Invalid extension ID (32 lowercase letters a–p)',
     native_host_not_found: 'Native Host not found. Reinstall PwdBook.',
     native_host_registry_failed: 'Failed to write registry. Retry as the current user.',
+    extension_dir_not_found: 'Extension folder not found. Check the installation.',
+    extension_dir_open_failed: 'Could not open the extension folder',
     browser_not_found: 'Chrome or Edge was not found. Open chrome://extensions or edge://extensions manually.',
     platform_unsupported: 'Browser registration is only supported on Windows',
     folder_sync_not_configured: 'Folder sync is not configured',
@@ -780,6 +782,7 @@ export default {
     browserFillExtensionIdPlaceholder: '32 chars a–p, from chrome://extensions',
     browserFillRegister: 'Register for Chrome / Edge',
     browserFillOpenExtensions: 'Copy extensions URL',
+    browserFillOpenExtensionDir: 'Open resources folder',
     browserFillOpenExtensionsDone:
       'Copied {url} to the clipboard. Switch to Chrome or Edge, paste in the address bar, and press Enter.',
     browserFillRegisterSuccess: 'Native Host registered. Fully quit and restart your browser.',

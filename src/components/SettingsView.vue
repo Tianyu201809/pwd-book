@@ -187,6 +187,14 @@ async function openExtensionsPage(): Promise<void> {
   }
 }
 
+async function openExtensionDir(): Promise<void> {
+  try {
+    await vaultApi.openExtensionDir()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
 async function regenerateBridgeToken(): Promise<void> {
   try {
     bridgeStatus.value = await vaultApi.regenerateBrowserBridgeToken()
@@ -564,6 +572,13 @@ async function handleReset(): Promise<void> {
                   @click="openExtensionsPage"
                 >
                   {{ t('settings.browserFillOpenExtensions') }}
+                </UiButton>
+                <UiButton
+                  variant="default"
+                  size="small"
+                  @click="openExtensionDir"
+                >
+                  {{ t('settings.browserFillOpenExtensionDir') }}
                 </UiButton>
               </div>
               <p

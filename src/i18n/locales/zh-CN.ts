@@ -77,6 +77,8 @@ export default {
     invalid_extension_id: '扩展 ID 格式不正确（应为 32 位小写字母 a–p）',
     native_host_not_found: '未找到 Native Host 程序，请重新安装 PwdBook',
     native_host_registry_failed: '写入系统注册表失败，请尝试以当前用户权限重试',
+    extension_dir_not_found: '未找到扩展目录，请确认安装完整',
+    extension_dir_open_failed: '无法打开扩展目录',
     browser_not_found: '未找到 Chrome 或 Edge，请手动打开 chrome://extensions 或 edge://extensions',
     platform_unsupported: '浏览器自动填充注册仅支持 Windows',
     folder_sync_not_configured: '尚未配置文件夹同步',
@@ -777,6 +779,7 @@ export default {
     browserFillExtensionIdPlaceholder: '32 位小写字母 a–p，见 chrome://extensions',
     browserFillRegister: '注册到 Chrome / Edge',
     browserFillOpenExtensions: '复制扩展页地址',
+    browserFillOpenExtensionDir: '打开 resources 目录',
     browserFillOpenExtensionsDone:
       '已复制 {url} 到剪贴板。请切换到 Chrome 或 Edge，在地址栏粘贴后按 Enter 打开扩展管理页。',
     browserFillRegisterSuccess: '已注册 Native Host，请完全退出并重新打开浏览器',

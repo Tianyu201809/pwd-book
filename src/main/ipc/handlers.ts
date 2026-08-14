@@ -92,6 +92,7 @@ import {
 } from '../services/browserBridgeService'
 import {
   getNativeHostRegistrationInfo,
+  openBundledExtensionDir,
   registerNativeHost,
 } from '../services/nativeHostRegistryService'
 import { getSyncStatus, publishEncryptedBundle } from '../services/syncBundleService'
@@ -470,6 +471,8 @@ export function registerIpcHandlers(): void {
   )
 
   ipcMain.handle(IPC.shellOpenExtensionsPage, () => wrap(() => openBrowserExtensionsPage()))
+
+  ipcMain.handle(IPC.shellOpenExtensionDir, () => wrap(() => openBundledExtensionDir()))
 
   ipcMain.handle(IPC.clipboardCopy, (_event, payload: { text: string; clearAfterMs?: number }) =>
     wrap(() => {

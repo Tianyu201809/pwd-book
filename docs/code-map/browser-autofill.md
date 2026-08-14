@@ -121,6 +121,7 @@ sequenceDiagram
 - **「安装向导」**（**v1.17.0**）→ `BrowserExtensionGuideModal`：6 步（开启开关 → 安装扩展 → 复制 ID → 注册 Host → 重启浏览器 → 解锁使用）；步骤 4 要求 `nativeHostInfo.registered` 才可下一步；`BrowserExtensionGuideVisual` 提供每步示意图。
 - 扩展 ID 输入 + **「注册到 Chrome / Edge」** → IPC `browser:register-native-host`
 - **「打开扩展管理页」** → IPC `shell:open-extensions-page` → [`openBrowserExtensionsPage`](../../src/main/services/browserLaunchService.ts)：Windows 下按已安装浏览器与默认浏览器选择 URL，**写入剪贴板**并返回 `{ copiedUrl }`；Toast 提示用户切换到浏览器粘贴。
+- **「打开 resources 目录」** → IPC `shell:open-extension-dir` → [`openBundledExtensionDir`](../../src/main/services/nativeHostRegistryService.ts)：打包后打开 `resources/extension`，开发时打开项目 `extension/`。
 
 命令行等价：`npm run register-native-host -- <扩展ID>`（[`scripts/register-native-host.mjs`](../../scripts/register-native-host.mjs)）。
 

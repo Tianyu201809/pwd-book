@@ -98,6 +98,7 @@ export const vaultApi = {
   getNativeHostRegistrationInfo: () => getApi().getNativeHostRegistrationInfo(),
   registerNativeHost: (extensionId: string) => getApi().registerNativeHost(extensionId),
   openExtensionsPage: () => getApi().openExtensionsPage(),
+  openExtensionDir: () => getApi().openExtensionDir(),
 
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     getApi().copySecret(text, clearAfterMs),

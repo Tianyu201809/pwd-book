@@ -356,6 +356,7 @@ export const IPC = {
   browserNativeHostInfo: 'browser:native-host-info',
   browserRegisterNativeHost: 'browser:register-native-host',
   shellOpenExtensionsPage: 'shell:open-extensions-page',
+  shellOpenExtensionDir: 'shell:open-extension-dir',
   syncStatus: 'sync:status',
   syncExportBundle: 'sync:export-bundle',
   syncImportBundle: 'sync:import-bundle',

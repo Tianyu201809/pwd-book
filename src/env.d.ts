@@ -88,6 +88,7 @@ declare global {
       getNativeHostRegistrationInfo: () => Promise<NativeHostRegistrationInfo>
       registerNativeHost: (extensionId: string) => Promise<NativeHostRegistrationInfo>
       openExtensionsPage: () => Promise<{ copiedUrl: string }>
+      openExtensionDir: () => Promise<void>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
       openExternal: (url: string) => Promise<void>
       openLocalProgram: (programPath: string) => Promise<void>
