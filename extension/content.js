@@ -146,6 +146,13 @@ function createPrimaryButton(label, onClick) {
 
 let scanTimer = null
 let lastMatchSignature = ''
+let lastAutoFilledSignature = ''
+
+function shouldAutoFill({ signature, lastAutoFilledSignature, uiExists }) {
+  if (!signature) return false
+  if (!uiExists) return true
+  return signature !== lastAutoFilledSignature
+}
 
 function isVisibleFillInput(el) {
   if (!el || !(el instanceof HTMLInputElement)) return false
@@ -200,6 +207,7 @@ function fillInput(el, value) {
 function removeUi() {
   document.getElementById(ROOT_ID)?.remove()
   lastMatchSignature = ''
+  lastAutoFilledSignature = ''
 }
 
 function matchSignature(matches) {
@@ -266,17 +274,16 @@ function createUi(matches, pageUrl) {
     const user = findUsernameField(pwd)
     fillInput(user, res.data.username)
     fillInput(pwd, res.data.password)
-    removeUi()
   }
+
+  let selectedId = matches[0].id
 
   if (matches.length === 1) {
     const label = matches[0].title || matches[0].username || '登录'
     actions.appendChild(
-      createPrimaryButton(`填充 · ${label}`, () => void fillOne(matches[0].id)),
+      createPrimaryButton(`填充 · ${label}`, () => void fillOne(selectedId)),
     )
   } else {
-    let selectedId = matches[0].id
-
     const picker = document.createElement('div')
     picker.className = 'pwdbook-picker'
 
@@ -312,6 +319,7 @@ function createUi(matches, pageUrl) {
         toggleLabel.textContent = formatMatchTitle(m)
         menu.hidden = true
         picker.classList.remove('is-open')
+        void fillOne(selectedId)
       })
       menu.appendChild(item)
     }
@@ -345,6 +353,17 @@ function createUi(matches, pageUrl) {
   const collapseBtn = root.querySelector('.pwdbook-collapse-btn')
   if (collapseBtn) syncCollapseButton(root, collapseBtn)
   clampUiPosition(root)
+
+  if (
+    shouldAutoFill({
+      signature,
+      lastAutoFilledSignature,
+      uiExists: Boolean(document.getElementById(ROOT_ID)),
+    })
+  ) {
+    lastAutoFilledSignature = signature
+    void fillOne(selectedId)
+  }
 }
 
 function formatMatchTitle(m) {
