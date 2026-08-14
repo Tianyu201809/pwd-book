@@ -91,7 +91,7 @@ sequenceDiagram
 |------|------|
 | `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`content_scripts` |
 | `background.js` | `connectNative('com.pwdbook.app')` 转发 |
-| `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter |
+| `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter；匹配后自动填充，切换账号立刻覆盖，填充成功后不拆条 |
 | `content.css` | 填充条布局与交互样式（**v1.15.0** 收起态、拖拽光标） |
 | `popup.js` | 连接状态（已连接 / 锁定 / BRIDGE_NOT_RUNNING 等） |
 | `pwdbook-theme.css` | 与经典主题一致的配色变量 |
@@ -107,6 +107,9 @@ sequenceDiagram
 | **拖拽** | 按住标题栏（`.pwdbook-header`，含品牌图标与标题）拖动；松手后写入 `localStorage` 键 `pwdbook-ui-x` / `pwdbook-ui-y`；位置限制在视口内 |
 | **收起** | 标题栏右侧按钮（`.pwdbook-collapse-btn`）切换 `is-collapsed`；收起后隐藏标题文字与填充操作区，仅保留图标与展开按钮 |
 | **持久化** | 同站点 `localStorage`：`pwdbook-ui-collapsed`（`'1'` / `'0'`）；重建 UI（如匹配条目变化）时 `applyUiPreferences` 恢复状态 |
+| **自动填充** | 填充条首次出现（匹配签名变化，或条被拆掉后重建）时，用当前选中项（默认 `matches[0]`，即 `last_used_at` 最新）调用 `getCredential` 并覆盖写入用户名/密码 |
+| **切换账号** | 下拉选中另一条目后立刻填充并覆盖；不必再点「填充」 |
+| **填充按钮** | 保留为补救：自动填失败或密码框晚出现时可再点；成功后条留在页面 |
 
 样式见 [`content.css`](../../extension/content.css)（`.pwdbook-header`、`.is-collapsed`、`.is-dragging`）。修改 content script 后须在 `chrome://extensions` **重新加载** 扩展。
 
