@@ -25,6 +25,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Use official Electron binary hosts
+        run: |
+          npm config delete electron_mirror --location=project
+          npm config delete electron_builder_binaries_mirror --location=project
+
       - name: Resolve version from tag
         shell: bash
         run: |
@@ -76,6 +81,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Use official Electron binary hosts
+        run: |
+          npm config delete electron_mirror --location=project
+          npm config delete electron_builder_binaries_mirror --location=project
+
       - name: Install AppImage dependencies
         run: |
           sudo apt-get update
@@ -118,6 +128,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Use official Electron binary hosts
+        run: |
+          npm config delete electron_mirror --location=project
+          npm config delete electron_builder_binaries_mirror --location=project
 
       - name: Resolve version from tag
         shell: bash
