@@ -19,13 +19,13 @@
     "predist:win:dir": "npm run icons",
     "predist:mac": "npm run icons",
     "predist:mac:dir": "npm run icons",
-    "dist": "npm run build && electron-builder",
-    "dist:win": "npm run build && electron-builder --win",
-    "dist:win:dir": "npm run build && electron-builder --win --dir",
-    "dist:mac": "npm run build && electron-builder --mac",
-    "dist:mac:dir": "npm run build && electron-builder --mac --dir",
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:win": "npm run build && electron-builder --win --publish never",
+    "dist:win:dir": "npm run build && electron-builder --win --dir --publish never",
+    "dist:mac": "npm run build && electron-builder --mac --publish never",
+    "dist:mac:dir": "npm run build && electron-builder --mac --dir --publish never",
     "predist:linux": "npm run icons",
-    "dist:linux": "npm run build && electron-builder --linux"
+    "dist:linux": "npm run build && electron-builder --linux --publish never"
   },
   "build": {
     "appId": "com.pwdbook.app",
