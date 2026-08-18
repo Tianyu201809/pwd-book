@@ -40,7 +40,7 @@ npm run dev
 
 若你用过 KeePass、Bitwarden 离线库或 1Password 本地 vault，核心思路相同：**主密码 + 本地加密存储**。PwdBook 的差异在于开箱即用的桌面体验、恢复密钥流程，以及可选的加密邮箱灾备。
 
-应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；**v1.20.0** 主窗口标题栏支持 **窗口置顶** 图钉；**v1.21.0** **设置 → 安全** 支持 **开机自动启动**（默认关闭；**v1.23.0** 修复 Windows 含空格安装路径）；**v1.22.0** 条目支持 **附件**、**自定义字段** 与 **列表/方块** 布局切换；**v1.23.0** 托盘菜单可直达 **设置**、数据库损坏时自动隔离备份并创建空库；**v1.24.0** 标题栏 **产品学习** 提供 6 条交互式引导路径；**v1.25.0** 侧栏底部改为 **工具箱 / 管理 / 回收站 / 设置** 图标栏，**标签筛选** 迁至列表工具栏；**v1.26.0** 快捷条可配置显示条数、无目标条目可定位主窗口、列表可滚动，并修复 macOS 无法退出；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）与 **macOS**（DMG，x64 / arm64）。
+应用提供「数字保险库」与 **Animal Island** 两套视觉皮肤，标题栏可**快捷换肤**；**v1.20.0** 主窗口标题栏支持 **窗口置顶** 图钉；**v1.21.0** **设置 → 安全** 支持 **开机自动启动**（默认关闭；**v1.23.0** 修复 Windows 含空格安装路径）；**v1.22.0** 条目支持 **附件**、**自定义字段** 与 **列表/方块** 布局切换；**v1.23.0** 托盘菜单可直达 **设置**、数据库损坏时自动隔离备份并创建空库；**v1.24.0** 标题栏 **产品学习** 提供 6 条交互式引导路径；**v1.25.0** 侧栏底部改为 **工具箱 / 管理 / 回收站 / 设置** 图标栏，**标签筛选** 迁至列表工具栏；**v1.26.0** 快捷条可配置显示条数、无目标条目可定位主窗口、列表可滚动，并修复 macOS 无法退出；支持中英文界面；默认窗口 1200×760，自定义标题栏。官方打包支持 **Windows**（NSIS）、**macOS**（DMG，x64 / arm64）与 **Linux**（AppImage）；推送 `v*` tag 可经 GitHub Actions 发布 Release。
 
 <p align="center">
   <img src="./docs/images/main.png" alt="PwdBook 主界面：侧栏分类、搜索与条目列表" width="720" />
@@ -52,7 +52,7 @@ npm run dev
 | 数据位置 | `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录 |
 | 加密 | 主密码 scrypt 校验；条目密码 AES-256-GCM |
 | 进程模型 | 主进程（业务与加密）+ Preload 桥 + Vue 渲染进程 |
-| 官方打包 | **Windows**（NSIS）· **macOS**（DMG，v1.10.0 起） |
+| 官方打包 | **Windows**（NSIS）· **macOS**（DMG）· **Linux**（AppImage）；CI：tag `v*` → GitHub Release |
 
 ## 产品截图
 
@@ -335,7 +335,7 @@ npm run dev
 
 - [Node.js](https://nodejs.org/) **20 LTS** 或更高版本
 - npm（随 Node 安装）
-- **Windows** 或 **macOS**（开发与对应平台打包；Linux 未在 `electron-builder` 中配置）
+- **Windows**、**macOS** 或 **Linux**（各平台可用 `npm run dist:win` / `dist:mac` / `dist:linux` 打包；推送 `v*` tag 可经 CI 发 GitHub Release）
 
 ### 安装与开发
 
@@ -363,6 +363,7 @@ npm run dev
 | `npm run dist:win:dir` | 构建 Windows 未打包目录版，便于本地调试 |
 | `npm run dist:mac` | 构建并生成 macOS DMG（x64 / arm64，输出 `release/`） |
 | `npm run dist:mac:dir` | 构建 macOS 未打包 `.app` 目录版，便于本地调试 |
+| `npm run dist:linux` | 构建并生成 Linux x64 AppImage（输出 `release/`） |
 | `npm run screenshots:animal` | 生成 Animal Island 主题 README 截图（输出 `docs/images/animal-*.png`） |
 
 > [!TIP]

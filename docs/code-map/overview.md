@@ -142,5 +142,16 @@ src/
 | `npm run dist:win:dir` | Windows x64 | `release/win-unpacked/` |
 | `npm run dist:mac` | macOS x64 + arm64 | `release/PwdBook-{version}-{arch}.dmg`（v1.10.0） |
 | `npm run dist:mac:dir` | macOS | `release/mac/` 或 `release/mac-arm64/` 下的 `.app` |
+| `npm run dist:linux` | Linux x64 | `release/PwdBook-{version}.AppImage` |
 
-macOS 配置见 `package.json` → `build.mac` / `build.dmg`。当前未配置代码签名（与 Windows `signAndEditExecutable: false` 类似），分发需在目标机器处理 Gatekeeper 提示。
+macOS / Windows 当前未配置代码签名（Windows `signAndEditExecutable: false`）；分发时目标机器可能提示 SmartScreen / Gatekeeper。
+
+### GitHub Release CI
+
+推送匹配 `v*` 的 tag（如 `v1.27.0`）会触发 `.github/workflows/release.yml`：并行构建 Windows / Linux / macOS，并创建或更新对应 GitHub Release。Release 资产为：
+
+- Windows：`PwdBook-{version}-Setup.zip`（内含 NSIS `Setup.exe`）
+- Linux：`PwdBook-{version}.AppImage`
+- macOS：`PwdBook-{version}-x64.dmg`、`PwdBook-{version}-arm64.dmg`
+
+旧标签名 `release-v*` **不会**触发该 workflow。
