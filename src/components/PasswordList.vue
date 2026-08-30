@@ -441,7 +441,10 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
               <div
                 v-else
                 class="grid-tile-avatar"
-                :style="{ background: entry.avatar?.color ?? getAvatarMeta(entry.title).color }"
+                :style="{
+                  background: entry.avatar?.bg ?? getAvatarMeta(entry.title).bg,
+                  color: entry.avatar?.color ?? getAvatarMeta(entry.title).color,
+                }"
               >
                 {{ entry.avatar?.text ?? getAvatarMeta(entry.title).text }}
               </div>
@@ -515,7 +518,10 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
             <div
               v-else
               class="avatar"
-              :style="{ background: entry.avatar?.color ?? getAvatarMeta(entry.title).color }"
+              :style="{
+                background: entry.avatar?.bg ?? getAvatarMeta(entry.title).bg,
+                color: entry.avatar?.color ?? getAvatarMeta(entry.title).color,
+              }"
             >
               {{ entry.avatar?.text ?? getAvatarMeta(entry.title).text }}
             </div>
@@ -1147,7 +1153,6 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   justify-content: center;
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
   letter-spacing: 0.02em;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }

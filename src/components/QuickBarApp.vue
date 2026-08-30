@@ -272,7 +272,10 @@ onUnmounted(() => {
           <span
             v-else
             class="quickbar-avatar-letter"
-            :style="{ background: getAvatarMeta(entry.title).color }"
+            :style="{
+              background: getAvatarMeta(entry.title).bg,
+              color: getAvatarMeta(entry.title).color,
+            }"
           >
             {{ getAvatarMeta(entry.title).text }}
           </span>

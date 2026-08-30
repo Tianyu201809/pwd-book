@@ -124,16 +124,17 @@ export function cloneForIpc<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
 
-export function getAvatarMeta(title: string): { text: string; color: string } {
+export function getAvatarMeta(title: string): { text: string; color: string; bg: string } {
   const text = title.trim().charAt(0).toUpperCase() || '?'
   const palette = [
-    'rgba(59,130,246,0.15)',
-    'rgba(239,68,68,0.12)',
-    'rgba(201,162,39,0.12)',
-    'rgba(52,211,153,0.12)',
-    'rgba(139,92,246,0.12)',
-    'rgba(14,165,233,0.12)',
+    { color: '#2563eb', bg: 'rgba(37, 99, 235, 0.22)' },
+    { color: '#dc2626', bg: 'rgba(220, 38, 38, 0.22)' },
+    { color: '#b45309', bg: 'rgba(180, 83, 9, 0.22)' },
+    { color: '#059669', bg: 'rgba(5, 150, 105, 0.22)' },
+    { color: '#7c3aed', bg: 'rgba(124, 58, 237, 0.22)' },
+    { color: '#0284c7', bg: 'rgba(2, 132, 199, 0.22)' },
   ]
   const index = text.charCodeAt(0) % palette.length
-  return { text, color: palette[index] }
+  const swatch = palette[index]!
+  return { text, color: swatch.color, bg: swatch.bg }
 }

@@ -217,7 +217,10 @@ function handleEmptyTrash(): void {
                   <div
                     v-else
                     class="trash-avatar"
-                    :style="{ background: getAvatarMeta(entry.title).color }"
+                    :style="{
+                      background: getAvatarMeta(entry.title).bg,
+                      color: getAvatarMeta(entry.title).color,
+                    }"
                   >
                     {{ getAvatarMeta(entry.title).text }}
                   </div>

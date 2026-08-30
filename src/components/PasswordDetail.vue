@@ -707,7 +707,7 @@ watch(detailCollapsed, () => {
             <span
               v-else
               class="avatar-letter"
-              :style="{ background: avatar.color }"
+              :style="{ background: avatar.bg, color: avatar.color }"
             >
               {{ avatar.text }}
             </span>
