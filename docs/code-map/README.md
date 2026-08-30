@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.26.0**（`package.json`）— 快捷条网站条目定位主窗口、可配置显示条数（5–20）、列表滚动；修复 macOS 退出拦截等。
+**当前版本：v1.30.0**（`package.json`）— 条目预设品牌图标、网址自动匹配；快捷条条数可配 / 定位主窗口等见既有版本说明。
 
 ## 文档索引
 
@@ -37,6 +37,7 @@
 | 改 UI 状态与保存 | `useAppState.ts`、`PasswordDetail.vue` |
 | 改分类/侧边栏 | `categoryService.ts`、`VaultSidebar.vue` |
 | 改图标选择 / 字母图标 / 彩色徽章 | `shared/categoryIcons.ts`、`shared/navIconStyles.ts`、`IconPickerModal.vue`、`IconBadge.vue`、`CategoryIconView.vue` |
+| 改预设品牌图标 / 网址匹配 | `shared/presetIcons.ts`、`shared/presetIconAssets.ts`、`src/assets/preset-icons/`、`IconPickerModal.vue`、`PasswordDetail.vue`（**v1.30.0**） |
 | 改邮箱备份入口 / 返回导航 | `SettingsView.vue`、`EmailBackupView.vue`、`useAppState.ts`（`openEmailBackup`） |
 | 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue` |
 | 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |

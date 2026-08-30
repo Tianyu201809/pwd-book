@@ -32,16 +32,16 @@ App.vue
 ├── TagManagePanel.vue        # 标签管理
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
 ├── export/ExportDataModal.vue  # 导出到其他应用 CSV
-├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母；条目另有品牌页）
+├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母；**v1.30.0** 条目另有品牌页）
 ├── IconBadge.vue             # 侧栏/设置页彩色图标徽章（v1.11.0）
-├── CategoryIconView.vue      # 彩色图标或字母渲染
+├── CategoryIconView.vue      # 彩色图标、字母或预设品牌图（**v1.30.0**）
 └── ToastHost.vue             # 全局 Toast 容器
 
 # 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
 # 独立渲染入口 detail.html → DetailWindowApp.vue（v1.14.0 详情小窗口，见下文）
 ```
 
-### 条目展示图标 `display_icon`
+### 条目展示图标 `display_icon`（**v1.30.0**）
 
 | 值 | 界面 |
 |----|------|
