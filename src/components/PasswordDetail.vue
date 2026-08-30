@@ -19,6 +19,8 @@ import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
 import { vaultApi } from '@/services/vaultApi'
 import type { PasswordEntryInput, EntryAttachmentMeta, EntryCustomField } from '@/types'
 import { MAX_CUSTOM_FIELDS_PER_ENTRY, normalizeCustomFields } from '@/shared/customFields'
+import { matchPresetIconByUrl, shouldApplyPresetFromUrl } from '@/shared/presetIcons'
+import { canRenderDisplayIcon } from '@/shared/presetIconAssets'
 
 const props = withDefaults(
   defineProps<{
@@ -121,6 +123,7 @@ const isEditing = ref(false)
 const showPassword = ref(false)
 const showTotpSecret = ref(false)
 const showIconPicker = ref(false)
+const hydratingDraft = ref(false)
 const draft = ref<PasswordEntryInput>({
   title: '',
   url: '',
@@ -300,6 +303,16 @@ const shellStyle = computed(() => ({
 
 const formEditable = computed(() => isCreating.value || isEditing.value)
 
+watch(
+  () => draft.value.url,
+  (next, prev) => {
+    if (hydratingDraft.value || !formEditable.value) return
+    if (!shouldApplyPresetFromUrl(prev ?? '', next ?? '', draft.value.displayIcon ?? '')) return
+    const matched = matchPresetIconByUrl(next ?? '')
+    if (matched) draft.value.displayIcon = matched
+  },
+)
+
 const draftCustomFields = computed(() => draft.value.customFields ?? [])
 
 const showCustomFieldsSection = computed(
@@ -333,6 +346,7 @@ async function copyCustomFieldValue(value: string): Promise<void> {
 }
 
 function resetDraftFromEntry(): void {
+  hydratingDraft.value = true
   showTotpSecret.value = false
   if (isCreating.value || !selectedEntry.value) {
     draft.value = {
@@ -351,6 +365,9 @@ function resetDraftFromEntry(): void {
     }
     closeTagPicker()
     refreshTotpDisplay()
+    void nextTick(() => {
+      hydratingDraft.value = false
+    })
     return
   }
 
@@ -370,6 +387,9 @@ function resetDraftFromEntry(): void {
   }
   closeTagPicker()
   refreshTotpDisplay()
+  void nextTick(() => {
+    hydratingDraft.value = false
+  })
 }
 
 watch(
@@ -679,8 +699,8 @@ watch(detailCollapsed, () => {
             @click="showIconPicker = true"
           >
             <CategoryIconView
-              v-if="draft.displayIcon"
-              :name="draft.displayIcon"
+              v-if="canRenderDisplayIcon(draft.displayIcon ?? '')"
+              :name="draft.displayIcon ?? ''"
               :badge-size="48"
               :size="22"
             />
@@ -1262,6 +1282,7 @@ watch(detailCollapsed, () => {
     <IconPickerModal
       v-model:open="showIconPicker"
       :selected="draft.displayIcon"
+      :allow-presets="true"
       @select="handleIconSelect"
       @clear="handleIconClear"
     />
