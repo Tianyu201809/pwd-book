@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getCategoryIcon, getCategoryIconMeta, getLetterFromIcon, isLetterIcon } from '@/shared/categoryIcons'
+import { parsePresetIconId } from '@/shared/presetIcons'
+import { getPresetIconUrl } from '@/shared/presetIconAssets'
 
 const props = withDefaults(
   defineProps<{
@@ -20,13 +22,31 @@ const meta = computed(() => getCategoryIconMeta(props.name))
 const Icon = computed(() => getCategoryIcon(props.name))
 const letter = computed(() => (isLetterIcon(props.name) ? getLetterFromIcon(props.name) : ''))
 const letterFontSize = computed(() => Math.max(10, Math.round(props.size * 0.92)))
+const presetUrl = computed(() => {
+  const id = parsePresetIconId(props.name)
+  return id ? getPresetIconUrl(id) : undefined
+})
+const presetFailed = ref(false)
+watch(presetUrl, () => {
+  presetFailed.value = false
+})
 
-const badgeStyle = computed(() => ({
-  width: `${props.badgeSize}px`,
-  height: `${props.badgeSize}px`,
-  background: meta.value.bg,
-  color: meta.value.color,
-}))
+const badgeStyle = computed(() => {
+  if (presetUrl.value && !presetFailed.value) {
+    return {
+      width: `${props.badgeSize}px`,
+      height: `${props.badgeSize}px`,
+      background: 'var(--bg-elevated)',
+      color: 'var(--text-secondary)',
+    }
+  }
+  return {
+    width: `${props.badgeSize}px`,
+    height: `${props.badgeSize}px`,
+    background: meta.value.bg,
+    color: meta.value.color,
+  }
+})
 </script>
 
 <template>
@@ -35,8 +55,15 @@ const badgeStyle = computed(() => ({
     class="category-icon-badge"
     :style="badgeStyle"
   >
+    <img
+      v-if="presetUrl && !presetFailed"
+      :src="presetUrl"
+      alt=""
+      class="preset-icon"
+      @error="presetFailed = true"
+    >
     <span
-      v-if="letter"
+      v-else-if="letter"
       class="letter-icon"
       :style="{ fontSize: `${letterFontSize}px` }"
     >{{ letter }}</span>
@@ -47,6 +74,13 @@ const badgeStyle = computed(() => ({
       :stroke-width="1.5"
     />
   </span>
+  <img
+    v-else-if="presetUrl && !presetFailed"
+    :src="presetUrl"
+    alt=""
+    class="preset-icon"
+    @error="presetFailed = true"
+  >
   <span
     v-else-if="letter"
     class="plain-letter"
@@ -82,5 +116,12 @@ const badgeStyle = computed(() => ({
 
 .plain-icon {
   flex-shrink: 0;
+}
+
+.preset-icon {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  pointer-events: none;
 }
 </style>
