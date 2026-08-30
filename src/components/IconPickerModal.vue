@@ -9,10 +9,12 @@ import {
   LETTER_ICON_OPTIONS,
   isLetterIcon,
 } from '@/shared/categoryIcons'
+import { formatPresetIconId, isPresetIcon, searchPresetIcons } from '@/shared/presetIcons'
+import { hasPresetIconAsset } from '@/shared/presetIconAssets'
 import { UiModal, UiInput, UiButton } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 
-type PickerTab = 'icons' | 'letters'
+type PickerTab = 'icons' | 'letters' | 'brands'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -21,9 +23,11 @@ const props = withDefaults(
     selected?: string
     title?: string
     allowClear?: boolean
+    allowPresets?: boolean
   }>(),
   {
     allowClear: true,
+    allowPresets: false,
     selected: undefined,
     title: undefined,
   },
@@ -34,36 +38,60 @@ const emit = defineEmits<{
   clear: []
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { isAnimalIsland } = useTheme()
 
 const query = ref('')
 const activeTab = ref<PickerTab>('icons')
 
-const tabItems = computed(() => [
-  { key: 'icons' as const, label: t('icons.tabIcons') },
-  { key: 'letters' as const, label: t('icons.tabLetters') },
-])
-
-const sourceIcons = computed(() =>
-  activeTab.value === 'letters' ? LETTER_ICON_OPTIONS : BASE_CATEGORY_ICON_OPTIONS,
-)
+const tabItems = computed(() => {
+  const items: { key: PickerTab; label: string }[] = [
+    { key: 'icons', label: t('icons.tabIcons') },
+    { key: 'letters', label: t('icons.tabLetters') },
+  ]
+  if (props.allowPresets) {
+    items.push({ key: 'brands', label: t('icons.tabBrands') })
+  }
+  return items
+})
 
 watch(open, (isOpen) => {
   if (!isOpen) return
   query.value = ''
+  if (props.allowPresets && props.selected && isPresetIcon(props.selected)) {
+    activeTab.value = 'brands'
+    return
+  }
   activeTab.value = props.selected && isLetterIcon(props.selected) ? 'letters' : 'icons'
 })
 
+const brandCells = computed(() =>
+  searchPresetIcons(query.value)
+    .filter((icon) => hasPresetIconAsset(icon.id))
+    .map((icon) => ({
+      value: formatPresetIconId(icon.id),
+      label: String(locale.value).startsWith('zh') ? icon.labelZh : icon.labelEn,
+      color: '#64748b',
+      bg: 'transparent',
+    })),
+)
+
 const filteredIcons = computed(() => {
+  if (activeTab.value === 'brands') return brandCells.value
+  const source = activeTab.value === 'letters' ? LETTER_ICON_OPTIONS : BASE_CATEGORY_ICON_OPTIONS
   const keyword = query.value.trim().toLowerCase()
-  if (!keyword) return sourceIcons.value
-  return sourceIcons.value.filter(
+  if (!keyword) return source
+  return source.filter(
     (icon) =>
       translateIconLabel(icon.value).toLowerCase().includes(keyword) ||
       icon.value.toLowerCase().includes(keyword),
   )
 })
+
+function cellTitle(icon: { value: string; label?: string }): string {
+  if (activeTab.value === 'brands' && icon.label) return icon.label
+  return translateIconLabel(icon.value)
+}
 
 function close(): void {
   open.value = false
@@ -152,7 +180,7 @@ function useLetterAvatar(): void {
             type="button"
             class="icon-cell"
             :class="{ selected: selected === icon.value }"
-            :title="translateIconLabel(icon.value)"
+            :title="cellTitle(icon)"
             :style="
               selected === icon.value
                 ? { borderColor: icon.color, background: icon.bg }

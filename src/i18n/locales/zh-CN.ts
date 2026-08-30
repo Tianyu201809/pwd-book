@@ -1191,6 +1191,7 @@ export default {
     pickIcon: '选择图标',
     tabIcons: '图标',
     tabLetters: '字母',
+    tabBrands: '品牌',
     noMatch: '没有匹配的图标',
     useInitial: '使用标题首字母',
   },

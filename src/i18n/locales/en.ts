@@ -1198,6 +1198,7 @@ export default {
     pickIcon: 'Choose icon',
     tabIcons: 'Icons',
     tabLetters: 'Letters',
+    tabBrands: 'Brands',
     noMatch: 'No matching icons',
     useInitial: 'Use title initial',
   },
