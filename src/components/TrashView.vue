@@ -5,6 +5,7 @@ import { ArrowLeft, Trash2, RotateCcw, Undo2 } from 'lucide-vue-next'
 import CategoryIconView from '@/components/CategoryIconView.vue'
 import { UiButton, UiModal } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
+import { canRenderDisplayIcon } from '@/shared/presetIconAssets'
 import { getAvatarMeta } from '@/shared/utils'
 import type { TrashedEntry } from '@/types'
 
@@ -208,7 +209,7 @@ function handleEmptyTrash(): void {
               >
                 <div class="trash-item-main">
                   <CategoryIconView
-                    v-if="entry.displayIcon"
+                    v-if="canRenderDisplayIcon(entry.displayIcon)"
                     :name="entry.displayIcon"
                     :badge-size="36"
                     :size="16"

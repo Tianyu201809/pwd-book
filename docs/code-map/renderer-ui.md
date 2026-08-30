@@ -32,7 +32,7 @@ App.vue
 ├── TagManagePanel.vue        # 标签管理
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
 ├── export/ExportDataModal.vue  # 导出到其他应用 CSV
-├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母 Tab、搜索）
+├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母；条目另有品牌页）
 ├── IconBadge.vue             # 侧栏/设置页彩色图标徽章（v1.11.0）
 ├── CategoryIconView.vue      # 彩色图标或字母渲染
 └── ToastHost.vue             # 全局 Toast 容器
@@ -40,6 +40,16 @@ App.vue
 # 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
 # 独立渲染入口 detail.html → DetailWindowApp.vue（v1.14.0 详情小窗口，见下文）
 ```
+
+### 条目展示图标 `display_icon`
+
+| 值 | 界面 |
+|----|------|
+| `""` | 条目标题首字 |
+| Lucide 名 / `LetterA`–`LetterZ` | `CategoryIconView` |
+| `preset:{id}` | 本地 `src/assets/preset-icons/` 彩色 Logo；目录见 `src/shared/presetIcons.ts` |
+
+条目选择器可开「品牌」页（`allowPresets`）。分类选择器不传该开关。网址在编辑草稿中变化且图标为空时，`matchPresetIconByUrl` 写入对应 `preset:{id}`。未知 id 或文件缺失时 `canRenderDisplayIcon` 为假，退回标题首字。
 
 ### DetailWindowApp.vue（v1.14.0）
 

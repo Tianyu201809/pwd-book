@@ -9,6 +9,7 @@ import TagFilterPanel from '@/components/TagFilterPanel.vue'
 import { UiInput, UiButton, UiModal } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
+import { canRenderDisplayIcon } from '@/shared/presetIconAssets'
 import { getAvatarMeta } from '@/shared/utils'
 import { TOUR_PREPARE_EVENT, type TourPrepareAction } from '@/shared/productTourTypes'
 import type { ListLayoutMode, ListSortOrder, PasswordEntry } from '@/types'
@@ -432,7 +433,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
           >
             <div class="grid-tile-visual">
               <CategoryIconView
-                v-if="entry.displayIcon"
+                v-if="canRenderDisplayIcon(entry.displayIcon)"
                 :name="entry.displayIcon"
                 :badge-size="44"
                 :size="20"
@@ -506,7 +507,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
             @click="handleSelect(entry.id)"
           >
             <CategoryIconView
-              v-if="entry.displayIcon"
+              v-if="canRenderDisplayIcon(entry.displayIcon)"
               :name="entry.displayIcon"
               :badge-size="36"
               :size="16"

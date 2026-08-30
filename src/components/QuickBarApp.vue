@@ -15,6 +15,7 @@ import {
   QUICK_BAR_RECENT_LIMIT_DEFAULT,
   QUICK_BAR_RESULTS_MAX_HEIGHT_PX,
 } from '@/shared/quickBarLimits'
+import { canRenderDisplayIcon } from '@/shared/presetIconAssets'
 import { getAvatarMeta, parseErrorMessage } from '@/shared/utils'
 import type { PasswordEntry } from '@/types'
 
@@ -264,7 +265,7 @@ onUnmounted(() => {
       >
         <span class="quickbar-avatar">
           <CategoryIconView
-            v-if="entry.displayIcon"
+            v-if="canRenderDisplayIcon(entry.displayIcon)"
             :name="entry.displayIcon"
             :size="14"
           />
