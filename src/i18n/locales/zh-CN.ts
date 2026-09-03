@@ -389,6 +389,7 @@ export default {
     totpSecretHint: '选填。用于生成 6 位动态验证码（30 秒刷新）',
     copyTotp: '复制验证码',
     totpCopied: '验证码已复制',
+    copied: '已复制到剪贴板',
     totpRemaining: '{seconds} 秒后刷新',
     attachments: '附件',
     attachmentsEmpty: '暂无附件',

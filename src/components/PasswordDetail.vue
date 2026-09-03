@@ -37,6 +37,7 @@ const DETAIL_COLLAPSED_WIDTH = 40
 const DETAIL_MIN_WIDTH_FALLBACK = 400
 const DETAIL_MAX_WIDTH_FALLBACK = 560
 const LIST_COLUMN_MIN_WIDTH_FALLBACK = 240
+const COPY_TOAST_DURATION_MS = 3000
 
 function readCssPxVar(name: string, fallback: number): number {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -342,7 +343,7 @@ function removeCustomField(index: number): void {
 async function copyCustomFieldValue(value: string): Promise<void> {
   if (!value) return
   await window.electronAPI?.copySecret(value, 0)
-  showToast(t('detail.customFieldCopied'), 'success')
+  showToast(t('detail.customFieldCopied'), 'success', COPY_TOAST_DURATION_MS)
 }
 
 function resetDraftFromEntry(): void {
@@ -433,7 +434,7 @@ function buildInput(): PasswordEntryInput {
 async function handleCopyTotp(): Promise<void> {
   if (!totpCode.value) return
   await window.electronAPI?.copySecret(totpCode.value, 0)
-  showToast(t('detail.totpCopied'), 'success')
+  showToast(t('detail.totpCopied'), 'success', COPY_TOAST_DURATION_MS)
 }
 
 async function handleSave(): Promise<void> {
@@ -457,16 +458,19 @@ async function handleCopyUrl(): Promise<void> {
   const url = (draft.value.url ?? '').trim()
   if (!url) return
   await copyUsername(url)
+  showToast(t('detail.copied'), 'success', COPY_TOAST_DURATION_MS)
 }
 
 async function handleCopyUsername(): Promise<void> {
   if (!draft.value.username) return
   await copyUsername(draft.value.username)
+  showToast(t('detail.copied'), 'success', COPY_TOAST_DURATION_MS)
 }
 
 async function handleCopyPassword(): Promise<void> {
   if (!selectedEntry.value || !draft.value.password) return
   await copyPassword(selectedEntry.value.id, draft.value.password)
+  showToast(t('detail.copied'), 'success', COPY_TOAST_DURATION_MS)
 }
 
 function handleGeneratePassword(): void {

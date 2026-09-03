@@ -390,6 +390,7 @@ export default {
     totpSecretHint: 'Optional. Generates a 6-digit code that refreshes every 30 seconds.',
     copyTotp: 'Copy code',
     totpCopied: 'Verification code copied',
+    copied: 'Copied to clipboard',
     totpRemaining: 'Refreshes in {seconds}s',
     attachments: 'Attachments',
     attachmentsEmpty: 'No attachments',
