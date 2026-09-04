@@ -17,7 +17,6 @@ import WifiSyncView from '@/components/WifiSyncView.vue'
 import FolderSyncView from '@/components/FolderSyncView.vue'
 import PasswordGenView from '@/components/PasswordGenView.vue'
 import PasswordHealthView from '@/components/PasswordHealthView.vue'
-import ClipboardView from '@/components/ClipboardView.vue'
 import TrashView from '@/components/TrashView.vue'
 import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import ToastHost from '@/components/ToastHost.vue'
@@ -40,7 +39,6 @@ const {
   refreshVaultData,
   openSettingsFromTray,
   focusEntryFromQuickBar,
-  openClipboard,
 } = useAppState()
 
 useAutoLock()
@@ -52,7 +50,6 @@ let removeDetailWindowClosedListener: (() => void) | undefined
 let removeVaultDataListener: (() => void) | undefined
 let removeTrayOpenSettingsListener: (() => void) | undefined
 let removeQuickBarFocusEntryListener: (() => void) | undefined
-let removeClipboardWindowFocusMainListener: (() => void) | undefined
 const scheduledBackupLoading = ref(false)
 const scheduledMasterModalRef = ref<InstanceType<typeof MasterPasswordConfirmModal> | null>(null)
 
@@ -82,9 +79,6 @@ onMounted(async () => {
   removeQuickBarFocusEntryListener = window.electronAPI?.onQuickBarFocusEntry?.((entryId) => {
     focusEntryFromQuickBar(entryId)
   })
-  removeClipboardWindowFocusMainListener = window.electronAPI?.onClipboardWindowFocusMain?.(() => {
-    openClipboard()
-  })
   await bootstrap()
 })
 
@@ -97,7 +91,6 @@ onUnmounted(() => {
   removeVaultDataListener?.()
   removeTrayOpenSettingsListener?.()
   removeQuickBarFocusEntryListener?.()
-  removeClipboardWindowFocusMainListener?.()
 })
 
 async function confirmScheduledBackup(masterPassword: string): Promise<void> {
@@ -130,7 +123,6 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
         <FolderSyncView v-else-if="screen === 'folder-sync'" />
         <PasswordGenView v-else-if="screen === 'password-gen'" />
         <PasswordHealthView v-else-if="screen === 'password-health'" />
-        <ClipboardView v-else-if="screen === 'clipboard'" />
         <TrashView v-else-if="screen === 'trash'" />
       </main>
       <MasterPasswordConfirmModal
@@ -163,7 +155,6 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
       <FolderSyncView v-else-if="screen === 'folder-sync'" />
       <PasswordGenView v-else-if="screen === 'password-gen'" />
       <PasswordHealthView v-else-if="screen === 'password-health'" />
-      <ClipboardView v-else-if="screen === 'clipboard'" />
       <TrashView v-else-if="screen === 'trash'" />
     </main>
     <MasterPasswordConfirmModal

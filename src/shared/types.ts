@@ -10,7 +10,6 @@ export type AppScreen =
   | 'folder-sync'
   | 'password-gen'
   | 'password-health'
-  | 'clipboard'
   | 'trash'
 
 export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
@@ -417,7 +416,6 @@ export const IPC_EVENTS = {
   trayOpenSettings: 'tray:open-settings',
   quickBarFocusEntry: 'quickbar:focus-entry',
   clipboardWindowShown: 'clipboard-window:shown',
-  clipboardWindowFocusMain: 'clipboard-window:focus-main',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

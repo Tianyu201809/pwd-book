@@ -19,7 +19,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, lock } = useAppState()
+const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, lock, openClipboard } = useAppState()
 const { skin, skinOptions, setSkin, isAnimalIsland } = useTheme()
 const { openHub, isActive: tourActive } = useProductTour()
 
@@ -40,10 +40,6 @@ const canOpenClipboard = computed(() => vaultStatus.value.unlocked && screen.val
 function openLearnHub(): void {
   showSkinMenu.value = false
   openHub()
-}
-
-function openClipboard(): void {
-  navigateTo('clipboard')
 }
 
 let removeClosePromptListener: (() => void) | undefined

@@ -13,7 +13,7 @@ const QUICKBAR_CHANNELS = {
 
 const CLIPBOARD_WINDOW_CHANNELS = {
   hide: 'clipboard-window:hide',
-  showMain: 'clipboard-window:show-main',
+  show: 'clipboard-window:show',
   getPinned: 'clipboard-window:get-pinned',
   togglePinned: 'clipboard-window:toggle-pinned',
 } as const
@@ -258,7 +258,7 @@ export const electronAPI = {
   setQuickBarBackground: (color: string): void =>
     ipcRenderer.send('quickbar:set-background', color),
   hideClipboardWindow: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.hide),
-  clipboardWindowShowMain: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.showMain),
+  showClipboardWindow: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.show),
   getClipboardWindowPinned: (): Promise<boolean> =>
     ipcRenderer.invoke(CLIPBOARD_WINDOW_CHANNELS.getPinned),
   toggleClipboardWindowPinned: (): Promise<boolean> =>
@@ -267,11 +267,6 @@ export const electronAPI = {
     const listener = (): void => handler()
     ipcRenderer.on(IPC_EVENTS.clipboardWindowShown, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowShown, listener)
-  },
-  onClipboardWindowFocusMain: (handler: () => void): (() => void) => {
-    const listener = (): void => handler()
-    ipcRenderer.on(IPC_EVENTS.clipboardWindowFocusMain, listener)
-    return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowFocusMain, listener)
   },
 
   openDetailWindow: (entryId: string): Promise<boolean> => invoke(IPC.detailWindowOpen, entryId),

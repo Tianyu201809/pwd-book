@@ -2,10 +2,10 @@ import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { IPC_EVENTS } from '../shared/types'
 import { isUnlocked } from './services/sessionService'
-import { getMainWindow, showFromTray } from './tray'
+import { showFromTray } from './tray'
 
-const CLIPBOARD_WINDOW_WIDTH = 500
-const CLIPBOARD_WINDOW_HEIGHT = 510
+const CLIPBOARD_WINDOW_WIDTH = 760
+const CLIPBOARD_WINDOW_HEIGHT = 680
 const CLIPBOARD_WINDOW_TOP_OFFSET = 58
 const CLIPBOARD_ACCELERATOR = 'Alt+Shift+O'
 const CLIPBOARD_WINDOW_PINNED_GET = 'clipboard-window:get-pinned'
@@ -117,11 +117,6 @@ export function notifyClipboardWindowThemeSync(): void {
 export function registerClipboardWindowIpc(): void {
   ipcMain.on('clipboard-window:hide', hideClipboardWindow)
   ipcMain.on('clipboard-window:show', showClipboardWindow)
-  ipcMain.on('clipboard-window:show-main', () => {
-    hideClipboardWindow()
-    showFromTray()
-    getMainWindow()?.webContents.send(IPC_EVENTS.clipboardWindowFocusMain)
-  })
   ipcMain.on('theme:notify-change', notifyClipboardWindowThemeSync)
   ipcMain.handle(CLIPBOARD_WINDOW_PINNED_GET, () => clipboardWindowPinned)
   ipcMain.handle(CLIPBOARD_WINDOW_PINNED_TOGGLE, () => {

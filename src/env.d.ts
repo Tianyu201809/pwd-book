@@ -154,11 +154,10 @@ declare global {
       onThemeChanged?: (handler: () => void) => () => void
       setQuickBarBackground?: (color: string) => void
       hideClipboardWindow?: () => void
-      clipboardWindowShowMain?: () => void
+      showClipboardWindow?: () => void
       getClipboardWindowPinned?: () => Promise<boolean>
       toggleClipboardWindowPinned?: () => Promise<boolean>
       onClipboardWindowShown?: (handler: () => void) => () => void
-      onClipboardWindowFocusMain?: (handler: () => void) => () => void
       openDetailWindow?: (entryId: string) => Promise<boolean>
       closeDetailWindow?: () => void
       notifyDetailWindowReady?: () => void

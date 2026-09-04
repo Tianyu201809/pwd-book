@@ -728,7 +728,8 @@ function openPasswordHealth(): void {
 }
 
 function openClipboard(): void {
-  navigateTo('clipboard')
+  window.electronAPI?.showClipboardWindow?.()
+  touchActivity()
 }
 
 function selectEntry(id: string): void {
