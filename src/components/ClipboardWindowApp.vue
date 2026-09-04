@@ -6,6 +6,7 @@ import {
   ClipboardPaste,
   Copy,
   Image as ImageIcon,
+  Minus,
   Pin,
   PinOff,
   Search,
@@ -46,6 +47,10 @@ const draft = ref('')
 const isCaptureOpen = ref(false)
 const now = ref(Date.now())
 const windowPinned = ref(false)
+const splitRatio = ref(0.5)
+const isResizing = ref(false)
+const MIN_SPLIT_RATIO = 0.33
+const MAX_SPLIT_RATIO = 0.67
 let expiryTimer: number | undefined
 let clipboardPollTimer: number | undefined
 let clipboardReadInFlight = false
@@ -53,7 +58,12 @@ let lastWritten = ''
 let lastSeen = ''
 let defaultExpiry: ClipboardExpiry = 300
 let removeShownListener: (() => void) | undefined
+let stopResize: (() => void) | undefined
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pwdbook-clipboard') : null
+
+const splitGridStyle = computed<Record<string, string>>(() => ({
+  '--clipboard-list-width': `${splitRatio.value * 100}%`,
+}))
 
 const visibleItems = computed(() => {
   const normalized = query.value.trim().toLowerCase()
@@ -122,6 +132,22 @@ async function captureSystemClipboard(options: { notifyOnError?: boolean } = {})
   if (!unlocked.value || !clipboardEnabled.value || clipboardReadInFlight) return
   clipboardReadInFlight = true
   try {
+    const contentReader = window.electronAPI?.readClipboardContent
+    if (contentReader) {
+      const content = await contentReader()
+      if (content.image && content.image !== lastWritten && content.image !== lastSeen) {
+        lastSeen = content.image
+        addItem('image', content.image)
+        showToast(t('tools.clipboardCaptured'), 'success')
+        return
+      }
+      if (content.text && content.text !== lastWritten && content.text !== lastSeen) {
+        lastSeen = content.text
+        addItem('text', content.text)
+        showToast(t('tools.clipboardCaptured'), 'success')
+      }
+      return
+    }
     const reader = window.electronAPI?.readClipboardText
     const text = reader ? await reader() : await navigator.clipboard?.readText()
     if (text && text !== lastWritten && text !== lastSeen) {
@@ -158,9 +184,16 @@ async function refresh(): Promise<void> {
 }
 
 async function copyItem(item: ClipboardItem): Promise<void> {
-  lastWritten = item.kind === 'text' ? item.content : ''
-  if (item.kind === 'text') await window.electronAPI?.copySecret?.(item.content, 0)
-  else await navigator.clipboard?.writeText(item.content)
+  if (item.kind === 'text') {
+    lastWritten = item.content
+    await window.electronAPI?.copySecret?.(item.content, 0)
+  } else if (window.electronAPI?.copyClipboardImage) {
+    await window.electronAPI.copyClipboardImage(item.content)
+    lastWritten = item.content
+  } else {
+    await navigator.clipboard?.writeText(item.content)
+    lastWritten = item.content
+  }
   showToast(t('tools.clipboardCopied'), 'success')
 }
 
@@ -228,8 +261,55 @@ async function toggleWindowPinned(): Promise<void> {
   windowPinned.value = (await window.electronAPI?.toggleClipboardWindowPinned?.()) ?? windowPinned.value
 }
 
+function updateSplitRatio(clientX: number, rect: DOMRect): void {
+  const dividerWidth = 8
+  const minPaneWidth = 240
+  const availableWidth = rect.width - dividerWidth
+  if (availableWidth <= minPaneWidth * 2) return
+  const minRatio = minPaneWidth / availableWidth
+  const maxRatio = 1 - minPaneWidth / availableWidth
+  const ratio = (clientX - rect.left) / rect.width
+  splitRatio.value = Math.min(maxRatio, Math.max(minRatio, ratio))
+}
+
+function nudgeSplit(delta: number): void {
+  splitRatio.value = Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, splitRatio.value + delta))
+}
+
+function startResize(event: PointerEvent): void {
+  const divider = event.currentTarget as HTMLElement | null
+  const container = divider?.parentElement
+  if (!container || window.matchMedia('(max-width: 620px)').matches) return
+
+  event.preventDefault()
+  const rect = container.getBoundingClientRect()
+  updateSplitRatio(event.clientX, rect)
+  isResizing.value = true
+  divider?.setPointerCapture?.(event.pointerId)
+
+  const onMove = (moveEvent: PointerEvent) => updateSplitRatio(moveEvent.clientX, rect)
+  const onStop = () => stopResize?.()
+  const cleanup = () => {
+    window.removeEventListener('pointermove', onMove)
+    window.removeEventListener('pointerup', onStop)
+    window.removeEventListener('pointercancel', onStop)
+    document.body.classList.remove('clipboard-resizing')
+    isResizing.value = false
+    stopResize = undefined
+  }
+  stopResize = cleanup
+  document.body.classList.add('clipboard-resizing')
+  window.addEventListener('pointermove', onMove)
+  window.addEventListener('pointerup', onStop)
+  window.addEventListener('pointercancel', onStop)
+}
+
 function closeWindow(): void {
   window.electronAPI?.hideClipboardWindow?.()
+}
+
+function minimizeWindow(): void {
+  window.electronAPI?.minimize()
 }
 
 function onMessage(event: MessageEvent): void {
@@ -252,6 +332,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  stopResize?.()
   channel?.removeEventListener('message', onMessage)
   channel?.close()
   removeShownListener?.()
@@ -262,13 +343,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="clipboard-popup" @keydown.esc="closeWindow">
+  <main class="clipboard-popup" :class="{ 'is-resizing': isResizing }" @keydown.esc="closeWindow">
     <header class="clipboard-popup-head">
       <div class="clipboard-popup-title">
         <span class="clipboard-popup-icon"><Clipboard :size="17" /></span>
         <div><strong>{{ t('tools.clipboardTitle') }}</strong><span>{{ t('tools.clipboardShortcutHint') }}</span></div>
       </div>
       <div class="clipboard-popup-head-actions">
+        <button type="button" class="clipboard-popup-minimize" :aria-label="t('titlebar.minimize')" :title="t('titlebar.minimize')" @click="minimizeWindow">
+          <Minus :size="15" />
+        </button>
         <button type="button" class="clipboard-popup-pin" :class="{ active: windowPinned }" :aria-label="windowPinned ? t('tools.clipboardWindowUnpin') : t('tools.clipboardWindowPin')" :aria-pressed="windowPinned" :title="windowPinned ? t('tools.clipboardWindowUnpin') : t('tools.clipboardWindowPin')" @click="toggleWindowPinned">
           <PinOff v-if="windowPinned" :size="15" /><Pin v-else :size="15" />
         </button>
@@ -294,7 +378,7 @@ onUnmounted(() => {
           {{ tab === 'all' ? t('common.all') : tab === 'text' ? t('tools.clipboardText') : tab === 'image' ? t('tools.clipboardImages') : t('tools.clipboardPinned') }}
         </button>
       </div>
-      <div class="clipboard-popup-content">
+      <div class="clipboard-popup-content" :style="splitGridStyle">
         <section class="clipboard-popup-list-pane">
           <div v-if="visibleItems.length" class="clipboard-popup-list">
             <article v-for="item in visibleItems" :key="item.id" class="clipboard-popup-item" :class="{ selected: selected?.id === item.id }" @click="selectedId = item.id">
@@ -306,6 +390,7 @@ onUnmounted(() => {
           </div>
           <div v-else class="clipboard-popup-empty"><Clipboard :size="24" /><strong>{{ t('tools.clipboardEmptyTitle') }}</strong><p>{{ t('tools.clipboardEmptyDesc') }}</p><button type="button" @click="startCapture"><Type :size="14" />{{ t('tools.clipboardNew') }}</button></div>
         </section>
+        <div class="clipboard-popup-resizer" role="separator" tabindex="0" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
             <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" @click="togglePin(selected)"><PinOff v-if="selected.pinned" :size="14" /><Pin v-else :size="14" /></button><button type="button" :title="t('common.delete')" @click="removeItem(selected)"><X :size="15" /></button></div></div>

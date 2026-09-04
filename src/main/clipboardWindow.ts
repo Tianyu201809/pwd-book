@@ -6,6 +6,8 @@ import { showFromTray } from './tray'
 
 const CLIPBOARD_WINDOW_WIDTH = 760
 const CLIPBOARD_WINDOW_HEIGHT = 680
+const CLIPBOARD_WINDOW_MIN_WIDTH = 560
+const CLIPBOARD_WINDOW_MIN_HEIGHT = 480
 const CLIPBOARD_WINDOW_TOP_OFFSET = 58
 const CLIPBOARD_ACCELERATOR = 'Alt+Shift+O'
 const CLIPBOARD_WINDOW_PINNED_GET = 'clipboard-window:get-pinned'
@@ -35,10 +37,14 @@ function createClipboardWindow(): BrowserWindow {
     ...clipboardBounds(),
     show: false,
     frame: false,
-    resizable: false,
+    resizable: true,
+    transparent: true,
+    minWidth: CLIPBOARD_WINDOW_MIN_WIDTH,
+    minHeight: CLIPBOARD_WINDOW_MIN_HEIGHT,
+    hasShadow: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    backgroundColor: '#0a0c10',
+    backgroundColor: '#00000000',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -70,7 +76,7 @@ export function showClipboardWindow(): void {
     return
   }
   const win = ensureClipboardWindow()
-  win.setBounds(clipboardBounds())
+  if (win.isMinimized()) win.restore()
   if (!win.isVisible()) win.show()
   win.focus()
   win.webContents.send(IPC_EVENTS.themeChanged)

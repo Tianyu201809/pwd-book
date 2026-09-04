@@ -460,6 +460,7 @@ export default {
     clipboardOpenFull: '打开完整剪切板',
     clipboardWindowPin: '固定小窗',
     clipboardWindowUnpin: '取消固定小窗',
+    clipboardResizePanels: '调整剪切板面板宽度',
     clipboardPermission: '无法读取系统剪切板，请检查权限',
     clipboardSeconds: '{n} 秒后清理',
     clipboardMinutes: '{n} 分钟后清理',

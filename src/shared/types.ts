@@ -346,6 +346,8 @@ export const IPC = {
   settingsSetUiLocale: 'settings:set-ui-locale',
   clipboardCopy: 'clipboard:copy-secret',
   clipboardRead: 'clipboard:read-system',
+  clipboardReadContent: 'clipboard:read-content',
+  clipboardWriteImage: 'clipboard:write-image',
   shellOpenExternal: 'shell:open-external',
   shellOpenLocalProgram: 'shell:open-local-program',
   dataExport: 'data:export',

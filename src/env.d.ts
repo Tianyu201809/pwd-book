@@ -91,6 +91,8 @@ declare global {
       openExtensionDir: () => Promise<void>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
       readClipboardText: () => Promise<string>
+      readClipboardContent?: () => Promise<{ text: string; image: string | null }>
+      copyClipboardImage?: (dataUrl: string) => Promise<void>
       openExternal: (url: string) => Promise<void>
       openLocalProgram: (programPath: string) => Promise<void>
       exportData: () => Promise<ExportPayload>

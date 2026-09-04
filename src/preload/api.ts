@@ -159,6 +159,10 @@ export const electronAPI = {
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     invoke(IPC.clipboardCopy, { text, clearAfterMs }),
   readClipboardText: (): Promise<string> => invoke(IPC.clipboardRead),
+  readClipboardContent: (): Promise<{ text: string; image: string | null }> =>
+    invoke(IPC.clipboardReadContent),
+  copyClipboardImage: (dataUrl: string): Promise<void> =>
+    invoke(IPC.clipboardWriteImage, dataUrl),
 
   openExternal: (url: string): Promise<void> => invoke(IPC.shellOpenExternal, url),
   openLocalProgram: (programPath: string): Promise<void> =>

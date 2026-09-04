@@ -1,4 +1,4 @@
-import { clipboard, dialog, ipcMain, shell } from 'electron'
+import { clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
 import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
@@ -488,6 +488,22 @@ export function registerIpcHandlers(): void {
   )
 
   ipcMain.handle(IPC.clipboardRead, () => wrap(() => clipboard.readText()))
+
+  ipcMain.handle(IPC.clipboardReadContent, () =>
+    wrap(() => {
+      const image = clipboard.readImage()
+      const imageData = image.isEmpty() ? null : `data:image/png;base64,${image.toPNG().toString('base64')}`
+      return { text: clipboard.readText(), image: imageData }
+    }),
+  )
+
+  ipcMain.handle(IPC.clipboardWriteImage, (_event, dataUrl: string) =>
+    wrap(() => {
+      const image = nativeImage.createFromDataURL(dataUrl)
+      if (image.isEmpty()) throw new Error('Invalid clipboard image')
+      clipboard.writeImage(image)
+    }),
+  )
 
   ipcMain.handle(IPC.shellOpenExternal, async (_event, url: string) => {
     let parsed: URL
