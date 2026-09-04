@@ -39,6 +39,7 @@ function createClipboardWindow(): BrowserWindow {
     frame: false,
     resizable: true,
     transparent: true,
+    roundedCorners: false,
     minWidth: CLIPBOARD_WINDOW_MIN_WIDTH,
     minHeight: CLIPBOARD_WINDOW_MIN_HEIGHT,
     hasShadow: false,

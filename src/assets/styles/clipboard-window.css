@@ -1,5 +1,8 @@
 html,
-body.clipboard-window-body {
+html[data-mode] body.clipboard-window-body,
+html[data-skin] body.clipboard-window-body,
+body.clipboard-window-body,
+.clipboard-window-body #app {
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -13,6 +16,7 @@ body.clipboard-window-body {
   padding: 14px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   color: var(--text-primary);
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
