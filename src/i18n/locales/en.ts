@@ -439,6 +439,8 @@ export default {
     clipboardImageLabel: 'Image',
     clipboardTextLabel: 'Text',
     clipboardImagePreview: 'Image content',
+    clipboardEnlargePreview: 'Enlarge preview',
+    clipboardMenuPreview: 'Preview',
     clipboardEmptyTitle: 'Your clipboard is clear',
     clipboardEmptyDesc: 'Copied content will appear here automatically, or add a text item manually.',
     clipboardPreview: 'Content preview',

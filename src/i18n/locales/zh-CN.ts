@@ -438,6 +438,8 @@ export default {
     clipboardImageLabel: '图片',
     clipboardTextLabel: '文本',
     clipboardImagePreview: '图像内容',
+    clipboardEnlargePreview: '放大预览',
+    clipboardMenuPreview: '预览',
     clipboardEmptyTitle: '剪切板还是空的',
     clipboardEmptyDesc: '复制内容后会自动出现在这里，也可以手动新建一条文本。',
     clipboardPreview: '内容预览',

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, toRaw } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, toRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Clipboard,
   ClipboardPaste,
   Copy,
-  Image as ImageIcon,
+  Eye,
   Minus,
   Pin,
   PinOff,
@@ -45,12 +45,17 @@ const query = ref('')
 const filter = ref<ClipboardFilter>('all')
 const draft = ref('')
 const isCaptureOpen = ref(false)
+const lightboxItem = ref<ClipboardItem | null>(null)
 const now = ref(Date.now())
 const windowPinned = ref(false)
 const splitRatio = ref(0.5)
 const isResizing = ref(false)
+const contextMenu = ref<{ item: ClipboardItem; x: number; y: number } | null>(null)
+const contextMenuRef = ref<HTMLElement | null>(null)
+const lightboxRef = ref<HTMLElement | null>(null)
 const MIN_SPLIT_RATIO = 0.33
 const MAX_SPLIT_RATIO = 0.67
+const VIEWPORT_MENU_PADDING = 8
 let expiryTimer: number | undefined
 let clipboardPollTimer: number | undefined
 let clipboardReadInFlight = false
@@ -59,6 +64,7 @@ let lastSeen = ''
 let defaultExpiry: ClipboardExpiry = 300
 let removeShownListener: (() => void) | undefined
 let stopResize: (() => void) | undefined
+let ignoreContextMenuClick = false
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pwdbook-clipboard') : null
 
 const splitGridStyle = computed<Record<string, string>>(() => ({
@@ -102,7 +108,11 @@ function sync(next: ClipboardItem[], announce = false): void {
 
 function purgeExpired(): void {
   const next = items.value.filter((item) => item.pinned || !item.expiresAt || item.expiresAt > now.value)
-  if (next.length !== items.value.length) sync(next, true)
+  if (next.length !== items.value.length) {
+    if (lightboxItem.value && !next.some((item) => item.id === lightboxItem.value?.id)) lightboxItem.value = null
+    if (contextMenu.value && !next.some((item) => item.id === contextMenu.value?.item.id)) closeContextMenu()
+    sync(next, true)
+  }
 }
 
 function addItem(kind: ClipboardKind, content: string, expiry: ClipboardExpiry = 300): void {
@@ -198,11 +208,68 @@ async function copyItem(item: ClipboardItem): Promise<void> {
 }
 
 function removeItem(item: ClipboardItem): void {
+  if (lightboxItem.value?.id === item.id) lightboxItem.value = null
+  if (contextMenu.value?.item.id === item.id) closeContextMenu()
   sync(items.value.filter((entry) => entry.id !== item.id), true)
 }
 
 function clearAll(): void {
+  lightboxItem.value = null
+  closeContextMenu()
   sync([], true)
+}
+
+function openImagePreview(item: ClipboardItem): void {
+  if (!item.content) return
+  selectedId.value = item.id
+  lightboxItem.value = item
+  void nextTick(() => lightboxRef.value?.focus())
+}
+
+function closeLightbox(): void {
+  lightboxItem.value = null
+}
+
+function closeContextMenu(): void {
+  contextMenu.value = null
+}
+
+function adjustContextMenuPosition(): void {
+  const menu = contextMenuRef.value
+  if (!menu || !contextMenu.value) return
+  const { width, height } = menu.getBoundingClientRect()
+  const maxX = window.innerWidth - width - VIEWPORT_MENU_PADDING
+  const maxY = window.innerHeight - height - VIEWPORT_MENU_PADDING
+  contextMenu.value = {
+    ...contextMenu.value,
+    x: Math.max(VIEWPORT_MENU_PADDING, Math.min(contextMenu.value.x, maxX)),
+    y: Math.max(VIEWPORT_MENU_PADDING, Math.min(contextMenu.value.y, maxY)),
+  }
+}
+
+function handleItemContextMenu(item: ClipboardItem, event: MouseEvent): void {
+  event.preventDefault()
+  event.stopPropagation()
+  selectedId.value = item.id
+  ignoreContextMenuClick = true
+  contextMenu.value = { item, x: event.clientX, y: event.clientY }
+  void nextTick(adjustContextMenuPosition)
+  window.setTimeout(() => { ignoreContextMenuClick = false }, 0)
+}
+
+function contextMenuItem(): ClipboardItem | null {
+  const id = contextMenu.value?.item.id
+  return id ? items.value.find((entry) => entry.id === id) ?? null : null
+}
+
+async function runContextAction(action: 'preview' | 'copy' | 'pin' | 'delete'): Promise<void> {
+  const item = contextMenuItem()
+  closeContextMenu()
+  if (!item) return
+  if (action === 'preview') openImagePreview(item)
+  else if (action === 'copy') await copyItem(item)
+  else if (action === 'pin') togglePin(item)
+  else removeItem(item)
 }
 
 function togglePin(item: ClipboardItem): void {
@@ -308,6 +375,22 @@ function closeWindow(): void {
   window.electronAPI?.hideClipboardWindow?.()
 }
 
+function handleEsc(): void {
+  if (contextMenu.value) {
+    closeContextMenu()
+    return
+  }
+  if (lightboxItem.value) {
+    closeLightbox()
+    return
+  }
+  if (isCaptureOpen.value) {
+    isCaptureOpen.value = false
+    return
+  }
+  closeWindow()
+}
+
 function minimizeWindow(): void {
   window.electronAPI?.minimize()
 }
@@ -317,9 +400,23 @@ function onMessage(event: MessageEvent): void {
   if (event.data?.type === 'request-state') broadcast('popup-state-requested')
 }
 
+function onDocumentClick(): void {
+  if (ignoreContextMenuClick) return
+  closeContextMenu()
+}
+
+function onDocumentKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Escape') return
+  event.preventDefault()
+  handleEsc()
+}
+
 onMounted(() => {
   channel?.addEventListener('message', onMessage)
   document.addEventListener('paste', handlePaste)
+  document.addEventListener('click', onDocumentClick)
+  document.addEventListener('keydown', onDocumentKeydown)
+  window.addEventListener('scroll', closeContextMenu, true)
   const getPinned = window.electronAPI?.getClipboardWindowPinned
   if (getPinned) void getPinned().then((pinned) => { windowPinned.value = pinned })
   expiryTimer = window.setInterval(() => {
@@ -337,13 +434,16 @@ onUnmounted(() => {
   channel?.close()
   removeShownListener?.()
   document.removeEventListener('paste', handlePaste)
+  document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('keydown', onDocumentKeydown)
+  window.removeEventListener('scroll', closeContextMenu, true)
   if (expiryTimer) window.clearInterval(expiryTimer)
   if (clipboardPollTimer) window.clearInterval(clipboardPollTimer)
 })
 </script>
 
 <template>
-  <main class="clipboard-popup" :class="{ 'is-resizing': isResizing }" @keydown.esc="closeWindow">
+  <main class="clipboard-popup" :class="{ 'is-resizing': isResizing }">
     <header class="clipboard-popup-head">
       <div class="clipboard-popup-title">
         <span class="clipboard-popup-icon"><Clipboard :size="17" /></span>
@@ -381,11 +481,21 @@ onUnmounted(() => {
       <div class="clipboard-popup-content" :style="splitGridStyle">
         <section class="clipboard-popup-list-pane">
           <div v-if="visibleItems.length" class="clipboard-popup-list">
-            <article v-for="item in visibleItems" :key="item.id" class="clipboard-popup-item" :class="{ selected: selected?.id === item.id }" @click="selectedId = item.id">
-              <div class="clipboard-popup-item-type" :class="`is-${item.kind}`"><ImageIcon v-if="item.kind === 'image'" :size="14" /><Type v-else :size="14" /></div>
-              <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTime(item.createdAt) }}</time></div><p v-if="item.kind === 'image'">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
-              <Pin v-if="item.pinned" class="clipboard-popup-item-pin" :size="13" fill="currentColor" />
-              <div class="clipboard-popup-item-actions"><button type="button" :title="item.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" @click.stop="togglePin(item)"><PinOff v-if="item.pinned" :size="13" /><Pin v-else :size="13" /></button><button type="button" :title="t('tools.clipboardCopy')" @click.stop="copyItem(item)"><Copy :size="13" /></button><button type="button" :title="t('common.delete')" @click.stop="removeItem(item)"><Trash2 :size="13" /></button></div>
+            <article v-for="item in visibleItems" :key="item.id" class="clipboard-popup-item" :class="{ selected: selected?.id === item.id, pinned: item.pinned }" @click="selectedId = item.id" @contextmenu="handleItemContextMenu(item, $event)">
+              <div class="clipboard-popup-item-type" :class="`is-${item.kind}`">
+                <span v-if="item.kind === 'image'" class="clipboard-popup-item-thumb">
+                  <img :src="item.content" :alt="t('tools.clipboardImageLabel')" />
+                </span>
+                <Type v-else :size="14" />
+              </div>
+              <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTime(item.createdAt) }}</time></div><p v-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
+              <div class="clipboard-popup-item-actions">
+                <button type="button" :class="{ 'is-pinned': item.pinned }" :title="item.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="item.pinned" @click.stop="togglePin(item)">
+                  <Pin :size="13" :fill="item.pinned ? 'currentColor' : 'none'" />
+                </button>
+                <button type="button" :title="t('tools.clipboardCopy')" @click.stop="copyItem(item)"><Copy :size="13" /></button>
+                <button type="button" :title="t('common.delete')" @click.stop="removeItem(item)"><Trash2 :size="13" /></button>
+              </div>
             </article>
           </div>
           <div v-else class="clipboard-popup-empty"><Clipboard :size="24" /><strong>{{ t('tools.clipboardEmptyTitle') }}</strong><p>{{ t('tools.clipboardEmptyDesc') }}</p><button type="button" @click="startCapture"><Type :size="14" />{{ t('tools.clipboardNew') }}</button></div>
@@ -393,8 +503,8 @@ onUnmounted(() => {
         <div class="clipboard-popup-resizer" role="separator" tabindex="0" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
-            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" @click="togglePin(selected)"><PinOff v-if="selected.pinned" :size="14" /><Pin v-else :size="14" /></button><button type="button" :title="t('common.delete')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
-            <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" /><pre v-else>{{ selected.content }}</pre></div>
+            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('common.delete')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
+            <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardEnlargePreview')" role="button" tabindex="0" @click="openImagePreview(selected)" @keydown.enter.prevent="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
             <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
           <div v-else class="clipboard-popup-preview-placeholder"><Clipboard :size="21" /><span>{{ t('tools.clipboardSelectHint') }}</span></div>
@@ -404,5 +514,33 @@ onUnmounted(() => {
     </template>
 
     <div v-if="isCaptureOpen" class="clipboard-popup-overlay" @click.self="isCaptureOpen = false"><div class="clipboard-popup-dialog"><div class="clipboard-popup-dialog-head"><strong>{{ t('tools.clipboardCaptureTitle') }}</strong><button type="button" :aria-label="t('common.close')" @click="isCaptureOpen = false"><X :size="16" /></button></div><textarea v-model="draft" autofocus :placeholder="t('tools.clipboardPlaceholder')" @keydown.ctrl.enter="saveDraft" /><div class="clipboard-popup-dialog-actions"><button type="button" @click="isCaptureOpen = false">{{ t('common.cancel') }}</button><button type="button" class="clipboard-popup-copy" :disabled="!draft.trim()" @click="saveDraft"><ClipboardPaste :size="14" />{{ t('tools.clipboardSave') }}</button></div></div></div>
+    <div v-if="lightboxItem" ref="lightboxRef" class="clipboard-popup-overlay clipboard-popup-lightbox" tabindex="-1" @click.self="closeLightbox" @keydown.esc.stop="closeLightbox">
+      <button type="button" class="clipboard-popup-lightbox-close" :aria-label="t('common.close')" :title="t('common.close')" @click="closeLightbox"><X :size="18" /></button>
+      <img v-if="lightboxItem.kind === 'image'" :src="lightboxItem.content" :alt="t('tools.clipboardImageLabel')" />
+      <pre v-else class="clipboard-popup-lightbox-text">{{ lightboxItem.content }}</pre>
+    </div>
+    <Teleport to="body">
+      <div
+        v-if="contextMenu"
+        ref="contextMenuRef"
+        class="clipboard-popup-context-menu menu-popover surface-card"
+        :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
+        @click.stop
+        @contextmenu.prevent.stop
+      >
+        <button type="button" class="clipboard-popup-context-item" @click="runContextAction('preview')">
+          <Eye :size="14" />{{ t('tools.clipboardMenuPreview') }}
+        </button>
+        <button type="button" class="clipboard-popup-context-item" @click="runContextAction('copy')">
+          <Copy :size="14" />{{ t('tools.clipboardCopy') }}
+        </button>
+        <button type="button" class="clipboard-popup-context-item" :class="{ 'is-pinned': contextMenuItem()?.pinned }" @click="runContextAction('pin')">
+          <Pin :size="14" :fill="contextMenuItem()?.pinned ? 'currentColor' : 'none'" />{{ contextMenuItem()?.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin') }}
+        </button>
+        <button type="button" class="clipboard-popup-context-item is-danger" @click="runContextAction('delete')">
+          <Trash2 :size="14" />{{ t('common.delete') }}
+        </button>
+      </div>
+    </Teleport>
   </main>
 </template>
