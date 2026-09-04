@@ -39,6 +39,7 @@ App.vue
 
 # 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
 # 独立渲染入口 detail.html → DetailWindowApp.vue（v1.14.0 详情小窗口，见下文）
+# 独立渲染入口 clipboard-window.html → ClipboardWindowApp.vue（v1.32.0，见 [clipboard-history.md](./clipboard-history.md)）
 ```
 
 ### 条目展示图标 `display_icon`（**v1.30.0**）
@@ -49,7 +50,7 @@ App.vue
 | Lucide 名 / `LetterA`–`LetterZ` | `CategoryIconView` |
 | `preset:{id}` | 本地 `src/assets/preset-icons/` 彩色 Logo；目录见 `src/shared/presetIcons.ts` |
 
-条目选择器可开「品牌」页（`allowPresets`）。分类选择器不传该开关。网址在编辑草稿中变化且图标为空时，`matchPresetIconByUrl` 写入对应 `preset:{id}`。未知 id 或文件缺失时 `canRenderDisplayIcon` 为假，退回标题首字。
+条目选择器可开「品牌」页（`allowPresets`）。分类选择器不传该开关。网址在编辑草稿中变化且图标为空时，`matchPresetIconByUrl` 写入对应 `preset:{id}`。未知 id 或文件缺失时 `canRenderDisplayIcon` 为假，退回标题首字。**v1.31.0** `getAvatarMeta` 返回深色 `color` + 浅 `bg`；字母图标 palette 同步提高底色对比度。
 
 ### DetailWindowApp.vue（v1.14.0）
 
@@ -60,10 +61,10 @@ App.vue
 
 ### TitleBar.vue
 
-- 自定义无边框标题栏：换肤、**产品学习**（**v1.24.0**，已解锁时显示学士帽，打开引导中心）、快速锁定（主窗口）、**置顶图钉**（**v1.20.0** 主窗口与详情小窗口均显示；`getWindowAlwaysOnTop` / `toggleWindowAlwaysOnTop`）、最小化 / 最大化 / 关闭。
+- 自定义无边框标题栏：换肤、**产品学习**（**v1.24.0**，已解锁时显示学士帽，打开引导中心）、快速锁定（主窗口）、**剪切板**（**v1.32.0**，已解锁且非详情窗时显示，`openClipboard`）、**置顶图钉**（**v1.20.0** 主窗口与详情小窗口均显示；`getWindowAlwaysOnTop` / `toggleWindowAlwaysOnTop`）、最小化 / 最大化 / 关闭。
 - **v1.23.0**：经典皮肤 `--titlebar-base` / `--titlebar-accent-wash` / `--titlebar-top-shine` 渐变层（`tokens.css`）；动森皮肤在 `animal-skin.css` 关闭伪元素；最大化时显示叠窗 **还原** SVG，订阅 `window:maximize-changed`。
-- `detailWindow` prop 为 true 时：隐藏最大化、快速锁定与产品学习；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
-- 主窗口按钮顺序：换肤 → **产品学习**（已解锁）→ 锁定（已解锁时）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
+- `detailWindow` prop 为 true 时：隐藏最大化、快速锁定、产品学习与剪切板；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
+- 主窗口按钮顺序：换肤 → **产品学习**（已解锁）→ 锁定（已解锁时）→ **剪切板**（已解锁）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
 
 ### QuickBarApp.vue
 
@@ -71,6 +72,11 @@ App.vue
 - 有搜索词时 `filterEntriesBySearch` 过滤（含标题、用户名、网址、备注、分类、标签；v1.12.0 起含 **备注**），上限与最近打开相同（**v1.26.0**）；↑↓ / Enter 经 `launchEntry`：本地程序 → 打开网址 → 否则 `quickBarFocusEntry` 定位主窗口。
 - **v1.26.0** 结果区固定 `max-height` 可滚动；↑↓ 时 `scrollIntoView`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
+
+### ClipboardWindowApp.vue（**v1.32.0**）
+
+独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储，详见 [clipboard-history.md](./clipboard-history.md)。
+
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
 - 侧栏（`placement="after"`）与详情（`placement="before"`）共用的 **4px 边缘**：悬停/收起/调宽时显示 **圆形描边箭头** 折叠钮；分割线在钮位挖空，`z-index` 高于邻列。
@@ -83,7 +89,7 @@ App.vue
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删；**v1.25.0** 改用 `UiModal` 二次确认）。
 - **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
 - **分类切换**（v1.18.0）：`onItemPointerDown` 在非当前分类上 **立即 `selectCategory`**（先于拖拽阈值判断）；`selectCategory` 将 `selectedEntryId` 置 `null`，右侧详情清空，不再回退列表首条。
-- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。
+- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康、**v1.32.0** 剪切板）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。
 - **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
 
 > **v1.25.0 前**：「工具与设置」折叠区 + 侧栏内 `TagFilterPanel`（`pwdbook-sidebar-utilities-expanded` / `pwdbook-sidebar-tag-filter-expanded`）— 已移除，标签筛选迁至 `PasswordList.vue`。
@@ -95,12 +101,14 @@ App.vue
 - `detached` prop：全宽展示、无收起边缘；与小窗口共用编辑/保存/TOTP 等逻辑。
 - **附件**（v1.22.0）：`vaultApi.listAttachments` / `addAttachment` 等；只读态可打开/另存为；编辑态可添加/删除。
 - **自定义字段**（v1.22.0）：`shared/customFields.ts` 规范化；编辑态增删行；搜索经 `entrySearch.ts` 索引 name/value。
+- **复制 Toast**（**v1.31.0**）：复制用户名 / 密码 / 网址 / TOTP / 自定义字段后 `showToast`，持续约 3 秒。
 
 ### SettingsView.vue
 
 - 四个 Tab（安全 / 外观 / 数据 / 关于）；Tab 图标使用 `IconBadge`（v1.11.0）。
 - **安全** Tab 含 **打开邮箱备份** 按钮（`openEmailBackup`）；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
 - **v1.26.0** 快捷条开启时展示「快捷条显示条数」下拉（5–20 → `quickBarRecentLimit`）。
+- **v1.32.0** 安全 Tab：**剪切板历史**开关、默认清理周期、数据持久化（`clipboardEnabled` / `clipboardDefaultExpiry` / `clipboardPersistence`）。
 - **浏览器扩展安装向导**（v1.17.0）：`BrowserExtensionGuideModal`（6 步、GSAP 动效、`BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page` → `browserLaunchService.openBrowserExtensionsPage`（复制 `chrome://extensions` / `edge://extensions` 到剪贴板）。
 
 ### UiInput.vue（`components/ui/`）
@@ -126,6 +134,7 @@ App.vue
 | `setupVault` / `unlockVault` / `lockVault` | 保险库生命周期；**v1.23.0** `resolveScreenAfterAuth` 在解锁/恢复后消费 `pendingScreenAfterUnlock` |
 | `openSettingsFromTray` | **v1.23.0** 托盘「设置」：已解锁 → `settings`；锁定 → 设 pending 并显示锁定页 |
 | `focusEntryFromQuickBar` | **v1.26.0** 快捷条网站条目：`navigateTo('vault')` + 清空筛选 + `selectEntry` |
+| `openClipboard` | **v1.32.0** `showClipboardWindow()` 唤起剪切板历史小窗 |
 | `saveEntry` | 创建/更新条目 + **Toast** 反馈 |
 | `duplicateEntry` | 基于现有条目创建副本（标题追加后缀） |
 | `loadEntries` / `selectEntry` | 列表与选中项；`selectEntry` 同步 `detail-window:select-entry`；**v1.18.0** `selectedEntry` 仅在 `selectedEntryId` 有值时解析，切换分类不自动选中首条 |

@@ -49,7 +49,7 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板、关闭行为、快捷条与主窗口全局快捷键、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**）、关闭行为、快捷条与主窗口全局快捷键、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等），各字段存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
 
 ### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
 
@@ -71,6 +71,20 @@
 
 - `src/main/quickBar.ts` — 快捷条窗口与 `Alt+Shift+P` 注册
 - `src/main/mainWindowShortcut.ts` — 主窗口 `Alt+Shift+M` 注册，调用 `showFromTray()`
+
+### clipboardWindow（**v1.32.0**）
+
+`src/main/clipboardWindow.ts` — 剪切板历史独立小窗口。详见 [clipboard-history.md](./clipboard-history.md)。
+
+| 函数 / 行为 | 说明 |
+|-------------|------|
+| `showClipboardWindow` / `toggleClipboardWindow` | 已解锁则显示/切换 760×680 无边框置顶窗（`clipboard-window.html`）；未解锁改 `showFromTray()` |
+| `hideClipboardWindow` / `hideClipboardWindowOnLock` | 隐藏；锁定时由 `vault:lock` 调用 |
+| `destroyClipboardWindow` | `before-quit` 销毁窗口并重置固定状态 |
+| `registerClipboardWindowShortcut` | 注册 `Alt+Shift+O`；启动与 `settings:update` 时调用 |
+| `registerClipboardWindowIpc` | `clipboard-window:show` / `hide` / `get-pinned` / `toggle-pinned`；主题同步 |
+
+未固定时失焦自动隐藏；固定后失焦保持可见。
 
 ### detailWindow（v1.14.0）
 

@@ -23,6 +23,7 @@
 |------|------------|--------|----------|
 | 快捷搜索条 | `Alt+Shift+P` | `quickBarEnabled` | `registerQuickBarShortcut()` |
 | 唤起主窗口 | `Alt+Shift+M` | `mainWindowShortcutEnabled` | `registerMainWindowShortcut()` |
+| 剪切板历史 | `Alt+Shift+O` | （始终注册） | `registerClipboardWindowShortcut()`（**v1.32.0**，见 [clipboard-history.md](./clipboard-history.md)） |
 
 - 应用启动时（`src/main/index.ts`）与 **设置更新**（`handlers.ts` → `settings:update`）时重新注册。
 - 退出前（`before-quit`）统一 `unregister*`。

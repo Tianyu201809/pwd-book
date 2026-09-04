@@ -62,9 +62,12 @@
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
-| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
+| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口 + **v1.32.0** 剪切板 `Alt+Shift+O`）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
 | `launch-at-login:available` | 否 | 是否可注册系统登录项（`app.isPackaged`，**v1.23.0**） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
+| `clipboard:read-system` | 否 | **v1.32.0** 读系统剪贴板文本 |
+| `clipboard:read-content` | 否 | **v1.32.0** 读文本 + 图片 Data URL |
+| `clipboard:write-image` | 否 | **v1.32.0** 将 Data URL 写回系统剪贴板 |
 | `data:export` | 是 | JSON 结构 `ExportPayload`（**v1.22.0** 含 `attachments`、`version: 2`） |
 | `data:import` | 是 | 批量导入条目（**v1.22.0** 可含附件） |
 
@@ -121,6 +124,17 @@
 
 扩展与主进程不经上述 IPC 直连，而是 **Native Host → TCP 桥接**。详见 [browser-autofill.md](./browser-autofill.md)。
 
+### 剪切板历史小窗口（v1.32.0）
+
+详见 [clipboard-history.md](./clipboard-history.md)。通道注册于 `clipboardWindow.ts`（`send` / `handle`），不经 `handlers.ts` 的 `IPC` 常量表。
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `clipboard-window:show` | 否* | 已解锁则显示小窗；未解锁 `showFromTray()` |
+| `clipboard-window:hide` | 否 | 隐藏小窗 |
+| `clipboard-window:get-pinned` | 否 | 查询小窗是否固定（失焦不隐藏） |
+| `clipboard-window:toggle-pinned` | 否 | 切换小窗固定 |
+
 ### 详情小窗口（v1.14.0）
 
 | 通道 | 需解锁 | 说明 |
@@ -176,6 +190,7 @@
 | `vault-data:changed` | send | **v1.14.0** 保险库数据变更，各窗口 `refreshVaultData` |
 | `tray:open-settings` | send | **v1.23.0** 托盘菜单「设置」；渲染进程 `openSettingsFromTray()` |
 | `window:maximize-changed` | send | **v1.23.0** 主窗口最大化状态变更（见上表） |
+| `clipboard-window:shown` | send | **v1.32.0** 剪切板小窗已显示；渲染进程 `refresh()` |
 
 ## 解锁流程
 

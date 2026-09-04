@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.30.0（`package.json`） |
+| 版本 | 1.32.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch`、`quickBarLimits`、`launchEntry`、`presetIcons` 等 |
@@ -51,6 +51,7 @@ flowchart TB
 | Preload 暴露 | `src/preload/index.ts` | 将 `electronAPI` 挂到 `window` |
 | 渲染入口 | `src/renderer/app.ts` | 挂载 Vue 根组件 `App.vue` |
 | 详情小窗口入口 | `src/renderer/detail.ts` | 挂载 `DetailWindowApp.vue`（`detail.html`，v1.14.0） |
+| 剪切板小窗口入口 | `src/renderer/clipboard-window.ts` | 挂载 `ClipboardWindowApp.vue`（`clipboard-window.html`，v1.32.0） |
 | 应用状态中枢 | `src/composables/useAppState.ts` | 屏幕路由、保险库 CRUD、分类、设置 |
 | IPC 注册 | `src/main/ipc/handlers.ts:77` | 全部 `ipcMain.handle` |
 
@@ -81,6 +82,7 @@ src/
 │   ├── ipc/handlers.ts   # IPC 路由与校验
 │   ├── crypto/           # scrypt + AES-256-GCM
 │   ├── db/               # sql.js 初始化、迁移、helpers
+│   ├── clipboardWindow.ts # 剪切板历史小窗口（v1.32.0）
 │   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge、attachment*（v1.22.0）
 ├── extension/            # Chrome/Edge MV3（v1.6.0）
 ├── native-host/          # Native Messaging Host（v1.6.0）
@@ -88,7 +90,9 @@ src/
 │   ├── index.ts          # contextBridge 暴露
 │   └── api.ts            # typed IPC 封装
 ├── renderer/
-│   └── app.ts            # Vue createApp
+│   ├── app.ts            # Vue createApp
+│   ├── detail.ts         # 详情小窗口（v1.14.0）
+│   └── clipboard-window.ts # 剪切板历史小窗口（v1.32.0）
 ├── components/           # UI 组件（含 recovery/ 子目录）
 ├── composables/          # useAppState、useTheme、useAutoLock、useToast、useProductTour（v1.24.0）
 ├── services/
