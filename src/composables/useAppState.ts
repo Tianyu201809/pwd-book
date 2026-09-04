@@ -59,6 +59,9 @@ const vaultStatus = ref<VaultStatus>({
 const securitySettings = ref<SecuritySettings>({
   autoLockMinutes: 15,
   clipboardClearEnabled: true,
+  clipboardEnabled: false,
+  clipboardDefaultExpiry: 300,
+  clipboardPersistence: false,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   browserFillEnabled: false,
@@ -724,6 +727,10 @@ function openPasswordHealth(): void {
   touchActivity()
 }
 
+function openClipboard(): void {
+  navigateTo('clipboard')
+}
+
 function selectEntry(id: string): void {
   isCreating.value = false
   selectedEntryId.value = id
@@ -1360,6 +1367,7 @@ export function useAppState() {
     pendingApplyPassword,
     openPasswordGen,
     openPasswordHealth,
+    openClipboard,
     openEmailBackup,
     openSync,
     openWifiSync,

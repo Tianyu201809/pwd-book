@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PwdBook Clipboard</title>
+    <script>
+      ;(function () {
+        try {
+          var skin = localStorage.getItem('pwdbook-theme-skin') || 'classic'
+          var mode = localStorage.getItem('pwdbook-theme-mode') || 'dark'
+          var accent = localStorage.getItem('pwdbook-theme-accent') || 'brass'
+          document.documentElement.setAttribute('data-skin', skin === 'animalIsland' ? 'animalIsland' : 'classic')
+          document.documentElement.setAttribute('data-accent', accent)
+          var resolved = mode === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : mode === 'light' ? 'light' : 'dark'
+          document.documentElement.setAttribute('data-mode', resolved)
+          document.documentElement.setAttribute('data-mode-pref', mode)
+          var locale = localStorage.getItem('pwdbook-locale') || (navigator.language.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en')
+          document.documentElement.lang = locale
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body class="clipboard-window-body"><div id="app"></div><script type="module" src="./clipboard-window.ts"></script></body>
+</html>

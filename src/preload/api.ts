@@ -10,6 +10,13 @@ const QUICKBAR_CHANNELS = {
   focusEntry: 'quickbar:focus-entry',
   resize: 'quickbar:resize',
 } as const
+
+const CLIPBOARD_WINDOW_CHANNELS = {
+  hide: 'clipboard-window:hide',
+  showMain: 'clipboard-window:show-main',
+  getPinned: 'clipboard-window:get-pinned',
+  togglePinned: 'clipboard-window:toggle-pinned',
+} as const
 import type {
   CategoryInput,
   ExportPayload,
@@ -151,6 +158,7 @@ export const electronAPI = {
 
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     invoke(IPC.clipboardCopy, { text, clearAfterMs }),
+  readClipboardText: (): Promise<string> => invoke(IPC.clipboardRead),
 
   openExternal: (url: string): Promise<void> => invoke(IPC.shellOpenExternal, url),
   openLocalProgram: (programPath: string): Promise<void> =>
@@ -249,6 +257,22 @@ export const electronAPI = {
   },
   setQuickBarBackground: (color: string): void =>
     ipcRenderer.send('quickbar:set-background', color),
+  hideClipboardWindow: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.hide),
+  clipboardWindowShowMain: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.showMain),
+  getClipboardWindowPinned: (): Promise<boolean> =>
+    ipcRenderer.invoke(CLIPBOARD_WINDOW_CHANNELS.getPinned),
+  toggleClipboardWindowPinned: (): Promise<boolean> =>
+    ipcRenderer.invoke(CLIPBOARD_WINDOW_CHANNELS.togglePinned),
+  onClipboardWindowShown: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.clipboardWindowShown, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowShown, listener)
+  },
+  onClipboardWindowFocusMain: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.clipboardWindowFocusMain, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowFocusMain, listener)
+  },
 
   openDetailWindow: (entryId: string): Promise<boolean> => invoke(IPC.detailWindowOpen, entryId),
   closeDetailWindow: (): void => ipcRenderer.send(IPC.detailWindowClose),

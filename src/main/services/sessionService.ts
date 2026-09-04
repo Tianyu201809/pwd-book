@@ -4,6 +4,9 @@ import { appError, ErrorCode } from '../../shared/errors'
 const DEFAULT_SETTINGS: SecuritySettings = {
   autoLockMinutes: 15,
   clipboardClearEnabled: true,
+  clipboardEnabled: false,
+  clipboardDefaultExpiry: 300,
+  clipboardPersistence: false,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   quickBarEnabled: true,

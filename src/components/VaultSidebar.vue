@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, Plus, Pencil, Trash2, Box, Layers, FolderOpen, Settings, Sparkles, ShieldAlert, Hash, ArchiveRestore } from 'lucide-vue-next'
+import { Search, Plus, Pencil, Trash2, Box, Layers, FolderOpen, Settings, Sparkles, ShieldAlert, Hash, ArchiveRestore, Clipboard } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
@@ -107,6 +107,7 @@ const {
   navigateTo,
   openPasswordGen,
   openPasswordHealth,
+  openClipboard,
   openTrash,
   vaultStatus,
   reorderSidebarCategories,
@@ -298,6 +299,11 @@ function handleToolPasswordGen(): void {
 function handleToolPasswordHealth(): void {
   closeFooterMenus()
   openPasswordHealth()
+}
+
+function handleToolClipboard(): void {
+  closeFooterMenus()
+  openClipboard()
 }
 
 function handleToolTrash(): void {
@@ -691,6 +697,14 @@ onBeforeUnmount(() => {
                     :stroke-width="1.75"
                   />
                   <span class="sidebar-menu-item-label">{{ t('tools.passwordHealth.title') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="sidebar-menu-item sidebar-menu-item--clipboard"
+                  @click="handleToolClipboard"
+                >
+                  <Clipboard :size="14" :stroke-width="1.75" />
+                  <span class="sidebar-menu-item-label">{{ t('tools.clipboardTitle') }}</span>
                 </button>
               </div>
             </Transition>
@@ -1233,6 +1247,10 @@ onBeforeUnmount(() => {
 
 .sidebar-menu-item--tag {
   color: #ea580c;
+}
+
+.sidebar-menu-item--clipboard {
+  color: #3b82f6;
 }
 
 .sidebar-footer-popover-enter-active,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap } from 'lucide-vue-next'
+import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap, Clipboard } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { useTheme } from '@/composables/useTheme'
@@ -35,10 +35,15 @@ const isMaximized = ref(false)
 const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
 const canOpenLearn = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
+const canOpenClipboard = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
 
 function openLearnHub(): void {
   showSkinMenu.value = false
   openHub()
+}
+
+function openClipboard(): void {
+  navigateTo('clipboard')
 }
 
 let removeClosePromptListener: (() => void) | undefined
@@ -320,6 +325,16 @@ onUnmounted(() => {
           :size="14"
           :stroke-width="1.5"
         />
+      </button>
+      <button
+        v-if="canOpenClipboard"
+        type="button"
+        class="win-btn clipboard-titlebar-btn"
+        :aria-label="t('titlebar.openClipboard')"
+        :title="t('titlebar.openClipboard')"
+        @click="openClipboard"
+      >
+        <Clipboard :size="14" :stroke-width="1.5" />
       </button>
       <button
         type="button"

@@ -102,6 +102,7 @@ export const vaultApi = {
 
   copySecret: (text: string, clearAfterMs?: number): Promise<void> =>
     getApi().copySecret(text, clearAfterMs),
+  readClipboardText: (): Promise<string> => getApi().readClipboardText(),
 
   openExternal: (url: string): Promise<void> => getApi().openExternal(url),
   openLocalProgram: (programPath: string): Promise<void> => getApi().openLocalProgram(programPath),

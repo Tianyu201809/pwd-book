@@ -90,6 +90,7 @@ declare global {
       openExtensionsPage: () => Promise<{ copiedUrl: string }>
       openExtensionDir: () => Promise<void>
       copySecret: (text: string, clearAfterMs?: number) => Promise<void>
+      readClipboardText: () => Promise<string>
       openExternal: (url: string) => Promise<void>
       openLocalProgram: (programPath: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
@@ -152,6 +153,12 @@ declare global {
       notifyThemeChanged?: () => void
       onThemeChanged?: (handler: () => void) => () => void
       setQuickBarBackground?: (color: string) => void
+      hideClipboardWindow?: () => void
+      clipboardWindowShowMain?: () => void
+      getClipboardWindowPinned?: () => Promise<boolean>
+      toggleClipboardWindowPinned?: () => Promise<boolean>
+      onClipboardWindowShown?: (handler: () => void) => () => void
+      onClipboardWindowFocusMain?: (handler: () => void) => () => void
       openDetailWindow?: (entryId: string) => Promise<boolean>
       closeDetailWindow?: () => void
       notifyDetailWindowReady?: () => void

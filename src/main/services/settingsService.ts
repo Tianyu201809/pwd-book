@@ -7,6 +7,9 @@ import { truncateQuickBarRecentToLimit } from './quickBarRecentService'
 const SETTINGS_KEYS = {
   autoLockMinutes: 'auto_lock_minutes',
   clipboardClearEnabled: 'clipboard_clear_enabled',
+  clipboardEnabled: 'clipboard_enabled',
+  clipboardDefaultExpiry: 'clipboard_default_expiry',
+  clipboardPersistence: 'clipboard_persistence',
   clipboardClearSeconds: 'clipboard_clear_seconds',
   closeWindowAction: 'close_window_action',
   quickBarEnabled: 'quick_bar_enabled',
@@ -30,6 +33,15 @@ export function getSecuritySettings(): SecuritySettings {
     autoLockMinutes: Number(getSetting(SETTINGS_KEYS.autoLockMinutes) ?? defaults.autoLockMinutes),
     clipboardClearEnabled:
       (getSetting(SETTINGS_KEYS.clipboardClearEnabled) ?? String(defaults.clipboardClearEnabled)) ===
+      'true',
+    clipboardEnabled:
+      (getSetting(SETTINGS_KEYS.clipboardEnabled) ?? String(defaults.clipboardEnabled)) === 'true',
+    clipboardDefaultExpiry: parseClipboardDefaultExpiry(
+      getSetting(SETTINGS_KEYS.clipboardDefaultExpiry) ?? String(defaults.clipboardDefaultExpiry),
+      defaults.clipboardDefaultExpiry,
+    ),
+    clipboardPersistence:
+      (getSetting(SETTINGS_KEYS.clipboardPersistence) ?? String(defaults.clipboardPersistence)) ===
       'true',
     clipboardClearSeconds: Number(
       getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
@@ -62,6 +74,11 @@ export function getSecuritySettings(): SecuritySettings {
   }
 }
 
+function parseClipboardDefaultExpiry(raw: string, fallback: SecuritySettings['clipboardDefaultExpiry']): SecuritySettings['clipboardDefaultExpiry'] {
+  const value = Number(raw)
+  return value === 0 || value === 30 || value === 300 || value === 900 || value === 1800 ? value : fallback
+}
+
 export function updateSecuritySettings(partial: Partial<SecuritySettings>): SecuritySettings {
   const current = getSecuritySettings()
   const next = {
@@ -74,6 +91,9 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
 
   setSetting(SETTINGS_KEYS.autoLockMinutes, String(next.autoLockMinutes))
   setSetting(SETTINGS_KEYS.clipboardClearEnabled, String(next.clipboardClearEnabled))
+  setSetting(SETTINGS_KEYS.clipboardEnabled, String(next.clipboardEnabled))
+  setSetting(SETTINGS_KEYS.clipboardDefaultExpiry, String(next.clipboardDefaultExpiry))
+  setSetting(SETTINGS_KEYS.clipboardPersistence, String(next.clipboardPersistence))
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
   setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
   setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))

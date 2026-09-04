@@ -20,6 +20,12 @@ import {
   unregisterQuickBarShortcut,
 } from './quickBar'
 import {
+  destroyClipboardWindow,
+  registerClipboardWindowIpc,
+  registerClipboardWindowShortcut,
+  unregisterClipboardWindowShortcut,
+} from './clipboardWindow'
+import {
   registerDetailWindowIpc,
 } from './detailWindow'
 import {
@@ -149,8 +155,10 @@ if (gotSingleInstanceLock) {
     }
     registerIpcHandlers()
     registerQuickBarIpc()
+    registerClipboardWindowIpc()
     registerDetailWindowIpc()
     registerQuickBarShortcut()
+    registerClipboardWindowShortcut()
     registerMainWindowShortcut()
     registerSystemAutoLock()
     syncBrowserBridge()
@@ -249,8 +257,10 @@ if (gotSingleInstanceLock) {
     // Cmd+Q / Dock「退出」不会经过 requestQuit，必须在此标记，否则 close 拦截会取消退出
     markQuitting()
     unregisterQuickBarShortcut()
+    unregisterClipboardWindowShortcut()
     unregisterMainWindowShortcut()
     destroyQuickBar()
+    destroyClipboardWindow()
     destroyTray()
     destroyBrowserBridge()
     void stopWifiSyncServer()

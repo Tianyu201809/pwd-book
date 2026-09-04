@@ -3,6 +3,7 @@ import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
+import { hideClipboardWindowOnLock, registerClipboardWindowShortcut } from '../clipboardWindow'
 import { hideDetailWindowOnLock } from '../detailWindow'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
 import { isLaunchAtLoginAvailable, syncLaunchAtLogin } from '../launchAtLogin'
@@ -191,6 +192,7 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       lockVault()
       hideQuickBarOnLock()
+      hideClipboardWindowOnLock()
       hideDetailWindowOnLock()
       resetScheduledBackupNotification()
       return getVaultStatus()
@@ -440,6 +442,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
     const next = updateSecuritySettings(partial)
     registerQuickBarShortcut()
+    registerClipboardWindowShortcut()
     registerMainWindowShortcut()
     syncBrowserBridge()
     if (partial.launchAtLoginEnabled !== undefined) {
@@ -483,6 +486,8 @@ export function registerIpcHandlers(): void {
       copySecret(payload.text, clearAfterMs)
     }),
   )
+
+  ipcMain.handle(IPC.clipboardRead, () => wrap(() => clipboard.readText()))
 
   ipcMain.handle(IPC.shellOpenExternal, async (_event, url: string) => {
     let parsed: URL

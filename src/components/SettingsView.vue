@@ -63,6 +63,8 @@ const extensionsPageHint = ref('')
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 const launchAtLoginAvailable = ref(true)
+const CLIPBOARD_SESSION_STORAGE_KEY = 'pwdbook-clipboard-session'
+const CLIPBOARD_PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
@@ -76,6 +78,7 @@ const activeTab = computed(() => settingsTab.value)
 const autoLockOptions = [5, 15, 30, 60, 120]
 const trashRetentionOptions = [7, 14, 30, 60, 90]
 const quickBarRecentLimitOptions = Array.from({ length: 16 }, (_, index) => index + 5)
+const clipboardExpiryOptions = [30, 300, 900, 1800, 0] as const
 
 const autoLockSelectOptions = computed(() => [
   ...autoLockOptions.map((minutes) => ({
@@ -102,6 +105,14 @@ const quickBarRecentLimitSelectOptions = computed(() =>
   })),
 )
 
+const clipboardExpirySelectOptions = computed(() => [
+  { value: '30', label: t('settings.clipboardExpiry30s') },
+  { value: '300', label: t('settings.clipboardExpiry5m') },
+  { value: '900', label: t('settings.clipboardExpiry15m') },
+  { value: '1800', label: t('settings.clipboardExpiry30m') },
+  { value: '0', label: t('settings.clipboardExpiryNever') },
+])
+
 const closeWindowOptions = computed(() => [
   { value: 'ask', label: t('settings.closeWindowAsk') },
   { value: 'tray', label: t('settings.closeWindowTray') },
@@ -114,6 +125,27 @@ async function onAutoLockChange(value: string): Promise<void> {
 
 async function onClipboardClearChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ clipboardClearEnabled: enabled })
+}
+
+async function onClipboardEnabledChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ clipboardEnabled: enabled })
+}
+
+async function onClipboardDefaultExpiryChange(value: string): Promise<void> {
+  const expiry = Number(value)
+  if ((clipboardExpiryOptions as readonly number[]).includes(expiry)) {
+    await updateSecuritySettings({ clipboardDefaultExpiry: expiry as typeof clipboardExpiryOptions[number] })
+  }
+}
+
+async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ clipboardPersistence: enabled })
+  if (enabled) {
+    const sessionHistory = sessionStorage.getItem(CLIPBOARD_SESSION_STORAGE_KEY)
+    if (sessionHistory) localStorage.setItem(CLIPBOARD_PERSISTENT_STORAGE_KEY, sessionHistory)
+  } else {
+    localStorage.removeItem(CLIPBOARD_PERSISTENT_STORAGE_KEY)
+  }
 }
 
 async function onCloseWindowChange(value: string): Promise<void> {
@@ -320,6 +352,50 @@ async function handleReset(): Promise<void> {
         >
           <h3>{{ t('settings.security') }}</h3>
           <UiCard class="settings-card">
+            <div class="row">
+              <div>
+                <p class="row-title">
+                  {{ t('settings.clipboardEnabled') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.clipboardEnabledDesc') }}
+                </p>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.clipboardEnabled"
+                @update:model-value="onClipboardEnabledChange"
+              />
+            </div>
+            <div class="row">
+              <div>
+                <p class="row-title">
+                  {{ t('settings.clipboardDefaultExpiry') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.clipboardDefaultExpiryDesc') }}
+                </p>
+              </div>
+              <UiSelect
+                :model-value="String(securitySettings.clipboardDefaultExpiry)"
+                class="settings-select"
+                :options="clipboardExpirySelectOptions"
+                @update:model-value="onClipboardDefaultExpiryChange"
+              />
+            </div>
+            <div class="row">
+              <div>
+                <p class="row-title">
+                  {{ t('settings.clipboardPersistence') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.clipboardPersistenceDesc') }}
+                </p>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.clipboardPersistence"
+                @update:model-value="onClipboardPersistenceChange"
+              />
+            </div>
             <div class="row">
               <div>
                 <p class="row-title">

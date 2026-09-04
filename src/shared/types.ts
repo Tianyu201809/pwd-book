@@ -10,6 +10,7 @@ export type AppScreen =
   | 'folder-sync'
   | 'password-gen'
   | 'password-health'
+  | 'clipboard'
   | 'trash'
 
 export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
@@ -166,6 +167,12 @@ export interface SecuritySettings {
   /** 空闲锁定分钟数；{@link AUTO_LOCK_FOLLOW_SYSTEM} 表示跟随系统锁屏 */
   autoLockMinutes: number
   clipboardClearEnabled: boolean
+  /** 剪切板历史捕获与轮询开关 */
+  clipboardEnabled: boolean
+  /** 新剪切板记录的默认自动清理周期，单位为秒；0 表示永久 */
+  clipboardDefaultExpiry: 30 | 300 | 900 | 1800 | 0
+  /** 是否在应用重启后保留剪切板历史 */
+  clipboardPersistence: boolean
   clipboardClearSeconds: number
   closeWindowAction: CloseWindowAction
   /** 悬浮快捷搜索条 */
@@ -339,6 +346,7 @@ export const IPC = {
   settingsUpdate: 'settings:update',
   settingsSetUiLocale: 'settings:set-ui-locale',
   clipboardCopy: 'clipboard:copy-secret',
+  clipboardRead: 'clipboard:read-system',
   shellOpenExternal: 'shell:open-external',
   shellOpenLocalProgram: 'shell:open-local-program',
   dataExport: 'data:export',
@@ -408,6 +416,8 @@ export const IPC_EVENTS = {
   windowMaximizeChanged: 'window:maximize-changed',
   trayOpenSettings: 'tray:open-settings',
   quickBarFocusEntry: 'quickbar:focus-entry',
+  clipboardWindowShown: 'clipboard-window:shown',
+  clipboardWindowFocusMain: 'clipboard-window:focus-main',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [
