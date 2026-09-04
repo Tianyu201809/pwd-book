@@ -463,6 +463,7 @@ export default {
     clipboardWindowUnpin: 'Unpin clipboard window',
     clipboardResizePanels: 'Resize clipboard panels',
     clipboardPermission: 'Could not read the system clipboard. Check permissions.',
+    clipboardDisabledHint: 'Turn on clipboard history in Settings first.',
     clipboardSeconds: 'Clears in {n}s',
     clipboardMinutes: 'Clears in {n}m',
     passwordHealth: {

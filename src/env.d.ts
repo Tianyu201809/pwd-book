@@ -160,6 +160,7 @@ declare global {
       getClipboardWindowPinned?: () => Promise<boolean>
       toggleClipboardWindowPinned?: () => Promise<boolean>
       onClipboardWindowShown?: (handler: () => void) => () => void
+      onClipboardWindowDisabled?: (handler: () => void) => () => void
       openDetailWindow?: (entryId: string) => Promise<boolean>
       closeDetailWindow?: () => void
       notifyDetailWindowReady?: () => void

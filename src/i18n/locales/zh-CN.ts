@@ -462,6 +462,7 @@ export default {
     clipboardWindowUnpin: '取消固定小窗',
     clipboardResizePanels: '调整剪切板面板宽度',
     clipboardPermission: '无法读取系统剪切板，请检查权限',
+    clipboardDisabledHint: '请在设置页面开启剪切板功能',
     clipboardSeconds: '{n} 秒后清理',
     clipboardMinutes: '{n} 分钟后清理',
     passwordHealth: {

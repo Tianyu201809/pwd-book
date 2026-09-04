@@ -272,6 +272,11 @@ export const electronAPI = {
     ipcRenderer.on(IPC_EVENTS.clipboardWindowShown, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowShown, listener)
   },
+  onClipboardWindowDisabled: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.clipboardWindowDisabled, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowDisabled, listener)
+  },
 
   openDetailWindow: (entryId: string): Promise<boolean> => invoke(IPC.detailWindowOpen, entryId),
   closeDetailWindow: (): void => ipcRenderer.send(IPC.detailWindowClose),

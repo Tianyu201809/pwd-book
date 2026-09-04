@@ -1,8 +1,10 @@
 import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
+import { resolveClipboardWindowOpen } from '../shared/clipboardWindowAccess'
 import { IPC_EVENTS } from '../shared/types'
 import { isUnlocked } from './services/sessionService'
-import { showFromTray } from './tray'
+import { getSecuritySettings } from './services/settingsService'
+import { getMainWindow, showFromTray } from './tray'
 
 const CLIPBOARD_WINDOW_WIDTH = 760
 const CLIPBOARD_WINDOW_HEIGHT = 680
@@ -71,9 +73,20 @@ export function hideClipboardWindow(): void {
   if (clipboardWindow && !clipboardWindow.isDestroyed()) clipboardWindow.hide()
 }
 
+function notifyClipboardWindowDisabled(): void {
+  hideClipboardWindow()
+  showFromTray()
+  getMainWindow()?.webContents.send(IPC_EVENTS.clipboardWindowDisabled)
+}
+
 export function showClipboardWindow(): void {
-  if (!isUnlocked()) {
+  const access = resolveClipboardWindowOpen(isUnlocked(), getSecuritySettings().clipboardEnabled)
+  if (access === 'locked') {
     showFromTray()
+    return
+  }
+  if (access === 'disabled') {
+    notifyClipboardWindowDisabled()
     return
   }
   const win = ensureClipboardWindow()

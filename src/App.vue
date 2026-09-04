@@ -50,6 +50,7 @@ let removeDetailWindowClosedListener: (() => void) | undefined
 let removeVaultDataListener: (() => void) | undefined
 let removeTrayOpenSettingsListener: (() => void) | undefined
 let removeQuickBarFocusEntryListener: (() => void) | undefined
+let removeClipboardWindowDisabledListener: (() => void) | undefined
 const scheduledBackupLoading = ref(false)
 const scheduledMasterModalRef = ref<InstanceType<typeof MasterPasswordConfirmModal> | null>(null)
 
@@ -79,6 +80,9 @@ onMounted(async () => {
   removeQuickBarFocusEntryListener = window.electronAPI?.onQuickBarFocusEntry?.((entryId) => {
     focusEntryFromQuickBar(entryId)
   })
+  removeClipboardWindowDisabledListener = window.electronAPI?.onClipboardWindowDisabled?.(() => {
+    showToast(t('tools.clipboardDisabledHint'), 'error')
+  })
   await bootstrap()
 })
 
@@ -91,6 +95,7 @@ onUnmounted(() => {
   removeVaultDataListener?.()
   removeTrayOpenSettingsListener?.()
   removeQuickBarFocusEntryListener?.()
+  removeClipboardWindowDisabledListener?.()
 })
 
 async function confirmScheduledBackup(masterPassword: string): Promise<void> {

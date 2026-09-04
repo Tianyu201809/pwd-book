@@ -418,6 +418,7 @@ export const IPC_EVENTS = {
   trayOpenSettings: 'tray:open-settings',
   quickBarFocusEntry: 'quickbar:focus-entry',
   clipboardWindowShown: 'clipboard-window:shown',
+  clipboardWindowDisabled: 'clipboard-window:disabled',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

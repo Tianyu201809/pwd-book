@@ -78,7 +78,7 @@
 
 | 函数 / 行为 | 说明 |
 |-------------|------|
-| `showClipboardWindow` / `toggleClipboardWindow` | 已解锁则显示/切换 760×680 无边框置顶窗（`clipboard-window.html`）；未解锁改 `showFromTray()` |
+| `showClipboardWindow` / `toggleClipboardWindow` | 已解锁且已开启剪切板历史则显示/切换 760×680 无边框置顶窗；未解锁改 `showFromTray()`；功能关闭则拦截并提示去设置 |
 | `hideClipboardWindow` / `hideClipboardWindowOnLock` | 隐藏；锁定时由 `vault:lock` 调用 |
 | `destroyClipboardWindow` | `before-quit` 销毁窗口并重置固定状态 |
 | `registerClipboardWindowShortcut` | 注册 `Alt+Shift+O`；启动与 `settings:update` 时调用 |
