@@ -155,6 +155,7 @@ declare global {
       notifyThemeChanged?: () => void
       onThemeChanged?: (handler: () => void) => () => void
       setQuickBarBackground?: (color: string) => void
+      setClipboardWindowBackground?: (color: string) => void
       hideClipboardWindow?: () => void
       showClipboardWindow?: () => void
       getClipboardWindowPinned?: () => Promise<boolean>

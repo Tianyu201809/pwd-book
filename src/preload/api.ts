@@ -16,6 +16,7 @@ const CLIPBOARD_WINDOW_CHANNELS = {
   show: 'clipboard-window:show',
   getPinned: 'clipboard-window:get-pinned',
   togglePinned: 'clipboard-window:toggle-pinned',
+  setBackground: 'clipboard-window:set-background',
 } as const
 import type {
   CategoryInput,
@@ -261,6 +262,8 @@ export const electronAPI = {
   },
   setQuickBarBackground: (color: string): void =>
     ipcRenderer.send('quickbar:set-background', color),
+  setClipboardWindowBackground: (color: string): void =>
+    ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.setBackground, color),
   hideClipboardWindow: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.hide),
   showClipboardWindow: (): void => ipcRenderer.send(CLIPBOARD_WINDOW_CHANNELS.show),
   getClipboardWindowPinned: (): Promise<boolean> =>

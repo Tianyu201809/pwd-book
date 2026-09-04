@@ -40,14 +40,12 @@ function createClipboardWindow(): BrowserWindow {
     show: false,
     frame: false,
     resizable: true,
-    transparent: true,
-    roundedCorners: false,
     minWidth: CLIPBOARD_WINDOW_MIN_WIDTH,
     minHeight: CLIPBOARD_WINDOW_MIN_HEIGHT,
-    hasShadow: false,
+    hasShadow: true,
     alwaysOnTop: true,
     skipTaskbar: true,
-    backgroundColor: '#00000000',
+    backgroundColor: '#1e2433',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -138,6 +136,10 @@ export function registerClipboardWindowIpc(): void {
   ipcMain.on('clipboard-window:hide', hideClipboardWindow)
   ipcMain.on('clipboard-window:show', showClipboardWindow)
   ipcMain.on('theme:notify-change', notifyClipboardWindowThemeSync)
+  ipcMain.on('clipboard-window:set-background', (_event, color: string) => {
+    if (!clipboardWindow || clipboardWindow.isDestroyed()) return
+    if (typeof color === 'string' && color) clipboardWindow.setBackgroundColor(color)
+  })
   ipcMain.handle(CLIPBOARD_WINDOW_PINNED_GET, () => clipboardWindowPinned)
   ipcMain.handle(CLIPBOARD_WINDOW_PINNED_TOGGLE, () => {
     clipboardWindowPinned = !clipboardWindowPinned

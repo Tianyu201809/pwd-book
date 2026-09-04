@@ -84,6 +84,7 @@ function applyTheme(
     window.electronAPI?.setNativeTheme('light')
   }
   syncQuickBarWindowChrome()
+  syncClipboardWindowChrome()
   return resolved
 }
 
@@ -94,8 +95,19 @@ export function resolveQuickBarBackgroundColor(): string {
   return document.documentElement.getAttribute('data-mode') === 'light' ? '#eef0f4' : '#0a0c10'
 }
 
+/** 剪切板不透明窗口底色，须与 `--bg-elevated` 一致，避免系统圆角出现色差 */
+export function resolveClipboardWindowBackgroundColor(): string {
+  const skin = document.documentElement.getAttribute('data-skin')
+  if (skin === 'animalIsland') return '#faf6e8'
+  return document.documentElement.getAttribute('data-mode') === 'light' ? '#f9fafb' : '#1e2433'
+}
+
 function syncQuickBarWindowChrome(): void {
   window.electronAPI?.setQuickBarBackground?.(resolveQuickBarBackgroundColor())
+}
+
+function syncClipboardWindowChrome(): void {
+  window.electronAPI?.setClipboardWindowBackground?.(resolveClipboardWindowBackgroundColor())
 }
 
 function notifyQuickBarThemeChanged(): void {
