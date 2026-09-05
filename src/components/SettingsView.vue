@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import packageJson from '../../package.json'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   Shield,
   Clipboard,
+  Globe,
   Palette,
   Database,
   Info,
@@ -16,27 +17,22 @@ import {
   ChevronRight,
   PanelTop,
   MailCheck,
-  BookOpen,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
+import BrowserSettingsPanel from '@/components/BrowserSettingsPanel.vue'
 import ClipboardSettingsPanel from '@/components/ClipboardSettingsPanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
 import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
-import { UiSelect, UiSwitch, UiCard, UiButton, UiInput } from '@/components/ui'
+import { UiSelect, UiSwitch, UiCard, UiButton } from '@/components/ui'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
-import BrowserExtensionGuideModal from '@/components/browser/BrowserExtensionGuideModal.vue'
 import ImportDataModal from '@/components/import/ImportDataModal.vue'
 import ExportDataModal from '@/components/export/ExportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
-import { vaultApi } from '@/services/vaultApi'
-import type { BrowserBridgeStatus, NativeHostRegistrationInfo } from '@/shared/browserBridgeProtocol'
-import { parseErrorMessage } from '@/shared/utils'
 import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
 import { AUTO_LOCK_FOLLOW_SYSTEM } from '@/shared/types'
-import { useToast } from '@/composables/useToast'
 
 const {
   settingsTab,
@@ -53,15 +49,8 @@ const {
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
-const { showToast } = useToast()
 
 const statusMessage = ref('')
-const bridgeStatus = ref<BrowserBridgeStatus | null>(null)
-const nativeHostInfo = ref<NativeHostRegistrationInfo | null>(null)
-const extensionIdInput = ref('')
-const registerLoading = ref(false)
-const browserGuideOpen = ref(false)
-const extensionsPageHint = ref('')
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 const launchAtLoginAvailable = ref(true)
@@ -69,6 +58,7 @@ const launchAtLoginAvailable = ref(true)
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
   { id: 'clipboard' as SettingsTab, label: t('settings.clipboardTab'), icon: Clipboard, iconStyle: NAV_ICON_STYLES.clipboard },
+  { id: 'browser' as SettingsTab, label: t('settings.browserTab'), icon: Globe, iconStyle: NAV_ICON_STYLES.browser },
   { id: 'appearance' as SettingsTab, label: t('settings.appearance'), icon: Palette, iconStyle: NAV_ICON_STYLES.palette },
   { id: 'data' as SettingsTab, label: t('settings.data'), icon: Database, iconStyle: NAV_ICON_STYLES.database },
   { id: 'about' as SettingsTab, label: t('settings.about'), icon: Info, iconStyle: NAV_ICON_STYLES.info },
@@ -143,92 +133,11 @@ async function onMainWindowShortcutEnabledChange(enabled: boolean): Promise<void
   await updateSecuritySettings({ mainWindowShortcutEnabled: enabled })
 }
 
-async function onBrowserFillEnabledChange(enabled: boolean): Promise<void> {
-  await updateSecuritySettings({ browserFillEnabled: enabled })
-  await refreshBridgeStatus()
-}
-
-async function refreshBridgeStatus(): Promise<void> {
-  try {
-    bridgeStatus.value = await vaultApi.getBrowserBridgeStatus()
-  } catch {
-    bridgeStatus.value = null
-  }
-}
-
-async function refreshNativeHostInfo(): Promise<void> {
-  try {
-    nativeHostInfo.value = await vaultApi.getNativeHostRegistrationInfo()
-    if (nativeHostInfo.value.extensionId && !extensionIdInput.value) {
-      extensionIdInput.value = nativeHostInfo.value.extensionId
-    }
-  } catch {
-    nativeHostInfo.value = null
-  }
-}
-
-async function registerNativeHost(): Promise<void> {
-  clearError()
-  registerLoading.value = true
-  try {
-    nativeHostInfo.value = await vaultApi.registerNativeHost(extensionIdInput.value)
-    statusMessage.value = t('settings.browserFillRegisterSuccess')
-    showToast(t('settings.browserFillRegisterSuccess'), 'success')
-  } catch (error) {
-    showToast(parseErrorMessage(error), 'error')
-  } finally {
-    registerLoading.value = false
-  }
-}
-
-async function openExtensionsPage(): Promise<void> {
-  try {
-    const { copiedUrl } = await vaultApi.openExtensionsPage()
-    extensionsPageHint.value = t('settings.browserFillOpenExtensionsDone', { url: copiedUrl })
-  } catch (error) {
-    showToast(parseErrorMessage(error), 'error')
-  }
-}
-
-async function openExtensionDir(): Promise<void> {
-  try {
-    await vaultApi.openExtensionDir()
-  } catch (error) {
-    showToast(parseErrorMessage(error), 'error')
-  }
-}
-
-async function regenerateBridgeToken(): Promise<void> {
-  try {
-    bridgeStatus.value = await vaultApi.regenerateBrowserBridgeToken()
-    statusMessage.value = t('settings.browserFillRegenerateDone')
-  } catch (error) {
-    showToast(error instanceof Error ? error.message : String(error), 'error')
-  }
-}
-
-const bridgeStatusText = computed(() => {
-  const s = bridgeStatus.value
-  if (!s?.enabled) return ''
-  if (!s.unlocked) return t('settings.browserFillStatusLocked')
-  if (s.running && s.port) return t('settings.browserFillStatusRunning', { port: s.port })
-  return t('settings.browserFillStatusStopped')
-})
-
 onMounted(() => {
-  void refreshBridgeStatus()
-  void refreshNativeHostInfo()
   void window.electronAPI?.isLaunchAtLoginAvailable?.().then((available) => {
     launchAtLoginAvailable.value = available
   })
 })
-
-watch(
-  () => securitySettings.value.browserFillEnabled,
-  () => {
-    void refreshBridgeStatus()
-  },
-)
 
 function openQuickBar(): void {
   window.electronAPI?.showQuickBar?.()
@@ -470,127 +379,6 @@ async function handleReset(): Promise<void> {
                 @update:model-value="onMainWindowShortcutEnabledChange"
               />
             </div>
-            <div class="row browser-fill-row">
-              <div>
-                <p class="row-title">
-                  {{ t('settings.browserFill') }}
-                </p>
-                <p class="row-desc">
-                  {{ t('settings.browserFillDesc') }}
-                </p>
-                <p
-                  v-if="securitySettings.browserFillEnabled && bridgeStatusText"
-                  class="row-desc bridge-status"
-                >
-                  {{ bridgeStatusText }}
-                </p>
-                <div class="browser-fill-actions">
-                  <UiButton
-                    v-if="securitySettings.browserFillEnabled"
-                    variant="default"
-                    size="small"
-                    @click="regenerateBridgeToken"
-                  >
-                    {{ t('settings.browserFillRegenerateToken') }}
-                  </UiButton>
-                  <UiButton
-                    variant="default"
-                    size="small"
-                    @click="browserGuideOpen = true"
-                  >
-                    <BookOpen
-                      :size="14"
-                      :stroke-width="1.75"
-                    />
-                    {{ t('settings.browserFillGuide.openButton') }}
-                  </UiButton>
-                </div>
-              </div>
-              <UiSwitch
-                :model-value="securitySettings.browserFillEnabled"
-                @update:model-value="onBrowserFillEnabledChange"
-              />
-            </div>
-            <BrowserExtensionGuideModal
-              v-model:open="browserGuideOpen"
-              :extension-id="extensionIdInput"
-              :registered="!!nativeHostInfo?.registered"
-              :bridge-enabled="securitySettings.browserFillEnabled"
-              :register-loading="registerLoading"
-              :extensions-page-hint="extensionsPageHint"
-              @update:extension-id="extensionIdInput = $event"
-              @open-extensions="openExtensionsPage"
-              @register="registerNativeHost"
-            />
-            <div
-              v-if="securitySettings.browserFillEnabled"
-              class="browser-fill-setup"
-            >
-              <p class="setup-title">
-                {{ t('settings.browserFillSetupTitle') }}
-              </p>
-              <p class="row-desc">
-                {{ t('settings.browserFillSetupStep1') }}
-              </p>
-              <p class="row-desc">
-                {{ t('settings.browserFillSetupStep2') }}
-              </p>
-              <p
-                v-if="nativeHostInfo?.registered"
-                class="row-desc setup-ok"
-              >
-                {{ t('settings.browserFillRegistered', { id: nativeHostInfo.extensionId }) }}
-              </p>
-              <p
-                v-else-if="nativeHostInfo && !nativeHostInfo.hostCmdExists"
-                class="row-desc setup-warn"
-              >
-                {{ t('settings.browserFillHostMissing') }}
-              </p>
-              <p
-                v-else
-                class="row-desc"
-              >
-                {{ t('settings.browserFillNotRegistered') }}
-              </p>
-              <label class="setup-label">{{ t('settings.browserFillExtensionId') }}</label>
-              <UiInput
-                v-model="extensionIdInput"
-                class="setup-input"
-                :placeholder="t('settings.browserFillExtensionIdPlaceholder')"
-                allow-clear
-              />
-              <div class="setup-actions">
-                <UiButton
-                  variant="primary"
-                  size="small"
-                  :disabled="!extensionIdInput.trim() || registerLoading"
-                  @click="registerNativeHost"
-                >
-                  {{ t('settings.browserFillRegister') }}
-                </UiButton>
-                <UiButton
-                  variant="default"
-                  size="small"
-                  @click="openExtensionsPage"
-                >
-                  {{ t('settings.browserFillOpenExtensions') }}
-                </UiButton>
-                <UiButton
-                  variant="default"
-                  size="small"
-                  @click="openExtensionDir"
-                >
-                  {{ t('settings.browserFillOpenExtensionDir') }}
-                </UiButton>
-              </div>
-              <p
-                v-if="extensionsPageHint"
-                class="extensions-page-hint"
-              >
-                {{ extensionsPageHint }}
-              </p>
-            </div>
             <div class="row email-backup-row last">
               <div>
                 <p class="row-title">
@@ -619,6 +407,8 @@ async function handleReset(): Promise<void> {
         </div>
 
         <ClipboardSettingsPanel v-else-if="activeTab === 'clipboard'" />
+
+        <BrowserSettingsPanel v-else-if="activeTab === 'browser'" />
 
         <AppearancePanel v-else-if="activeTab === 'appearance'" />
 
@@ -847,68 +637,9 @@ h3 {
   color: var(--status-warning, #c99700);
 }
 
-.browser-fill-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
 .quickbar-open-btn,
 .email-backup-open-btn {
   margin-top: 10px;
-}
-
-.browser-fill-setup {
-  padding: 16px 20px 20px;
-  border-top: 1px solid var(--border-default);
-  background: var(--bg-elevated);
-}
-
-.browser-fill-setup .setup-title {
-  margin: 0 0 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.browser-fill-setup .setup-label {
-  display: block;
-  margin: 12px 0 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.browser-fill-setup .setup-input {
-  width: 100%;
-  max-width: 420px;
-}
-
-.browser-fill-setup .setup-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.browser-fill-setup .setup-ok {
-  color: var(--status-success);
-}
-
-.browser-fill-setup .setup-warn {
-  color: var(--status-danger);
-}
-
-.extensions-page-hint {
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--status-success);
-  background: color-mix(in srgb, var(--status-success) 10%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--status-success) 25%, transparent);
 }
 
 .select {

@@ -42,7 +42,7 @@ function resolveExtensionId() {
 const extensionId = resolveExtensionId()
 if (!extensionId || !/^[a-p]{32}$/.test(extensionId)) {
   console.error('用法: npm run register-native-host -- <扩展ID>')
-  console.error('或在 PwdBook 设置 → 安全 → 浏览器自动填充 中填写 ID 并点击注册。')
+  console.error('或在 PwdBook 设置 → 浏览器 中填写 ID 并点击注册。')
   process.exit(1)
 }
 

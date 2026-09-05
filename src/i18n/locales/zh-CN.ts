@@ -262,11 +262,11 @@ export default {
         },
         nav: {
           title: '设置分区',
-          body: '左侧 Tab 分为安全、剪切板、外观、数据与关于。不同主题的功能按区归类，便于查找。',
+          body: '左侧 Tab 分为安全、剪切板、浏览器、外观、数据与关于。不同主题的功能按区归类，便于查找。',
         },
         security: {
           title: '安全选项',
-          body: '配置开机启动、自动锁定、复制密码后清除剪贴板、快捷搜索与浏览器自动填充等安全相关行为。',
+          body: '配置开机启动、自动锁定、复制密码后清除剪贴板、快捷搜索与恢复密钥等安全相关行为。',
         },
         data: {
           title: '数据管理',
@@ -787,6 +787,17 @@ export default {
     clipboardTab: '剪切板',
     clipboardModuleTitle: '剪切板工作台',
     clipboardModuleLead: '在这里单独管理历史捕获、保留周期与本地存储，不再和锁定、填充等安全项挤在一起。',
+    browserTab: '浏览器',
+    browserModuleTitle: '浏览器填充',
+    browserModuleLead: '在这里单独管理扩展桥接、配对与本机注册，不再和锁定、回收站等安全项挤在一起。',
+    browserStatusOn: '已启用',
+    browserStatusOff: '已关闭',
+    browserPolicyBridge: '桥接状态',
+    browserPolicyLink: '扩展连接',
+    browserPolicyScope: '通信范围',
+    browserLinked: '已注册',
+    browserLocalOnly: '仅本机',
+    browserSetupTitle: '安装与注册',
     clipboardOpenWindow: '打开剪切板窗口',
     clipboardStatusOn: '正在捕获',
     clipboardStatusOff: '已暂停',
@@ -873,7 +884,7 @@ export default {
       steps: [
         {
           title: '开启浏览器自动填充',
-          desc: '确认设置 → 安全 中的「浏览器自动填充」开关已打开，并保持 PwdBook 在后台运行。',
+          desc: '确认设置 → 浏览器 中的「浏览器自动填充」开关已打开，并保持 PwdBook 在后台运行。',
           tip: '桥接服务仅在开关开启且保险库已解锁时工作。',
         },
         {

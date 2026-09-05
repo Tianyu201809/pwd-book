@@ -20,6 +20,7 @@ export const NAV_ICON_STYLES = {
   passwordGen: { color: '#ca8a04', bg: 'rgba(202, 138, 4, 0.14)' },
   shield: { color: '#059669', bg: 'rgba(5, 150, 105, 0.14)' },
   clipboard: { color: '#2563eb', bg: 'rgba(37, 99, 235, 0.14)' },
+  browser: { color: '#0284c7', bg: 'rgba(2, 132, 199, 0.14)' },
   palette: { color: '#9333ea', bg: 'rgba(147, 51, 234, 0.14)' },
   database: { color: '#0891b2', bg: 'rgba(8, 145, 178, 0.14)' },
   info: { color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.14)' },

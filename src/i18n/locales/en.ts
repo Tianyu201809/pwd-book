@@ -263,11 +263,11 @@ export default {
         },
         nav: {
           title: 'Settings sections',
-          body: 'Tabs for Security, Clipboard, Appearance, Data, and About — features grouped by topic.',
+          body: 'Tabs for Security, Clipboard, Browser, Appearance, Data, and About — features grouped by topic.',
         },
         security: {
           title: 'Security',
-          body: 'Launch at login, auto-lock, password clipboard clearing, quick bar, browser autofill, and recovery key.',
+          body: 'Launch at login, auto-lock, password clipboard clearing, quick bar, and recovery key.',
         },
         data: {
           title: 'Data',
@@ -789,6 +789,17 @@ export default {
     clipboardTab: 'Clipboard',
     clipboardModuleTitle: 'Clipboard desk',
     clipboardModuleLead: 'Manage history capture, retention, and local storage here — separate from lock and autofill settings.',
+    browserTab: 'Browser',
+    browserModuleTitle: 'Browser fill',
+    browserModuleLead: 'Manage the extension bridge, pairing, and local registration here — separate from lock and recycle-bin settings.',
+    browserStatusOn: 'Enabled',
+    browserStatusOff: 'Off',
+    browserPolicyBridge: 'Bridge',
+    browserPolicyLink: 'Extension',
+    browserPolicyScope: 'Scope',
+    browserLinked: 'Registered',
+    browserLocalOnly: 'This device only',
+    browserSetupTitle: 'Install and register',
     clipboardOpenWindow: 'Open clipboard window',
     clipboardStatusOn: 'Capturing',
     clipboardStatusOff: 'Paused',
@@ -876,7 +887,7 @@ export default {
       steps: [
         {
           title: 'Enable browser autofill',
-          desc: 'Turn on “Browser autofill” under Settings → Security and keep PwdBook running.',
+          desc: 'Turn on “Browser autofill” under Settings → Browser and keep PwdBook running.',
           tip: 'The bridge only works when autofill is on and the vault is unlocked.',
         },
         {

@@ -29,8 +29,15 @@ export function resolveBundledExtensionDir(): string {
   return path.join(app.getAppPath(), 'extension')
 }
 
+function resolveResourcesDir(): string {
+  if (app.isPackaged) {
+    return process.resourcesPath
+  }
+  return app.getAppPath()
+}
+
 export async function openBundledExtensionDir(): Promise<void> {
-  const dir = resolveBundledExtensionDir()
+  const dir = resolveResourcesDir()
   if (!fs.existsSync(dir)) {
     throw appError(ErrorCode.EXTENSION_DIR_NOT_FOUND)
   }

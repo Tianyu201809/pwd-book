@@ -7,7 +7,7 @@
 
 `com.pwdbook.app.json` 仅为**模板**，其中的 `REPLACE_*` 占位符不会直接被浏览器使用。
 
-请在 PwdBook **设置 → 安全 → 浏览器自动填充** 中填写扩展 ID 并点击 **「注册到 Chrome / Edge」**，届时会在用户目录生成有效清单：
+请在 PwdBook **设置 → 浏览器** 中填写扩展 ID 并点击 **「注册到 Chrome / Edge」**，届时会在用户目录生成有效清单：
 
 ```
 # Windows

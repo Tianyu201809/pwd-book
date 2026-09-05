@@ -120,7 +120,7 @@
 | `browser:native-host-info` | 否 | 已注册扩展 ID、清单路径、Host 是否存在 |
 | `browser:register-native-host` | 否 | 参数：32 位扩展 ID；写注册表 + 用户目录清单 |
 | `shell:open-extensions-page` | 否 | 打开 `chrome://extensions/` |
-| `shell:open-extension-dir` | 否 | 用系统文件管理器打开打包的 `resources/extension`（开发时为项目 `extension/`） |
+| `shell:open-extension-dir` | 否 | 用系统文件管理器打开打包的 `resources/`（开发时为项目根目录） |
 
 扩展与主进程不经上述 IPC 直连，而是 **Native Host → TCP 桥接**。详见 [browser-autofill.md](./browser-autofill.md)。
 

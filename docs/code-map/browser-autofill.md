@@ -121,7 +121,7 @@ sequenceDiagram
 - **「安装向导」**（**v1.17.0**）→ `BrowserExtensionGuideModal`：6 步（开启开关 → 安装扩展 → 复制 ID → 注册 Host → 重启浏览器 → 解锁使用）；步骤 4 要求 `nativeHostInfo.registered` 才可下一步；`BrowserExtensionGuideVisual` 提供每步示意图。
 - 扩展 ID 输入 + **「注册到 Chrome / Edge」** → IPC `browser:register-native-host`
 - **「打开扩展管理页」** → IPC `shell:open-extensions-page` → [`openBrowserExtensionsPage`](../../src/main/services/browserLaunchService.ts)：Windows 下按已安装浏览器与默认浏览器选择 URL，**写入剪贴板**并返回 `{ copiedUrl }`；Toast 提示用户切换到浏览器粘贴。
-- **「打开 resources 目录」** → IPC `shell:open-extension-dir` → [`openBundledExtensionDir`](../../src/main/services/nativeHostRegistryService.ts)：打包后打开 `resources/extension`，开发时打开项目 `extension/`。
+- **「打开 resources 目录」** → IPC `shell:open-extension-dir` → [`openBundledExtensionDir`](../../src/main/services/nativeHostRegistryService.ts)：打包后打开安装目录的 `resources/`，开发时打开项目根目录。
 
 命令行等价：`npm run register-native-host -- <扩展ID>`（[`scripts/register-native-host.mjs`](../../scripts/register-native-host.mjs)）。
 
@@ -170,7 +170,7 @@ sequenceDiagram
 
 ## 用户操作摘要
 
-1. 设置 → 安全：开启「浏览器自动填充」。
+1. 设置 → 浏览器：开启「浏览器自动填充」。
 2. 加载 `extension/` 为已解压扩展，复制 ID。
 3. 粘贴 ID → 注册 → **完全退出并重启浏览器**。
 4. 保持 PwdBook 运行且已解锁，在登录页使用填充条。
