@@ -24,6 +24,7 @@ import {
   clampClipboardHistoryLimit,
   trimClipboardHistory,
 } from '@/shared/clipboardHistoryLimit'
+import { CLIPBOARD_WINDOW_DEFAULT_PINNED } from '@/shared/clipboardWindowAccess'
 
 type ClipboardKind = 'text' | 'image'
 type ClipboardExpiry = 30 | 300 | 900 | 1800 | 0
@@ -55,7 +56,7 @@ const draft = ref('')
 const isCaptureOpen = ref(false)
 const lightboxItem = ref<ClipboardItem | null>(null)
 const now = ref(Date.now())
-const windowPinned = ref(true)
+const windowPinned = ref(CLIPBOARD_WINDOW_DEFAULT_PINNED)
 const splitRatio = ref(0.5)
 const isResizing = ref(false)
 const contextMenu = ref<{ item: ClipboardItem; x: number; y: number } | null>(null)

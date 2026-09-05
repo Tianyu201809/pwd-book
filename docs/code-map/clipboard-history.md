@@ -24,7 +24,7 @@
 | 尺寸 | 默认 760×680，最小 560×480；主屏工作区水平居中，距顶 58px |
 | 置顶 / 任务栏 | `alwaysOnTop: true`，`skipTaskbar: true` |
 | 失焦 | **v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏 |
-| 固定小窗 | `clipboard-window:toggle-pinned`；窗口仍可固定，与失焦策略独立 |
+| 固定小窗 | `clipboard-window:toggle-pinned`；默认未固定（`CLIPBOARD_WINDOW_DEFAULT_PINNED = false`）；与失焦策略独立 |
 | 锁定 | `vault:lock` 调用 `hideClipboardWindowOnLock()` |
 | 未解锁唤起 | `showClipboardWindow()` 改为 `showFromTray()`，引导先解锁 |
 | 功能关闭 | `clipboardEnabled === false` 时拦截小窗，唤起主窗口并提示去设置开启 |

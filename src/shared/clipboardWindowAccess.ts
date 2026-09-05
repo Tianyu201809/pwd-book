@@ -1,6 +1,6 @@
 export type ClipboardWindowOpenResult = 'allow' | 'locked' | 'disabled'
 
-export const CLIPBOARD_WINDOW_DEFAULT_PINNED = true
+export const CLIPBOARD_WINDOW_DEFAULT_PINNED = false
 
 export function resolveClipboardWindowOpen(
   unlocked: boolean,
