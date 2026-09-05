@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   clipboardEnabled: false,
   clipboardDefaultExpiry: 300,
   clipboardPersistence: false,
+  clipboardHistoryLimit: 50,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   quickBarEnabled: true,

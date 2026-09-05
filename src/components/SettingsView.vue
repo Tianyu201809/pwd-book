@@ -34,6 +34,7 @@ import { parseErrorMessage } from '@/shared/utils'
 import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
 import { AUTO_LOCK_FOLLOW_SYSTEM } from '@/shared/types'
+import { CLIPBOARD_HISTORY_LIMITS } from '@/shared/clipboardHistoryLimit'
 import { useToast } from '@/composables/useToast'
 
 const {
@@ -113,6 +114,13 @@ const clipboardExpirySelectOptions = computed(() => [
   { value: '0', label: t('settings.clipboardExpiryNever') },
 ])
 
+const clipboardHistoryLimitSelectOptions = computed(() =>
+  CLIPBOARD_HISTORY_LIMITS.map((n) => ({
+    value: String(n),
+    label: t('settings.clipboardHistoryLimitOption', { n }),
+  })),
+)
+
 const closeWindowOptions = computed(() => [
   { value: 'ask', label: t('settings.closeWindowAsk') },
   { value: 'tray', label: t('settings.closeWindowTray') },
@@ -135,6 +143,15 @@ async function onClipboardDefaultExpiryChange(value: string): Promise<void> {
   const expiry = Number(value)
   if ((clipboardExpiryOptions as readonly number[]).includes(expiry)) {
     await updateSecuritySettings({ clipboardDefaultExpiry: expiry as typeof clipboardExpiryOptions[number] })
+  }
+}
+
+async function onClipboardHistoryLimitChange(value: string): Promise<void> {
+  const limit = Number(value)
+  if ((CLIPBOARD_HISTORY_LIMITS as readonly number[]).includes(limit)) {
+    await updateSecuritySettings({
+      clipboardHistoryLimit: limit as (typeof CLIPBOARD_HISTORY_LIMITS)[number],
+    })
   }
 }
 
@@ -380,6 +397,22 @@ async function handleReset(): Promise<void> {
                 class="settings-select"
                 :options="clipboardExpirySelectOptions"
                 @update:model-value="onClipboardDefaultExpiryChange"
+              />
+            </div>
+            <div class="row">
+              <div>
+                <p class="row-title">
+                  {{ t('settings.clipboardHistoryLimit') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.clipboardHistoryLimitDesc') }}
+                </p>
+              </div>
+              <UiSelect
+                :model-value="String(securitySettings.clipboardHistoryLimit)"
+                class="settings-select"
+                :options="clipboardHistoryLimitSelectOptions"
+                @update:model-value="onClipboardHistoryLimitChange"
               />
             </div>
             <div class="row">

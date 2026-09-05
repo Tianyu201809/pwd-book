@@ -1,5 +1,6 @@
 import { getDefaultSettings } from './sessionService'
 import { getSetting, setSetting } from '../db/helpers'
+import { clampClipboardHistoryLimit } from '../../shared/clipboardHistoryLimit'
 import { clampQuickBarRecentLimit } from '../../shared/quickBarLimits'
 import type { CloseWindowAction, SecuritySettings } from '../../shared/types'
 import { truncateQuickBarRecentToLimit } from './quickBarRecentService'
@@ -10,6 +11,7 @@ const SETTINGS_KEYS = {
   clipboardEnabled: 'clipboard_enabled',
   clipboardDefaultExpiry: 'clipboard_default_expiry',
   clipboardPersistence: 'clipboard_persistence',
+  clipboardHistoryLimit: 'clipboard_history_limit',
   clipboardClearSeconds: 'clipboard_clear_seconds',
   closeWindowAction: 'close_window_action',
   quickBarEnabled: 'quick_bar_enabled',
@@ -43,6 +45,9 @@ export function getSecuritySettings(): SecuritySettings {
     clipboardPersistence:
       (getSetting(SETTINGS_KEYS.clipboardPersistence) ?? String(defaults.clipboardPersistence)) ===
       'true',
+    clipboardHistoryLimit: clampClipboardHistoryLimit(
+      getSetting(SETTINGS_KEYS.clipboardHistoryLimit) ?? defaults.clipboardHistoryLimit,
+    ),
     clipboardClearSeconds: Number(
       getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
     ),
@@ -87,6 +92,9 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
     quickBarRecentLimit: clampQuickBarRecentLimit(
       partial.quickBarRecentLimit ?? current.quickBarRecentLimit,
     ),
+    clipboardHistoryLimit: clampClipboardHistoryLimit(
+      partial.clipboardHistoryLimit ?? current.clipboardHistoryLimit,
+    ),
   }
 
   setSetting(SETTINGS_KEYS.autoLockMinutes, String(next.autoLockMinutes))
@@ -94,6 +102,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.clipboardEnabled, String(next.clipboardEnabled))
   setSetting(SETTINGS_KEYS.clipboardDefaultExpiry, String(next.clipboardDefaultExpiry))
   setSetting(SETTINGS_KEYS.clipboardPersistence, String(next.clipboardPersistence))
+  setSetting(SETTINGS_KEYS.clipboardHistoryLimit, String(next.clipboardHistoryLimit))
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
   setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
   setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))

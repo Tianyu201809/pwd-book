@@ -118,6 +118,12 @@ export function hideClipboardWindowOnLock(): void {
   hideClipboardWindow()
 }
 
+export function refreshClipboardWindowIfVisible(): void {
+  if (clipboardWindow && !clipboardWindow.isDestroyed() && clipboardWindow.isVisible()) {
+    clipboardWindow.webContents.send(IPC_EVENTS.clipboardWindowShown)
+  }
+}
+
 export function unregisterClipboardWindowShortcut(): void {
   if (registeredAccelerator) {
     globalShortcut.unregister(registeredAccelerator)

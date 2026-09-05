@@ -3,7 +3,7 @@ import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
-import { hideClipboardWindow, hideClipboardWindowOnLock, registerClipboardWindowShortcut } from '../clipboardWindow'
+import { hideClipboardWindow, hideClipboardWindowOnLock, refreshClipboardWindowIfVisible, registerClipboardWindowShortcut } from '../clipboardWindow'
 import { hideDetailWindowOnLock } from '../detailWindow'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
 import { isLaunchAtLoginAvailable, syncLaunchAtLogin } from '../launchAtLogin'
@@ -442,6 +442,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
     const next = updateSecuritySettings(partial)
     if (partial.clipboardEnabled === false) hideClipboardWindow()
+    if (partial.clipboardHistoryLimit !== undefined) refreshClipboardWindowIfVisible()
     registerQuickBarShortcut()
     registerClipboardWindowShortcut()
     registerMainWindowShortcut()

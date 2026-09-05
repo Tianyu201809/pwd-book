@@ -19,6 +19,11 @@ import {
 import { showToast } from '@/composables/useToast'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
 import ToastHost from '@/components/ToastHost.vue'
+import {
+  CLIPBOARD_HISTORY_LIMIT_DEFAULT,
+  clampClipboardHistoryLimit,
+  trimClipboardHistory,
+} from '@/shared/clipboardHistoryLimit'
 
 type ClipboardKind = 'text' | 'image'
 type ClipboardExpiry = 30 | 300 | 900 | 1800 | 0
@@ -42,6 +47,7 @@ const selectedId = ref<string | null>(null)
 const unlocked = ref(false)
 const clipboardEnabled = ref(false)
 const clipboardPersistence = ref(false)
+const historyLimit = ref(CLIPBOARD_HISTORY_LIMIT_DEFAULT)
 const settingsLoaded = ref(false)
 const query = ref('')
 const filter = ref<ClipboardFilter>('all')
@@ -97,15 +103,18 @@ function broadcast(type: string, payload?: unknown): void {
 }
 
 function sync(next: ClipboardItem[], announce = false): void {
-  items.value = next
-  selectedId.value = selectedId.value && next.some((item) => item.id === selectedId.value) ? selectedId.value : next[0]?.id ?? null
-  const serialized = JSON.stringify(snapshot(next))
+  const trimmed = trimClipboardHistory(next, historyLimit.value)
+  if (lightboxItem.value && !trimmed.some((item) => item.id === lightboxItem.value?.id)) lightboxItem.value = null
+  if (contextMenu.value && !trimmed.some((item) => item.id === contextMenu.value?.item.id)) closeContextMenu()
+  items.value = trimmed
+  selectedId.value = selectedId.value && trimmed.some((item) => item.id === selectedId.value) ? selectedId.value : trimmed[0]?.id ?? null
+  const serialized = JSON.stringify(snapshot(trimmed))
   sessionStorage.setItem(STORAGE_KEY, serialized)
   if (settingsLoaded.value) {
     if (clipboardPersistence.value) localStorage.setItem(PERSISTENT_STORAGE_KEY, serialized)
     else localStorage.removeItem(PERSISTENT_STORAGE_KEY)
   }
-  if (announce) broadcast('replace-state', next)
+  if (announce) broadcast('replace-state', trimmed)
 }
 
 function purgeExpired(): void {
@@ -180,6 +189,7 @@ async function refresh(): Promise<void> {
   const settings = await window.electronAPI?.getSettings?.()
   clipboardEnabled.value = Boolean(settings?.clipboardEnabled)
   clipboardPersistence.value = Boolean(settings?.clipboardPersistence)
+  historyLimit.value = clampClipboardHistoryLimit(settings?.clipboardHistoryLimit)
   defaultExpiry = settings?.clipboardDefaultExpiry ?? 300
   settingsLoaded.value = true
   try {

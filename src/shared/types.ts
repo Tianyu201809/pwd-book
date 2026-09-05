@@ -172,6 +172,8 @@ export interface SecuritySettings {
   clipboardDefaultExpiry: 30 | 300 | 900 | 1800 | 0
   /** 是否在应用重启后保留剪切板历史 */
   clipboardPersistence: boolean
+  /** 剪切板历史总条数上限；固定项优先保留 */
+  clipboardHistoryLimit: 20 | 50 | 100 | 200
   clipboardClearSeconds: number
   closeWindowAction: CloseWindowAction
   /** 悬浮快捷搜索条 */
