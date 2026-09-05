@@ -7,6 +7,8 @@ import {
   Shield,
   Clipboard,
   Globe,
+  PanelTop,
+  Trash2,
   Palette,
   Database,
   Info,
@@ -15,12 +17,13 @@ import {
   RefreshCw,
   AlertTriangle,
   ChevronRight,
-  PanelTop,
   MailCheck,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import BrowserSettingsPanel from '@/components/BrowserSettingsPanel.vue'
 import ClipboardSettingsPanel from '@/components/ClipboardSettingsPanel.vue'
+import QuickBarSettingsPanel from '@/components/QuickBarSettingsPanel.vue'
+import TrashSettingsPanel from '@/components/TrashSettingsPanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
 import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
 import { UiSelect, UiSwitch, UiCard, UiButton } from '@/components/ui'
@@ -59,6 +62,8 @@ const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
   { id: 'clipboard' as SettingsTab, label: t('settings.clipboardTab'), icon: Clipboard, iconStyle: NAV_ICON_STYLES.clipboard },
   { id: 'browser' as SettingsTab, label: t('settings.browserTab'), icon: Globe, iconStyle: NAV_ICON_STYLES.browser },
+  { id: 'quickbar' as SettingsTab, label: t('settings.quickBarTab'), icon: PanelTop, iconStyle: NAV_ICON_STYLES.quickbar },
+  { id: 'trash' as SettingsTab, label: t('settings.trashTab'), icon: Trash2, iconStyle: NAV_ICON_STYLES.trash },
   { id: 'appearance' as SettingsTab, label: t('settings.appearance'), icon: Palette, iconStyle: NAV_ICON_STYLES.palette },
   { id: 'data' as SettingsTab, label: t('settings.data'), icon: Database, iconStyle: NAV_ICON_STYLES.database },
   { id: 'about' as SettingsTab, label: t('settings.about'), icon: Info, iconStyle: NAV_ICON_STYLES.info },
@@ -67,8 +72,6 @@ const tabs = computed(() => [
 const activeTab = computed(() => settingsTab.value)
 
 const autoLockOptions = [5, 15, 30, 60, 120]
-const trashRetentionOptions = [7, 14, 30, 60, 90]
-const quickBarRecentLimitOptions = Array.from({ length: 16 }, (_, index) => index + 5)
 
 const autoLockSelectOptions = computed(() => [
   ...autoLockOptions.map((minutes) => ({
@@ -80,20 +83,6 @@ const autoLockSelectOptions = computed(() => [
     label: t('settings.autoLockFollowSystem'),
   },
 ])
-
-const trashRetentionSelectOptions = computed(() =>
-  trashRetentionOptions.map((days) => ({
-    value: String(days),
-    label: t('common.days', { n: days }),
-  })),
-)
-
-const quickBarRecentLimitSelectOptions = computed(() =>
-  quickBarRecentLimitOptions.map((n) => ({
-    value: String(n),
-    label: t('settings.quickBarRecentLimitOption', { n }),
-  })),
-)
 
 const closeWindowOptions = computed(() => [
   { value: 'ask', label: t('settings.closeWindowAsk') },
@@ -117,31 +106,11 @@ async function onLaunchAtLoginChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ launchAtLoginEnabled: enabled })
 }
 
-async function onTrashRetentionChange(value: string): Promise<void> {
-  await updateSecuritySettings({ trashRetentionDays: Number(value) })
-}
-
-async function onQuickBarEnabledChange(enabled: boolean): Promise<void> {
-  await updateSecuritySettings({ quickBarEnabled: enabled })
-}
-
-async function onQuickBarRecentLimitChange(value: string): Promise<void> {
-  await updateSecuritySettings({ quickBarRecentLimit: Number(value) })
-}
-
-async function onMainWindowShortcutEnabledChange(enabled: boolean): Promise<void> {
-  await updateSecuritySettings({ mainWindowShortcutEnabled: enabled })
-}
-
 onMounted(() => {
   void window.electronAPI?.isLaunchAtLoginAvailable?.().then((available) => {
     launchAtLoginAvailable.value = available
   })
 })
-
-function openQuickBar(): void {
-  window.electronAPI?.showQuickBar?.()
-}
 
 function openExportModal(): void {
   clearError()
@@ -299,86 +268,6 @@ async function handleReset(): Promise<void> {
                 @update:model-value="onCloseWindowChange"
               />
             </div>
-            <div class="row">
-              <div>
-                <p class="row-title">
-                  {{ t('settings.trashRetention') }}
-                </p>
-                <p class="row-desc">
-                  {{ t('settings.trashRetentionDesc') }}
-                </p>
-              </div>
-              <UiSelect
-                :model-value="String(securitySettings.trashRetentionDays)"
-                class="settings-select"
-                :options="trashRetentionSelectOptions"
-                @update:model-value="onTrashRetentionChange"
-              />
-            </div>
-            <div class="row quickbar-row">
-              <div>
-                <p class="row-title">
-                  {{ t('settings.quickBar') }}
-                </p>
-                <p class="row-desc">
-                  {{ t('settings.quickBarDesc', { accelerator: securitySettings.quickBarAccelerator }) }}
-                </p>
-                <UiButton
-                  v-if="securitySettings.quickBarEnabled"
-                  variant="default"
-                  size="small"
-                  class="quickbar-open-btn"
-                  @click="openQuickBar"
-                >
-                  <PanelTop
-                    :size="14"
-                    :stroke-width="1.75"
-                  />
-                  {{ t('settings.quickBarOpen') }}
-                </UiButton>
-              </div>
-              <UiSwitch
-                :model-value="securitySettings.quickBarEnabled"
-                @update:model-value="onQuickBarEnabledChange"
-              />
-            </div>
-            <div
-              v-if="securitySettings.quickBarEnabled"
-              class="row"
-            >
-              <div>
-                <p class="row-title">
-                  {{ t('settings.quickBarRecentLimit') }}
-                </p>
-                <p class="row-desc">
-                  {{ t('settings.quickBarRecentLimitDesc') }}
-                </p>
-              </div>
-              <UiSelect
-                :model-value="String(securitySettings.quickBarRecentLimit)"
-                class="settings-select"
-                :options="quickBarRecentLimitSelectOptions"
-                @update:model-value="onQuickBarRecentLimitChange"
-              />
-            </div>
-            <div class="row">
-              <div>
-                <p class="row-title">
-                  {{ t('settings.mainWindowShortcut') }}
-                </p>
-                <p class="row-desc">
-                  {{
-                    t('settings.mainWindowShortcutDesc', {
-                      accelerator: securitySettings.mainWindowShortcutAccelerator,
-                    })
-                  }}
-                </p>
-              </div>
-              <UiSwitch
-                :model-value="securitySettings.mainWindowShortcutEnabled"
-                @update:model-value="onMainWindowShortcutEnabledChange"
-              />
-            </div>
             <div class="row email-backup-row last">
               <div>
                 <p class="row-title">
@@ -409,6 +298,10 @@ async function handleReset(): Promise<void> {
         <ClipboardSettingsPanel v-else-if="activeTab === 'clipboard'" />
 
         <BrowserSettingsPanel v-else-if="activeTab === 'browser'" />
+
+        <QuickBarSettingsPanel v-else-if="activeTab === 'quickbar'" />
+
+        <TrashSettingsPanel v-else-if="activeTab === 'trash'" />
 
         <AppearancePanel v-else-if="activeTab === 'appearance'" />
 
@@ -541,6 +434,7 @@ async function handleReset(): Promise<void> {
 .settings-sidebar {
   width: var(--sidebar-width);
   padding: 16px;
+  overflow-y: auto;
   background: var(--bg-surface);
   border-right: 1px solid var(--border-default);
 }
@@ -637,7 +531,6 @@ h3 {
   color: var(--status-warning, #c99700);
 }
 
-.quickbar-open-btn,
 .email-backup-open-btn {
   margin-top: 10px;
 }

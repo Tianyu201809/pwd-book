@@ -69,7 +69,15 @@ export interface PasswordStrengthResult {
   bars: number
 }
 
-export type SettingsTab = 'security' | 'clipboard' | 'browser' | 'appearance' | 'data' | 'about'
+export type SettingsTab =
+  | 'security'
+  | 'clipboard'
+  | 'browser'
+  | 'quickbar'
+  | 'trash'
+  | 'appearance'
+  | 'data'
+  | 'about'
 
 export type CloseWindowAction = 'ask' | 'tray' | 'quit'
 

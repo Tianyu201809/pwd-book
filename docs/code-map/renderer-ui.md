@@ -16,10 +16,11 @@ App.vue
 │   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge；v1.18.0 pointerdown 立即切换分类）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作；**v1.22.0** 列表/方块布局
 │   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）；附件与自定义字段（**v1.22.0**）；v1.14.0 弹出小窗口；v1.17.0 PanelEdge
-├── SettingsView.vue          # 设置页 Tab 容器（安全 / 剪切板 / 浏览器 / 外观 / 数据 / 关于）
+├── SettingsView.vue          # 设置页 Tab 容器（安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 关于）
 │   ├── ClipboardSettingsPanel.vue
-│   ├── BrowserSettingsPanel.vue  # 浏览器自动填充、Native Host 注册、安装向导
-│   │   └── browser/BrowserExtensionGuideModal.vue
+│   ├── BrowserSettingsPanel.vue
+│   ├── QuickBarSettingsPanel.vue
+│   ├── TrashSettingsPanel.vue
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
 ├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全；v1.13.0 SMTP 密码占位/显隐）
