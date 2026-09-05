@@ -151,18 +151,18 @@ export default {
       },
       tools: {
         title: 'Utilities',
-        desc: 'Password generator, health check, trash, and more.',
-        duration: '~1 min',
+        desc: 'Password generator, health check, clipboard, and trash.',
+        duration: '~2 min',
       },
       titlebar: {
         title: 'Title bar',
-        desc: 'Skin, lock, pin, and the learn button.',
+        desc: 'Skin, lock, clipboard, pin, and the learn button.',
         duration: '~1 min',
       },
       settings: {
         title: 'Settings',
-        desc: 'Security, backup, import, and data management.',
-        duration: '~2 min',
+        desc: 'Security, clipboard, browser, quick bar, recycle bin, and data.',
+        duration: '~3 min',
       },
     },
     steps: {
@@ -223,7 +223,7 @@ export default {
       tools: {
         utilities: {
           title: 'Toolbox',
-          body: 'Tap the toolbox icon at the bottom for password generator, health check, and other utilities. Hover icons for labels.',
+          body: 'Tap the toolbox icon at the bottom for password generator, health check, clipboard, and other utilities. Hover icons for labels.',
         },
         passwordGen: {
           title: 'Password generator',
@@ -233,9 +233,13 @@ export default {
           title: 'Password health',
           body: 'Locally analyzes weak and reused passwords; jump to entries from the report to fix them.',
         },
+        clipboard: {
+          title: 'Clipboard',
+          body: 'Opens a popup for recently copied text and images. Turn on history in Settings → Clipboard first. You can also use Shift + Alt + O or the title-bar button.',
+        },
         trash: {
           title: 'Trash',
-          body: 'Deleted entries are soft-deleted for a retention period — restore or purge permanently from here.',
+          body: 'Deleted entries are kept for a while — restore or purge them here. Retention days live under Settings → Recycle bin.',
         },
       },
       titlebar: {
@@ -246,6 +250,10 @@ export default {
         lock: {
           title: 'Quick lock',
           body: 'Clears the session key and returns to the lock screen — use when stepping away.',
+        },
+        clipboard: {
+          title: 'Clipboard window',
+          body: 'Open clipboard history from the title bar. If capture is off, you will be asked to enable it under Settings → Clipboard.',
         },
         pin: {
           title: 'Always on top',
@@ -267,7 +275,23 @@ export default {
         },
         security: {
           title: 'Security',
-          body: 'Launch at login, auto-lock, password clipboard clearing, and recovery key.',
+          body: 'Launch at login, auto-lock, password clipboard clearing, close-window behavior, and recovery. Email backup starts here too.',
+        },
+        clipboard: {
+          title: 'Clipboard',
+          body: 'Capture, retention, and local storage live here. Use the setup guide to learn the popup.',
+        },
+        browser: {
+          title: 'Browser',
+          body: 'Turn on autofill and register the Chrome / Edge extension. The setup guide walks through pairing.',
+        },
+        quickbar: {
+          title: 'Quick bar',
+          body: 'The top search bar, item limit, and the shortcut that shows the main window.',
+        },
+        trash: {
+          title: 'Recycle bin',
+          body: 'How long deleted entries stay, plus a shortcut to open the recycle bin.',
         },
         data: {
           title: 'Data',

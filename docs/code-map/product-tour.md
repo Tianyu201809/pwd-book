@@ -15,9 +15,9 @@
 | `intro` | 快速认识 | 欢迎 → **三栏示意**（`highlight: columns`）→ 分类 → 列表工具栏 |
 | `organize` | 分类与标签 | 分类、**列表工具栏标签筛选**、新建分类、侧栏底部入口 |
 | `entries` | 条目管理 | 搜索、排序/布局、新建、详情侧栏 |
-| `tools` | 实用工具 | **工具箱**、随机密码、密码健康、回收站 |
-| `titlebar` | 标题栏快捷 | 换肤、锁定、置顶、学习入口 |
-| `settings` | 设置中心 | 侧栏 **设置** 图标 → 设置 Tab → 安全 / 数据 |
+| `tools` | 实用工具 | **工具箱**、随机密码、密码健康、剪切板、回收站 |
+| `titlebar` | 标题栏快捷 | 换肤、锁定、剪切板、置顶、学习入口 |
+| `settings` | 设置中心 | 侧栏 **设置** → 分区导航 → 安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站 / 数据 |
 
 步骤定义：`src/components/tour/productTourCatalog.ts`。文案：`i18n` 键 `productTour.*`。
 
@@ -55,15 +55,16 @@ VaultSidebar / PasswordList     # 监听 TOUR_PREPARE_EVENT 展开工具箱/管�
 
 | 属性值 | 组件 |
 |--------|------|
-| `titlebar-learn` / `titlebar-skin` / `titlebar-lock` / `titlebar-pin` | `TitleBar.vue` |
+| `titlebar-learn` / `titlebar-skin` / `titlebar-lock` / `titlebar-clipboard` / `titlebar-pin` | `TitleBar.vue` |
 | `vault-layout` / `vault-col-sidebar` / `vault-col-list` / `vault-col-detail` | `VaultView.vue` |
 | `sidebar-categories` / `sidebar-new-category` / `sidebar-utilities` | `VaultSidebar.vue` |
 | `sidebar-toolbox` / `sidebar-toolbox-panel` / `sidebar-manage` / `sidebar-manage-panel` | `VaultSidebar.vue`（**v1.25.0**） |
-| `tool-password-gen` / `tool-password-health` / `tool-trash` / `sidebar-settings` | `VaultSidebar.vue` |
+| `tool-password-gen` / `tool-password-health` / `tool-clipboard` / `tool-trash` / `sidebar-settings` | `VaultSidebar.vue` |
 | `list-search` / `list-toolbar` / `list-new-entry` / `list-actions` | `PasswordList.vue` |
 | `list-tag-filter` / `list-tag-filter-panel` | `PasswordList.vue`（**v1.25.0**，原 `sidebar-tag-filter`） |
 | `detail-panel` | `PasswordDetail.vue` |
 | `settings-nav` / `settings-security` / `settings-data` | `SettingsView.vue` |
+| `settings-clipboard` / `settings-browser` / `settings-quickbar` / `settings-trash` | 各设置模块面板 |
 
 > **v1.25.0 前** 锚点 `sidebar-tag-filter` 位于 `VaultSidebar.vue`，已移除。
 

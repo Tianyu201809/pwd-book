@@ -701,6 +701,7 @@ onBeforeUnmount(() => {
                 <button
                   type="button"
                   class="sidebar-menu-item sidebar-menu-item--clipboard"
+                  data-tour="tool-clipboard"
                   @click="handleToolClipboard"
                 >
                   <Clipboard :size="14" :stroke-width="1.75" />

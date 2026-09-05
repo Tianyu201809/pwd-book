@@ -326,6 +326,7 @@ onUnmounted(() => {
         v-if="canOpenClipboard"
         type="button"
         class="win-btn clipboard-titlebar-btn"
+        data-tour="titlebar-clipboard"
         :aria-label="t('titlebar.openClipboard')"
         :title="t('titlebar.openClipboard')"
         @click="openClipboard"
