@@ -124,15 +124,15 @@
 
 扩展与主进程不经上述 IPC 直连，而是 **Native Host → TCP 桥接**。详见 [browser-autofill.md](./browser-autofill.md)。
 
-### 剪切板历史小窗口（v1.32.0）
+### 剪切板历史小窗口（v1.32.0 / v1.33.0）
 
-详见 [clipboard-history.md](./clipboard-history.md)。通道注册于 `clipboardWindow.ts`（`send` / `handle`），不经 `handlers.ts` 的 `IPC` 常量表。
+详见 [clipboard-history.md](./clipboard-history.md)。通道注册于 `clipboardWindow.ts`（`send` / `handle`），不经 `handlers.ts` 的 `IPC` 常量表。**v1.33.0** 失焦一律不隐藏，固定状态与失焦策略独立。
 
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `clipboard-window:show` | 否* | 已解锁则显示小窗；未解锁 `showFromTray()` |
 | `clipboard-window:hide` | 否 | 隐藏小窗 |
-| `clipboard-window:get-pinned` | 否 | 查询小窗是否固定（失焦不隐藏） |
+| `clipboard-window:get-pinned` | 否 | 查询小窗是否固定 |
 | `clipboard-window:toggle-pinned` | 否 | 切换小窗固定 |
 
 ### 详情小窗口（v1.14.0）

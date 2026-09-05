@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.32.0**（`package.json`）— 剪切板历史独立小窗口；条目预设品牌图标、网址自动匹配等见既有版本说明。
+**当前版本：v1.33.0**（`package.json`）— 设置分区（安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站等）；剪切板使用向导与条数上限；产品探索对齐新 UI。
 
 ## 文档索引
 
@@ -14,11 +14,11 @@
 | [ipc-and-data-flow.md](./ipc-and-data-flow.md) | IPC 通道表、解锁/保存/恢复流程图 |
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试（**v1.26.0** 条数可配 / 定位主窗口 / 滚动） |
-| [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史小窗口、系统同步、过期与本地存储 |
+| [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块、条数上限、使用向导 |
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 | [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
-| [product-tour.md](./product-tour.md) | **v1.24.0** 产品引导；**v1.25.0** 侧栏/列表 `data-tour` 与 `TOUR_PREPARE` 更新 |
+| [product-tour.md](./product-tour.md) | **v1.24.0** 产品引导；**v1.25.0** 侧栏/列表锚点；**v1.33.0** 对齐新设置分区 |
 
 ## 相关文档
 
@@ -40,17 +40,17 @@
 | 改图标选择 / 字母图标 / 彩色徽章 | `shared/categoryIcons.ts`、`shared/navIconStyles.ts`、`IconPickerModal.vue`、`IconBadge.vue`、`CategoryIconView.vue` |
 | 改预设品牌图标 / 网址匹配 | `shared/presetIcons.ts`、`shared/presetIconAssets.ts`、`src/assets/preset-icons/`、`IconPickerModal.vue`、`PasswordDetail.vue`（**v1.30.0**） |
 | 改邮箱备份入口 / 返回导航 | `SettingsView.vue`、`EmailBackupView.vue`、`useAppState.ts`（`openEmailBackup`） |
-| 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue` |
-| 改剪切板历史 / 小窗口 / 系统同步 | [clipboard-history.md](./clipboard-history.md)、`main/clipboardWindow.ts`、`ClipboardWindowApp.vue`、`renderer/clipboard-window.ts`、`SettingsView.vue`（**v1.32.0**） |
+| 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue`、`QuickBarSettingsPanel.vue` |
+| 改剪切板历史 / 小窗口 / 系统同步 | [clipboard-history.md](./clipboard-history.md)、`main/clipboardWindow.ts`、`ClipboardWindowApp.vue`、`ClipboardSettingsPanel.vue`、`clipboard/ClipboardGuideModal.vue` |
 | 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |
-| 改浏览器扩展安装向导 | `BrowserExtensionGuideModal.vue`、`BrowserExtensionGuideVisual.vue`、`SettingsView.vue`、`browserLaunchService.ts` |
+| 改浏览器扩展安装向导 | `BrowserSettingsPanel.vue`、`BrowserExtensionGuideModal.vue`、`BrowserExtensionGuideVisual.vue`、`browserLaunchService.ts` |
 | 改浏览器填充条 UI（拖拽/收起） | `extension/content.js`、`extension/content.css`（`pwdbook-ui-x` / `pwdbook-ui-y` / `pwdbook-ui-collapsed`） |
 | 改面板折叠钮 / 调宽边缘 | `PanelEdge.vue`、`VaultSidebar.vue`、`PasswordDetail.vue`；`--panel-edge-width`（`tokens.css`）；**v1.20.0** 常驻分割线、Pointer Capture 调宽 |
 | 改主窗口 / 小窗口置顶 | `TitleBar.vue`；`window:get-always-on-top` / `window:toggle-always-on-top`（`main/index.ts`） |
 | 改分类拖拽排序 | `VaultSidebar.vue`（`DRAG_ACTIVATION_PX`、`reorderSidebarCategories`） |
 | 改分类切换 / 选中条目逻辑 | `useAppState.ts`（`selectCategory` 清空 `selectedEntryId`；`selectedEntry` 不再回退首条）、`VaultSidebar.vue`（`onItemPointerDown` 立即 `selectCategory`） |
 | 改 ESLint / 代码风格 | `eslint.config.mjs`；`npm run lint` / `lint:fix` |
-| 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
+| 改回收站 / 软删除 | `trashService.ts`、`TrashView.vue`、`TrashSettingsPanel.vue`、`VaultSidebar.vue`；`password_entries.deleted_at` |
 | 改搜索 / 拼音首字母 | `shared/searchMatch.ts`、`shared/entrySearch.ts`、`SearchHighlightText.vue` |
 | 改自动锁定 / 系统锁屏 | `useAutoLock.ts`、`main/autoLock.ts`、`SettingsView.vue`；`AUTO_LOCK_FOLLOW_SYSTEM`（`-1`） |
 | 改开机自动启动 | `main/launchAtLogin.ts`、`settingsService.ts`、`SettingsView.vue`；`launch_at_login_enabled`（**v1.21.0**；**v1.23.0** Windows `reg.exe` Run 项加引号、`launch-at-login:available`） |

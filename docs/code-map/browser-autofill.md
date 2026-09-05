@@ -115,7 +115,7 @@ sequenceDiagram
 
 ## 设置与注册（渲染进程）
 
-[`SettingsView.vue`](../../src/components/SettingsView.vue) 安全页：
+[`BrowserSettingsPanel.vue`](../../src/components/BrowserSettingsPanel.vue)（**设置 → 浏览器**，**v1.33.0** 从安全页拆出）：
 
 - 开关 `browserFillEnabled` → `settingsService` + `syncBrowserBridge()`
 - **「安装向导」**（**v1.17.0**）→ `BrowserExtensionGuideModal`：6 步（开启开关 → 安装扩展 → 复制 ID → 注册 Host → 重启浏览器 → 解锁使用）；步骤 4 要求 `nativeHostInfo.registered` 才可下一步；`BrowserExtensionGuideVisual` 提供每步示意图。

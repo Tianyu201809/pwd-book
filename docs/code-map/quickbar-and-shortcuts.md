@@ -15,7 +15,7 @@
 | 样式 | `src/assets/styles/quickbar.css` | 快捷条独立样式（含选中高亮） |
 | 渲染入口 | `src/renderer/quickbar.html` + `quickbar.ts` | 独立 Vue 应用 |
 
-设置项定义于 `SecuritySettings`（`src/shared/types.ts`），持久化键见 [database-schema.md](./database-schema.md#快捷条与快捷键)。
+设置项定义于 `SecuritySettings`（`src/shared/types.ts`），界面在 **设置 → 悬浮条**（`QuickBarSettingsPanel.vue`，**v1.33.0** 从安全页拆出）。持久化键见 [database-schema.md](./database-schema.md#快捷条与快捷键)。
 
 ## 全局快捷键
 

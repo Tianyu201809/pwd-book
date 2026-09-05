@@ -77,6 +77,7 @@
 | `clipboard_enabled` | 剪切板历史系统监听（v1.32.0，默认 `false`） |
 | `clipboard_default_expiry` | 新记录默认过期秒数：`30` / `300` / `900` / `1800` / `0`（v1.32.0，默认 `300`） |
 | `clipboard_persistence` | 重启后保留剪切板历史（v1.32.0，默认 `false`） |
+| `clipboard_history_limit` | 历史条数上限：`20` / `50` / `100` / `200`（v1.33.0，默认 `50`） |
 | `close_window_action` | `ask` / `tray` / `quit` |
 | `trash_retention_days` | 回收站保留天数，默认 `30`（v1.7.0） |
 | `quick_bar_enabled` | 快捷搜索条开关 |

@@ -1,16 +1,18 @@
 # 剪切板历史（独立小窗口）
 
-**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。
+**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导；失焦不再自动隐藏。
 
 ## 模块一览
 
 | 模块 | 路径 | 职责 |
 |------|------|------|
-| 小窗口 | `src/main/clipboardWindow.ts` | 无边框置顶窗、`Alt+Shift+O`、失焦隐藏、锁定隐藏 |
+| 小窗口 | `src/main/clipboardWindow.ts` | 无边框置顶窗、`Alt+Shift+O`、失焦不隐藏（v1.33.0）、锁定隐藏 |
 | UI | `src/components/ClipboardWindowApp.vue` | 捕获、列表、预览、置顶、过期、分栏拖拽 |
 | 样式 | `src/assets/styles/clipboard-window.css` | 小窗口独立样式 |
 | 渲染入口 | `src/renderer/clipboard-window.html` + `clipboard-window.ts` | 独立 Vue 应用（`electron.vite.config.ts` → `clipboardWindow`） |
-| 设置 | `SettingsView.vue`、`settingsService.ts` | 开关、默认清理周期、持久化 |
+| 设置 | `ClipboardSettingsPanel.vue`、`settingsService.ts` | 开关、清理周期、条数上限、持久化、使用向导 |
+| 使用向导 | `src/components/clipboard/ClipboardGuideModal.vue`、`ClipboardGuideVisual.vue` | **v1.33.0** 设置页「使用向导」分步弹窗 |
+| 条数上限 | `src/shared/clipboardHistoryLimit.ts` | `20` / `50` / `100` / `200`，默认 `50`；先删最旧未固定项 |
 | 入口 | `TitleBar.vue`、`VaultSidebar.vue`、`useAppState.openClipboard` | 标题栏按钮、工具箱子菜单、唤起小窗 |
 
 设置项定义于 `SecuritySettings`（`src/shared/types.ts`），持久化键见 [database-schema.md](./database-schema.md#应用设置)。
@@ -21,15 +23,17 @@
 |------|------|
 | 尺寸 | 默认 760×680，最小 560×480；主屏工作区水平居中，距顶 58px |
 | 置顶 / 任务栏 | `alwaysOnTop: true`，`skipTaskbar: true` |
-| 失焦 | 未固定时 `blur` 自动 `hide()` |
-| 固定小窗 | `clipboard-window:toggle-pinned`；固定后失焦不隐藏 |
+| 失焦 | **v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏 |
+| 固定小窗 | `clipboard-window:toggle-pinned`；窗口仍可固定，与失焦策略独立 |
 | 锁定 | `vault:lock` 调用 `hideClipboardWindowOnLock()` |
 | 未解锁唤起 | `showClipboardWindow()` 改为 `showFromTray()`，引导先解锁 |
 | 功能关闭 | `clipboardEnabled === false` 时拦截小窗，唤起主窗口并提示去设置开启 |
 | 主题 | 显示时下发 `theme:changed` 与 `clipboard-window:shown` |
 | 退出 | `before-quit` 调用 `destroyClipboardWindow()` |
 
-全局快捷键 `Alt+Shift+O` 在启动与 `settings:update` 时注册，退出前注销。未开启「剪切板历史」时，标题栏、工具箱与快捷键都会拦截小窗，并提示到设置页开启。
+全局快捷键 `Alt+Shift+O` 在启动与 `settings:update` 时注册，退出前注销。未开启「剪切板历史」时，标题栏、工具箱与快捷键都会拦截小窗，并提示到 **设置 → 剪切板** 开启。
+
+小窗内键盘（**v1.33.0**）：`↑`/`↓` 选择条目，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览，`Esc` 关闭。复制成功经小窗 `ToastHost` 提示。
 
 ## 设置项
 
@@ -38,10 +42,11 @@
 | `clipboardEnabled` | `clipboard_enabled` | `false` | 开启后每秒轮询系统剪切板（文本 + 图片） |
 | `clipboardDefaultExpiry` | `clipboard_default_expiry` | `300` | 新记录默认过期秒数：`30` / `300` / `900` / `1800` / `0`（永不过期） |
 | `clipboardPersistence` | `clipboard_persistence` | `false` | `true` 时写入 `localStorage`；关闭时删除持久化副本 |
+| `clipboardHistoryLimit` | `clipboard_history_limit` | `50` | **v1.33.0** `20` / `50` / `100` / `200`；先删最旧未固定项 |
 
-与既有「剪贴板自动清除」（`clipboard_clear_*`，复制密码后清空系统剪贴板）相互独立。
+与既有「剪贴板自动清除」（`clipboard_clear_*`，复制密码后清空系统剪贴板）相互独立，后者仍在 **设置 → 安全**。
 
-关闭持久化时，`SettingsView` 会 `removeItem('pwdbook-clipboard-history')`；开启时若会话里已有记录则拷入 `localStorage`。
+关闭持久化时，`ClipboardSettingsPanel` 会 `removeItem('pwdbook-clipboard-history')`；开启时若会话里已有记录则拷入 `localStorage`。
 
 ## 数据模型（仅渲染进程）
 
@@ -61,6 +66,7 @@ ClipboardItem {
 - 相同内容再次捕获会去重并置顶到列表前部；已固定的相同内容只选中、不新建。
 - 固定记录不参与过期清理；取消固定后按当前 `expiry` 重新计时。
 - 每秒 `purgeExpired()`；筛选：全部 / 文本 / 图片 / 已置顶；文本可搜索并高亮。
+- **v1.33.0** 条数超过 `clipboardHistoryLimit` 时先删最旧未固定项；固定项不受上限挤出。
 
 `BroadcastChannel('pwdbook-clipboard')` 用于同文档多实例同步状态（当前仅一个小窗）。
 

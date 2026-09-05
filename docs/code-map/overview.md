@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.32.0（`package.json`） |
+| 版本 | 1.33.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch`、`quickBarLimits`、`launchEntry`、`presetIcons` 等 |
@@ -67,7 +67,7 @@ lock ──unlock──► vault ◄──► settings / email-backup / sync / w
 
 - **lock**：`LockScreen.vue` — 创建/解锁/恢复密钥/清除保险库
 - **vault**：`VaultView.vue` — 侧边栏 + 列表 + 详情
-- **settings**：`SettingsView.vue` — 安全、外观、数据、关于
+- **settings**：`SettingsView.vue` — 安全、剪切板、浏览器、悬浮条、回收站、外观、数据、关于（**v1.33.0** 分区）
 - **sync**：`SyncHubView.vue` — 同步方式选择（v1.19.0，入口：设置 → 数据 → 同步）
 - **wifi-sync**：`WifiSyncView.vue` — 局域网同步（v1.9.0，经 Sync Hub 进入）
 - **folder-sync**：`FolderSyncView.vue` — 文件夹同步（v1.19.0，经 Sync Hub 进入）

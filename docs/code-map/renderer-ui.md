@@ -18,7 +18,9 @@ App.vue
 │   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）；附件与自定义字段（**v1.22.0**）；v1.14.0 弹出小窗口；v1.17.0 PanelEdge
 ├── SettingsView.vue          # 设置页 Tab 容器（安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 关于）
 │   ├── ClipboardSettingsPanel.vue
+│   ├── clipboard/ClipboardGuideModal.vue   # v1.33.0 使用向导
 │   ├── BrowserSettingsPanel.vue
+│   ├── browser/BrowserExtensionGuideModal.vue
 │   ├── QuickBarSettingsPanel.vue
 │   ├── TrashSettingsPanel.vue
 │   ├── RecoverySettingsPanel.vue
@@ -76,9 +78,9 @@ App.vue
 - **v1.26.0** 结果区固定 `max-height` 可滚动；↑↓ 时 `scrollIntoView`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 
-### ClipboardWindowApp.vue（**v1.32.0**）
+### ClipboardWindowApp.vue（**v1.32.0** / **v1.33.0**）
 
-独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储，详见 [clipboard-history.md](./clipboard-history.md)。
+独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储。**v1.33.0** 失焦不隐藏；`↑`/`↓` 选择，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览；复制 Toast。详见 [clipboard-history.md](./clipboard-history.md)。
 
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
@@ -108,11 +110,12 @@ App.vue
 
 ### SettingsView.vue
 
-- 四个 Tab（安全 / 外观 / 数据 / 关于）；Tab 图标使用 `IconBadge`（v1.11.0）。
-- **安全** Tab 含 **打开邮箱备份** 按钮（`openEmailBackup`）；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
-- **v1.26.0** 快捷条开启时展示「快捷条显示条数」下拉（5–20 → `quickBarRecentLimit`）。
-- **v1.32.0** 安全 Tab：**剪切板历史**开关、默认清理周期、数据持久化（`clipboardEnabled` / `clipboardDefaultExpiry` / `clipboardPersistence`）。
-- **浏览器扩展安装向导**（v1.17.0）：`BrowserExtensionGuideModal`（6 步、GSAP 动效、`BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page` → `browserLaunchService.openBrowserExtensionsPage`（复制 `chrome://extensions` / `edge://extensions` 到剪贴板）。
+- **v1.33.0** 八个 Tab：安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 关于；Tab 图标使用 `IconBadge`（v1.11.0）；侧栏 `overflow-y: auto`。
+- **安全** Tab：开机启动、自动锁定、**复制密码后清除系统剪贴板**、关闭窗口、邮箱备份、恢复密钥；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
+- **剪切板** Tab：`ClipboardSettingsPanel` — 历史开关、默认清理周期、条数上限、持久化、**使用向导**（`ClipboardGuideModal`）。
+- **浏览器** Tab：`BrowserSettingsPanel` — 自动填充、Native Host、**安装向导**（`BrowserExtensionGuideModal` + `BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page`。
+- **悬浮条** Tab：`QuickBarSettingsPanel` — 快捷搜索、显示条数（5–20 → `quickBarRecentLimit`）、唤起主窗口快捷键。
+- **回收站** Tab：`TrashSettingsPanel` — 保留期限 + 打开回收站。
 
 ### UiInput.vue（`components/ui/`）
 
