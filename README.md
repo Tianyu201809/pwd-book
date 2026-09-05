@@ -325,7 +325,7 @@ npm run dev
 
 1. **桌面端** — **设置 → 浏览器** 开启「浏览器自动填充」，并保持 PwdBook 运行且保险库已解锁。
 2. **安装向导（推荐，v1.17.0）** — 点击 **「安装向导」**，按 6 步完成扩展安装、ID 复制、Native Host 注册与浏览器重启；**打开扩展管理页** 会将 `chrome://extensions` 或 `edge://extensions` 地址复制到剪贴板。
-3. **手动安装** — Chrome/Edge 打开扩展管理页，开启开发者模式，**加载已解压的扩展程序**，选择仓库中的 `extension/` 目录。
+3. **手动安装** — Chrome/Edge 打开扩展管理页，开启开发者模式，**加载已解压的扩展程序**。安装版先点 **「打开 resources 目录」**，再选择其中的 `extension` 文件夹；开发版选择仓库中的 `extension/`。
 4. **注册 Native Host** — 在 **设置 → 浏览器**，粘贴扩展 **ID**，点击 **「注册到 Chrome / Edge」**（也可使用 `npm run register-native-host -- <扩展ID>`）。**v1.12.0** 起支持 **macOS**（写入 `~/Library/Application Support/.../NativeMessagingHosts/`；入口 `pwdbook-native-host.sh`）。
 5. **使用** — 完全退出并重新打开浏览器；打开带登录表单的 HTTPS 页面，若库中有同域名条目，右上角出现 **PwdBook** 填充条；点击后写入用户名与密码。**v1.15.0** 起填充条标题栏可 **拖拽** 移动位置，**收起** 按钮可折叠为紧凑图标条（偏好写入页面 `localStorage`，同站点跨页保持）。**v1.17.0** 起跳过隐藏字段，并兼容受控输入框框架。
 

@@ -858,8 +858,13 @@ export default {
     browserFillRegenerateToken: '重新生成配对令牌',
     browserFillRegenerateDone: '已重新生成配对令牌，请重启浏览器扩展连接',
     browserFillSetupTitle: '扩展安装与注册',
-    browserFillSetupStep1: '1. 在 Chrome/Edge 加载已解压扩展（项目 extension 文件夹或安装目录 resources\\extension）',
-    browserFillSetupStep2: '2. 复制扩展卡片上的 ID，粘贴到下方并点击注册',
+    browserFillSetupLoadTitle: '加载已解压扩展',
+    browserFillSetupLoadDesc:
+      '点击下方「打开 resources 目录」，进入其中的 extension 文件夹。在 Chrome / Edge 扩展管理页开启开发者模式，再「加载已解压的扩展程序」并选择该文件夹。开发版直接选择项目里的 extension。',
+    browserFillSetupIdTitle: '复制扩展 ID 并注册',
+    browserFillSetupIdDesc: '在扩展卡片上复制 32 位 ID（小写字母 a–p），粘贴到下方后点击「注册到 Chrome / Edge」。',
+    browserFillSetupRestartTitle: '完全退出并重启浏览器',
+    browserFillSetupRestartDesc: '仅关闭标签页不够。需退出整个浏览器（含后台进程）后再打开，连接才会生效。',
     browserFillExtensionId: '扩展 ID',
     browserFillExtensionIdPlaceholder: '32 位小写字母 a–p，见 chrome://extensions',
     browserFillRegister: '注册到 Chrome / Edge',
@@ -884,13 +889,13 @@ export default {
       steps: [
         {
           title: '开启浏览器自动填充',
-          desc: '确认设置 → 浏览器 中的「浏览器自动填充」开关已打开，并保持 PwdBook 在后台运行。',
+          desc: '打开本页的「浏览器自动填充」开关，并保持 PwdBook 在后台运行。',
           tip: '桥接服务仅在开关开启且保险库已解锁时工作。',
         },
         {
           title: '安装浏览器扩展',
-          desc: '在 Chrome 或 Edge 扩展管理页开启「开发者模式」，点击「加载已解压的扩展程序」，选择 extension 文件夹（开发版）或安装目录 resources\\extension。',
-          tip: '点击下方按钮复制地址；切换到浏览器后在地址栏粘贴并回车。',
+          desc: '在 Chrome 或 Edge 扩展管理页开启「开发者模式」，点击「加载已解压的扩展程序」。安装版请先点本页「打开 resources 目录」，再选择其中的 extension 文件夹；开发版选择项目里的 extension。',
+          tip: '可点击下方按钮复制扩展管理页地址，切换到浏览器后在地址栏粘贴并回车。',
         },
         {
           title: '复制扩展 ID',

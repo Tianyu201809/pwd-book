@@ -219,14 +219,31 @@ watch(fillEnabled, () => {
           <p class="setup-title">
             {{ t('settings.browserFillSetupTitle') }}
           </p>
-          <p class="row-desc">
-            {{ t('settings.browserFillSetupStep1') }}
-          </p>
-          <p class="row-desc">
-            {{ t('settings.browserFillSetupStep2') }}
-          </p>
+          <ol class="setup-steps">
+            <li>
+              <span class="setup-step-index">1</span>
+              <div>
+                <p class="setup-step-title">{{ t('settings.browserFillSetupLoadTitle') }}</p>
+                <p class="row-desc">{{ t('settings.browserFillSetupLoadDesc') }}</p>
+              </div>
+            </li>
+            <li>
+              <span class="setup-step-index">2</span>
+              <div>
+                <p class="setup-step-title">{{ t('settings.browserFillSetupIdTitle') }}</p>
+                <p class="row-desc">{{ t('settings.browserFillSetupIdDesc') }}</p>
+              </div>
+            </li>
+            <li>
+              <span class="setup-step-index">3</span>
+              <div>
+                <p class="setup-step-title">{{ t('settings.browserFillSetupRestartTitle') }}</p>
+                <p class="row-desc">{{ t('settings.browserFillSetupRestartDesc') }}</p>
+              </div>
+            </li>
+          </ol>
           <p
-            class="row-desc"
+            class="row-desc registration-status"
             :class="{
               'is-ok': nativeHostInfo?.registered,
               'is-warn': nativeHostInfo && !nativeHostInfo.registered && !nativeHostInfo.hostCmdExists,
@@ -441,9 +458,65 @@ h4 {
 }
 
 .setup-title {
-  margin: 0 0 8px;
+  margin: 0 0 14px;
   font-size: 14px;
   font-weight: 600;
+}
+
+.setup-steps {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.setup-steps li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  position: relative;
+  padding-bottom: 14px;
+}
+
+.setup-steps li:last-child {
+  padding-bottom: 0;
+}
+
+.setup-steps li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 24px;
+  bottom: 2px;
+  width: 1px;
+  background: color-mix(in srgb, #0284c7 28%, var(--border-default));
+}
+
+.setup-step-index {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0ea5e9;
+  background: rgba(2, 132, 199, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(2, 132, 199, 0.28);
+}
+
+.setup-step-title {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.registration-status {
+  margin-top: 2px;
 }
 
 .row-title {

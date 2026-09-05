@@ -860,9 +860,15 @@ export default {
     browserFillRegenerateToken: 'Regenerate pairing token',
     browserFillRegenerateDone: 'Pairing token regenerated. Reconnect the browser extension.',
     browserFillSetupTitle: 'Extension setup',
-    browserFillSetupStep1:
-      '1. Load the unpacked extension in Chrome/Edge (extension/ folder or install dir resources\\extension)',
-    browserFillSetupStep2: '2. Copy the extension ID below and click Register',
+    browserFillSetupLoadTitle: 'Load the unpacked extension',
+    browserFillSetupLoadDesc:
+      'Click “Open resources folder” below, then open the extension folder inside it. In Chrome / Edge, enable Developer mode, choose “Load unpacked”, and select that folder. In development, select the project’s extension folder instead.',
+    browserFillSetupIdTitle: 'Copy the ID and register',
+    browserFillSetupIdDesc:
+      'Copy the 32-character ID (lowercase a–p) from the extension card, paste it below, then click “Register for Chrome / Edge”.',
+    browserFillSetupRestartTitle: 'Fully quit and restart the browser',
+    browserFillSetupRestartDesc:
+      'Closing tabs is not enough. Quit the entire browser (including background processes), then reopen so the connection can take effect.',
     browserFillExtensionId: 'Extension ID',
     browserFillExtensionIdPlaceholder: '32 chars a–p, from chrome://extensions',
     browserFillRegister: 'Register for Chrome / Edge',
@@ -887,13 +893,13 @@ export default {
       steps: [
         {
           title: 'Enable browser autofill',
-          desc: 'Turn on “Browser autofill” under Settings → Browser and keep PwdBook running.',
+          desc: 'Turn on “Browser autofill” on this page and keep PwdBook running.',
           tip: 'The bridge only works when autofill is on and the vault is unlocked.',
         },
         {
           title: 'Install the extension',
-          desc: 'On chrome://extensions, enable Developer mode, then “Load unpacked” and select the extension folder (repo extension/ or install dir resources/extension).',
-          tip: 'Click the button to copy the URL, then paste it in your browser address bar.',
+          desc: 'On the Chrome or Edge extensions page, enable Developer mode, then “Load unpacked”. In the installed app, click “Open resources folder” on this page and select the extension folder inside it; in development, select the project’s extension folder.',
+          tip: 'You can copy the extensions page URL with the button below, then paste it in the browser address bar.',
         },
         {
           title: 'Copy the extension ID',
