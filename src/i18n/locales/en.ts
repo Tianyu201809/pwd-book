@@ -263,11 +263,11 @@ export default {
         },
         nav: {
           title: 'Settings sections',
-          body: 'Tabs for Security, Appearance, Data, and About — features grouped by topic.',
+          body: 'Tabs for Security, Clipboard, Appearance, Data, and About — features grouped by topic.',
         },
         security: {
           title: 'Security',
-          body: 'Launch at login, auto-lock, clipboard clearing, quick bar, browser autofill, and recovery key.',
+          body: 'Launch at login, auto-lock, password clipboard clearing, quick bar, browser autofill, and recovery key.',
         },
         data: {
           title: 'Data',
@@ -786,6 +786,19 @@ export default {
   settings: {
     title: 'Settings',
     security: 'Security',
+    clipboardTab: 'Clipboard',
+    clipboardModuleTitle: 'Clipboard desk',
+    clipboardModuleLead: 'Manage history capture, retention, and local storage here — separate from lock and autofill settings.',
+    clipboardOpenWindow: 'Open clipboard window',
+    clipboardStatusOn: 'Capturing',
+    clipboardStatusOff: 'Paused',
+    clipboardPolicyRetain: 'Default keep',
+    clipboardPolicyCap: 'Item cap',
+    clipboardPolicyStore: 'After restart',
+    clipboardPersistOn: 'Keep history',
+    clipboardPersistOff: 'This session only',
+    clipboardRulesTitle: 'Retention rules',
+    clipboardStorageTitle: 'Local storage',
     appearance: 'Appearance',
     data: 'Data',
     about: 'About',

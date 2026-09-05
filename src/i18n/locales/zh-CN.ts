@@ -262,11 +262,11 @@ export default {
         },
         nav: {
           title: '设置分区',
-          body: '左侧 Tab 分为安全、外观、数据与关于。不同主题的功能按区归类，便于查找。',
+          body: '左侧 Tab 分为安全、剪切板、外观、数据与关于。不同主题的功能按区归类，便于查找。',
         },
         security: {
           title: '安全选项',
-          body: '配置开机启动、自动锁定、剪贴板清除、快捷搜索与浏览器自动填充等安全相关行为。',
+          body: '配置开机启动、自动锁定、复制密码后清除剪贴板、快捷搜索与浏览器自动填充等安全相关行为。',
         },
         data: {
           title: '数据管理',
@@ -784,6 +784,19 @@ export default {
   settings: {
     title: '设置',
     security: '安全',
+    clipboardTab: '剪切板',
+    clipboardModuleTitle: '剪切板工作台',
+    clipboardModuleLead: '在这里单独管理历史捕获、保留周期与本地存储，不再和锁定、填充等安全项挤在一起。',
+    clipboardOpenWindow: '打开剪切板窗口',
+    clipboardStatusOn: '正在捕获',
+    clipboardStatusOff: '已暂停',
+    clipboardPolicyRetain: '默认保留',
+    clipboardPolicyCap: '条数上限',
+    clipboardPolicyStore: '重启后',
+    clipboardPersistOn: '继续保留',
+    clipboardPersistOff: '仅本次会话',
+    clipboardRulesTitle: '保留规则',
+    clipboardStorageTitle: '本地存储',
     appearance: '外观',
     data: '数据',
     about: '关于',
