@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveClipboardWindowOpen } from './clipboardWindowAccess'
+import { resolveClipboardWindowOpen, shouldHideClipboardWindowOnBlur } from './clipboardWindowAccess'
 
 describe('resolveClipboardWindowOpen', () => {
   it('requires unlock before the clipboard feature flag', () => {
@@ -13,5 +13,9 @@ describe('resolveClipboardWindowOpen', () => {
 
   it('allows the window when unlocked and clipboard history is on', () => {
     expect(resolveClipboardWindowOpen(true, true)).toBe('allow')
+  })
+
+  it('never hides on blur when clicking outside the clipboard window', () => {
+    expect(shouldHideClipboardWindowOnBlur()).toBe(false)
   })
 })

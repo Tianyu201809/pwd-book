@@ -10,10 +10,11 @@ body.clipboard-window-body,
 }
 
 .clipboard-popup {
+  --clipboard-popup-pad: 14px;
   width: 100%;
   height: 100vh;
   box-sizing: border-box;
-  padding: 14px;
+  padding: var(--clipboard-popup-pad);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -36,12 +37,73 @@ body.clipboard-window-body,
 }
 
 .clipboard-popup-head {
+  position: relative;
+  isolation: isolate;
   justify-content: space-between;
   flex-shrink: 0;
+  min-height: 46px;
+  margin: calc(var(--clipboard-popup-pad) * -1) calc(var(--clipboard-popup-pad) * -1) 0;
+  padding: 10px 14px 12px;
   -webkit-app-region: drag;
   user-select: none;
-  background-color: var(--bg-elevated);
-  padding: 5px;
+  cursor: grab;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--titlebar-hairline, var(--border-strong));
+  box-shadow: var(--titlebar-shadow, none);
+  border-radius: 14px 14px 0 0;
+}
+
+.clipboard-popup-head::before,
+.clipboard-popup-head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.clipboard-popup-head::before {
+  background: var(--titlebar-accent-wash, none);
+}
+
+.clipboard-popup-head::after {
+  background: var(--titlebar-top-shine, none);
+}
+
+.clipboard-popup-head-grip {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  z-index: 1;
+  width: 48px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--text-secondary) 78%, var(--accent-primary));
+}
+
+.clipboard-popup-drag-handle {
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  opacity: .85;
+}
+
+.clipboard-popup-title,
+.clipboard-popup-head-actions {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-skin="animalIsland"] .clipboard-popup-head {
+  backdrop-filter: blur(8px);
+  border-bottom-width: 2px;
+  box-shadow: none;
+}
+
+html[data-skin="animalIsland"] .clipboard-popup-head::before,
+html[data-skin="animalIsland"] .clipboard-popup-head::after {
+  display: none;
 }
 
 .clipboard-popup-head-actions,

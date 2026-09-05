@@ -1,6 +1,10 @@
 import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
-import { resolveClipboardWindowOpen } from '../shared/clipboardWindowAccess'
+import {
+  CLIPBOARD_WINDOW_DEFAULT_PINNED,
+  resolveClipboardWindowOpen,
+  shouldHideClipboardWindowOnBlur,
+} from '../shared/clipboardWindowAccess'
 import { IPC_EVENTS } from '../shared/types'
 import { isUnlocked } from './services/sessionService'
 import { getSecuritySettings } from './services/settingsService'
@@ -17,7 +21,7 @@ const CLIPBOARD_WINDOW_PINNED_TOGGLE = 'clipboard-window:toggle-pinned'
 
 let clipboardWindow: BrowserWindow | null = null
 let registeredAccelerator: string | null = null
-let clipboardWindowPinned = false
+let clipboardWindowPinned = CLIPBOARD_WINDOW_DEFAULT_PINNED
 
 function clipboardWindowUrl(): string {
   if (process.env.ELECTRON_RENDERER_URL) return `${process.env.ELECTRON_RENDERER_URL}/clipboard-window.html`
@@ -56,7 +60,7 @@ function createClipboardWindow(): BrowserWindow {
   if (url.startsWith('http')) void win.loadURL(url)
   else void win.loadFile(url)
   win.on('blur', () => {
-    if (!win.isDestroyed() && !clipboardWindowPinned) win.hide()
+    if (!win.isDestroyed() && shouldHideClipboardWindowOnBlur()) win.hide()
   })
   return win
 }
@@ -107,7 +111,7 @@ export function destroyClipboardWindow(): void {
   hideClipboardWindow()
   if (clipboardWindow && !clipboardWindow.isDestroyed()) clipboardWindow.destroy()
   clipboardWindow = null
-  clipboardWindowPinned = false
+  clipboardWindowPinned = CLIPBOARD_WINDOW_DEFAULT_PINNED
 }
 
 export function hideClipboardWindowOnLock(): void {

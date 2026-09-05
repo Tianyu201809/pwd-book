@@ -6,6 +6,7 @@ import {
   ClipboardPaste,
   Copy,
   Eye,
+  GripHorizontal,
   Minus,
   Pin,
   PinOff,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-vue-next'
 import { showToast } from '@/composables/useToast'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
+import ToastHost from '@/components/ToastHost.vue'
 
 type ClipboardKind = 'text' | 'image'
 type ClipboardExpiry = 30 | 300 | 900 | 1800 | 0
@@ -47,7 +49,7 @@ const draft = ref('')
 const isCaptureOpen = ref(false)
 const lightboxItem = ref<ClipboardItem | null>(null)
 const now = ref(Date.now())
-const windowPinned = ref(false)
+const windowPinned = ref(true)
 const splitRatio = ref(0.5)
 const isResizing = ref(false)
 const contextMenu = ref<{ item: ClipboardItem; x: number; y: number } | null>(null)
@@ -391,6 +393,43 @@ function handleEsc(): void {
   closeWindow()
 }
 
+function isArrowNavBlocked(target: EventTarget | null): boolean {
+  if (isCaptureOpen.value || lightboxItem.value) return true
+  if (!(target instanceof HTMLElement)) return false
+  return target.matches('textarea, select, [contenteditable="true"]')
+}
+
+function isListActionBlocked(target: EventTarget | null): boolean {
+  if (isArrowNavBlocked(target)) return true
+  if (!(target instanceof HTMLElement)) return false
+  return target.matches('button')
+}
+
+function handleSelectedItemEnter(event: KeyboardEvent): void {
+  if (!unlocked.value || isListActionBlocked(event.target)) return
+  const item = selected.value
+  if (!item) return
+  event.preventDefault()
+  closeContextMenu()
+  if (event.ctrlKey || event.metaKey) openImagePreview(item)
+  else void copyItem(item)
+}
+
+function moveSelection(delta: 1 | -1): void {
+  const list = visibleItems.value
+  if (!list.length) return
+  const currentId = selected.value?.id ?? null
+  const currentIndex = currentId ? list.findIndex((item) => item.id === currentId) : -1
+  const nextIndex = currentIndex < 0
+    ? (delta > 0 ? 0 : list.length - 1)
+    : Math.min(list.length - 1, Math.max(0, currentIndex + delta))
+  selectedId.value = list[nextIndex].id
+  closeContextMenu()
+  void nextTick(() => {
+    document.querySelector('.clipboard-popup-item.selected')?.scrollIntoView({ block: 'nearest' })
+  })
+}
+
 function minimizeWindow(): void {
   window.electronAPI?.minimize()
 }
@@ -406,9 +445,19 @@ function onDocumentClick(): void {
 }
 
 function onDocumentKeydown(event: KeyboardEvent): void {
-  if (event.key !== 'Escape') return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    handleEsc()
+    return
+  }
+  if (event.key === 'Enter') {
+    handleSelectedItemEnter(event)
+    return
+  }
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+  if (!unlocked.value || isArrowNavBlocked(event.target)) return
   event.preventDefault()
-  handleEsc()
+  moveSelection(event.key === 'ArrowDown' ? 1 : -1)
 }
 
 onMounted(() => {
@@ -444,8 +493,10 @@ onUnmounted(() => {
 
 <template>
   <main class="clipboard-popup" :class="{ 'is-resizing': isResizing }">
-    <header class="clipboard-popup-head">
+    <header class="clipboard-popup-head" :title="t('tools.clipboardWindowDrag')">
+      <span class="clipboard-popup-head-grip" aria-hidden="true" />
       <div class="clipboard-popup-title">
+        <span class="clipboard-popup-drag-handle" aria-hidden="true"><GripHorizontal :size="16" /></span>
         <span class="clipboard-popup-icon"><Clipboard :size="17" /></span>
         <div><strong>{{ t('tools.clipboardTitle') }}</strong><span>{{ t('tools.clipboardShortcutHint') }}</span></div>
       </div>
@@ -504,8 +555,8 @@ onUnmounted(() => {
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
             <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('common.delete')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
-            <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardEnlargePreview')" role="button" tabindex="0" @click="openImagePreview(selected)" @keydown.enter.prevent="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
-            <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
+            <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
+            <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
           <div v-else class="clipboard-popup-preview-placeholder"><Clipboard :size="21" /><span>{{ t('tools.clipboardSelectHint') }}</span></div>
         </aside>
@@ -542,5 +593,6 @@ onUnmounted(() => {
         </button>
       </div>
     </Teleport>
+    <ToastHost />
   </main>
 </template>
