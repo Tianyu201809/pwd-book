@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Clipboard, Clock3, HardDrive, Layers } from 'lucide-vue-next'
+import { BookOpen, Clipboard, Clock3, HardDrive, Layers } from 'lucide-vue-next'
+import ClipboardGuideModal from '@/components/clipboard/ClipboardGuideModal.vue'
 import { UiButton, UiCard, UiSelect, UiSwitch } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { CLIPBOARD_HISTORY_LIMITS } from '@/shared/clipboardHistoryLimit'
@@ -13,6 +14,7 @@ const clipboardExpiryOptions = [30, 300, 900, 1800, 0] as const
 const { t } = useI18n()
 const { securitySettings, updateSecuritySettings, openClipboard } = useAppState()
 
+const clipboardGuideOpen = ref(false)
 const historyEnabled = computed(() => securitySettings.value.clipboardEnabled)
 
 const clipboardExpirySelectOptions = computed(() => [
@@ -90,14 +92,27 @@ async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
       </div>
       <div class="clipboard-hero-aside">
         <span class="clipboard-shortcut">{{ t('tools.clipboardShortcutHint') }}</span>
-        <UiButton
-          v-if="historyEnabled"
-          variant="default"
-          size="small"
-          @click="openClipboard"
-        >
-          {{ t('settings.clipboardOpenWindow') }}
-        </UiButton>
+        <div class="clipboard-hero-actions">
+          <UiButton
+            variant="default"
+            size="small"
+            @click="clipboardGuideOpen = true"
+          >
+            <BookOpen
+              :size="14"
+              :stroke-width="1.75"
+            />
+            {{ t('settings.clipboardGuide.openButton') }}
+          </UiButton>
+          <UiButton
+            v-if="historyEnabled"
+            variant="default"
+            size="small"
+            @click="openClipboard"
+          >
+            {{ t('settings.clipboardOpenWindow') }}
+          </UiButton>
+        </div>
       </div>
     </header>
 
@@ -156,6 +171,12 @@ async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
         </div>
       </div>
     </div>
+
+    <ClipboardGuideModal
+      v-model:open="clipboardGuideOpen"
+      :history-enabled="historyEnabled"
+      @open-window="openClipboard"
+    />
 
     <section :class="{ dormant: !historyEnabled }">
       <h4>{{ t('settings.clipboardRulesTitle') }}</h4>
@@ -282,6 +303,13 @@ async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
+}
+
+.clipboard-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .clipboard-shortcut {
