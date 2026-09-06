@@ -24,7 +24,12 @@ import {
   clampClipboardHistoryLimit,
   trimClipboardHistory,
 } from '@/shared/clipboardHistoryLimit'
-import { CLIPBOARD_WINDOW_DEFAULT_PINNED } from '@/shared/clipboardWindowAccess'
+import { UiSwitch } from '@/components/ui'
+import {
+  CLIPBOARD_WINDOW_DEFAULT_PINNED,
+  CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE,
+  shouldCloseClipboardWindowAfterEnterCopy,
+} from '@/shared/clipboardWindowAccess'
 
 type ClipboardKind = 'text' | 'image'
 type ClipboardExpiry = 30 | 300 | 900 | 1800 | 0
@@ -57,6 +62,7 @@ const isCaptureOpen = ref(false)
 const lightboxItem = ref<ClipboardItem | null>(null)
 const now = ref(Date.now())
 const windowPinned = ref(CLIPBOARD_WINDOW_DEFAULT_PINNED)
+const quickMode = ref(CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE)
 const splitRatio = ref(0.5)
 const isResizing = ref(false)
 const contextMenu = ref<{ item: ClipboardItem; x: number; y: number } | null>(null)
@@ -191,6 +197,7 @@ async function refresh(): Promise<void> {
   clipboardEnabled.value = Boolean(settings?.clipboardEnabled)
   clipboardPersistence.value = Boolean(settings?.clipboardPersistence)
   historyLimit.value = clampClipboardHistoryLimit(settings?.clipboardHistoryLimit)
+  quickMode.value = Boolean(settings?.clipboardQuickMode)
   defaultExpiry = settings?.clipboardDefaultExpiry ?? 300
   settingsLoaded.value = true
   try {
@@ -413,7 +420,23 @@ function isArrowNavBlocked(target: EventTarget | null): boolean {
 function isListActionBlocked(target: EventTarget | null): boolean {
   if (isArrowNavBlocked(target)) return true
   if (!(target instanceof HTMLElement)) return false
-  return target.matches('button')
+  return target.matches('button, input[type="checkbox"]')
+}
+
+async function onQuickModeChange(enabled: boolean): Promise<void> {
+  const previous = quickMode.value
+  quickMode.value = enabled
+  try {
+    const settings = await window.electronAPI?.updateSettings?.({ clipboardQuickMode: enabled })
+    if (settings) quickMode.value = Boolean(settings.clipboardQuickMode)
+  } catch {
+    quickMode.value = previous
+  }
+}
+
+async function copyItemByEnter(item: ClipboardItem): Promise<void> {
+  await copyItem(item)
+  if (shouldCloseClipboardWindowAfterEnterCopy(quickMode.value)) closeWindow()
 }
 
 function handleSelectedItemEnter(event: KeyboardEvent): void {
@@ -423,7 +446,7 @@ function handleSelectedItemEnter(event: KeyboardEvent): void {
   event.preventDefault()
   closeContextMenu()
   if (event.ctrlKey || event.metaKey) openImagePreview(item)
-  else void copyItem(item)
+  else void copyItemByEnter(item)
 }
 
 function moveSelection(delta: 1 | -1): void {
@@ -534,6 +557,10 @@ onUnmounted(() => {
         <div class="clipboard-popup-search"><Search :size="14" /><input v-model="query" :placeholder="t('common.search')" /></div>
         <button type="button" class="clipboard-popup-tool-button" :title="t('tools.clipboardCapture')" :disabled="!clipboardEnabled" @click="captureSystemClipboard({ notifyOnError: true })"><ClipboardPaste :size="15" /></button>
         <button type="button" class="clipboard-popup-tool-button" :title="t('tools.clipboardNew')" @click="startCapture"><Type :size="15" /></button>
+        <div class="clipboard-popup-quick-mode" :class="{ 'is-on': quickMode }" :title="t('tools.clipboardQuickModeHint')">
+          <span>{{ t('tools.clipboardQuickMode') }}</span>
+          <UiSwitch :model-value="quickMode" size="small" @update:model-value="onQuickModeChange" />
+        </div>
       </div>
       <div class="clipboard-popup-filters">
         <button v-for="tab in (['all', 'text', 'image', 'pinned'] as const)" :key="tab" type="button" :class="{ active: filter === tab }" @click="filter = tab">
@@ -567,7 +594,7 @@ onUnmounted(() => {
           <template v-if="selected">
             <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('common.delete')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
             <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
-            <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
+            <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
           <div v-else class="clipboard-popup-preview-placeholder"><Clipboard :size="21" /><span>{{ t('tools.clipboardSelectHint') }}</span></div>
         </aside>

@@ -12,6 +12,7 @@ const SETTINGS_KEYS = {
   clipboardDefaultExpiry: 'clipboard_default_expiry',
   clipboardPersistence: 'clipboard_persistence',
   clipboardHistoryLimit: 'clipboard_history_limit',
+  clipboardQuickMode: 'clipboard_quick_mode',
   clipboardClearSeconds: 'clipboard_clear_seconds',
   closeWindowAction: 'close_window_action',
   quickBarEnabled: 'quick_bar_enabled',
@@ -48,6 +49,9 @@ export function getSecuritySettings(): SecuritySettings {
     clipboardHistoryLimit: clampClipboardHistoryLimit(
       getSetting(SETTINGS_KEYS.clipboardHistoryLimit) ?? defaults.clipboardHistoryLimit,
     ),
+    clipboardQuickMode:
+      (getSetting(SETTINGS_KEYS.clipboardQuickMode) ?? String(defaults.clipboardQuickMode)) ===
+      'true',
     clipboardClearSeconds: Number(
       getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
     ),
@@ -103,6 +107,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.clipboardDefaultExpiry, String(next.clipboardDefaultExpiry))
   setSetting(SETTINGS_KEYS.clipboardPersistence, String(next.clipboardPersistence))
   setSetting(SETTINGS_KEYS.clipboardHistoryLimit, String(next.clipboardHistoryLimit))
+  setSetting(SETTINGS_KEYS.clipboardQuickMode, String(next.clipboardQuickMode))
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
   setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
   setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))

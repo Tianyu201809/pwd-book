@@ -182,6 +182,8 @@ export interface SecuritySettings {
   clipboardPersistence: boolean
   /** 剪切板历史总条数上限；固定项优先保留 */
   clipboardHistoryLimit: 20 | 50 | 100 | 200
+  /** 剪切板小窗快捷模式：回车复制后自动关闭窗口 */
+  clipboardQuickMode: boolean
   clipboardClearSeconds: number
   closeWindowAction: CloseWindowAction
   /** 悬浮快捷搜索条 */

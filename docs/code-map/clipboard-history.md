@@ -33,7 +33,7 @@
 
 全局快捷键 `Alt+Shift+O` 在启动与 `settings:update` 时注册，退出前注销。未开启「剪切板历史」时，标题栏、工具箱与快捷键都会拦截小窗，并提示到 **设置 → 剪切板** 开启。
 
-小窗内键盘（**v1.33.0**）：`↑`/`↓` 选择条目，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览，`Esc` 关闭。复制成功经小窗 `ToastHost` 提示。
+小窗内键盘（**v1.33.0**）：`↑`/`↓` 选择条目，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览，`Esc` 关闭。开启**快捷模式**后，`Enter` 复制成功即关闭小窗（点击复制按钮不关）。复制成功经小窗 `ToastHost` 提示。
 
 ## 设置项
 
@@ -43,6 +43,7 @@
 | `clipboardDefaultExpiry` | `clipboard_default_expiry` | `300` | 新记录默认过期秒数：`30` / `300` / `900` / `1800` / `0`（永不过期） |
 | `clipboardPersistence` | `clipboard_persistence` | `false` | `true` 时写入 `localStorage`；关闭时删除持久化副本 |
 | `clipboardHistoryLimit` | `clipboard_history_limit` | `50` | **v1.33.0** `20` / `50` / `100` / `200`；先删最旧未固定项 |
+| `clipboardQuickMode` | `clipboard_quick_mode` | `false` | **v1.33.0** 小窗「快捷模式」：回车复制后关闭窗口 |
 
 与既有「剪贴板自动清除」（`clipboard_clear_*`，复制密码后清空系统剪贴板）相互独立，后者仍在 **设置 → 安全**。
 

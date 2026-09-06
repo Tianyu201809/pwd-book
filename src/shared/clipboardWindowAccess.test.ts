@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   CLIPBOARD_WINDOW_DEFAULT_PINNED,
+  CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE,
   resolveClipboardWindowOpen,
+  shouldCloseClipboardWindowAfterEnterCopy,
   shouldHideClipboardWindowOnBlur,
 } from './clipboardWindowAccess'
 
@@ -25,5 +27,14 @@ describe('resolveClipboardWindowOpen', () => {
 
   it('does not pin the clipboard window on first open', () => {
     expect(CLIPBOARD_WINDOW_DEFAULT_PINNED).toBe(false)
+  })
+
+  it('does not enable quick mode by default', () => {
+    expect(CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE).toBe(false)
+  })
+
+  it('closes after Enter copy only when quick mode is on', () => {
+    expect(shouldCloseClipboardWindowAfterEnterCopy(false)).toBe(false)
+    expect(shouldCloseClipboardWindowAfterEnterCopy(true)).toBe(true)
   })
 })

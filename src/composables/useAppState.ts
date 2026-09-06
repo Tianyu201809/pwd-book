@@ -63,6 +63,7 @@ const securitySettings = ref<SecuritySettings>({
   clipboardDefaultExpiry: 300,
   clipboardPersistence: false,
   clipboardHistoryLimit: 50,
+  clipboardQuickMode: false,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   browserFillEnabled: false,
