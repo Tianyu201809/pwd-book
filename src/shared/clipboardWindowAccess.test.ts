@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   CLIPBOARD_WINDOW_DEFAULT_PINNED,
   CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE,
+  isClipboardItemDeleteKey,
+  nextClipboardSelectionAfterDelete,
   resolveClipboardWindowOpen,
   shouldCloseClipboardWindowAfterEnterCopy,
   shouldHideClipboardWindowOnBlur,
@@ -36,5 +38,18 @@ describe('resolveClipboardWindowOpen', () => {
   it('closes after Enter copy only when quick mode is on', () => {
     expect(shouldCloseClipboardWindowAfterEnterCopy(false)).toBe(false)
     expect(shouldCloseClipboardWindowAfterEnterCopy(true)).toBe(true)
+  })
+
+  it('treats Delete and Backspace as item-delete keys', () => {
+    expect(isClipboardItemDeleteKey('Delete')).toBe(true)
+    expect(isClipboardItemDeleteKey('Backspace')).toBe(true)
+    expect(isClipboardItemDeleteKey('Enter')).toBe(false)
+  })
+
+  it('selects the next visible item after delete, then the previous', () => {
+    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+    expect(nextClipboardSelectionAfterDelete(items, 'b')).toBe('c')
+    expect(nextClipboardSelectionAfterDelete(items, 'c')).toBe('b')
+    expect(nextClipboardSelectionAfterDelete([{ id: 'only' }], 'only')).toBe(null)
   })
 })

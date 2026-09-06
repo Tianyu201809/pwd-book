@@ -28,6 +28,8 @@ import { UiSwitch } from '@/components/ui'
 import {
   CLIPBOARD_WINDOW_DEFAULT_PINNED,
   CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE,
+  isClipboardItemDeleteKey,
+  nextClipboardSelectionAfterDelete,
   shouldCloseClipboardWindowAfterEnterCopy,
 } from '@/shared/clipboardWindowAccess'
 
@@ -449,6 +451,23 @@ function handleSelectedItemEnter(event: KeyboardEvent): void {
   else void copyItemByEnter(item)
 }
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return target.matches('textarea, input, select, [contenteditable="true"]')
+}
+
+function handleSelectedItemDelete(event: KeyboardEvent): void {
+  if (!unlocked.value || isCaptureOpen.value || lightboxItem.value) return
+  if (isTypingTarget(event.target)) return
+  const item = selected.value
+  if (!item) return
+  event.preventDefault()
+  closeContextMenu()
+  const nextId = nextClipboardSelectionAfterDelete(visibleItems.value, item.id)
+  removeItem(item)
+  if (nextId && items.value.some((entry) => entry.id === nextId)) selectedId.value = nextId
+}
+
 function moveSelection(delta: 1 | -1): void {
   const list = visibleItems.value
   if (!list.length) return
@@ -486,6 +505,10 @@ function onDocumentKeydown(event: KeyboardEvent): void {
   }
   if (event.key === 'Enter') {
     handleSelectedItemEnter(event)
+    return
+  }
+  if (isClipboardItemDeleteKey(event.key)) {
+    handleSelectedItemDelete(event)
     return
   }
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
@@ -583,7 +606,7 @@ onUnmounted(() => {
                   <Pin :size="13" :fill="item.pinned ? 'currentColor' : 'none'" />
                 </button>
                 <button type="button" :title="t('tools.clipboardCopy')" @click.stop="copyItem(item)"><Copy :size="13" /></button>
-                <button type="button" :title="t('common.delete')" @click.stop="removeItem(item)"><Trash2 :size="13" /></button>
+                <button type="button" :title="t('tools.clipboardDeleteShortcut')" @click.stop="removeItem(item)"><Trash2 :size="13" /></button>
               </div>
             </article>
           </div>
@@ -592,7 +615,7 @@ onUnmounted(() => {
         <div class="clipboard-popup-resizer" role="separator" tabindex="0" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
-            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('common.delete')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
+            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
             <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
             <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>

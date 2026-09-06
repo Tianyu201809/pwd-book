@@ -464,6 +464,7 @@ export default {
     clipboardImagePreview: '图像内容',
     clipboardEnlargePreview: '放大预览',
     clipboardCopyShortcut: '复制内容（回车）',
+    clipboardDeleteShortcut: '删除（Delete）',
     clipboardCopyShortcutQuick: '回车复制并关闭窗口',
     clipboardQuickMode: '快捷模式',
     clipboardQuickModeHint: '开启后，回车复制会自动关闭窗口',
@@ -878,8 +879,8 @@ export default {
         },
         {
           title: '选择、复制、预览',
-          desc: '↑↓ 选择条目，Enter 复制回系统剪切板，Ctrl + Enter 放大预览。打开「快捷模式」后，Enter 复制并关闭小窗。',
-          tip: '搜索框里仍可用方向键选择当前筛选结果。点击复制按钮不会关窗。',
+          desc: '↑↓ 选择条目，Enter 复制回系统剪切板，Ctrl + Enter 放大预览，Delete 删除当前条目。打开「快捷模式」后，Enter 复制并关闭小窗。',
+          tip: '搜索框里仍可用方向键选择当前筛选结果；在搜索框内按 Delete / Backspace 只改搜索词。点击复制按钮不会关窗。',
         },
         {
           title: '固定与存放',

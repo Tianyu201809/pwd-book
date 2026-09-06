@@ -465,6 +465,7 @@ export default {
     clipboardImagePreview: 'Image content',
     clipboardEnlargePreview: 'Enlarge preview',
     clipboardCopyShortcut: 'Copy content (Enter)',
+    clipboardDeleteShortcut: 'Delete item (Delete)',
     clipboardCopyShortcutQuick: 'Enter copies and closes the window',
     clipboardQuickMode: 'Quick mode',
     clipboardQuickModeHint: 'When on, Enter copies the item and closes this window',
@@ -880,8 +881,8 @@ export default {
         },
         {
           title: 'Select, copy, preview',
-          desc: 'Use ↑↓ to select, Enter to copy back to the system clipboard, and Ctrl + Enter to enlarge. With Quick mode on, Enter copies and closes the window.',
-          tip: 'Arrow keys still move the selection while the search box is focused. The Copy button does not close the window.',
+          desc: 'Use ↑↓ to select, Enter to copy back to the system clipboard, Ctrl + Enter to enlarge, and Delete to remove the selected item. With Quick mode on, Enter copies and closes the window.',
+          tip: 'Arrow keys still move the selection while the search box is focused. Delete / Backspace in the search box only edit the query. The Copy button does not close the window.',
         },
         {
           title: 'Pin and keep',
