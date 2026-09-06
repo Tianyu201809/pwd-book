@@ -1,6 +1,6 @@
 # 剪切板历史（独立小窗口）
 
-**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导；失焦不再自动隐藏。
+**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导；失焦不再自动隐藏。**v1.34.0** 第一次打开默认不固定；可开快捷模式，回车复制后关窗。
 
 ## 模块一览
 
@@ -24,7 +24,7 @@
 | 尺寸 | 默认 760×680，最小 560×480；主屏工作区水平居中，距顶 58px |
 | 置顶 / 任务栏 | `alwaysOnTop: true`，`skipTaskbar: true` |
 | 失焦 | **v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏 |
-| 固定小窗 | `clipboard-window:toggle-pinned`；默认未固定（`CLIPBOARD_WINDOW_DEFAULT_PINNED = false`）；与失焦策略独立 |
+| 固定小窗 | `clipboard-window:toggle-pinned`；**v1.34.0** 默认未固定（`CLIPBOARD_WINDOW_DEFAULT_PINNED = false`）；与失焦策略独立 |
 | 锁定 | `vault:lock` 调用 `hideClipboardWindowOnLock()` |
 | 未解锁唤起 | `showClipboardWindow()` 改为 `showFromTray()`，引导先解锁 |
 | 功能关闭 | `clipboardEnabled === false` 时拦截小窗，唤起主窗口并提示去设置开启 |
@@ -33,7 +33,7 @@
 
 全局快捷键 `Alt+Shift+O` 在启动与 `settings:update` 时注册，退出前注销。未开启「剪切板历史」时，标题栏、工具箱与快捷键都会拦截小窗，并提示到 **设置 → 剪切板** 开启。
 
-小窗内键盘（**v1.33.0**）：`↑`/`↓` 选择条目，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览，`Esc` 关闭。开启**快捷模式**后，`Enter` 复制成功即关闭小窗（点击复制按钮不关）。复制成功经小窗 `ToastHost` 提示。
+小窗内键盘（**v1.33.0**）：`↑`/`↓` 选择条目，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览，`Esc` 关闭。**v1.34.0** 开启**快捷模式**后，`Enter` 复制成功即关闭小窗（点击复制按钮不关）。复制成功经小窗 `ToastHost` 提示。
 
 ## 设置项
 
@@ -43,7 +43,7 @@
 | `clipboardDefaultExpiry` | `clipboard_default_expiry` | `300` | 新记录默认过期秒数：`30` / `300` / `900` / `1800` / `0`（永不过期） |
 | `clipboardPersistence` | `clipboard_persistence` | `false` | `true` 时写入 `localStorage`；关闭时删除持久化副本 |
 | `clipboardHistoryLimit` | `clipboard_history_limit` | `50` | **v1.33.0** `20` / `50` / `100` / `200`；先删最旧未固定项 |
-| `clipboardQuickMode` | `clipboard_quick_mode` | `false` | **v1.33.0** 小窗「快捷模式」：回车复制后关闭窗口 |
+| `clipboardQuickMode` | `clipboard_quick_mode` | `false` | **v1.34.0** 小窗「快捷模式」：回车复制后关闭窗口 |
 
 与既有「剪贴板自动清除」（`clipboard_clear_*`，复制密码后清空系统剪贴板）相互独立，后者仍在 **设置 → 安全**。
 

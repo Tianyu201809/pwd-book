@@ -49,7 +49,7 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`）、关闭行为、快捷条与主窗口全局快捷键、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等）。界面分区见 **设置 → 安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站**（**v1.33.0**）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等）。界面分区见 **设置 → 安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站**（**v1.33.0**）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
 
 ### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
 
@@ -84,7 +84,7 @@
 | `registerClipboardWindowShortcut` | 注册 `Alt+Shift+O`；启动与 `settings:update` 时调用 |
 | `registerClipboardWindowIpc` | `clipboard-window:show` / `hide` / `get-pinned` / `toggle-pinned`；主题同步 |
 
-**v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏；关闭用 Esc、关闭按钮或再次 `Alt+Shift+O`。窗口仍可固定，与失焦策略独立。
+**v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏；关闭用 Esc、关闭按钮或再次 `Alt+Shift+O`。**v1.34.0** `CLIPBOARD_WINDOW_DEFAULT_PINNED = false`，第一次打开默认不固定；窗口仍可固定，与失焦策略独立。
 
 ### detailWindow（v1.14.0）
 

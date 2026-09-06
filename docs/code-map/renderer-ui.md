@@ -78,9 +78,9 @@ App.vue
 - **v1.26.0** 结果区固定 `max-height` 可滚动；↑↓ 时 `scrollIntoView`。
 - 选中高亮：`.quickbar-result--active`（accent 背景 + 描边）。
 
-### ClipboardWindowApp.vue（**v1.32.0** / **v1.33.0**）
+### ClipboardWindowApp.vue（**v1.32.0** / **v1.33.0** / **v1.34.0**）
 
-独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储。**v1.33.0** 失焦不隐藏；`↑`/`↓` 选择，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览；复制 Toast。详见 [clipboard-history.md](./clipboard-history.md)。
+独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储。**v1.33.0** 失焦不隐藏；`↑`/`↓` 选择，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览；复制 Toast。**v1.34.0** 默认不固定；工具栏「快捷模式」开启后回车复制并关窗。详见 [clipboard-history.md](./clipboard-history.md)。
 
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 

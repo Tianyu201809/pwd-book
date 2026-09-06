@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.33.0**（`package.json`）— 设置分区（安全 / 剪切板 / 浏览器 / 悬浮条 / 回收站等）；剪切板使用向导与条数上限；产品探索对齐新 UI。
+**当前版本：v1.34.0**（`package.json`）— 剪切板小窗默认不固定；快捷模式（回车复制后关窗）。v1.33.0 起设置已分区。
 
 ## 文档索引
 
@@ -14,7 +14,7 @@
 | [ipc-and-data-flow.md](./ipc-and-data-flow.md) | IPC 通道表、解锁/保存/恢复流程图 |
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试（**v1.26.0** 条数可配 / 定位主窗口 / 滚动） |
-| [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块、条数上限、使用向导 |
+| [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块、条数上限、使用向导；**v1.34.0** 默认不固定、快捷模式 |
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 | [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
