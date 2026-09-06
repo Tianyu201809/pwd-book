@@ -62,6 +62,9 @@ const filter = ref<ClipboardFilter>('all')
 const draft = ref('')
 const isCaptureOpen = ref(false)
 const lightboxItem = ref<ClipboardItem | null>(null)
+const pendingDelete = ref<ClipboardItem | null>(null)
+const pendingDeleteNextId = ref<string | null>(null)
+const confirmDeleteBtn = ref<HTMLButtonElement | null>(null)
 const now = ref(Date.now())
 const windowPinned = ref(CLIPBOARD_WINDOW_DEFAULT_PINNED)
 const quickMode = ref(CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE)
@@ -235,6 +238,34 @@ function removeItem(item: ClipboardItem): void {
   sync(items.value.filter((entry) => entry.id !== item.id), true)
 }
 
+function deletePreview(item: ClipboardItem): string {
+  if (item.kind === 'image') return t('tools.clipboardImageLabel')
+  const text = item.content.replace(/\s+/g, ' ').trim()
+  if (!text) return t('tools.clipboardTextLabel')
+  return text.length > 40 ? `${text.slice(0, 40)}…` : text
+}
+
+function cancelPendingDelete(): void {
+  pendingDelete.value = null
+  pendingDeleteNextId.value = null
+}
+
+function requestRemoveItem(item: ClipboardItem): void {
+  closeContextMenu()
+  pendingDelete.value = item
+  pendingDeleteNextId.value = nextClipboardSelectionAfterDelete(visibleItems.value, item.id)
+  void nextTick(() => confirmDeleteBtn.value?.focus())
+}
+
+function confirmPendingDelete(): void {
+  const item = pendingDelete.value
+  const nextId = pendingDeleteNextId.value
+  cancelPendingDelete()
+  if (!item || !items.value.some((entry) => entry.id === item.id)) return
+  removeItem(item)
+  if (nextId && items.value.some((entry) => entry.id === nextId)) selectedId.value = nextId
+}
+
 function clearAll(): void {
   lightboxItem.value = null
   closeContextMenu()
@@ -291,7 +322,7 @@ async function runContextAction(action: 'preview' | 'copy' | 'pin' | 'delete'): 
   if (action === 'preview') openImagePreview(item)
   else if (action === 'copy') await copyItem(item)
   else if (action === 'pin') togglePin(item)
-  else removeItem(item)
+  else requestRemoveItem(item)
 }
 
 function togglePin(item: ClipboardItem): void {
@@ -398,6 +429,10 @@ function closeWindow(): void {
 }
 
 function handleEsc(): void {
+  if (pendingDelete.value) {
+    cancelPendingDelete()
+    return
+  }
   if (contextMenu.value) {
     closeContextMenu()
     return
@@ -414,7 +449,7 @@ function handleEsc(): void {
 }
 
 function isArrowNavBlocked(target: EventTarget | null): boolean {
-  if (isCaptureOpen.value || lightboxItem.value) return true
+  if (isCaptureOpen.value || lightboxItem.value || pendingDelete.value) return true
   if (!(target instanceof HTMLElement)) return false
   return target.matches('textarea, select, [contenteditable="true"]')
 }
@@ -457,15 +492,12 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 function handleSelectedItemDelete(event: KeyboardEvent): void {
-  if (!unlocked.value || isCaptureOpen.value || lightboxItem.value) return
+  if (!unlocked.value || isCaptureOpen.value || lightboxItem.value || pendingDelete.value) return
   if (isTypingTarget(event.target)) return
   const item = selected.value
   if (!item) return
   event.preventDefault()
-  closeContextMenu()
-  const nextId = nextClipboardSelectionAfterDelete(visibleItems.value, item.id)
-  removeItem(item)
-  if (nextId && items.value.some((entry) => entry.id === nextId)) selectedId.value = nextId
+  requestRemoveItem(item)
 }
 
 function moveSelection(delta: 1 | -1): void {
@@ -498,6 +530,20 @@ function onDocumentClick(): void {
 }
 
 function onDocumentKeydown(event: KeyboardEvent): void {
+  if (pendingDelete.value) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelPendingDelete()
+      return
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      confirmPendingDelete()
+      return
+    }
+    if (isClipboardItemDeleteKey(event.key)) event.preventDefault()
+    return
+  }
   if (event.key === 'Escape') {
     event.preventDefault()
     handleEsc()
@@ -606,7 +652,7 @@ onUnmounted(() => {
                   <Pin :size="13" :fill="item.pinned ? 'currentColor' : 'none'" />
                 </button>
                 <button type="button" :title="t('tools.clipboardCopy')" @click.stop="copyItem(item)"><Copy :size="13" /></button>
-                <button type="button" :title="t('tools.clipboardDeleteShortcut')" @click.stop="removeItem(item)"><Trash2 :size="13" /></button>
+                <button type="button" :title="t('tools.clipboardDeleteShortcut')" @click.stop="requestRemoveItem(item)"><Trash2 :size="13" /></button>
               </div>
             </article>
           </div>
@@ -615,7 +661,7 @@ onUnmounted(() => {
         <div class="clipboard-popup-resizer" role="separator" tabindex="0" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
-            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="removeItem(selected)"><X :size="15" /></button></div></div>
+            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="requestRemoveItem(selected)"><X :size="15" /></button></div></div>
             <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
             <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
@@ -625,6 +671,19 @@ onUnmounted(() => {
       <footer class="clipboard-popup-foot"><span><ShieldCheck :size="12" />{{ t('tools.clipboardLocalOnly') }}</span><button type="button" :disabled="!items.length" @click="clearAll"><Trash2 :size="13" />{{ t('tools.clipboardClear') }}</button></footer>
     </template>
 
+    <div v-if="pendingDelete" class="clipboard-popup-overlay" @click.self="cancelPendingDelete">
+      <div class="clipboard-popup-dialog" role="alertdialog" aria-modal="true" aria-labelledby="clipboard-delete-title">
+        <div class="clipboard-popup-dialog-head">
+          <strong id="clipboard-delete-title">{{ t('tools.clipboardDeleteConfirmTitle') }}</strong>
+          <button type="button" :aria-label="t('common.close')" @click="cancelPendingDelete"><X :size="16" /></button>
+        </div>
+        <p class="clipboard-popup-dialog-body">{{ t('tools.clipboardDeleteConfirm', { preview: deletePreview(pendingDelete) }) }}</p>
+        <div class="clipboard-popup-dialog-actions">
+          <button type="button" @click="cancelPendingDelete">{{ t('common.cancel') }}</button>
+          <button ref="confirmDeleteBtn" type="button" class="clipboard-popup-dialog-danger" @click="confirmPendingDelete">{{ t('common.delete') }}</button>
+        </div>
+      </div>
+    </div>
     <div v-if="isCaptureOpen" class="clipboard-popup-overlay" @click.self="isCaptureOpen = false"><div class="clipboard-popup-dialog"><div class="clipboard-popup-dialog-head"><strong>{{ t('tools.clipboardCaptureTitle') }}</strong><button type="button" :aria-label="t('common.close')" @click="isCaptureOpen = false"><X :size="16" /></button></div><textarea v-model="draft" autofocus :placeholder="t('tools.clipboardPlaceholder')" @keydown.ctrl.enter="saveDraft" /><div class="clipboard-popup-dialog-actions"><button type="button" @click="isCaptureOpen = false">{{ t('common.cancel') }}</button><button type="button" class="clipboard-popup-copy" :disabled="!draft.trim()" @click="saveDraft"><ClipboardPaste :size="14" />{{ t('tools.clipboardSave') }}</button></div></div></div>
     <div v-if="lightboxItem" ref="lightboxRef" class="clipboard-popup-overlay clipboard-popup-lightbox" tabindex="-1" @click.self="closeLightbox" @keydown.esc.stop="closeLightbox">
       <button type="button" class="clipboard-popup-lightbox-close" :aria-label="t('common.close')" :title="t('common.close')" @click="closeLightbox"><X :size="18" /></button>

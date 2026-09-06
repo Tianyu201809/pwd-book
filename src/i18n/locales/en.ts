@@ -466,6 +466,8 @@ export default {
     clipboardEnlargePreview: 'Enlarge preview',
     clipboardCopyShortcut: 'Copy content (Enter)',
     clipboardDeleteShortcut: 'Delete item (Delete)',
+    clipboardDeleteConfirmTitle: 'Delete this item?',
+    clipboardDeleteConfirm: 'This cannot be undone: {preview}',
     clipboardCopyShortcutQuick: 'Enter copies and closes the window',
     clipboardQuickMode: 'Quick mode',
     clipboardQuickModeHint: 'When on, Enter copies the item and closes this window',

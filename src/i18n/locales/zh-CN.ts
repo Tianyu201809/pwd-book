@@ -465,6 +465,8 @@ export default {
     clipboardEnlargePreview: '放大预览',
     clipboardCopyShortcut: '复制内容（回车）',
     clipboardDeleteShortcut: '删除（Delete）',
+    clipboardDeleteConfirmTitle: '删除这条记录？',
+    clipboardDeleteConfirm: '删除后无法从历史里恢复：{preview}',
     clipboardCopyShortcutQuick: '回车复制并关闭窗口',
     clipboardQuickMode: '快捷模式',
     clipboardQuickModeHint: '开启后，回车复制会自动关闭窗口',

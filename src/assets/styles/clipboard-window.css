@@ -303,8 +303,11 @@ html[data-skin="animalIsland"] .clipboard-popup-head::after {
 .clipboard-popup-dialog-head button { width: 28px; height: 28px; }
 .clipboard-popup-dialog textarea { display: block; box-sizing: border-box; width: 100%; min-height: 150px; margin-top: 14px; padding: 11px; resize: vertical; border: 1px solid var(--border-default); border-radius: 8px; outline: 0; background: var(--input-bg); color: var(--text-primary); font: 13px/1.6 var(--font-mono); }
 .clipboard-popup-dialog textarea:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--focus-ring); }
+.clipboard-popup-dialog-body { margin: 14px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
 .clipboard-popup-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; }
 .clipboard-popup-dialog-actions > button:first-child { border: 0; border-radius: 6px; padding: 7px 9px; color: var(--text-secondary); background: transparent; font-size: 12px; cursor: pointer; }
+.clipboard-popup-dialog-danger { display: inline-flex; align-items: center; justify-content: center; border: 1px solid color-mix(in srgb, var(--status-danger) 55%, var(--border-default)); border-radius: 7px; padding: 7px 12px; background: rgba(248, 113, 113, .12); color: var(--status-danger); font-size: 12px; font-weight: 600; cursor: pointer; }
+.clipboard-popup-dialog-danger:hover { background: rgba(248, 113, 113, .2); }
 
 @media (max-width: 620px) {
   .clipboard-popup-content { grid-template-columns: 1fr; overflow-y: auto; }
