@@ -84,7 +84,7 @@
 | `registerClipboardWindowShortcut` | 注册 `Alt+Shift+O`；启动与 `settings:update` 时调用 |
 | `registerClipboardWindowIpc` | `clipboard-window:show` / `hide` / `get-pinned` / `toggle-pinned`；主题同步 |
 
-**v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏；关闭用 Esc、关闭按钮或再次 `Alt+Shift+O`。**v1.34.0** `CLIPBOARD_WINDOW_DEFAULT_PINNED = false`，第一次打开默认不固定；窗口仍可固定，与失焦策略独立。
+未固定时失焦（点到其他程序或其它窗口）会收起；固定后失焦保持可见。关闭也可用 Esc、关闭按钮或再次 `Alt+Shift+O`。**v1.34.0** 默认未固定。
 
 ### detailWindow（v1.14.0）
 

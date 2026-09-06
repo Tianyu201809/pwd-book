@@ -1,12 +1,12 @@
 # 剪切板历史（独立小窗口）
 
-**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导；失焦不再自动隐藏。**v1.34.0** 第一次打开默认不固定；可开快捷模式，回车复制后关窗。
+**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导。**v1.34.0** 第一次打开默认不固定；可开快捷模式，回车复制后关窗。未固定时失焦（点到其他程序）会收起小窗。
 
 ## 模块一览
 
 | 模块 | 路径 | 职责 |
 |------|------|------|
-| 小窗口 | `src/main/clipboardWindow.ts` | 无边框置顶窗、`Alt+Shift+O`、失焦不隐藏（v1.33.0）、锁定隐藏 |
+| 小窗口 | `src/main/clipboardWindow.ts` | 无边框置顶窗、`Alt+Shift+O`、未固定失焦隐藏、锁定隐藏 |
 | UI | `src/components/ClipboardWindowApp.vue` | 捕获、列表、预览、置顶、过期、分栏拖拽 |
 | 样式 | `src/assets/styles/clipboard-window.css` | 小窗口独立样式 |
 | 渲染入口 | `src/renderer/clipboard-window.html` + `clipboard-window.ts` | 独立 Vue 应用（`electron.vite.config.ts` → `clipboardWindow`） |
@@ -23,7 +23,7 @@
 |------|------|
 | 尺寸 | 默认 760×680，最小 560×480；主屏工作区水平居中，距顶 58px |
 | 置顶 / 任务栏 | `alwaysOnTop: true`，`skipTaskbar: true` |
-| 失焦 | **v1.33.0** `shouldHideClipboardWindowOnBlur()` 恒为 `false`，失焦不隐藏 |
+| 失焦 | 未固定时隐藏（`shouldHideClipboardWindowOnBlur(pinned)`）；固定后失焦保持可见 |
 | 固定小窗 | `clipboard-window:toggle-pinned`；**v1.34.0** 默认未固定（`CLIPBOARD_WINDOW_DEFAULT_PINNED = false`）；与失焦策略独立 |
 | 锁定 | `vault:lock` 调用 `hideClipboardWindowOnLock()` |
 | 未解锁唤起 | `showClipboardWindow()` 改为 `showFromTray()`，引导先解锁 |

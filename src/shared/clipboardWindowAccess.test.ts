@@ -23,8 +23,9 @@ describe('resolveClipboardWindowOpen', () => {
     expect(resolveClipboardWindowOpen(true, true)).toBe('allow')
   })
 
-  it('never hides on blur when clicking outside the clipboard window', () => {
-    expect(shouldHideClipboardWindowOnBlur()).toBe(false)
+  it('hides on blur unless the clipboard window is pinned', () => {
+    expect(shouldHideClipboardWindowOnBlur(false)).toBe(true)
+    expect(shouldHideClipboardWindowOnBlur(true)).toBe(false)
   })
 
   it('does not pin the clipboard window on first open', () => {

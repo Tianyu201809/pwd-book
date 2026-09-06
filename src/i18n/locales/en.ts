@@ -874,7 +874,7 @@ export default {
         {
           title: 'Open the clipboard window',
           desc: 'After unlock, press Shift + Alt + O or click “Open clipboard window”. The title bar and toolbox also open it.',
-          tip: 'Losing focus does not hide the window. Close with Esc, the title-bar button, or the shortcut again.',
+          tip: 'If it is not pinned, clicking another app hides the window. You can also close it with Esc, the title-bar button, or the shortcut again.',
         },
         {
           title: 'Capture automatically',

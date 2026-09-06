@@ -60,7 +60,9 @@ function createClipboardWindow(): BrowserWindow {
   if (url.startsWith('http')) void win.loadURL(url)
   else void win.loadFile(url)
   win.on('blur', () => {
-    if (!win.isDestroyed() && shouldHideClipboardWindowOnBlur()) win.hide()
+    if (!win.isDestroyed() && shouldHideClipboardWindowOnBlur(clipboardWindowPinned)) {
+      hideClipboardWindow()
+    }
   })
   return win
 }

@@ -29,6 +29,6 @@ export function resolveClipboardWindowOpen(
   return 'allow'
 }
 
-export function shouldHideClipboardWindowOnBlur(): boolean {
-  return false
+export function shouldHideClipboardWindowOnBlur(pinned: boolean): boolean {
+  return !pinned
 }
