@@ -16,6 +16,7 @@ import {
   PanelTop,
   MailCheck,
   BookOpen,
+  ExternalLink,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
@@ -65,6 +66,7 @@ const exportModalOpen = ref(false)
 const launchAtLoginAvailable = ref(true)
 const CLIPBOARD_SESSION_STORAGE_KEY = 'pwdbook-clipboard-session'
 const CLIPBOARD_PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
+const RELEASE_LIST_URL = 'https://github.com/Tianyu201809/pwd-book/releases'
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
@@ -222,6 +224,14 @@ async function openExtensionsPage(): Promise<void> {
 async function openExtensionDir(): Promise<void> {
   try {
     await vaultApi.openExtensionDir()
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
+
+async function openReleaseList(): Promise<void> {
+  try {
+    await vaultApi.openExternal(RELEASE_LIST_URL)
   } catch (error) {
     showToast(parseErrorMessage(error), 'error')
   }
@@ -794,6 +804,16 @@ async function handleReset(): Promise<void> {
             <p class="about-desc">
               {{ t('settings.aboutDesc') }}
             </p>
+            <UiButton
+              class="release-list-btn"
+              variant="default"
+              @click="openReleaseList"
+            >
+              <template #icon>
+                <ExternalLink :size="16" :stroke-width="1.8" />
+              </template>
+              {{ t('settings.releaseList') }}
+            </UiButton>
           </UiCard>
           <Footer
             v-if="isAnimalIsland"
@@ -1088,5 +1108,9 @@ h3 {
   margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
+}
+
+.release-list-btn {
+  margin-top: 16px;
 }
 </style>

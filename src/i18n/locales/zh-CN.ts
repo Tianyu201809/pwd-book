@@ -901,6 +901,7 @@ export default {
     aboutDesc:
       '本地优先的密码管理工具。密码字段 AES-256 加密存储，元数据保存在本地 SQLite 数据库中。',
     version: '版本 {version} · Electron + Vue 3 + SQLite',
+    releaseList: '软件发布列表',
   },
   export: {
     title: '导出密码',
