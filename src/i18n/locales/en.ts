@@ -1038,6 +1038,7 @@ export default {
     aboutDesc:
       'Local-first password manager. Passwords are encrypted with AES-256; metadata lives in a local SQLite database.',
     version: 'Version {version} · Electron + Vue 3 + SQLite',
+    releaseList: 'Release list',
   },
   export: {
     title: 'Export passwords',

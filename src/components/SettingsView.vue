@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   ChevronRight,
   MailCheck,
+  ExternalLink,
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import BrowserSettingsPanel from '@/components/BrowserSettingsPanel.vue'
@@ -36,6 +37,9 @@ import { useAppState } from '@/composables/useAppState'
 import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
 import { AUTO_LOCK_FOLLOW_SYSTEM } from '@/shared/types'
+import { vaultApi } from '@/services/vaultApi'
+import { parseErrorMessage } from '@/shared/utils'
+import { useToast } from '@/composables/useToast'
 
 const {
   settingsTab,
@@ -52,11 +56,13 @@ const {
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
+const { showToast } = useToast()
 
 const statusMessage = ref('')
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 const launchAtLoginAvailable = ref(true)
+const RELEASE_LIST_URL = 'https://github.com/Tianyu201809/pwd-book/releases'
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
@@ -104,6 +110,14 @@ async function onCloseWindowChange(value: string): Promise<void> {
 
 async function onLaunchAtLoginChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ launchAtLoginEnabled: enabled })
+}
+
+async function openReleaseList(): Promise<void> {
+  try {
+    await vaultApi.openExternal(RELEASE_LIST_URL)
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
 }
 
 onMounted(() => {
@@ -406,6 +420,16 @@ async function handleReset(): Promise<void> {
             <p class="about-desc">
               {{ t('settings.aboutDesc') }}
             </p>
+            <UiButton
+              class="release-list-btn"
+              variant="default"
+              @click="openReleaseList"
+            >
+              <template #icon>
+                <ExternalLink :size="16" :stroke-width="1.8" />
+              </template>
+              {{ t('settings.releaseList') }}
+            </UiButton>
           </UiCard>
           <Footer
             v-if="isAnimalIsland"
@@ -641,5 +665,9 @@ h3 {
   margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
+}
+
+.release-list-btn {
+  margin-top: 16px;
 }
 </style>
