@@ -9,6 +9,7 @@ const QUICKBAR_CHANNELS = {
   showMain: 'quickbar:show-main',
   focusEntry: 'quickbar:focus-entry',
   resize: 'quickbar:resize',
+  setDetailOpen: 'quickbar:set-detail-open',
 } as const
 
 const CLIPBOARD_WINDOW_CHANNELS = {
@@ -243,6 +244,8 @@ export const electronAPI = {
   quickBarFocusEntry: (entryId: string): void =>
     ipcRenderer.send(QUICKBAR_CHANNELS.focusEntry, entryId),
   resizeQuickBar: (height: number): void => ipcRenderer.send(QUICKBAR_CHANNELS.resize, height),
+  setQuickBarDetailOpen: (open: boolean): void =>
+    ipcRenderer.send(QUICKBAR_CHANNELS.setDetailOpen, open),
   onQuickBarShown: (handler: () => void): (() => void) => {
     const listener = (): void => handler()
     ipcRenderer.on(IPC_EVENTS.quickBarShown, listener)

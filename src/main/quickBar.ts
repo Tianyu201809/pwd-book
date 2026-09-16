@@ -7,6 +7,7 @@ import { isUnlocked } from './services/sessionService'
 import { focusEntryFromQuickBar, showFromTray } from './tray'
 
 const QUICK_BAR_WIDTH = 560
+const QUICK_BAR_DETAIL_WIDTH = 920
 const QUICK_BAR_COLLAPSED_HEIGHT = 52
 const QUICK_BAR_TOP_OFFSET = 28
 /** 搜索条 + 分区标题 + 结果区 max-height，窗口不再随条目无限增高 */
@@ -22,13 +23,13 @@ function quickBarUrl(): string {
   return join(__dirname, '../renderer/quickbar.html')
 }
 
-function centerQuickBarBounds(height: number): Electron.Rectangle {
+function centerQuickBarBounds(height: number, width = QUICK_BAR_WIDTH): Electron.Rectangle {
   const display = screen.getPrimaryDisplay()
-  const { x, y, width } = display.workArea
+  const { x, y, width: workAreaWidth } = display.workArea
   return {
-    x: Math.round(x + (width - QUICK_BAR_WIDTH) / 2),
+    x: Math.round(x + (workAreaWidth - width) / 2),
     y: y + QUICK_BAR_TOP_OFFSET,
-    width: QUICK_BAR_WIDTH,
+    width,
     height,
   }
 }
@@ -168,5 +169,11 @@ export function registerQuickBarIpc(): void {
       ...bounds,
       height: nextHeight,
     })
+  })
+  ipcMain.on('quickbar:set-detail-open', (_event, open: boolean) => {
+    if (!quickBarWindow || quickBarWindow.isDestroyed()) return
+    const bounds = quickBarWindow.getBounds()
+    const width = open ? QUICK_BAR_DETAIL_WIDTH : QUICK_BAR_WIDTH
+    quickBarWindow.setBounds(centerQuickBarBounds(bounds.height, width))
   })
 }

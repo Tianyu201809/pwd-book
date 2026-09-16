@@ -150,6 +150,7 @@ declare global {
       quickBarShowMain?: () => void
       quickBarFocusEntry?: (entryId: string) => void
       resizeQuickBar?: (height: number) => void
+      setQuickBarDetailOpen?: (open: boolean) => void
       onQuickBarShown?: (handler: () => void) => () => void
       onQuickBarFocusEntry?: (handler: (entryId: string) => void) => () => void
       notifyThemeChanged?: () => void

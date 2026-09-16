@@ -22,6 +22,132 @@ body.quickbar-body {
     0 0 0 1px rgba(255, 255, 255, 0.04) inset;
 }
 
+.quickbar-layout {
+  display: flex;
+  min-width: 0;
+}
+
+.quickbar-primary {
+  width: 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.quickbar-detail {
+  width: 360px;
+  min-width: 0;
+  border-left: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.quickbar-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 14px 11px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.quickbar-detail-heading {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.quickbar-detail-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quickbar-detail-subtitle,
+.quickbar-detail-label {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.quickbar-detail-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  overflow: auto;
+}
+
+.quickbar-detail-field {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--bg-hover);
+}
+
+.quickbar-detail-field--multiline {
+  align-items: start;
+}
+
+.quickbar-detail-field--active {
+  background: var(--accent-subtle);
+  box-shadow: inset 0 0 0 1px var(--border-accent);
+}
+
+.quickbar-detail-value {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.quickbar-detail-value--secret {
+  letter-spacing: 1px;
+}
+
+.quickbar-detail-value--code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+}
+
+.quickbar-detail-value--code small {
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.quickbar-icon-button {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.quickbar-icon-button:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
 .quickbar-strip {
   display: flex;
   align-items: center;
