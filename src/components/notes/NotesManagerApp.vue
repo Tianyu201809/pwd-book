@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArchiveRestore, BookOpen, ChevronRight, ExternalLink, FileText, Minus, Pencil, Plus, Search, Star, StickyNote, Trash2, X } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import NoteEditor from './NoteEditor.vue'
-import { UiButton, UiModal } from '@/components/ui'
+import { UiButton, UiInput, UiModal } from '@/components/ui'
 import { useNotes } from '@/composables/useNotes'
 import type { NoteBook, NoteFilter, StickyNote as StickyNoteModel } from '@/shared/types'
 
@@ -11,16 +11,29 @@ const { t } = useI18n()
 const { books, notes, filter, query, selectedId, selectedNote, loading, error, refresh, selectFilter, createNote } = useNotes()
 const newBookName = ref('')
 const addingBook = ref(false)
-const renamingBookId = ref<string | null>(null)
 const renamingBookName = ref('')
+const pendingRenameBook = ref<NoteBook | null>(null)
 const pendingBook = ref<NoteBook | null>(null)
+const bookDeleteMode = ref<'move' | 'trash'>('move')
 const editorRef = ref<InstanceType<typeof NoteEditor> | null>(null)
-const contextMenu = ref<{ note: StickyNoteModel; x: number; y: number } | null>(null)
+const contextMenu = ref<
+  | { kind: 'note'; note: StickyNoteModel; x: number; y: number }
+  | { kind: 'book'; book: NoteBook; x: number; y: number }
+  | null
+>(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
 const deleteConfirm = ref<{ id: string; title: string; permanent: boolean } | null>(null)
 const showDeleteConfirm = computed({
   get: () => deleteConfirm.value !== null,
   set: (open: boolean) => { if (!open) deleteConfirm.value = null },
+})
+const showBookDelete = computed({
+  get: () => pendingBook.value !== null,
+  set: (open: boolean) => { if (!open) pendingBook.value = null },
+})
+const showBookRename = computed({
+  get: () => pendingRenameBook.value !== null,
+  set: (open: boolean) => { if (!open) cancelRename() },
 })
 let removeNotesListener: (() => void) | undefined
 let removeFlushListener: (() => void) | undefined
@@ -60,18 +73,44 @@ async function submitBook(): Promise<void> {
   await refresh()
 }
 
+function cancelRename(): void {
+  pendingRenameBook.value = null
+  renamingBookName.value = ''
+}
+
 function startRename(book: NoteBook): void {
   if (book.id === 'notes-default') return
-  renamingBookId.value = book.id
+  closeContextMenu()
   renamingBookName.value = book.name
+  window.setTimeout(() => {
+    pendingRenameBook.value = book
+  }, 0)
+}
+
+function focusRenameInput(): void {
+  const input = document.querySelector('.book-rename-input input, .book-rename-input .input-field') as HTMLInputElement | null
+  input?.focus()
+  input?.select()
+}
+
+function onRenameKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    cancelRename()
+    return
+  }
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    void submitRename()
+  }
 }
 
 async function submitRename(): Promise<void> {
-  const id = renamingBookId.value
+  const book = pendingRenameBook.value
   const name = renamingBookName.value.trim()
-  if (!id || !name || !window.electronAPI) return
-  await window.electronAPI.updateNoteBook(id, name)
-  renamingBookId.value = null
+  if (!book || !name || !window.electronAPI) return
+  await window.electronAPI.updateNoteBook(book.id, name)
+  cancelRename()
   await refresh()
 }
 
@@ -145,8 +184,29 @@ function handleNoteContextMenu(note: StickyNoteModel, event: MouseEvent): void {
   event.preventDefault()
   event.stopPropagation()
   selectedId.value = note.id
-  contextMenu.value = { note, x: event.clientX, y: event.clientY }
+  contextMenu.value = { kind: 'note', note, x: event.clientX, y: event.clientY }
   void nextTick(adjustContextMenuPosition)
+}
+
+function handleBookContextMenu(book: NoteBook, event: MouseEvent): void {
+  event.preventDefault()
+  event.stopPropagation()
+  if (book.id === 'notes-default') return
+  contextMenu.value = { kind: 'book', book, x: event.clientX, y: event.clientY }
+  void nextTick(adjustContextMenuPosition)
+}
+
+function requestDeleteBook(book: NoteBook): void {
+  closeContextMenu()
+  bookDeleteMode.value = 'move'
+  window.setTimeout(() => {
+    pendingBook.value = book
+  }, 0)
+}
+
+async function confirmDeleteBook(): Promise<void> {
+  const trashNotes = (pendingBook.value?.noteCount ?? 0) > 0 && bookDeleteMode.value === 'trash'
+  await deleteBook(trashNotes)
 }
 
 async function openDesktop(id: string): Promise<void> {
@@ -170,6 +230,13 @@ function permanentlyDeleteSelected(): void {
 watch(query, () => {
   if (searchTimer) clearTimeout(searchTimer)
   searchTimer = setTimeout(() => void refresh(), 220)
+})
+
+watch(showBookRename, (open) => {
+  if (!open) return
+  void nextTick(() => {
+    window.setTimeout(focusRenameInput, 0)
+  })
 })
 
 onMounted(async () => {
@@ -217,28 +284,15 @@ onUnmounted(() => {
           <input v-model="newBookName" maxlength="80" autofocus :placeholder="$t('notes.newBook')">
         </form>
         <div v-for="book in books" :key="book.id" class="book-row-wrap">
-          <form v-if="renamingBookId === book.id" class="new-book-form" @submit.prevent="submitRename">
-            <input v-model="renamingBookName" maxlength="80" autofocus @blur="submitRename">
-          </form>
           <button
-            v-else
             type="button"
             class="nav-row book-row"
             :class="{ active: filter === book.id }"
             @click="selectFilter(book.id)"
+            @contextmenu="handleBookContextMenu(book, $event)"
           >
             <BookOpen :size="16" /><span>{{ book.id === 'notes-default' ? $t('notes.defaultBook') : book.name }}</span><small>{{ book.noteCount }}</small>
           </button>
-          <div v-if="book.id !== 'notes-default' && renamingBookId !== book.id" class="book-actions titlebar-no-drag">
-            <button type="button" :title="$t('notes.renameBook')" @click.stop="startRename(book)"><Pencil :size="13" /></button>
-            <button type="button" :title="$t('notes.deleteBook')" @click.stop="pendingBook = book"><Trash2 :size="13" /></button>
-          </div>
-        </div>
-        <div v-if="pendingBook" class="book-delete-card">
-          <strong>{{ $t('notes.deleteBook') }} · {{ pendingBook.name }}</strong>
-          <button type="button" @click="deleteBook(false)">{{ $t('notes.deleteBookMove') }}</button>
-          <button type="button" @click="deleteBook(true)">{{ $t('notes.deleteBookTrash') }}</button>
-          <button type="button" class="ghost" @click="pendingBook = null">{{ $t('common.cancel') }}</button>
         </div>
       </aside>
 
@@ -302,7 +356,15 @@ onUnmounted(() => {
         @click.stop
         @contextmenu.prevent.stop
       >
-        <template v-if="filter === 'trash'">
+        <template v-if="contextMenu.kind === 'book'">
+          <button type="button" @click="startRename(contextMenu.book)">
+            <Pencil :size="15" />{{ $t('notes.renameBook') }}
+          </button>
+          <button type="button" class="danger" @click="requestDeleteBook(contextMenu.book)">
+            <Trash2 :size="15" />{{ $t('notes.deleteBook') }}
+          </button>
+        </template>
+        <template v-else-if="filter === 'trash'">
           <button type="button" @click="restoreSelected(); closeContextMenu()">
             <ArchiveRestore :size="15" />{{ $t('notes.restore') }}
           </button>
@@ -345,6 +407,68 @@ onUnmounted(() => {
         </div>
       </template>
     </UiModal>
+
+    <UiModal
+      v-model:open="showBookRename"
+      :title="t('notes.renameBookTitle')"
+      :width="400"
+      :mask-closable="false"
+      :show-footer="false"
+      @close="cancelRename"
+    >
+      <UiInput
+        v-model="renamingBookName"
+        class="book-rename-input"
+        :maxlength="80"
+        autofocus
+        :placeholder="t('notes.bookNamePlaceholder')"
+        @keydown="onRenameKeydown"
+      />
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton variant="default" @click="cancelRename">{{ $t('common.cancel') }}</UiButton>
+          <UiButton variant="primary" :disabled="!renamingBookName.trim()" @click="submitRename">{{ $t('common.save') }}</UiButton>
+        </div>
+      </template>
+    </UiModal>
+
+    <UiModal
+      v-model:open="showBookDelete"
+      :title="t('notes.deleteBook')"
+      :width="420"
+      :mask-closable="false"
+      :show-footer="false"
+      @close="pendingBook = null"
+    >
+      <p class="confirm-modal-body delete-confirm-text">
+        {{ t('notes.confirmDeleteBook', { name: pendingBook?.name ?? '' }) }}
+      </p>
+      <div v-if="pendingBook && pendingBook.noteCount > 0" class="book-delete-options">
+        <p class="book-delete-hint">{{ t('notes.confirmDeleteBookNotes', { count: pendingBook.noteCount }) }}</p>
+        <button
+          type="button"
+          class="book-delete-option"
+          :class="{ active: bookDeleteMode === 'move' }"
+          @click="bookDeleteMode = 'move'"
+        >
+          {{ $t('notes.deleteBookMove') }}
+        </button>
+        <button
+          type="button"
+          class="book-delete-option"
+          :class="{ active: bookDeleteMode === 'trash' }"
+          @click="bookDeleteMode = 'trash'"
+        >
+          {{ $t('notes.deleteBookTrash') }}
+        </button>
+      </div>
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton variant="default" @click="pendingBook = null">{{ $t('common.cancel') }}</UiButton>
+          <UiButton variant="danger" @click="confirmDeleteBook">{{ $t('common.delete') }}</UiButton>
+        </div>
+      </template>
+    </UiModal>
   </div>
 </template>
 
@@ -359,9 +483,7 @@ onUnmounted(() => {
 .nav-row { width: 100%; min-height: 38px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 7px; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary); text-align: left; cursor: pointer; }.nav-row:hover { background: var(--bg-hover); color: var(--text-primary); }.nav-row.active { background: var(--accent-subtle); color: var(--accent-primary); }.nav-row small { font-size: 11px; color: var(--text-muted); }
 .books-heading { display: flex; align-items: center; justify-content: space-between; margin: 18px 8px 7px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; }.books-heading button { width: 26px; height: 26px; display: grid; place-items: center; border: 0; background: transparent; color: inherit; cursor: pointer; }
 .new-book-form { padding: 0 4px 7px; }.new-book-form input { width: 100%; height: 34px; padding: 0 9px; border: 1px solid var(--border-accent); border-radius: 6px; outline: 0; background: var(--input-bg); color: var(--text-primary); }
-.book-row-wrap { position: relative; }.book-row-wrap:hover .book-actions { opacity: 1; }
-.book-actions { position: absolute; top: 4px; right: 6px; display: flex; gap: 2px; opacity: 0; }.book-actions button { width: 22px; height: 22px; display: grid; place-items: center; border: 0; border-radius: 4px; background: var(--bg-elevated); color: var(--text-muted); cursor: pointer; }.book-actions button:hover { color: var(--text-primary); }
-.book-delete-card { display: flex; flex-direction: column; gap: 6px; margin: 8px 4px 0; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-elevated); font-size: 12px; }.book-delete-card button { min-height: 30px; border: 1px solid var(--border-default); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); cursor: pointer; }.book-delete-card .ghost { background: transparent; }
+.book-row-wrap { position: relative; }
 .list-error { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; color: var(--status-danger); font-size: 12px; }.list-error button { border: 0; background: transparent; color: var(--accent-primary); cursor: pointer; }
 .notes-list-panel { display: flex; flex-direction: column; background: var(--bg-app); }.list-toolbar { height: 58px; flex: 0 0 58px; display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border-default); }
 .search-field { flex: 1; height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid var(--border-default); border-radius: 6px; background: var(--input-bg); color: var(--text-muted); }.search-field input { min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: var(--text-primary); }
@@ -379,4 +501,10 @@ onUnmounted(() => {
 .delete-confirm-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
 .confirm-modal-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; }
 .confirm-modal-actions :deep(.ui-classic-btn) { min-width: 96px; padding: 10px 22px; }
+.book-rename-input { width: 100%; }
+.book-delete-options { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.book-delete-hint { margin: 0; font-size: 13px; color: var(--text-muted); }
+.book-delete-option { width: 100%; min-height: 38px; padding: 8px 12px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-elevated); color: var(--text-primary); text-align: left; cursor: pointer; font-size: 13px; }
+.book-delete-option:hover { border-color: var(--border-accent); background: var(--bg-hover); }
+.book-delete-option.active { border-color: var(--accent-primary); background: var(--accent-subtle); color: var(--accent-primary); }
 </style>
