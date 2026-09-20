@@ -12,6 +12,7 @@ import {
   PinOff,
   Search,
   ShieldCheck,
+  Star,
   Trash2,
   Type,
   X,
@@ -24,6 +25,7 @@ import {
   clampClipboardHistoryLimit,
   trimClipboardHistory,
 } from '@/shared/clipboardHistoryLimit'
+import { applyClipboardFavoriteFlags, toggleClipboardFavorite } from '@/shared/clipboardFavorites'
 import { UiSwitch } from '@/components/ui'
 import {
   CLIPBOARD_WINDOW_DEFAULT_PINNED,
@@ -35,7 +37,7 @@ import {
 
 type ClipboardKind = 'text' | 'image'
 type ClipboardExpiry = 30 | 300 | 900 | 1800 | 0
-type ClipboardFilter = 'all' | ClipboardKind | 'pinned'
+type ClipboardFilter = 'all' | ClipboardKind | 'pinned' | 'favorite'
 
 interface ClipboardItem {
   id: string
@@ -43,6 +45,7 @@ interface ClipboardItem {
   content: string
   createdAt: number
   pinned: boolean
+  favorite: boolean
   expiry: ClipboardExpiry
   expiresAt: number | null
 }
@@ -50,7 +53,9 @@ interface ClipboardItem {
 const { t } = useI18n()
 const STORAGE_KEY = 'pwdbook-clipboard-session'
 const PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
+const FAVORITES_STORAGE_KEY = 'pwdbook-clipboard-favorites'
 const items = ref<ClipboardItem[]>([])
+const favoriteItems = ref<ClipboardItem[]>([])
 const selectedId = ref<string | null>(null)
 const unlocked = ref(false)
 const clipboardEnabled = ref(false)
@@ -91,20 +96,54 @@ const splitGridStyle = computed<Record<string, string>>(() => ({
   '--clipboard-list-width': `${splitRatio.value * 100}%`,
 }))
 
+const visibleSource = computed(() => filter.value === 'favorite' ? favoriteItems.value : items.value)
 const visibleItems = computed(() => {
   const normalized = query.value.trim().toLowerCase()
-  return items.value
-    .filter((item) => filter.value === 'all' || (filter.value === 'pinned' ? item.pinned : item.kind === filter.value))
+  return visibleSource.value
+    .filter((item) => filter.value === 'all'
+      || filter.value === 'favorite'
+      || (filter.value === 'pinned' ? item.pinned : item.kind === filter.value))
     .filter((item) => !normalized || item.content.toLowerCase().includes(normalized))
     .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.createdAt - a.createdAt)
 })
-const selected = computed(() => items.value.find((item) => item.id === selectedId.value) ?? visibleItems.value[0] ?? null)
+const selected = computed(() => visibleSource.value.find((item) => item.id === selectedId.value) ?? visibleItems.value[0] ?? null)
 const textCount = computed(() => items.value.filter((item) => item.kind === 'text').length)
 const imageCount = computed(() => items.value.filter((item) => item.kind === 'image').length)
 const pinnedCount = computed(() => items.value.filter((item) => item.pinned).length)
+const favoriteCount = computed(() => favoriteItems.value.length)
+const clearableCount = computed(() => items.value.length)
 
 function snapshot(source: ClipboardItem[]): ClipboardItem[] {
   return source.map((item) => ({ ...toRaw(item) }))
+}
+
+function normalizeItems(source: unknown): ClipboardItem[] {
+  if (!Array.isArray(source)) return []
+  return source.flatMap((entry) => {
+    if (!entry || typeof entry !== 'object') return []
+    const item = entry as Partial<ClipboardItem>
+    if (!item.id || (item.kind !== 'text' && item.kind !== 'image') || typeof item.content !== 'string') return []
+    return [{
+      id: item.id,
+      kind: item.kind,
+      content: item.content,
+      createdAt: Number(item.createdAt) || Date.now(),
+      pinned: Boolean(item.pinned),
+      favorite: Boolean(item.favorite),
+      expiry: (item.expiry ?? 300) as ClipboardExpiry,
+      expiresAt: item.expiresAt == null ? null : Number(item.expiresAt),
+    }]
+  })
+}
+
+function readStoredFavorites(): ClipboardItem[] {
+  try {
+    const stored = localStorage.getItem(FAVORITES_STORAGE_KEY)
+    return stored ? normalizeItems(JSON.parse(stored)).map((item) => ({ ...item, favorite: true })) : []
+  } catch {
+    localStorage.removeItem(FAVORITES_STORAGE_KEY)
+    return []
+  }
 }
 
 function broadcast(type: string, payload?: unknown): void {
@@ -114,26 +153,57 @@ function broadcast(type: string, payload?: unknown): void {
   channel?.postMessage({ type, payload: safePayload })
 }
 
-function sync(next: ClipboardItem[], announce = false): void {
-  const trimmed = trimClipboardHistory(next, historyLimit.value)
-  if (lightboxItem.value && !trimmed.some((item) => item.id === lightboxItem.value?.id)) lightboxItem.value = null
-  if (contextMenu.value && !trimmed.some((item) => item.id === contextMenu.value?.item.id)) closeContextMenu()
-  items.value = trimmed
-  selectedId.value = selectedId.value && trimmed.some((item) => item.id === selectedId.value) ? selectedId.value : trimmed[0]?.id ?? null
-  const serialized = JSON.stringify(snapshot(trimmed))
+function broadcastState(): void {
+  broadcast('state', {
+    history: snapshot(items.value),
+    favorites: snapshot(favoriteItems.value),
+  })
+}
+
+function persistHistory(): void {
+  const serialized = JSON.stringify(snapshot(items.value))
   sessionStorage.setItem(STORAGE_KEY, serialized)
   if (settingsLoaded.value) {
     if (clipboardPersistence.value) localStorage.setItem(PERSISTENT_STORAGE_KEY, serialized)
     else localStorage.removeItem(PERSISTENT_STORAGE_KEY)
   }
-  if (announce) broadcast('replace-state', trimmed)
+}
+
+function sync(next: ClipboardItem[], announce = false): void {
+  const normalized = normalizeItems(next)
+  const trimmed = trimClipboardHistory(normalized, historyLimit.value)
+  items.value = trimmed
+  persistHistory()
+  if (!selectedId.value || !visibleSource.value.some((item) => item.id === selectedId.value)) {
+    selectedId.value = visibleItems.value[0]?.id ?? null
+  }
+  if (announce) broadcastState()
+}
+
+function syncFavorites(next: ClipboardItem[], announce = false): void {
+  const seen = new Set<string>()
+  const normalized = normalizeItems(next)
+    .map((item) => ({ ...item, favorite: true }))
+    .filter((item) => {
+      if (seen.has(item.id)) return false
+      seen.add(item.id)
+      return true
+    })
+  favoriteItems.value = normalized
+  const favoriteIds = new Set(normalized.map((item) => item.id))
+  items.value = items.value.map((item) => ({ ...item, favorite: favoriteIds.has(item.id) }))
+  persistHistory()
+  if (normalized.length) localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(snapshot(normalized)))
+  else localStorage.removeItem(FAVORITES_STORAGE_KEY)
+  if (!selectedId.value || !visibleSource.value.some((item) => item.id === selectedId.value)) {
+    selectedId.value = visibleItems.value[0]?.id ?? null
+  }
+  if (announce) broadcastState()
 }
 
 function purgeExpired(): void {
   const next = items.value.filter((item) => item.pinned || !item.expiresAt || item.expiresAt > now.value)
   if (next.length !== items.value.length) {
-    if (lightboxItem.value && !next.some((item) => item.id === lightboxItem.value?.id)) lightboxItem.value = null
-    if (contextMenu.value && !next.some((item) => item.id === contextMenu.value?.item.id)) closeContextMenu()
     sync(next, true)
   }
 }
@@ -141,9 +211,9 @@ function purgeExpired(): void {
 function addItem(kind: ClipboardKind, content: string, expiry: ClipboardExpiry = 300): void {
   const normalized = kind === 'text' ? content.trim() : content
   if (!normalized) return
-  const existingPinned = items.value.find((entry) => entry.kind === kind && entry.content === normalized && entry.pinned)
-  if (existingPinned) {
-    selectedId.value = existingPinned.id
+  const existingProtected = items.value.find((entry) => entry.kind === kind && entry.content === normalized && entry.pinned)
+  if (existingProtected) {
+    selectedId.value = existingProtected.id
     sync([...items.value], true)
     return
   }
@@ -155,6 +225,7 @@ function addItem(kind: ClipboardKind, content: string, expiry: ClipboardExpiry =
     content: normalized,
     createdAt,
     pinned: false,
+    favorite: false,
     expiry: effectiveExpiry,
     expiresAt: effectiveExpiry ? createdAt + effectiveExpiry * 1000 : null,
   }
@@ -209,9 +280,13 @@ async function refresh(): Promise<void> {
     const stored = clipboardPersistence.value
       ? localStorage.getItem(PERSISTENT_STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY)
       : sessionStorage.getItem(STORAGE_KEY)
-    if (stored) sync(JSON.parse(stored) as ClipboardItem[])
+    const history = stored ? normalizeItems(JSON.parse(stored)) : []
+    const favorites = readStoredFavorites()
+    sync(applyClipboardFavoriteFlags(history, favorites))
+    syncFavorites(favorites)
   } catch {
     sync([])
+    syncFavorites(readStoredFavorites())
   }
   purgeExpired()
   broadcast('request-state')
@@ -235,7 +310,10 @@ async function copyItem(item: ClipboardItem): Promise<void> {
 function removeItem(item: ClipboardItem): void {
   if (lightboxItem.value?.id === item.id) lightboxItem.value = null
   if (contextMenu.value?.item.id === item.id) closeContextMenu()
-  sync(items.value.filter((entry) => entry.id !== item.id), true)
+  const removingFavorite = filter.value === 'favorite'
+    || (!items.value.some((entry) => entry.id === item.id) && favoriteItems.value.some((entry) => entry.id === item.id))
+  if (removingFavorite) syncFavorites(favoriteItems.value.filter((entry) => entry.id !== item.id), true)
+  else sync(items.value.filter((entry) => entry.id !== item.id), true)
 }
 
 function deletePreview(item: ClipboardItem): string {
@@ -261,9 +339,9 @@ function confirmPendingDelete(): void {
   const item = pendingDelete.value
   const nextId = pendingDeleteNextId.value
   cancelPendingDelete()
-  if (!item || !items.value.some((entry) => entry.id === item.id)) return
+  if (!item || !visibleSource.value.some((entry) => entry.id === item.id)) return
   removeItem(item)
-  if (nextId && items.value.some((entry) => entry.id === nextId)) selectedId.value = nextId
+  if (nextId && visibleSource.value.some((entry) => entry.id === nextId)) selectedId.value = nextId
 }
 
 function clearAll(): void {
@@ -312,29 +390,43 @@ function handleItemContextMenu(item: ClipboardItem, event: MouseEvent): void {
 
 function contextMenuItem(): ClipboardItem | null {
   const id = contextMenu.value?.item.id
-  return id ? items.value.find((entry) => entry.id === id) ?? null : null
+  return id ? visibleSource.value.find((entry) => entry.id === id) ?? null : null
 }
 
-async function runContextAction(action: 'preview' | 'copy' | 'pin' | 'delete'): Promise<void> {
+async function runContextAction(action: 'preview' | 'copy' | 'pin' | 'favorite' | 'delete'): Promise<void> {
   const item = contextMenuItem()
   closeContextMenu()
   if (!item) return
   if (action === 'preview') openImagePreview(item)
   else if (action === 'copy') await copyItem(item)
   else if (action === 'pin') togglePin(item)
+  else if (action === 'favorite') toggleFavorite(item)
   else requestRemoveItem(item)
 }
 
+function toggleFavorite(item: ClipboardItem): void {
+  syncFavorites(toggleClipboardFavorite(favoriteItems.value, { ...toRaw(item) }), true)
+}
+
 function togglePin(item: ClipboardItem): void {
-  item.pinned = !item.pinned
-  if (!item.pinned && item.expiry) item.expiresAt = Date.now() + item.expiry * 1000
-  sync([...items.value], true)
+  const pinned = !item.pinned
+  const expiresAt = !pinned && item.expiry ? Date.now() + item.expiry * 1000 : item.expiresAt
+  const update = (entry: ClipboardItem) => entry.id === item.id ? { ...entry, pinned, expiresAt } : entry
+  const inHistory = items.value.some((entry) => entry.id === item.id)
+  const inFavorites = favoriteItems.value.some((entry) => entry.id === item.id)
+  if (inHistory) sync(items.value.map(update))
+  if (inFavorites) syncFavorites(favoriteItems.value.map(update), true)
+  else if (inHistory) broadcastState()
 }
 
 function setExpiry(item: ClipboardItem, expiry: ClipboardExpiry): void {
-  item.expiry = expiry
-  item.expiresAt = expiry ? Date.now() + expiry * 1000 : null
-  sync([...items.value], true)
+  const expiresAt = expiry ? Date.now() + expiry * 1000 : null
+  const update = (entry: ClipboardItem) => entry.id === item.id ? { ...entry, expiry, expiresAt } : entry
+  const inHistory = items.value.some((entry) => entry.id === item.id)
+  const inFavorites = favoriteItems.value.some((entry) => entry.id === item.id)
+  if (inHistory) sync(items.value.map(update))
+  if (inFavorites) syncFavorites(favoriteItems.value.map(update), true)
+  else if (inHistory) broadcastState()
 }
 
 function formatTime(timestamp: number): string {
@@ -520,8 +612,19 @@ function minimizeWindow(): void {
 }
 
 function onMessage(event: MessageEvent): void {
-  if (event.data?.type === 'state' && Array.isArray(event.data.payload)) sync(event.data.payload as ClipboardItem[])
-  if (event.data?.type === 'request-state') broadcast('popup-state-requested')
+  const type = event.data?.type
+  const payload = event.data?.payload
+  if ((type === 'state' || type === 'replace-state') && Array.isArray(payload)) {
+    const favorites = readStoredFavorites()
+    sync(applyClipboardFavoriteFlags(normalizeItems(payload), favorites))
+    syncFavorites(favorites)
+  } else if (type === 'state' && payload && typeof payload === 'object') {
+    const state = payload as { history?: unknown; favorites?: unknown }
+    const favorites = normalizeItems(state.favorites)
+    sync(applyClipboardFavoriteFlags(normalizeItems(state.history), favorites))
+    syncFavorites(favorites)
+  }
+  if (type === 'request-state') broadcastState()
 }
 
 function onDocumentClick(): void {
@@ -621,6 +724,7 @@ onUnmounted(() => {
         <span><strong>{{ textCount }}</strong> {{ t('tools.clipboardText') }}</span>
         <span><strong>{{ imageCount }}</strong> {{ t('tools.clipboardImages') }}</span>
         <span><strong>{{ pinnedCount }}</strong> {{ t('tools.clipboardPinned') }}</span>
+        <span><strong>{{ favoriteCount }}</strong> {{ t('tools.clipboardFavorites') }}</span>
       </div>
       <div class="clipboard-popup-tools">
         <div class="clipboard-popup-search"><Search :size="14" /><input v-model="query" :placeholder="t('common.search')" /></div>
@@ -632,8 +736,8 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="clipboard-popup-filters">
-        <button v-for="tab in (['all', 'text', 'image', 'pinned'] as const)" :key="tab" type="button" :class="{ active: filter === tab }" @click="filter = tab">
-          {{ tab === 'all' ? t('common.all') : tab === 'text' ? t('tools.clipboardText') : tab === 'image' ? t('tools.clipboardImages') : t('tools.clipboardPinned') }}
+        <button v-for="tab in (['all', 'text', 'image', 'pinned', 'favorite'] as const)" :key="tab" type="button" :class="{ active: filter === tab }" @click="filter = tab">
+          {{ tab === 'all' ? t('common.all') : tab === 'text' ? t('tools.clipboardText') : tab === 'image' ? t('tools.clipboardImages') : tab === 'pinned' ? t('tools.clipboardPinned') : t('tools.clipboardFavorites') }}
         </button>
       </div>
       <div class="clipboard-popup-content" :style="splitGridStyle">
@@ -648,6 +752,9 @@ onUnmounted(() => {
               </div>
               <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTime(item.createdAt) }}</time></div><p v-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
               <div class="clipboard-popup-item-actions">
+                <button type="button" :class="{ 'is-favorite': item.favorite }" :title="item.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="item.favorite" @click.stop="toggleFavorite(item)">
+                  <Star :size="13" :fill="item.favorite ? 'currentColor' : 'none'" />
+                </button>
                 <button type="button" :class="{ 'is-pinned': item.pinned }" :title="item.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="item.pinned" @click.stop="togglePin(item)">
                   <Pin :size="13" :fill="item.pinned ? 'currentColor' : 'none'" />
                 </button>
@@ -656,19 +763,19 @@ onUnmounted(() => {
               </div>
             </article>
           </div>
-          <div v-else class="clipboard-popup-empty"><Clipboard :size="24" /><strong>{{ t('tools.clipboardEmptyTitle') }}</strong><p>{{ t('tools.clipboardEmptyDesc') }}</p><button type="button" @click="startCapture"><Type :size="14" />{{ t('tools.clipboardNew') }}</button></div>
+          <div v-else class="clipboard-popup-empty"><Star v-if="filter === 'favorite'" :size="24" /><Clipboard v-else :size="24" /><strong>{{ filter === 'favorite' ? t('tools.clipboardFavoriteEmptyTitle') : t('tools.clipboardEmptyTitle') }}</strong><p>{{ filter === 'favorite' ? t('tools.clipboardFavoriteEmptyDesc') : t('tools.clipboardEmptyDesc') }}</p><button v-if="filter !== 'favorite'" type="button" @click="startCapture"><Type :size="14" />{{ t('tools.clipboardNew') }}</button></div>
         </section>
         <div class="clipboard-popup-resizer" role="separator" tabindex="0" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
-            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="requestRemoveItem(selected)"><X :size="15" /></button></div></div>
+            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.favorite }" :title="selected.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="selected.favorite" @click="toggleFavorite(selected)"><Star :size="14" :fill="selected.favorite ? 'currentColor' : 'none'" /></button><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="requestRemoveItem(selected)"><X :size="15" /></button></div></div>
             <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
             <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
           <div v-else class="clipboard-popup-preview-placeholder"><Clipboard :size="21" /><span>{{ t('tools.clipboardSelectHint') }}</span></div>
         </aside>
       </div>
-      <footer class="clipboard-popup-foot"><span><ShieldCheck :size="12" />{{ t('tools.clipboardLocalOnly') }}</span><button type="button" :disabled="!items.length" @click="clearAll"><Trash2 :size="13" />{{ t('tools.clipboardClear') }}</button></footer>
+      <footer class="clipboard-popup-foot"><span><ShieldCheck :size="12" />{{ t('tools.clipboardLocalOnly') }}</span><button type="button" :disabled="!clearableCount" @click="clearAll"><Trash2 :size="13" />{{ t('tools.clipboardClear') }}</button></footer>
     </template>
 
     <div v-if="pendingDelete" class="clipboard-popup-overlay" @click.self="cancelPendingDelete">
@@ -704,6 +811,9 @@ onUnmounted(() => {
         </button>
         <button type="button" class="clipboard-popup-context-item" @click="runContextAction('copy')">
           <Copy :size="14" />{{ t('tools.clipboardCopy') }}
+        </button>
+        <button type="button" class="clipboard-popup-context-item" :class="{ 'is-favorite': contextMenuItem()?.favorite }" @click="runContextAction('favorite')">
+          <Star :size="14" :fill="contextMenuItem()?.favorite ? 'currentColor' : 'none'" />{{ contextMenuItem()?.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite') }}
         </button>
         <button type="button" class="clipboard-popup-context-item" :class="{ 'is-pinned': contextMenuItem()?.pinned }" @click="runContextAction('pin')">
           <Pin :size="14" :fill="contextMenuItem()?.pinned ? 'currentColor' : 'none'" />{{ contextMenuItem()?.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin') }}

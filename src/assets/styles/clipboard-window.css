@@ -224,7 +224,9 @@ html[data-skin="animalIsland"] .clipboard-popup-head::after {
 .clipboard-popup-item:hover .clipboard-popup-item-actions button,
 .clipboard-popup-item.selected .clipboard-popup-item-actions button,
 .clipboard-popup-item-actions button.is-pinned { opacity: 1; pointer-events: auto; }
+.clipboard-popup-item-actions button.is-favorite { opacity: 1; pointer-events: auto; color: var(--accent-primary); background: var(--accent-subtle); }
 .clipboard-popup-item-actions button.is-pinned { color: var(--accent-primary); background: var(--accent-subtle); }
+.clipboard-popup-item-actions button.is-favorite:hover,
 .clipboard-popup-item-actions button.is-pinned:hover,
 .clipboard-popup-preview-head button.active:hover { color: var(--accent-primary); background: color-mix(in srgb, var(--accent-primary) 22%, transparent); }
 
@@ -293,6 +295,8 @@ html[data-skin="animalIsland"] .clipboard-popup-head::after {
   cursor: pointer;
 }
 .clipboard-popup-context-item:hover { background: var(--bg-hover); }
+.clipboard-popup-context-item.is-favorite { color: var(--accent-primary); background: var(--accent-subtle); }
+.clipboard-popup-context-item.is-favorite:hover { background: color-mix(in srgb, var(--accent-primary) 22%, transparent); }
 .clipboard-popup-context-item.is-pinned { color: var(--accent-primary); background: var(--accent-subtle); }
 .clipboard-popup-context-item.is-pinned:hover { background: color-mix(in srgb, var(--accent-primary) 22%, transparent); }
 .clipboard-popup-context-item.is-danger { color: var(--status-danger); }

@@ -11,3 +11,4 @@ tsconfig.web.tsbuildinfo
 .agents/*
 .screenshot-temp
 extension/extension-id.txt
+.superpowers

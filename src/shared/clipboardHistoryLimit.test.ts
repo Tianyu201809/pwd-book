@@ -60,4 +60,16 @@ describe('trimClipboardHistory', () => {
       item('p2', 2, true),
     ])
   })
+
+  it('supports custom protected items such as favorites', () => {
+    const items = [
+      { ...item('favorite', 1), favorite: true },
+      { ...item('fresh', 3), favorite: false },
+      { ...item('old', 2), favorite: false },
+    ]
+    expect(trimClipboardHistory(items, 2, (entry) => entry.pinned || entry.favorite)).toEqual([
+      { ...item('favorite', 1), favorite: true },
+      { ...item('fresh', 3), favorite: false },
+    ])
+  })
 })
