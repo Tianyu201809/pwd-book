@@ -43,7 +43,7 @@
 | 改邮箱备份入口 / 返回导航 | `SettingsView.vue`、`EmailBackupView.vue`、`useAppState.ts`（`openEmailBackup`） |
 | 改快捷条 / 最近打开 / 全局快捷键 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)、`quickBarRecentService.ts`、`QuickBarApp.vue`、`QuickBarSettingsPanel.vue` |
 | 改剪切板历史 / 小窗口 / 系统同步 | [clipboard-history.md](./clipboard-history.md)、`main/clipboardWindow.ts`、`ClipboardWindowApp.vue`、`ClipboardSettingsPanel.vue`、`clipboard/ClipboardGuideModal.vue` |
-| 改便签 / 便签本 / 桌面窗 | [sticky-notes.md](./sticky-notes.md)、`main/noteWindows.ts`、`noteService.ts`、`notes/NotesManagerApp.vue`、`notes/NoteEditor.vue`、`notes/NoteBlockEditor.vue`、`notes/StickyNoteApp.vue` |
+| 改便签 / 便签本 / 桌面窗 | [sticky-notes.md](./sticky-notes.md)、`main/noteWindows.ts`、`noteService.ts`、`notes/NotesManagerApp.vue`、`NotesSettingsPanel.vue`、`notes/NoteEditor.vue`、`notes/NoteBlockEditor.vue`、`notes/StickyNoteApp.vue` |
 | 改浏览器填充 / 扩展 / 注册 | [browser-autofill.md](./browser-autofill.md)、`browserBridgeService.ts`、`nativeHostRegistryService.ts`、`extension/` |
 | 改浏览器扩展安装向导 | `BrowserSettingsPanel.vue`、`BrowserExtensionGuideModal.vue`、`BrowserExtensionGuideVisual.vue`、`browserLaunchService.ts` |
 | 改浏览器填充条 UI（拖拽/收起） | `extension/content.js`、`extension/content.css`（`pwdbook-ui-x` / `pwdbook-ui-y` / `pwdbook-ui-collapsed`） |

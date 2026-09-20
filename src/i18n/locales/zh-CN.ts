@@ -39,6 +39,7 @@ export default {
   notes: {
     title: '便签',
     managerTitle: '便签管理',
+    shortcut: 'Alt+Shift+N',
     all: '全部便签',
     favorite: '收藏',
     unfavorite: '取消收藏',
@@ -208,7 +209,7 @@ export default {
       },
       settings: {
         title: '设置中心',
-        desc: '安全、剪切板、浏览器、悬浮条、回收站与数据分区。',
+        desc: '安全、剪切板、便签、浏览器、悬浮条、回收站与数据分区。',
         duration: '约 3 分钟',
       },
     },
@@ -282,7 +283,7 @@ export default {
         },
         clipboard: {
           title: '剪切板',
-          body: '打开独立小窗查看刚复制的文本与图片。需先在设置 → 剪切板开启历史；也可用 Shift + Alt + O 或标题栏按钮。',
+          body: '打开独立小窗查看刚复制的文本与图片。需先在设置 → 剪切板开启历史；也可用 Alt+Shift+O 或标题栏按钮。',
         },
         trash: {
           title: '回收站',
@@ -318,7 +319,7 @@ export default {
         },
         nav: {
           title: '设置分区',
-          body: '左侧 Tab 分为安全、剪切板、浏览器、悬浮条、回收站、外观、数据与关于。不同主题的功能按区归类，便于查找。',
+          body: '左侧 Tab 分为安全、剪切板、便签、浏览器、悬浮条、回收站、外观、数据与关于。不同主题的功能按区归类，便于查找。',
         },
         security: {
           title: '安全选项',
@@ -327,6 +328,10 @@ export default {
         clipboard: {
           title: '剪切板',
           body: '单独管理历史捕获、保留周期与本地存储。可用「使用向导」按步熟悉小窗操作。',
+        },
+        notes: {
+          title: '便签',
+          body: '开关全局快捷键以打开或收起便签管理窗口。锁定时会先唤起主窗口，方便解锁后再进入便签。',
         },
         browser: {
           title: '浏览器',
@@ -557,7 +562,7 @@ export default {
     clipboardSave: '保存记录',
     clipboardCaptured: '已捕获剪切板内容',
     clipboardCopied: '内容已复制',
-    clipboardShortcutHint: 'Shift + Alt + O',
+    clipboardShortcutHint: 'Alt+Shift+O',
     clipboardOpenFull: '打开完整剪切板',
     clipboardWindowPin: '固定小窗',
     clipboardWindowUnpin: '取消固定小窗',
@@ -882,6 +887,19 @@ export default {
     title: '设置',
     security: '安全',
     clipboardTab: '剪切板',
+    notesTab: '便签',
+    notesModuleTitle: '便签管理',
+    notesModuleLead: '在这里单独管理便签管理窗口的全局快捷键。解锁后可打开或收起管理窗。',
+    notesStatusOn: '已启用',
+    notesStatusOff: '已关闭',
+    notesPolicyShortcut: '唤出管理窗',
+    notesPolicyLocked: '锁定时',
+    notesPolicyLockedValue: '先解锁',
+    notesPolicyToggle: '再次按下',
+    notesPolicyToggleValue: '收起窗口',
+    notesOpenManager: '打开便签管理',
+    notesManagerShortcut: '快捷键打开便签',
+    notesManagerShortcutDesc: '全局快捷键打开或收起便签管理窗口。保险库锁定时先唤起主窗口以便解锁。快捷键：{accelerator}',
     quickBarTab: '悬浮条',
     quickBarModuleTitle: '悬浮快捷条',
     quickBarModuleLead: '在这里单独管理顶部搜索条、显示条数与唤起主窗口的快捷键。',
@@ -938,7 +956,7 @@ export default {
         },
         {
           title: '唤出剪切板小窗',
-          desc: '解锁后按 Shift + Alt + O，或点「打开剪切板窗口」。也可从标题栏、工具箱进入。',
+          desc: '解锁后按 Alt+Shift+O，或点「打开剪切板窗口」。也可从标题栏、工具箱进入。',
           tip: '未固定时，点到其他程序会收起小窗。Esc、标题栏关闭，或再次按快捷键也可收起。',
         },
         {
@@ -978,7 +996,7 @@ export default {
     clipboardClear: '剪贴板自动清除',
     clipboardClearDesc: '复制密码后 {seconds} 秒清除',
     clipboardEnabled: '剪切板历史',
-    clipboardEnabledDesc: '开启后自动捕获复制的文本与图片；关闭后启动时不会监听系统剪切板。快捷键：Shift + Alt + O',
+    clipboardEnabledDesc: '开启后自动捕获复制的文本与图片；关闭后启动时不会监听系统剪切板。快捷键：Alt+Shift+O',
     clipboardDefaultExpiry: '默认自动清理周期',
     clipboardDefaultExpiryDesc: '新捕获的剪切板记录将在此周期后自动清理，固定记录除外',
     clipboardExpiry30s: '30 秒',

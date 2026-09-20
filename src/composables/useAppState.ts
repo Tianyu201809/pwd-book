@@ -72,6 +72,8 @@ const securitySettings = ref<SecuritySettings>({
   quickBarRecentLimit: 5,
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
+  notesManagerShortcutEnabled: true,
+  notesManagerAccelerator: 'Alt+Shift+N',
   trashRetentionDays: 30,
   launchAtLoginEnabled: false,
 })

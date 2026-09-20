@@ -117,6 +117,8 @@
 | `quick_bar_recent_limit` | 快捷条最近打开/搜索结果条数（5–20，默认 5；**v1.26.0**） |
 | `main_window_shortcut_enabled` | 主窗口全局快捷键开关 |
 | `main_window_shortcut_accelerator` | 主窗口快捷键，默认 `Alt+Shift+M` |
+| `notes_manager_shortcut_enabled` | 便签管理窗口全局快捷键开关（默认 `true`） |
+| `notes_manager_accelerator` | 便签管理窗口快捷键，默认 `Alt+Shift+N` |
 | `browser_fill_enabled` | 浏览器自动填充桥接开关（v1.6.0） |
 | `attachment_deletion_tombstones` | JSON：`Record<attachmentId, deletedAt>`，同步删除合并用（v1.22.0） |
 | `browser_extension_id` | 上次注册的 Chrome 扩展 ID（32 位 a–p） |

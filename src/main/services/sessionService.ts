@@ -16,6 +16,8 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   quickBarRecentLimit: 5,
   mainWindowShortcutEnabled: true,
   mainWindowShortcutAccelerator: 'Alt+Shift+M',
+  notesManagerShortcutEnabled: true,
+  notesManagerAccelerator: 'Alt+Shift+N',
   browserFillEnabled: false,
   trashRetentionDays: 30,
   launchAtLoginEnabled: false,

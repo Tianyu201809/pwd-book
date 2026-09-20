@@ -62,7 +62,7 @@
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
-| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口 + **v1.32.0** 剪切板 `Alt+Shift+O`）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
+| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口 + **v1.32.0** 剪切板 `Alt+Shift+O` + **v1.38.0** 便签 `Alt+Shift+N`）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
 | `launch-at-login:available` | 否 | 是否可注册系统登录项（`app.isPackaged`，**v1.23.0**） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
 | `clipboard:read-system` | 否 | **v1.32.0** 读系统剪贴板文本 |

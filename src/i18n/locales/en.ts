@@ -39,6 +39,7 @@ export default {
   notes: {
     title: 'Notes',
     managerTitle: 'Notes',
+    shortcut: 'Alt+Shift+N',
     all: 'All notes',
     favorite: 'Favorites',
     unfavorite: 'Remove from favorites',
@@ -209,7 +210,7 @@ export default {
       },
       settings: {
         title: 'Settings',
-        desc: 'Security, clipboard, browser, quick bar, recycle bin, and data.',
+        desc: 'Security, clipboard, notes, browser, quick bar, recycle bin, and data.',
         duration: '~3 min',
       },
     },
@@ -283,7 +284,7 @@ export default {
         },
         clipboard: {
           title: 'Clipboard',
-          body: 'Opens a popup for recently copied text and images. Turn on history in Settings → Clipboard first. You can also use Shift + Alt + O or the title-bar button.',
+          body: 'Opens a popup for recently copied text and images. Turn on history in Settings → Clipboard first. You can also use Alt+Shift+O or the title-bar button.',
         },
         trash: {
           title: 'Trash',
@@ -319,7 +320,7 @@ export default {
         },
         nav: {
           title: 'Settings sections',
-          body: 'Tabs for Security, Clipboard, Browser, Quick bar, Recycle bin, Appearance, Data, and About — features grouped by topic.',
+          body: 'Tabs for Security, Clipboard, Notes, Browser, Quick bar, Recycle bin, Appearance, Data, and About — features grouped by topic.',
         },
         security: {
           title: 'Security',
@@ -328,6 +329,10 @@ export default {
         clipboard: {
           title: 'Clipboard',
           body: 'Capture, retention, and local storage live here. Use the setup guide to learn the popup.',
+        },
+        notes: {
+          title: 'Notes',
+          body: 'Turn the global shortcut on or off to open or hide the notes manager. When the vault is locked, it shows the main window first so you can unlock.',
         },
         browser: {
           title: 'Browser',
@@ -558,7 +563,7 @@ export default {
     clipboardSave: 'Save record',
     clipboardCaptured: 'Clipboard content captured',
     clipboardCopied: 'Content copied',
-    clipboardShortcutHint: 'Shift + Alt + O',
+    clipboardShortcutHint: 'Alt+Shift+O',
     clipboardOpenFull: 'Open full clipboard',
     clipboardWindowPin: 'Pin clipboard window',
     clipboardWindowUnpin: 'Unpin clipboard window',
@@ -884,6 +889,19 @@ export default {
     title: 'Settings',
     security: 'Security',
     clipboardTab: 'Clipboard',
+    notesTab: 'Notes',
+    notesModuleTitle: 'Notes manager',
+    notesModuleLead: 'Manage the global shortcut that opens or hides the notes manager after you unlock.',
+    notesStatusOn: 'On',
+    notesStatusOff: 'Off',
+    notesPolicyShortcut: 'Open manager',
+    notesPolicyLocked: 'When locked',
+    notesPolicyLockedValue: 'Unlock first',
+    notesPolicyToggle: 'Press again',
+    notesPolicyToggleValue: 'Hide window',
+    notesOpenManager: 'Open notes manager',
+    notesManagerShortcut: 'Shortcut to open notes',
+    notesManagerShortcutDesc: 'Global shortcut to open or hide the notes manager. When the vault is locked, it shows the main window first so you can unlock. Shortcut: {accelerator}',
     quickBarTab: 'Quick bar',
     quickBarModuleTitle: 'Floating quick bar',
     quickBarModuleLead: 'Manage the top search bar, item limit, and the shortcut that shows the main window.',
@@ -940,7 +958,7 @@ export default {
         },
         {
           title: 'Open the clipboard window',
-          desc: 'After unlock, press Shift + Alt + O or click “Open clipboard window”. The title bar and toolbox also open it.',
+          desc: 'After unlock, press Alt+Shift+O or click “Open clipboard window”. The title bar and toolbox also open it.',
           tip: 'If it is not pinned, clicking another app hides the window. You can also close it with Esc, the title-bar button, or the shortcut again.',
         },
         {
@@ -980,7 +998,7 @@ export default {
     clipboardClear: 'Clear clipboard',
     clipboardClearDesc: 'Clear copied password after {seconds}s',
     clipboardEnabled: 'Clipboard history',
-    clipboardEnabledDesc: 'Capture copied text and images. When off, clipboard monitoring stays disabled at startup. Shortcut: Shift + Alt + O.',
+    clipboardEnabledDesc: 'Capture copied text and images. When off, clipboard monitoring stays disabled at startup. Shortcut: Alt+Shift+O.',
     clipboardDefaultExpiry: 'Default cleanup period',
     clipboardDefaultExpiryDesc: 'New clipboard records are cleared after this period; pinned records are kept.',
     clipboardExpiry30s: '30 seconds',

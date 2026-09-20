@@ -307,6 +307,15 @@ export const PRODUCT_TOURS: ProductTourDefinition[] = [
         settingsTab: 'clipboard',
       },
       {
+        id: 'notes',
+        target: '[data-tour="settings-notes"]',
+        titleKey: 'productTour.steps.settings.notes.title',
+        bodyKey: 'productTour.steps.settings.notes.body',
+        placement: 'bottom',
+        screen: 'settings',
+        settingsTab: 'notes',
+      },
+      {
         id: 'browser',
         target: '[data-tour="settings-browser"]',
         titleKey: 'productTour.steps.settings.browser.title',

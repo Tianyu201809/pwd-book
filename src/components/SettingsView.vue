@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Shield,
   Clipboard,
+  StickyNote,
   Globe,
   PanelTop,
   Trash2,
@@ -23,6 +24,7 @@ import {
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import BrowserSettingsPanel from '@/components/BrowserSettingsPanel.vue'
 import ClipboardSettingsPanel from '@/components/ClipboardSettingsPanel.vue'
+import NotesSettingsPanel from '@/components/NotesSettingsPanel.vue'
 import QuickBarSettingsPanel from '@/components/QuickBarSettingsPanel.vue'
 import TrashSettingsPanel from '@/components/TrashSettingsPanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
@@ -67,6 +69,7 @@ const RELEASE_LIST_URL = 'https://github.com/Tianyu201809/pwd-book/releases'
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
   { id: 'clipboard' as SettingsTab, label: t('settings.clipboardTab'), icon: Clipboard, iconStyle: NAV_ICON_STYLES.clipboard },
+  { id: 'notes' as SettingsTab, label: t('settings.notesTab'), icon: StickyNote, iconStyle: NAV_ICON_STYLES.notes },
   { id: 'browser' as SettingsTab, label: t('settings.browserTab'), icon: Globe, iconStyle: NAV_ICON_STYLES.browser },
   { id: 'quickbar' as SettingsTab, label: t('settings.quickBarTab'), icon: PanelTop, iconStyle: NAV_ICON_STYLES.quickbar },
   { id: 'trash' as SettingsTab, label: t('settings.trashTab'), icon: Trash2, iconStyle: NAV_ICON_STYLES.trash },
@@ -310,6 +313,8 @@ async function handleReset(): Promise<void> {
         </div>
 
         <ClipboardSettingsPanel v-else-if="activeTab === 'clipboard'" />
+
+        <NotesSettingsPanel v-else-if="activeTab === 'notes'" />
 
         <BrowserSettingsPanel v-else-if="activeTab === 'browser'" />
 

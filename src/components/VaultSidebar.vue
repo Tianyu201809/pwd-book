@@ -114,6 +114,7 @@ const {
   deleteCategory,
   loading,
   errorMessage,
+  securitySettings,
 } = useAppState()
 
 const { t } = useI18n()
@@ -725,6 +726,10 @@ onBeforeUnmount(() => {
                 >
                   <StickyNote :size="14" :stroke-width="1.75" />
                   <span class="sidebar-menu-item-label">{{ t('notes.title') }}</span>
+                  <span
+                    v-if="securitySettings.notesManagerShortcutEnabled"
+                    class="sidebar-menu-item-shortcut"
+                  >{{ securitySettings.notesManagerAccelerator }}</span>
                 </button>
               </div>
             </Transition>
@@ -1221,7 +1226,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-footer-popover--menu {
-  width: max(100%, 168px);
+  width: max(100%, 196px);
 }
 
 .sidebar-menu-item {
@@ -1251,6 +1256,13 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   color: var(--text-primary);
   font-weight: 500;
+}
+
+.sidebar-menu-item-shortcut {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.02em;
 }
 
 .sidebar-menu-item--gen {

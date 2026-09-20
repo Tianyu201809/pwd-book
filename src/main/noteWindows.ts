@@ -1,10 +1,14 @@
-import { BrowserWindow, ipcMain, screen } from 'electron'
+import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
+import { NOTES_MANAGER_ACCELERATOR, resolveNotesManagerOpen } from '../shared/notesAccess'
 import { IPC, IPC_EVENTS } from '../shared/types'
 import { getNote, listDesktopVisibleNoteIds, updateNoteWindowState } from './services/noteService'
+import { getSecuritySettings } from './services/settingsService'
 import { isUnlocked } from './services/sessionService'
+import { showFromTray } from './tray'
 
 let managerWindow: BrowserWindow | null = null
+let registeredManagerAccelerator: string | null = null
 const noteWindows = new Map<string, BrowserWindow>()
 const visibleBeforeLock = new Set<string>()
 const closingForLock = new Set<string>()
@@ -39,6 +43,41 @@ export function openNotesManager(): boolean {
   managerWindow.focus()
   managerWindow.webContents.send(IPC_EVENTS.themeChanged)
   return true
+}
+
+export function hideNotesManager(): void {
+  if (managerWindow && !managerWindow.isDestroyed() && managerWindow.isVisible()) {
+    managerWindow.hide()
+  }
+}
+
+export function toggleNotesManager(): void {
+  if (resolveNotesManagerOpen(isUnlocked()) === 'locked') {
+    showFromTray()
+    return
+  }
+  if (managerWindow && !managerWindow.isDestroyed() && managerWindow.isVisible()) {
+    hideNotesManager()
+    return
+  }
+  openNotesManager()
+}
+
+export function unregisterNotesManagerShortcut(): void {
+  if (registeredManagerAccelerator) {
+    globalShortcut.unregister(registeredManagerAccelerator)
+    registeredManagerAccelerator = null
+  }
+}
+
+export function registerNotesManagerShortcut(): void {
+  unregisterNotesManagerShortcut()
+  const { notesManagerShortcutEnabled, notesManagerAccelerator } = getSecuritySettings()
+  if (!notesManagerShortcutEnabled) return
+  const accelerator = notesManagerAccelerator || NOTES_MANAGER_ACCELERATOR
+  if (globalShortcut.register(accelerator, toggleNotesManager)) {
+    registeredManagerAccelerator = accelerator
+  }
 }
 
 function clampBounds(noteId: string): Electron.Rectangle {

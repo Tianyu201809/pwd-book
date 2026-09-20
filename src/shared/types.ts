@@ -134,6 +134,7 @@ export interface PasswordStrengthResult {
 export type SettingsTab =
   | 'security'
   | 'clipboard'
+  | 'notes'
   | 'browser'
   | 'quickbar'
   | 'trash'
@@ -261,6 +262,10 @@ export interface SecuritySettings {
   mainWindowShortcutEnabled: boolean
   /** Electron globalShortcut 加速器，如 Alt+Shift+M */
   mainWindowShortcutAccelerator: string
+  /** 全局快捷键打开或收起便签管理窗口 */
+  notesManagerShortcutEnabled: boolean
+  /** Electron globalShortcut 加速器，如 Alt+Shift+N */
+  notesManagerAccelerator: string
   /** 浏览器扩展自动填充（本机 Native Messaging，无出站网络） */
   browserFillEnabled: boolean
   /** 回收站条目保留天数，过期后彻底删除 */

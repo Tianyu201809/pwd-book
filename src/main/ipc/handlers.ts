@@ -9,6 +9,7 @@ import {
   broadcastNotesChanged,
   closeNoteWindowForDeletion,
   hideNoteWindowsOnLock,
+  registerNotesManagerShortcut,
   requestNoteDraftFlush,
   restoreNoteWindowsAfterUnlock,
 } from '../noteWindows'
@@ -573,6 +574,7 @@ export function registerIpcHandlers(): void {
     if (partial.clipboardHistoryLimit !== undefined) refreshClipboardWindowIfVisible()
     registerQuickBarShortcut()
     registerClipboardWindowShortcut()
+    registerNotesManagerShortcut()
     registerMainWindowShortcut()
     syncBrowserBridge()
     if (partial.launchAtLoginEnabled !== undefined) {

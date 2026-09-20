@@ -14,6 +14,7 @@
 | 桌面 UI | `src/components/notes/StickyNoteApp.vue` | 无边框纸张窗、置顶、颜色、隐藏、删除 |
 | 状态 | `src/composables/useNotes.ts` | 管理窗列表与筛选 |
 | 入口 | `VaultSidebar.vue` | 工具箱「便签」（剪切板下方） |
+| 设置 | `NotesSettingsPanel.vue` | 设置 → 便签：快捷键开关与加速器展示 |
 | 渲染入口 | `src/renderer/notes.{html,ts}`、`note.{html,ts}` | 独立 Vue 应用 |
 
 IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-and-data-flow.md#便签)。表结构见 [database-schema.md](./database-schema.md#表note_books--notes)。
@@ -23,6 +24,7 @@ IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-
 | 行为 | 说明 |
 |------|------|
 | 管理窗 | 默认 1080×720，最小 820×560；重复打开聚焦已有实例 |
+| 全局快捷键 | 默认 `Alt+Shift+N`（`notesManagerAccelerator`）；`notesManagerShortcutEnabled` 控制注册；已显示再按一次收起；锁定时 `showFromTray()` |
 | 桌面窗 | 默认约 360×420，最小 280×240；坐标校正到当前显示器工作区 |
 | 关闭桌面窗 | 只隐藏（`is_desktop_visible = 0`），不删除 |
 | 置顶 | 按便签保存 `is_always_on_top` |
@@ -47,4 +49,4 @@ IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-
 
 ## 不在首期
 
-提醒、多层便签本、富文本/图片、透明度、自定义主题、便签设置 Tab。
+提醒、多层便签本、富文本/图片、透明度、自定义主题、自定义快捷键组合。

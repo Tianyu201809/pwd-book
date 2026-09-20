@@ -20,6 +20,8 @@ const SETTINGS_KEYS = {
   quickBarRecentLimit: 'quick_bar_recent_limit',
   mainWindowShortcutEnabled: 'main_window_shortcut_enabled',
   mainWindowShortcutAccelerator: 'main_window_shortcut_accelerator',
+  notesManagerShortcutEnabled: 'notes_manager_shortcut_enabled',
+  notesManagerAccelerator: 'notes_manager_accelerator',
   browserFillEnabled: 'browser_fill_enabled',
   trashRetentionDays: 'trash_retention_days',
   launchAtLoginEnabled: 'launch_at_login_enabled',
@@ -71,6 +73,11 @@ export function getSecuritySettings(): SecuritySettings {
     mainWindowShortcutAccelerator:
       getSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator) ??
       defaults.mainWindowShortcutAccelerator,
+    notesManagerShortcutEnabled:
+      (getSetting(SETTINGS_KEYS.notesManagerShortcutEnabled) ??
+        String(defaults.notesManagerShortcutEnabled)) === 'true',
+    notesManagerAccelerator:
+      getSetting(SETTINGS_KEYS.notesManagerAccelerator) ?? defaults.notesManagerAccelerator,
     browserFillEnabled:
       (getSetting(SETTINGS_KEYS.browserFillEnabled) ?? String(defaults.browserFillEnabled)) ===
       'true',
@@ -115,6 +122,8 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.quickBarRecentLimit, String(next.quickBarRecentLimit))
   setSetting(SETTINGS_KEYS.mainWindowShortcutEnabled, String(next.mainWindowShortcutEnabled))
   setSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator, next.mainWindowShortcutAccelerator)
+  setSetting(SETTINGS_KEYS.notesManagerShortcutEnabled, String(next.notesManagerShortcutEnabled))
+  setSetting(SETTINGS_KEYS.notesManagerAccelerator, next.notesManagerAccelerator)
   setSetting(SETTINGS_KEYS.browserFillEnabled, String(next.browserFillEnabled))
   setSetting(SETTINGS_KEYS.trashRetentionDays, String(next.trashRetentionDays))
   setSetting(SETTINGS_KEYS.launchAtLoginEnabled, String(next.launchAtLoginEnabled))

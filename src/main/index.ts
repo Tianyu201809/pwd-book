@@ -28,7 +28,12 @@ import {
 import {
   registerDetailWindowIpc,
 } from './detailWindow'
-import { destroyNoteWindows, registerNoteWindowIpc } from './noteWindows'
+import {
+  destroyNoteWindows,
+  registerNoteWindowIpc,
+  registerNotesManagerShortcut,
+  unregisterNotesManagerShortcut,
+} from './noteWindows'
 import {
   registerMainWindowShortcut,
   unregisterMainWindowShortcut,
@@ -161,6 +166,7 @@ if (gotSingleInstanceLock) {
     registerNoteWindowIpc()
     registerQuickBarShortcut()
     registerClipboardWindowShortcut()
+    registerNotesManagerShortcut()
     registerMainWindowShortcut()
     registerSystemAutoLock()
     syncBrowserBridge()
@@ -260,6 +266,7 @@ if (gotSingleInstanceLock) {
     markQuitting()
     unregisterQuickBarShortcut()
     unregisterClipboardWindowShortcut()
+    unregisterNotesManagerShortcut()
     unregisterMainWindowShortcut()
     destroyQuickBar()
     destroyClipboardWindow()
