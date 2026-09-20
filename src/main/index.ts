@@ -28,6 +28,7 @@ import {
 import {
   registerDetailWindowIpc,
 } from './detailWindow'
+import { destroyNoteWindows, registerNoteWindowIpc } from './noteWindows'
 import {
   registerMainWindowShortcut,
   unregisterMainWindowShortcut,
@@ -157,6 +158,7 @@ if (gotSingleInstanceLock) {
     registerQuickBarIpc()
     registerClipboardWindowIpc()
     registerDetailWindowIpc()
+    registerNoteWindowIpc()
     registerQuickBarShortcut()
     registerClipboardWindowShortcut()
     registerMainWindowShortcut()
@@ -261,6 +263,7 @@ if (gotSingleInstanceLock) {
     unregisterMainWindowShortcut()
     destroyQuickBar()
     destroyClipboardWindow()
+    destroyNoteWindows()
     destroyTray()
     destroyBrowserBridge()
     void stopWifiSyncServer()

@@ -37,6 +37,17 @@
   --titlebar-shadow: none;
   --titlebar-hairline: transparent;
   --titlebar-border: rgba(114, 93, 66, 0.15);
+  --note-paper: #faf3dd;
+  --note-yellow: #ffe9a8;
+  --note-green: #d9f0c8;
+  --note-blue: #d5eaf6;
+  --note-pink: #f8dce3;
+  --note-violet: #e8ddf6;
+  --note-yellow-strong: #d39b13;
+  --note-green-strong: #6aa84f;
+  --note-blue-strong: #4d91bd;
+  --note-pink-strong: #c56d86;
+  --note-violet-strong: #8a70b5;
 }
 
 [data-skin="animalIsland"] body {

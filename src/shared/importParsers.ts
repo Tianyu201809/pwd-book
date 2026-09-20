@@ -110,15 +110,17 @@ export function parseImportContent(
   rows: ParsedImportRow[]
   categories?: ReturnType<typeof parsePwdbookJson>['categories']
   attachments?: ReturnType<typeof parsePwdbookJson>['attachments']
+  noteBooks?: ReturnType<typeof parsePwdbookJson>['noteBooks']
+  notes?: ReturnType<typeof parsePwdbookJson>['notes']
 } {
   if (sourceId === 'pwdbook-json') {
-    const { categories, entries, attachments } = parsePwdbookJson(content)
+    const { categories, entries, attachments, noteBooks, notes } = parsePwdbookJson(content)
     const rows: ParsedImportRow[] = entries.map((entry, index) => {
       if (!entry.title?.trim()) return { row: index + 1, entry: null, invalidReason: 'missing_title' }
       if (!entry.password) return { row: index + 1, entry: null, invalidReason: 'missing_password' }
       return { row: index + 1, entry }
     })
-    return { rows, categories, attachments }
+    return { rows, categories, attachments, noteBooks, notes }
   }
 
   if (sourceId === 'pwdbook-csv') {

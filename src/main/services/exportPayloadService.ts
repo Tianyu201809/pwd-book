@@ -2,6 +2,7 @@ import { listCategories } from './categoryService'
 import { listEntries } from './vaultService'
 import { buildSyncAttachmentsFromDb } from './attachmentSyncService'
 import { readAttachmentBuffer } from './attachmentService'
+import { listAllNotes, listNoteBooks } from './noteService'
 import {
   EXPORT_PAYLOAD_VERSION,
   type ExportAttachment,
@@ -32,6 +33,8 @@ export function buildExportPayload(): ExportPayload {
     exportedAt: new Date().toISOString(),
     categories: listCategories(),
     entries: listEntries(),
+    noteBooks: listNoteBooks(),
+    notes: listAllNotes(),
     ...(attachments.length > 0 ? { attachments } : {}),
   }
 }

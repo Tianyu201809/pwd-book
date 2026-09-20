@@ -5,6 +5,13 @@ import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
 import { hideClipboardWindow, hideClipboardWindowOnLock, refreshClipboardWindowIfVisible, registerClipboardWindowShortcut } from '../clipboardWindow'
 import { hideDetailWindowOnLock } from '../detailWindow'
+import {
+  broadcastNotesChanged,
+  closeNoteWindowForDeletion,
+  hideNoteWindowsOnLock,
+  requestNoteDraftFlush,
+  restoreNoteWindowsAfterUnlock,
+} from '../noteWindows'
 import { registerMainWindowShortcut } from '../mainWindowShortcut'
 import { isLaunchAtLoginAvailable, syncLaunchAtLogin } from '../launchAtLogin'
 import { IPC } from '../../shared/types'
@@ -18,6 +25,8 @@ import type {
   ImportCommitRequest,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
+  NoteFilter,
+  StickyNoteInput,
 } from '../../shared/types'
 import { appError, ErrorCode } from '../../shared/errors'
 import { initDatabase } from '../db/database'
@@ -134,6 +143,20 @@ import {
 } from '../services/attachmentService'
 import { readAttachmentRow } from '../db/helpers'
 import fs from 'fs'
+import {
+  createNote,
+  createNoteBook,
+  deleteNote,
+  deleteNoteBook,
+  getNote,
+  listNoteBooks,
+  listNotes,
+  permanentlyDeleteNote,
+  restoreNote,
+  toggleNoteFavorite,
+  updateNote,
+  updateNoteBook,
+} from '../services/noteService'
 
 let clipboardTimer: NodeJS.Timeout | null = null
 
@@ -184,20 +207,26 @@ export function registerIpcHandlers(): void {
       checkScheduledBackupDue(true)
       void restoreWifiSyncServerIfNeeded()
       restoreFolderSyncOnUnlock()
+      restoreNoteWindowsAfterUnlock()
       return getVaultStatus()
     }),
   )
 
-  ipcMain.handle(IPC.vaultLock, () =>
-    wrap(() => {
-      lockVault()
+  ipcMain.handle(IPC.vaultLock, async () => {
+    try {
+      await requestNoteDraftFlush()
       hideQuickBarOnLock()
       hideClipboardWindowOnLock()
       hideDetailWindowOnLock()
+      hideNoteWindowsOnLock()
+      lockVault()
       resetScheduledBackupNotification()
       return getVaultStatus()
-    }),
-  )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+      throw new Error(message, { cause: error })
+    }
+  })
 
   ipcMain.handle(IPC.vaultReset, async () => {
     try {
@@ -263,6 +292,105 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       return listEntries()
+    }),
+  )
+
+  ipcMain.handle(IPC.notesList, (_event, payload?: { filter?: NoteFilter; query?: string }) =>
+    wrap(() => {
+      ensureUnlocked()
+      return listNotes(payload?.filter ?? 'all', payload?.query ?? '')
+    }),
+  )
+
+  ipcMain.handle(IPC.notesGet, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      return getNote(id, true)
+    }),
+  )
+
+  ipcMain.handle(IPC.notesCreate, (_event, input?: Partial<StickyNoteInput>) =>
+    wrap(() => {
+      ensureUnlocked()
+      const note = createNote(input)
+      broadcastNotesChanged(note.id)
+      return note
+    }),
+  )
+
+  ipcMain.handle(IPC.notesUpdate, (_event, payload: { id: string; input: StickyNoteInput }) =>
+    wrap(() => {
+      ensureUnlocked()
+      const note = updateNote(payload.id, payload.input)
+      broadcastNotesChanged(note.id)
+      return note
+    }),
+  )
+
+  ipcMain.handle(IPC.notesToggleFavorite, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      const note = toggleNoteFavorite(id)
+      broadcastNotesChanged(id)
+      return note
+    }),
+  )
+
+  ipcMain.handle(IPC.notesDelete, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      closeNoteWindowForDeletion(id)
+      deleteNote(id)
+      broadcastNotesChanged(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.notesRestore, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      const note = restoreNote(id)
+      broadcastNotesChanged(id)
+      return note
+    }),
+  )
+
+  ipcMain.handle(IPC.notesDeletePermanent, (_event, id: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      closeNoteWindowForDeletion(id)
+      permanentlyDeleteNote(id)
+      broadcastNotesChanged(id)
+    }),
+  )
+
+  ipcMain.handle(IPC.notesBooksList, () => wrap(() => {
+    ensureUnlocked()
+    return listNoteBooks()
+  }))
+
+  ipcMain.handle(IPC.notesBooksCreate, (_event, name: string) =>
+    wrap(() => {
+      ensureUnlocked()
+      const book = createNoteBook(name)
+      broadcastNotesChanged()
+      return book
+    }),
+  )
+
+  ipcMain.handle(IPC.notesBooksUpdate, (_event, payload: { id: string; name: string }) =>
+    wrap(() => {
+      ensureUnlocked()
+      const book = updateNoteBook(payload.id, payload.name)
+      broadcastNotesChanged()
+      return book
+    }),
+  )
+
+  ipcMain.handle(IPC.notesBooksDelete, (_event, payload: { id: string; targetBookId?: string; deleteNotes?: boolean }) =>
+    wrap(() => {
+      ensureUnlocked()
+      deleteNoteBook(payload.id, payload.targetBookId, payload.deleteNotes)
+      broadcastNotesChanged()
     }),
   )
 

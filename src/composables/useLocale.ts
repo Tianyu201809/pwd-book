@@ -17,7 +17,9 @@ watch(
     i18n.global.locale.value = next
     localStorage.setItem(LOCALE_STORAGE_KEY, next)
     applyDocumentLocale(next)
-    void vaultApi.setUiLocale(next).catch(() => {})
+    if (window.electronAPI) {
+      void vaultApi.setUiLocale(next).catch(() => {})
+    }
   },
   { immediate: true },
 )

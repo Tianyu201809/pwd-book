@@ -79,6 +79,8 @@ export function parsePwdbookJson(content: string): {
   categories: VaultCategory[]
   entries: PasswordEntryInput[]
   attachments: ExportAttachment[]
+  noteBooks: ExportPayload['noteBooks']
+  notes: ExportPayload['notes']
 } {
   const parsed = JSON.parse(content) as ExportPayload
   return {
@@ -87,6 +89,8 @@ export function parsePwdbookJson(content: string): {
       normalizeImportEntry(entry as unknown as Record<string, unknown>),
     ),
     attachments: parseExportAttachmentsFromPayload(parsed),
+    noteBooks: Array.isArray(parsed.noteBooks) ? parsed.noteBooks : [],
+    notes: Array.isArray(parsed.notes) ? parsed.notes : [],
   }
 }
 

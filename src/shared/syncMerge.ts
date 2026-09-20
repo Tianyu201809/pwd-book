@@ -1,5 +1,5 @@
 import { customFieldsContentEqual } from './customFields'
-import type { SyncAttachmentMeta, SyncBundle, SyncConflict, SyncEntry } from './syncTypes'
+import type { SyncAttachmentMeta, SyncBundle, SyncConflict, SyncEntry, SyncNote, SyncNoteBook } from './syncTypes'
 import { SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from './syncTypes'
 import type { VaultCategory } from './types'
 
@@ -54,6 +54,20 @@ function mergeCategoryLists(local: VaultCategory[], remote: VaultCategory[]): Va
   }
 
   return Array.from(byId.values()).sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+function mergeTimedEntities<T extends { id: string; updatedAt: number; deletedAt: number | null }>(
+  local: T[],
+  remote: T[],
+): T[] {
+  const byId = new Map(local.map((item) => [item.id, item]))
+  for (const item of remote) {
+    const current = byId.get(item.id)
+    const itemTime = Math.max(item.updatedAt, item.deletedAt ?? 0)
+    const currentTime = current ? Math.max(current.updatedAt, current.deletedAt ?? 0) : -1
+    if (!current || itemTime > currentTime) byId.set(item.id, item)
+  }
+  return Array.from(byId.values())
 }
 
 export function mergeSyncAttachments(
@@ -169,6 +183,8 @@ export function mergeSyncBundles(
   }
 
   const mergedCategories = mergeCategoryLists(local.categories, remote.categories)
+  const mergedNoteBooks = mergeTimedEntities<SyncNoteBook>(local.noteBooks ?? [], remote.noteBooks ?? [])
+  const mergedNotes = mergeTimedEntities<SyncNote>(local.notes ?? [], remote.notes ?? [])
   const mergedRevision = Math.max(local.revision, remote.revision) + 1
   const { merged: mergedAttachments, mergedDeletions } = mergeSyncAttachments(
     local.attachments ?? [],
@@ -189,6 +205,8 @@ export function mergeSyncBundles(
     entries: mergedEntries,
     attachments: mergedAttachments,
     attachmentDeletions: mergedDeletions,
+    noteBooks: mergedNoteBooks,
+    notes: mergedNotes,
     settings: {
       trashRetentionDays:
         remote.settings?.trashRetentionDays ?? local.settings?.trashRetentionDays,

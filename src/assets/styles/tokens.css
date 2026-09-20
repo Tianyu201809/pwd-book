@@ -36,6 +36,35 @@
   color-scheme: dark;
 }
 
+:root,
+[data-mode="dark"] {
+  --note-paper: #2a2d34;
+  --note-yellow: #302c1d;
+  --note-green: #1f3028;
+  --note-blue: #202d38;
+  --note-pink: #34252b;
+  --note-violet: #2d2839;
+  --note-yellow-strong: #d5a936;
+  --note-green-strong: #58ae7a;
+  --note-blue-strong: #5599c8;
+  --note-pink-strong: #c77791;
+  --note-violet-strong: #9a83c7;
+}
+
+[data-mode="light"] {
+  --note-paper: #f7f1e3;
+  --note-yellow: #fff6cf;
+  --note-green: #e4f4df;
+  --note-blue: #dfeef8;
+  --note-pink: #f8e3e8;
+  --note-violet: #eee6f8;
+  --note-yellow-strong: #d39b13;
+  --note-green-strong: #5b9f62;
+  --note-blue-strong: #4d91bd;
+  --note-pink-strong: #bb6f86;
+  --note-violet-strong: #8a70b5;
+}
+
 [data-accent="brass"] {
   --accent-500: #c9a227;
   --accent-400: #d4b44a;

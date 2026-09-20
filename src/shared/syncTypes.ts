@@ -1,8 +1,8 @@
-import type { VaultCategory } from './types'
+import type { NoteColor, NoteContent, VaultCategory } from './types'
 import type { EntryCustomField } from './types'
 
 export const SYNC_BUNDLE_FORMAT = 'pwdbook-sync' as const
-export const SYNC_BUNDLE_VERSION = 2 as const
+export const SYNC_BUNDLE_VERSION = 3 as const
 export const SYNC_BUNDLE_FILENAME = 'vault.pwdbook'
 export const SYNC_ATTACHMENT_FILE_EXT = '.pwdattach'
 export const SYNC_MAGIC = 'PBKS'
@@ -37,6 +37,27 @@ export interface SyncAttachmentMeta {
   updatedAt: number
 }
 
+export interface SyncNoteBook {
+  id: string
+  name: string
+  sortOrder: number
+  createdAt: number
+  updatedAt: number
+  deletedAt: number | null
+}
+
+export interface SyncNote {
+  id: string
+  bookId: string
+  title: string
+  content: NoteContent
+  color: NoteColor
+  isFavorite: boolean
+  createdAt: number
+  updatedAt: number
+  deletedAt: number | null
+}
+
 export interface AttachmentDeletionTombstone {
   id: string
   deletedAt: number
@@ -56,6 +77,8 @@ export interface SyncBundle {
   entries: SyncEntry[]
   attachments?: SyncAttachmentMeta[]
   attachmentDeletions?: AttachmentDeletionTombstone[]
+  noteBooks?: SyncNoteBook[]
+  notes?: SyncNote[]
   settings?: SyncBundleSettings
 }
 

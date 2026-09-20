@@ -1248,9 +1248,11 @@ async function commitImportData(
   entries: PasswordEntryInput[],
   categories?: VaultCategory[],
   attachments?: ExportAttachment[],
+  noteBooks?: import('@/shared/types').NoteBook[],
+  notes?: import('@/shared/types').StickyNote[],
 ): Promise<number> {
   const count = await vaultApi.commitImport(
-    cloneForIpc({ sourceId, entries, categories, attachments }),
+    cloneForIpc({ sourceId, entries, categories, attachments, noteBooks, notes }),
   )
   await refreshVaultData()
   touchActivity()

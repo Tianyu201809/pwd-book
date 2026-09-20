@@ -81,6 +81,21 @@
 | `attachments:open` | 是 | 解密到临时文件并用系统默认应用打开 |
 | `attachments:save-as` | 是 | 解密并另存为 |
 
+### 便签
+
+| 通道 | 需解锁 | 说明 |
+|------|--------|------|
+| `notes-manager:open` / `close` | 打开需解锁 | 唯一管理窗口 |
+| `notes:list` / `notes:get` / `notes:create` / `notes:update` | 是 | CRUD；搜索含拼音首字母 |
+| `notes:delete` / `notes:restore` / `notes:delete-permanent` | 是 | 软删除、恢复、彻底删除 |
+| `notes:toggle-favorite` | 是 | 收藏 |
+| `notes-books:*` | 是 | 便签本 CRUD；删除须移走或一并回收便签 |
+| `note-window:open` / `hide` / `toggle-always-on-top` | 打开需解锁 | 每条便签最多一个桌面窗口 |
+| `notes:changed`（事件） | — | 广播实体更新 |
+| `notes:flush`（事件） | — | 锁定前请求刷新草稿 |
+
+锁定时先请求草稿刷新并隐藏窗口，再清除会话密钥。解锁后恢复本次锁定前可见集合；若为本会话首次解锁，则按 `is_desktop_visible` 恢复。
+
 ### 局域网同步（v1.9.0）
 
 详见 [wifi-sync.md](./wifi-sync.md)。

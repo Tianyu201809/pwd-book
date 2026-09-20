@@ -58,6 +58,19 @@ describe('entryEffectiveTime', () => {
 })
 
 describe('mergeSyncBundles', () => {
+  it('merges notes and note books by their effective timestamp', () => {
+    const local = makeBundle('local', 1, [])
+    local.noteBooks = [{ id: 'book-1', name: 'Local', sortOrder: 0, createdAt: 1, updatedAt: 10, deletedAt: null }]
+    local.notes = [{ id: 'note-1', bookId: 'book-1', title: 'Local', content: { version: 1, blocks: [] }, color: 'yellow', isFavorite: false, createdAt: 1, updatedAt: 10, deletedAt: null }]
+    const remote = makeBundle('remote', 2, [])
+    remote.noteBooks = [{ id: 'book-1', name: 'Remote', sortOrder: 0, createdAt: 1, updatedAt: 20, deletedAt: null }]
+    remote.notes = [{ id: 'note-1', bookId: 'book-1', title: 'Remote', content: { version: 1, blocks: [] }, color: 'blue', isFavorite: true, createdAt: 1, updatedAt: 20, deletedAt: null }]
+
+    const { merged } = mergeSyncBundles(local, remote)
+    expect(merged.noteBooks?.[0]?.name).toBe('Remote')
+    expect(merged.notes?.[0]).toMatchObject({ title: 'Remote', color: 'blue', isFavorite: true })
+  })
+
   it('keeps newer entry when both sides edited same id', () => {
     const local = makeBundle('local', 1, [
       makeEntry({ id: 'e1', title: 'Local', updatedAt: 2000 }),

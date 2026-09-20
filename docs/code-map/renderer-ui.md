@@ -35,6 +35,8 @@ App.vue
 ├── TagFilterPanel.vue        # 侧栏按标签筛选（v1.12.0，VaultSidebar 内嵌；v1.13.0 搜索框尺寸）
 ├── CategoryManagePanel.vue   # 分类管理弹窗（VaultSidebar 触发）
 ├── TagManagePanel.vue        # 标签管理
+├── notes/NotesManagerApp.vue   # 独立便签管理窗口（侧栏工具箱入口）
+├── notes/StickyNoteApp.vue     # 桌面便签小窗口
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
 ├── export/ExportDataModal.vue  # 导出到其他应用 CSV
 ├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母；**v1.30.0** 条目另有品牌页）

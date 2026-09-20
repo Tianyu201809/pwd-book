@@ -125,6 +125,39 @@ export async function initDatabase(): Promise<Database> {
     CREATE INDEX IF NOT EXISTS idx_attachments_entry_id ON entry_attachments(entry_id)
   `)
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS note_books (
+      id TEXT PRIMARY KEY NOT NULL,
+      name_encrypted TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      deleted_at INTEGER
+    )
+  `)
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS notes (
+      id TEXT PRIMARY KEY NOT NULL,
+      book_id TEXT NOT NULL,
+      title_encrypted TEXT NOT NULL,
+      content_encrypted TEXT NOT NULL,
+      color TEXT NOT NULL DEFAULT 'paper',
+      is_favorite INTEGER NOT NULL DEFAULT 0,
+      is_desktop_visible INTEGER NOT NULL DEFAULT 0,
+      is_always_on_top INTEGER NOT NULL DEFAULT 0,
+      window_x INTEGER,
+      window_y INTEGER,
+      window_width INTEGER,
+      window_height INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      deleted_at INTEGER
+    )
+  `)
+  db.run('CREATE INDEX IF NOT EXISTS idx_notes_book_id ON notes(book_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)')
+
   persistDatabase()
   return db
 }

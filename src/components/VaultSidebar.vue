@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, Plus, Pencil, Trash2, Box, Layers, FolderOpen, Settings, Sparkles, ShieldAlert, Hash, ArchiveRestore, Clipboard } from 'lucide-vue-next'
+import { Search, Plus, Pencil, Trash2, Box, Layers, FolderOpen, Settings, Sparkles, ShieldAlert, Hash, ArchiveRestore, Clipboard, StickyNote } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
@@ -304,6 +304,16 @@ function handleToolPasswordHealth(): void {
 function handleToolClipboard(): void {
   closeFooterMenus()
   openClipboard()
+}
+
+async function handleToolNotes(): Promise<void> {
+  closeFooterMenus()
+  try {
+    const opened = await window.electronAPI?.openNotesManager?.()
+    if (!opened) showToast(t('notes.openFailed'), 'error')
+  } catch {
+    showToast(t('notes.openFailed'), 'error')
+  }
 }
 
 function handleToolTrash(): void {
@@ -706,6 +716,15 @@ onBeforeUnmount(() => {
                 >
                   <Clipboard :size="14" :stroke-width="1.75" />
                   <span class="sidebar-menu-item-label">{{ t('tools.clipboardTitle') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="sidebar-menu-item sidebar-menu-item--notes"
+                  data-tour="tool-notes"
+                  @click="handleToolNotes"
+                >
+                  <StickyNote :size="14" :stroke-width="1.75" />
+                  <span class="sidebar-menu-item-label">{{ t('notes.title') }}</span>
                 </button>
               </div>
             </Transition>
@@ -1252,6 +1271,10 @@ onBeforeUnmount(() => {
 
 .sidebar-menu-item--clipboard {
   color: #3b82f6;
+}
+
+.sidebar-menu-item--notes {
+  color: #d88924;
 }
 
 .sidebar-footer-popover-enter-active,

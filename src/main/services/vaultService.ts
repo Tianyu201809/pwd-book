@@ -23,6 +23,7 @@ import { recordQuickBarRecentEntry, removeQuickBarRecentEntry } from './quickBar
 import { getTrashCount, moveEntryToTrash, purgeExpiredTrash } from './trashService'
 import { validateMasterPasswordSetup } from '../../shared/vaultValidation'
 import { readAttachmentCountsByEntry } from '../db/helpers'
+import { importNotesFromPayload } from './noteService'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
@@ -231,6 +232,8 @@ export function importFromExportPayload(payload: VaultImportPayload): number {
   if (payload.attachments?.length) {
     importAttachmentsFromExport(payload.attachments, importedEntryIds, entryIdRemap)
   }
+
+  importNotesFromPayload(payload.noteBooks ?? [], payload.notes ?? [])
 
   return count
 }

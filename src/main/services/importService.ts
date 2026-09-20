@@ -121,6 +121,8 @@ export function previewImport(request: ImportPreviewRequest): ImportPreviewResul
   if (parsed.attachments) {
     result.attachments = parsed.attachments
   }
+  if (parsed.noteBooks) result.noteBooks = parsed.noteBooks
+  if (parsed.notes) result.notes = parsed.notes
   return result
 }
 
@@ -137,6 +139,8 @@ export function commitImport(request: ImportCommitRequest): number {
       categories: request.categories ?? [],
       entries,
       attachments: request.attachments,
+      noteBooks: request.noteBooks,
+      notes: request.notes,
     })
   }
 

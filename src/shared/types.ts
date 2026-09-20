@@ -1,5 +1,67 @@
 export type FilterCategory = 'all' | 'favorite' | string
 
+export type NoteBlockType = 'text' | 'checklist'
+export type NoteColor = 'paper' | 'yellow' | 'green' | 'blue' | 'pink' | 'violet'
+export type NoteFilter = 'all' | 'favorite' | 'trash' | string
+
+export interface NoteBlock {
+  id: string
+  type: NoteBlockType
+  text: string
+  indent: number
+  checked: boolean
+}
+
+export interface NoteContent {
+  version: 1
+  blocks: NoteBlock[]
+}
+
+export interface NoteBook {
+  id: string
+  name: string
+  sortOrder: number
+  createdAt: number
+  updatedAt: number
+  noteCount: number
+}
+
+export interface StickyNote {
+  id: string
+  bookId: string
+  title: string
+  content: NoteContent
+  color: NoteColor
+  isFavorite: boolean
+  isDesktopVisible: boolean
+  isAlwaysOnTop: boolean
+  windowX: number | null
+  windowY: number | null
+  windowWidth: number | null
+  windowHeight: number | null
+  createdAt: number
+  updatedAt: number
+  deletedAt: number | null
+  contentInvalid?: boolean
+}
+
+export interface StickyNoteInput {
+  bookId?: string
+  title: string
+  content: NoteContent
+  color?: NoteColor
+  isFavorite?: boolean
+}
+
+export interface NoteWindowStateInput {
+  isDesktopVisible?: boolean
+  isAlwaysOnTop?: boolean
+  windowX?: number | null
+  windowY?: number | null
+  windowWidth?: number | null
+  windowHeight?: number | null
+}
+
 export type AppScreen =
   | 'lock'
   | 'vault'
@@ -257,7 +319,7 @@ export interface ExportAttachment {
   dataBase64: string
 }
 
-export const EXPORT_PAYLOAD_VERSION = 2
+export const EXPORT_PAYLOAD_VERSION = 3
 
 export interface ExportPayload {
   version?: number
@@ -265,12 +327,16 @@ export interface ExportPayload {
   categories: VaultCategory[]
   entries: PasswordEntry[]
   attachments?: ExportAttachment[]
+  noteBooks?: NoteBook[]
+  notes?: StickyNote[]
 }
 
 export interface VaultImportPayload {
   categories?: VaultCategory[]
   entries: PasswordEntryInput[]
   attachments?: ExportAttachment[]
+  noteBooks?: NoteBook[]
+  notes?: StickyNote[]
 }
 
 export type ImportPreviewItemStatus = 'ready' | 'duplicate' | 'invalid'
@@ -294,6 +360,8 @@ export interface ImportPreviewResult {
   categories?: VaultCategory[]
   /** PwdBook JSON 备份中的附件（提交导入时使用） */
   attachments?: ExportAttachment[]
+  noteBooks?: NoteBook[]
+  notes?: StickyNote[]
   ready: ImportPreviewItem[]
   skipped: ImportPreviewItem[]
   invalid: ImportPreviewItem[]
@@ -315,6 +383,8 @@ export interface ImportCommitRequest {
   entries: PasswordEntryInput[]
   categories?: VaultCategory[]
   attachments?: ExportAttachment[]
+  noteBooks?: NoteBook[]
+  notes?: StickyNote[]
 }
 
 export const IPC = {
@@ -415,6 +485,23 @@ export const IPC = {
   attachmentsDelete: 'attachments:delete',
   attachmentsOpen: 'attachments:open',
   attachmentsSaveAs: 'attachments:save-as',
+  notesManagerOpen: 'notes-manager:open',
+  notesManagerClose: 'notes-manager:close',
+  notesList: 'notes:list',
+  notesGet: 'notes:get',
+  notesCreate: 'notes:create',
+  notesUpdate: 'notes:update',
+  notesDelete: 'notes:delete',
+  notesRestore: 'notes:restore',
+  notesDeletePermanent: 'notes:delete-permanent',
+  notesToggleFavorite: 'notes:toggle-favorite',
+  notesBooksList: 'notes-books:list',
+  notesBooksCreate: 'notes-books:create',
+  notesBooksUpdate: 'notes-books:update',
+  notesBooksDelete: 'notes-books:delete',
+  noteWindowOpen: 'note-window:open',
+  noteWindowHide: 'note-window:hide',
+  noteWindowToggleAlwaysOnTop: 'note-window:toggle-always-on-top',
 } as const
 
 export const IPC_EVENTS = {
@@ -431,6 +518,9 @@ export const IPC_EVENTS = {
   quickBarFocusEntry: 'quickbar:focus-entry',
   clipboardWindowShown: 'clipboard-window:shown',
   clipboardWindowDisabled: 'clipboard-window:disabled',
+  notesChanged: 'notes:changed',
+  notesFlush: 'notes:flush',
+  noteWindowSelected: 'note-window:selected',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

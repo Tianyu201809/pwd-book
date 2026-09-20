@@ -20,9 +20,11 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve('src/renderer/index.html'),
-      quickbar: resolve('src/renderer/quickbar.html'),
-      clipboardWindow: resolve('src/renderer/clipboard-window.html'),
+          quickbar: resolve('src/renderer/quickbar.html'),
+          clipboardWindow: resolve('src/renderer/clipboard-window.html'),
           detail: resolve('src/renderer/detail.html'),
+          notes: resolve('src/renderer/notes.html'),
+          note: resolve('src/renderer/note.html'),
         },
       },
     },

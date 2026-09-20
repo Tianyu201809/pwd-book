@@ -39,7 +39,7 @@ export function decryptSyncBundle(payload: Buffer, masterPasswordOrKey: string |
   }
 
   const version = payload[4]
-  if (version !== SYNC_BUNDLE_VERSION) {
+  if (version !== SYNC_BUNDLE_VERSION && version !== 2) {
     throw new Error('SYNC_BUNDLE_UNSUPPORTED_VERSION')
   }
 
@@ -62,11 +62,19 @@ export function decryptSyncBundle(payload: Buffer, masterPasswordOrKey: string |
     throw new Error('SYNC_BUNDLE_DECRYPT_FAILED')
   }
 
-  const bundle = JSON.parse(decrypted.toString('utf8')) as SyncBundle
-  if (bundle.format !== SYNC_BUNDLE_FORMAT || bundle.version !== SYNC_BUNDLE_VERSION) {
+  const parsed = JSON.parse(decrypted.toString('utf8')) as SyncBundle & { version: number }
+  if (parsed.format !== SYNC_BUNDLE_FORMAT || (parsed.version !== SYNC_BUNDLE_VERSION && parsed.version !== 2)) {
     throw new Error('SYNC_BUNDLE_INVALID_CONTENT')
   }
-  return bundle
+  if (version === 2) {
+    return {
+      ...parsed,
+      version: SYNC_BUNDLE_VERSION,
+      noteBooks: parsed.noteBooks ?? [],
+      notes: parsed.notes ?? [],
+    }
+  }
+  return parsed
 }
 
 export function constantTimeEqual(a: string, b: string): boolean {

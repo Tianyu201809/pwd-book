@@ -46,6 +46,37 @@
 
 文件内容 AES 加密存于 `{userData}/attachments/{id}.enc`，不入 SQLite BLOB。
 
+## 表：note_books / notes
+
+便签与便签本为独立领域，标题、本名称和块 JSON 使用会话密钥加密。系统视图「全部 / 收藏 / 回收站」不是便签本记录；默认本 id 为 `notes-default`。
+
+### note_books
+
+| 列 | 类型 | 说明 |
+|----|------|------|
+| `id` | TEXT PK | UUID；默认本固定 `notes-default` |
+| `name_encrypted` | TEXT | AES-256-GCM 名称 |
+| `sort_order` | INTEGER | 同级排序 |
+| `created_at` | INTEGER | Unix ms |
+| `updated_at` | INTEGER | Unix ms，LWW |
+| `deleted_at` | INTEGER | 软删除 / 同步墓碑 |
+
+### notes
+
+| 列 | 类型 | 说明 |
+|----|------|------|
+| `id` | TEXT PK | UUID |
+| `book_id` | TEXT | 所属便签本 |
+| `title_encrypted` | TEXT | 加密标题 |
+| `content_encrypted` | TEXT | 加密块 JSON（`{ version: 1, blocks[] }`） |
+| `color` | TEXT | 语义色：paper/yellow/green/blue/pink/violet |
+| `is_favorite` | INTEGER | 0/1 |
+| `is_desktop_visible` | INTEGER | 本机桌面显示意图，不同步 |
+| `is_always_on_top` | INTEGER | 本机置顶，不同步 |
+| `window_x/y/width/height` | INTEGER | 本机窗口几何，不同步 |
+| `created_at` / `updated_at` | INTEGER | Unix ms |
+| `deleted_at` | INTEGER | 回收站与同步墓碑 |
+
 ## 表：app_settings
 
 键值存储，见 `db/helpers.ts`。

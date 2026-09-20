@@ -52,6 +52,8 @@ flowchart TB
 | 渲染入口 | `src/renderer/app.ts` | 挂载 Vue 根组件 `App.vue` |
 | 详情小窗口入口 | `src/renderer/detail.ts` | 挂载 `DetailWindowApp.vue`（`detail.html`，v1.14.0） |
 | 剪切板小窗口入口 | `src/renderer/clipboard-window.ts` | 挂载 `ClipboardWindowApp.vue`（`clipboard-window.html`，v1.32.0） |
+| 便签管理窗口 | `src/renderer/notes.ts` | 挂载 `NotesManagerApp.vue`（`notes.html`） |
+| 桌面便签窗口 | `src/renderer/note.ts` | 挂载 `StickyNoteApp.vue`（`note.html`） |
 | 应用状态中枢 | `src/composables/useAppState.ts` | 屏幕路由、保险库 CRUD、分类、设置 |
 | IPC 注册 | `src/main/ipc/handlers.ts:77` | 全部 `ipcMain.handle` |
 

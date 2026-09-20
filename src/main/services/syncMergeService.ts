@@ -19,6 +19,7 @@ import { appError, ErrorCode } from '../../shared/errors'
 import { removeQuickBarRecentEntry } from './quickBarRecentService'
 import { applyMergedAttachments, syncAttachmentFilesAfterMerge } from './attachmentSyncService'
 import { getSyncServerDir } from './syncBundleService'
+import { applySyncedNotes } from './noteService'
 
 function assertUnlocked(): void {
   if (!isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
@@ -155,6 +156,7 @@ function applyMergedBundle(merged: SyncBundle): Omit<SyncMergeResult, 'conflicts
   }
 
   persistDatabase()
+  applySyncedNotes(merged.noteBooks ?? [], merged.notes ?? [])
   applyMergedAttachments(merged)
   finalizeAttachmentFileSync(merged)
   return { added, updated, removed }

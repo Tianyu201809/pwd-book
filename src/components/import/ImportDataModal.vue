@@ -73,9 +73,10 @@ const canGoNext = computed(() => {
   return false
 })
 
-const canImport = computed(
-  () => step.value === 'review' && (previewResult.value?.totals.ready ?? 0) > 0 && !committing.value,
-)
+const canImport = computed(() => {
+  const preview = previewResult.value
+  return step.value === 'review' && Boolean(preview) && ((preview?.totals.ready ?? 0) > 0 || (preview?.notes?.length ?? 0) > 0) && !committing.value
+})
 
 const reviewList = computed((): ImportPreviewItem[] => {
   if (!previewResult.value) return []
@@ -276,7 +277,7 @@ function openFilePicker(): void {
 }
 
 async function handleImport(): Promise<void> {
-  if (!selectedId.value || !previewResult.value || previewResult.value.totals.ready === 0) return
+  if (!selectedId.value || !previewResult.value || (previewResult.value.totals.ready === 0 && (previewResult.value.notes?.length ?? 0) === 0)) return
   committing.value = true
   parseError.value = ''
   try {
@@ -288,6 +289,8 @@ async function handleImport(): Promise<void> {
       entries,
       previewResult.value.categories,
       previewResult.value.attachments,
+      previewResult.value.noteBooks,
+      previewResult.value.notes,
     )
     emit('imported', count)
     close()

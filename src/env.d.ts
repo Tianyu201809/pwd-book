@@ -22,6 +22,10 @@ import type {
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
+  NoteBook,
+  NoteFilter,
+  StickyNote,
+  StickyNoteInput,
 } from '@/shared/types'
 import type {
   SyncMergeResult,
@@ -163,6 +167,25 @@ declare global {
       toggleClipboardWindowPinned?: () => Promise<boolean>
       onClipboardWindowShown?: (handler: () => void) => () => void
       onClipboardWindowDisabled?: (handler: () => void) => () => void
+      openNotesManager: () => Promise<boolean>
+      closeNotesManager: () => void
+      listNotes: (filter?: NoteFilter, query?: string) => Promise<StickyNote[]>
+      getNote: (id: string) => Promise<StickyNote | null>
+      createNote: (input?: Partial<StickyNoteInput>) => Promise<StickyNote>
+      updateNote: (id: string, input: StickyNoteInput) => Promise<StickyNote>
+      deleteNote: (id: string) => Promise<void>
+      restoreNote: (id: string) => Promise<StickyNote>
+      permanentlyDeleteNote: (id: string) => Promise<void>
+      toggleNoteFavorite: (id: string) => Promise<StickyNote>
+      listNoteBooks: () => Promise<NoteBook[]>
+      createNoteBook: (name: string) => Promise<NoteBook>
+      updateNoteBook: (id: string, name: string) => Promise<NoteBook>
+      deleteNoteBook: (id: string, targetBookId?: string, deleteNotes?: boolean) => Promise<void>
+      openNoteWindow: (id: string) => Promise<boolean>
+      hideNoteWindow: (id: string) => void
+      toggleNoteWindowAlwaysOnTop: (id: string) => Promise<boolean>
+      onNotesChanged: (handler: (id: string | null) => void) => () => void
+      onNotesFlush: (handler: () => void) => () => void
       openDetailWindow?: (entryId: string) => Promise<boolean>
       closeDetailWindow?: () => void
       notifyDetailWindowReady?: () => void

@@ -22,6 +22,10 @@ import type {
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
+  NoteBook,
+  NoteFilter,
+  StickyNote,
+  StickyNoteInput,
 } from '@/shared/types'
 import type {
   SyncMergeResult,
@@ -172,4 +176,21 @@ export const vaultApi = {
   openAttachment: (attachmentId: string): Promise<string> => getApi().openAttachment(attachmentId),
   saveAttachmentAs: (attachmentId: string): Promise<boolean> =>
     getApi().saveAttachmentAs(attachmentId),
+
+  openNotesManager: (): Promise<boolean> => getApi().openNotesManager(),
+  listNotes: (filter: NoteFilter = 'all', query = ''): Promise<StickyNote[]> =>
+    getApi().listNotes(filter, query),
+  getNote: (id: string): Promise<StickyNote | null> => getApi().getNote(id),
+  createNote: (input?: Partial<StickyNoteInput>): Promise<StickyNote> => getApi().createNote(input),
+  updateNote: (id: string, input: StickyNoteInput): Promise<StickyNote> => getApi().updateNote(id, input),
+  deleteNote: (id: string): Promise<void> => getApi().deleteNote(id),
+  restoreNote: (id: string): Promise<StickyNote> => getApi().restoreNote(id),
+  permanentlyDeleteNote: (id: string): Promise<void> => getApi().permanentlyDeleteNote(id),
+  toggleNoteFavorite: (id: string): Promise<StickyNote> => getApi().toggleNoteFavorite(id),
+  listNoteBooks: (): Promise<NoteBook[]> => getApi().listNoteBooks(),
+  createNoteBook: (name: string): Promise<NoteBook> => getApi().createNoteBook(name),
+  updateNoteBook: (id: string, name: string): Promise<NoteBook> => getApi().updateNoteBook(id, name),
+  deleteNoteBook: (id: string, targetBookId?: string, deleteNotes = false): Promise<void> =>
+    getApi().deleteNoteBook(id, targetBookId, deleteNotes),
+  openNoteWindow: (id: string): Promise<boolean> => getApi().openNoteWindow(id),
 }

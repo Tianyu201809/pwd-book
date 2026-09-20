@@ -43,6 +43,10 @@ import type {
   EmailBackupSettings,
   EmailBackupSettingsUpdate,
   EmailBackupSendPayload,
+  NoteBook,
+  NoteFilter,
+  StickyNote,
+  StickyNoteInput,
 } from '../shared/types'
 import type {
   SyncMergeResult,
@@ -282,6 +286,36 @@ export const electronAPI = {
     const listener = (): void => handler()
     ipcRenderer.on(IPC_EVENTS.clipboardWindowDisabled, listener)
     return () => ipcRenderer.removeListener(IPC_EVENTS.clipboardWindowDisabled, listener)
+  },
+
+  openNotesManager: (): Promise<boolean> => invoke(IPC.notesManagerOpen),
+  closeNotesManager: (): void => ipcRenderer.send(IPC.notesManagerClose),
+  listNotes: (filter: NoteFilter = 'all', query = ''): Promise<StickyNote[]> =>
+    invoke(IPC.notesList, { filter, query }),
+  getNote: (id: string): Promise<StickyNote | null> => invoke(IPC.notesGet, id),
+  createNote: (input?: Partial<StickyNoteInput>): Promise<StickyNote> => invoke(IPC.notesCreate, input),
+  updateNote: (id: string, input: StickyNoteInput): Promise<StickyNote> => invoke(IPC.notesUpdate, { id, input }),
+  deleteNote: (id: string): Promise<void> => invoke(IPC.notesDelete, id),
+  restoreNote: (id: string): Promise<StickyNote> => invoke(IPC.notesRestore, id),
+  permanentlyDeleteNote: (id: string): Promise<void> => invoke(IPC.notesDeletePermanent, id),
+  toggleNoteFavorite: (id: string): Promise<StickyNote> => invoke(IPC.notesToggleFavorite, id),
+  listNoteBooks: (): Promise<NoteBook[]> => invoke(IPC.notesBooksList),
+  createNoteBook: (name: string): Promise<NoteBook> => invoke(IPC.notesBooksCreate, name),
+  updateNoteBook: (id: string, name: string): Promise<NoteBook> => invoke(IPC.notesBooksUpdate, { id, name }),
+  deleteNoteBook: (id: string, targetBookId?: string, deleteNotes = false): Promise<void> =>
+    invoke(IPC.notesBooksDelete, { id, targetBookId, deleteNotes }),
+  openNoteWindow: (id: string): Promise<boolean> => invoke(IPC.noteWindowOpen, id),
+  hideNoteWindow: (id: string): void => ipcRenderer.send(IPC.noteWindowHide, id),
+  toggleNoteWindowAlwaysOnTop: (id: string): Promise<boolean> => invoke(IPC.noteWindowToggleAlwaysOnTop, id),
+  onNotesChanged: (handler: (id: string | null) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, id: string | null): void => handler(id)
+    ipcRenderer.on(IPC_EVENTS.notesChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.notesChanged, listener)
+  },
+  onNotesFlush: (handler: () => void): (() => void) => {
+    const listener = (): void => handler()
+    ipcRenderer.on(IPC_EVENTS.notesFlush, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.notesFlush, listener)
   },
 
   openDetailWindow: (entryId: string): Promise<boolean> => invoke(IPC.detailWindowOpen, entryId),

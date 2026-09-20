@@ -15,6 +15,7 @@ import { SYNC_BUNDLE_FILENAME, SYNC_BUNDLE_FORMAT, SYNC_BUNDLE_VERSION } from '.
 import { appError, ErrorCode } from '../../shared/errors'
 import { buildSyncAttachmentsFromDb } from './attachmentSyncService'
 import { readAttachmentDeletionTombstones } from './attachmentService'
+import { buildSyncNotesFromDb } from './noteService'
 
 const DEVICE_ID_KEY = 'sync_device_id'
 const REVISION_KEY = 'sync_revision'
@@ -99,6 +100,7 @@ export function buildSyncBundle(revision?: number): SyncBundle {
   const activeRows = readActiveEntryRows()
   const trashedRows = readTrashedEntryRows()
   const entries = [...activeRows, ...trashedRows].map(rowToSyncEntry)
+  const noteData = buildSyncNotesFromDb()
 
   return {
     format: SYNC_BUNDLE_FORMAT,
@@ -110,6 +112,8 @@ export function buildSyncBundle(revision?: number): SyncBundle {
     entries,
     attachments: buildSyncAttachmentsFromDb(),
     attachmentDeletions: readAttachmentDeletionTombstones(),
+    noteBooks: noteData.noteBooks,
+    notes: noteData.notes,
     settings: {
       trashRetentionDays: getSecuritySettings().trashRetentionDays,
     },
