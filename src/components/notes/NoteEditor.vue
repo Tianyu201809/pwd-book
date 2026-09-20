@@ -26,20 +26,46 @@ const emit = defineEmits<{ saved: [note: StickyNote]; delete: [id: string] }>()
 
 const draft = ref<StickyNoteInput>(toDraft(props.note))
 const saveState = ref<'saved' | 'saving' | 'failed'>('saved')
+const showSaveState = ref(false)
+const titleInputRef = ref<HTMLInputElement | null>(null)
+const blockEditorRef = ref<InstanceType<typeof NoteBlockEditor> | null>(null)
 let saveTimer: ReturnType<typeof setTimeout> | null = null
+let saveLabelTimer: ReturnType<typeof setTimeout> | null = null
 let hydrating = false
 let lastSavedAt = props.note.updatedAt
+let lastSavedSnapshot = snapshotDraft(draft.value)
+
+function snapshotDraft(input: StickyNoteInput): string {
+  return JSON.stringify({
+    title: input.title,
+    bookId: input.bookId,
+    color: input.color,
+    isFavorite: input.isFavorite,
+    blocks: input.content.blocks.map((block) => ({
+      id: block.id, type: block.type, text: block.text, indent: block.indent, checked: block.checked,
+    })),
+  })
+}
+
+function isDirty(): boolean {
+  return snapshotDraft(draft.value) !== lastSavedSnapshot
+}
 
 function hydrate(note: StickyNote): void {
   hydrating = true
   lastSavedAt = note.updatedAt
   draft.value = toDraft(note)
+  lastSavedSnapshot = snapshotDraft(draft.value)
   saveState.value = 'saved'
   void nextTick(() => { hydrating = false })
 }
 
 watch(() => [props.note.id, props.note.updatedAt] as const, () => {
-  if (props.note.updatedAt === lastSavedAt) return
+  if (props.note.updatedAt <= lastSavedAt) return
+  if (isDirty()) {
+    void save()
+    return
+  }
   hydrate(props.note)
 })
 
@@ -47,6 +73,8 @@ async function save(): Promise<void> {
   if (!window.electronAPI || props.note.contentInvalid) return
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = null
+  if (!isDirty() && saveState.value !== 'failed') return
+  if (saveLabelTimer) clearTimeout(saveLabelTimer)
   saveState.value = 'saving'
   try {
     const saved = await window.electronAPI.updateNote(props.note.id, {
@@ -57,7 +85,19 @@ async function save(): Promise<void> {
       isFavorite: draft.value.isFavorite,
     })
     lastSavedAt = saved.updatedAt
+    lastSavedSnapshot = snapshotDraft({
+      title: saved.title,
+      content: cloneContent(saved.content),
+      bookId: saved.bookId,
+      color: saved.color,
+      isFavorite: saved.isFavorite,
+    })
     saveState.value = 'saved'
+    showSaveState.value = true
+    if (saveLabelTimer) clearTimeout(saveLabelTimer)
+    saveLabelTimer = setTimeout(() => {
+      if (saveState.value === 'saved') showSaveState.value = false
+    }, 1200)
     emit('saved', saved)
   } catch {
     saveState.value = 'failed'
@@ -70,6 +110,32 @@ watch(draft, () => {
   saveTimer = setTimeout(() => void save(), 400)
 }, { deep: true })
 
+watch(saveState, (state) => {
+  if (state === 'saving' || state === 'failed') showSaveState.value = true
+})
+
+function onTitleKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Enter' || event.key === 'ArrowDown') {
+    event.preventDefault()
+    blockEditorRef.value?.focusFirst()
+  }
+}
+
+function focusTitle(): void {
+  const input = titleInputRef.value
+  if (!input) return
+  input.focus()
+  const offset = input.value.length
+  input.setSelectionRange(offset, offset)
+}
+
+function focusEditor(): void {
+  void nextTick(() => {
+    if (!draft.value.title.trim()) focusTitle()
+    else blockEditorRef.value?.focusFirst()
+  })
+}
+
 function setColor(color: NoteColor): void { draft.value.color = color }
 function toggleFavorite(): void { draft.value.isFavorite = !draft.value.isFavorite }
 function openDesktop(): void { void window.electronAPI?.openNoteWindow(props.note.id) }
@@ -79,8 +145,11 @@ async function flush(): Promise<void> {
   await save()
 }
 
-onBeforeUnmount(() => { if (saveTimer && !props.note.contentInvalid) void save() })
-defineExpose({ flush })
+onBeforeUnmount(() => {
+  if (saveTimer && !props.note.contentInvalid) void save()
+  if (saveLabelTimer) clearTimeout(saveLabelTimer)
+})
+defineExpose({ flush, focusEditor })
 </script>
 
 <template>
@@ -90,7 +159,7 @@ defineExpose({ flush })
         <option v-for="book in books" :key="book.id" :value="book.id">{{ book.id === 'notes-default' ? $t('notes.defaultBook') : book.name }}</option>
       </select>
       <div class="toolbar-spacer" />
-      <span class="save-state" :class="`save-state--${saveState}`">
+      <span v-if="showSaveState" class="save-state" :class="`save-state--${saveState}`">
         {{ $t(`notes.${saveState === 'failed' ? 'saveFailed' : saveState}`) }}
         <button v-if="saveState === 'failed'" type="button" class="retry-save" @click="save">{{ $t('notes.retry') }}</button>
       </span>
@@ -114,8 +183,21 @@ defineExpose({ flush })
     </header>
     <div class="editor-paper" @focusout="flush">
       <p v-if="note.contentInvalid" class="content-invalid">{{ $t('notes.contentInvalid') }}</p>
-      <input v-model="draft.title" class="note-title-input" :placeholder="$t('notes.untitled')" maxlength="200" :disabled="note.contentInvalid">
-      <NoteBlockEditor v-if="!note.contentInvalid" v-model="draft.content" />
+      <input
+        ref="titleInputRef"
+        v-model="draft.title"
+        class="note-title-input"
+        :placeholder="$t('notes.untitled')"
+        maxlength="200"
+        :disabled="note.contentInvalid"
+        @keydown="onTitleKeydown"
+      >
+      <NoteBlockEditor
+        v-if="!note.contentInvalid"
+        ref="blockEditorRef"
+        v-model="draft.content"
+        @leave-to-title="focusTitle"
+      />
     </div>
   </section>
 </template>

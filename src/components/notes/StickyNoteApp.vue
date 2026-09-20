@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { GripHorizontal, Pin, PinOff, Trash2, X } from 'lucide-vue-next'
 import NoteEditor from './NoteEditor.vue'
@@ -60,6 +60,7 @@ onMounted(async () => {
   await load()
   removeListener = window.electronAPI?.onNotesChanged((id) => { if (!id || id === noteId) void load() })
   removeFlushListener = window.electronAPI?.onNotesFlush(() => { void editorRef.value?.flush() })
+  void nextTick(() => editorRef.value?.focusEditor())
 })
 onUnmounted(() => {
   removeListener?.()

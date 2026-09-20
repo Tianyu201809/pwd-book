@@ -239,6 +239,13 @@ watch(showBookRename, (open) => {
   })
 })
 
+watch(() => selectedNote.value?.id, (id) => {
+  if (!id || filter.value === 'trash') return
+  void nextTick(() => {
+    window.setTimeout(() => editorRef.value?.focusEditor(), 0)
+  })
+})
+
 onMounted(async () => {
   await refresh()
   removeNotesListener = window.electronAPI?.onNotesChanged(() => void refresh())

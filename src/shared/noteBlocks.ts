@@ -104,6 +104,49 @@ export function changeNoteBlockIndent(block: NoteBlock, delta: number): NoteBloc
   }
 }
 
+export function applyBlockBackspaceAtStart(
+  blocks: NoteBlock[],
+  index: number,
+): { blocks: NoteBlock[]; focusId: string; caret: number } | null {
+  const block = blocks[index]
+  if (!block) return null
+  const empty = block.text.length === 0
+
+  if (empty && block.indent > 0) {
+    const next = blocks.map((item, itemIndex) => (
+      itemIndex === index ? changeNoteBlockIndent(item, -1) : item
+    ))
+    return { blocks: next, focusId: block.id, caret: 0 }
+  }
+
+  if (empty && block.type === 'checklist') {
+    const next = blocks.map((item, itemIndex) => (
+      itemIndex === index ? setNoteBlockType(item, 'text') : item
+    ))
+    return { blocks: next, focusId: block.id, caret: 0 }
+  }
+
+  if (index > 0) {
+    const previous = blocks[index - 1]!
+    const merged = mergeNoteBlocks(previous, block)
+    const next = [...blocks]
+    next.splice(index - 1, 2, merged)
+    return { blocks: next, focusId: merged.id, caret: previous.text.length }
+  }
+
+  if (empty && blocks.length > 1) {
+    const next = blocks.filter((_, itemIndex) => itemIndex !== index)
+    return { blocks: next, focusId: next[0]!.id, caret: 0 }
+  }
+
+  return null
+}
+
+export function consumeChecklistPrefix(text: string): string | null {
+  const match = text.match(/^(?:\[\]|-)\s/)
+  return match ? text.slice(match[0].length) : null
+}
+
 export function isNoteColor(value: unknown): value is NoteColor {
   return typeof value === 'string' && NOTE_COLORS.includes(value as NoteColor)
 }

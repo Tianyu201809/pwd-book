@@ -9,6 +9,8 @@ import {
   sanitizeNoteInput,
   setNoteBlockType,
   splitNoteBlock,
+  applyBlockBackspaceAtStart,
+  consumeChecklistPrefix,
 } from './noteBlocks'
 
 describe('note blocks', () => {
@@ -27,6 +29,40 @@ describe('note blocks', () => {
     expect(right.text).toBe(' notes')
     expect(right.id).not.toBe(block.id)
     expect(mergeNoteBlocks(left, right).text).toBe('release notes')
+  })
+
+  it('unindents an empty block before deleting it', () => {
+    const indented = { ...createNoteBlock('checklist'), indent: 2 }
+    const sibling = createNoteBlock('text', 'keep')
+    const unindented = applyBlockBackspaceAtStart([indented], 0)
+    expect(unindented?.blocks[0]?.indent).toBe(1)
+    expect(unindented?.focusId).toBe(indented.id)
+
+    const removed = applyBlockBackspaceAtStart([indented, sibling], 0)
+    expect(removed?.blocks).toHaveLength(2)
+    expect(removed?.blocks[0]?.indent).toBe(1)
+
+    const lastEmpty = applyBlockBackspaceAtStart([{ ...indented, indent: 0 }, sibling], 0)
+    expect(lastEmpty?.blocks[0]).toMatchObject({ type: 'text', text: '' })
+    expect(lastEmpty?.blocks[1]).toEqual(sibling)
+
+    const onlyEmpty = applyBlockBackspaceAtStart([{ ...createNoteBlock('text'), indent: 0 }], 0)
+    expect(onlyEmpty).toBeNull()
+  })
+
+  it('turns [] or - prefixes into a checklist block', () => {
+    expect(consumeChecklistPrefix('[] buy milk')).toBe('buy milk')
+    expect(consumeChecklistPrefix('- buy milk')).toBe('buy milk')
+    expect(consumeChecklistPrefix('just text')).toBeNull()
+  })
+
+  it('merges into the previous block when backspacing at the start', () => {
+    const first = createNoteBlock('text', 'hello')
+    const second = createNoteBlock('text', 'world')
+    const merged = applyBlockBackspaceAtStart([first, second], 1)
+    expect(merged?.blocks).toHaveLength(1)
+    expect(merged?.blocks[0]?.text).toBe('helloworld')
+    expect(merged?.caret).toBe(5)
   })
 
   it('clamps indentation and clears checked state for text blocks', () => {
