@@ -1,6 +1,6 @@
 # 轻量便签（管理窗 / 桌面窗）
 
-**v1.38.0** 在保险库中增加加密便签：独立管理窗口、可置顶桌面窗、单层便签本、文本/待办块、颜色、收藏与回收站。便签走会话密钥 AES，纳入备份与同步；窗口几何和桌面可见性只留本机。
+**v1.38.0** 在保险库中增加加密便签：独立管理窗口、可置顶桌面窗、单层便签本、文本/待办块、颜色、收藏与回收站。便签走会话密钥 AES，纳入备份与同步；窗口几何和桌面可见性只留本机。**v1.39.0** 增加管理窗全局快捷键，并在 **设置 → 便签** 开关。
 
 ## 模块一览
 
@@ -14,7 +14,7 @@
 | 桌面 UI | `src/components/notes/StickyNoteApp.vue` | 无边框纸张窗、置顶、颜色、隐藏、删除 |
 | 状态 | `src/composables/useNotes.ts` | 管理窗列表与筛选 |
 | 入口 | `VaultSidebar.vue` | 工具箱「便签」（剪切板下方） |
-| 设置 | `NotesSettingsPanel.vue` | 设置 → 便签：快捷键开关与加速器展示 |
+| 设置 | `NotesSettingsPanel.vue` | **v1.39.0** 设置 → 便签：快捷键开关与加速器展示 |
 | 渲染入口 | `src/renderer/notes.{html,ts}`、`note.{html,ts}` | 独立 Vue 应用 |
 
 IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-and-data-flow.md#便签)。表结构见 [database-schema.md](./database-schema.md#表note_books--notes)。
@@ -24,7 +24,7 @@ IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-
 | 行为 | 说明 |
 |------|------|
 | 管理窗 | 默认 1080×720，最小 820×560；重复打开聚焦已有实例 |
-| 全局快捷键 | 默认 `Alt+Shift+N`（`notesManagerAccelerator`）；`notesManagerShortcutEnabled` 控制注册；已显示再按一次收起；锁定时 `showFromTray()` |
+| 全局快捷键 | **v1.39.0** 默认 `Alt+Shift+N`（`notesManagerAccelerator`）；`notesManagerShortcutEnabled` 控制注册；已显示再按一次收起；锁定时 `showFromTray()` |
 | 桌面窗 | 默认约 360×420，最小 280×240；坐标校正到当前显示器工作区 |
 | 关闭桌面窗 | 只隐藏（`is_desktop_visible = 0`），不删除 |
 | 置顶 | 按便签保存 `is_always_on_top` |

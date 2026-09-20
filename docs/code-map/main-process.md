@@ -49,7 +49,7 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**便签管理快捷键**、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等）。界面分区见 **设置 → 安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站**（**v1.33.0**，便签 Tab 后补）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**便签管理快捷键**、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等）。界面分区见 **设置 → 安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站**（**v1.33.0**；便签 Tab 为 **v1.39.0**）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
 
 ### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
 
@@ -88,7 +88,7 @@
 
 ### noteService / noteWindows（**v1.38.0**）
 
-`src/main/services/noteService.ts` 与 `src/main/noteWindows.ts` — 加密便签与窗口生命周期。详见 [sticky-notes.md](./sticky-notes.md)。
+`src/main/services/noteService.ts` 与 `src/main/noteWindows.ts` — 加密便签与窗口生命周期。**v1.39.0** `registerNotesManagerShortcut()` 按 `notesManagerShortcutEnabled` 注册 `Alt+Shift+N`。详见 [sticky-notes.md](./sticky-notes.md)。
 
 | 函数 / 行为 | 说明 |
 |-------------|------|
