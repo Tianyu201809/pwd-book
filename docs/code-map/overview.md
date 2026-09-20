@@ -6,10 +6,10 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.34.0（`package.json`） |
+| 版本 | 1.38.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
-| 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch`、`quickBarLimits`、`launchEntry`、`presetIcons` 等 |
+| 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch`、`quickBarLimits`、`launchEntry`、`presetIcons`、`noteBlocks` 等 |
 
 ## 三层进程模型
 
@@ -85,7 +85,8 @@ src/
 │   ├── crypto/           # scrypt + AES-256-GCM
 │   ├── db/               # sql.js 初始化、迁移、helpers
 │   ├── clipboardWindow.ts # 剪切板历史小窗口（v1.32.0）
-│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge、attachment*（v1.22.0）
+│   ├── noteWindows.ts    # 便签管理窗 / 桌面窗（v1.38.0）
+│   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge、attachment*、note*（v1.38.0）
 ├── extension/            # Chrome/Edge MV3（v1.6.0）
 ├── native-host/          # Native Messaging Host（v1.6.0）
 ├── preload/
@@ -94,9 +95,11 @@ src/
 ├── renderer/
 │   ├── app.ts            # Vue createApp
 │   ├── detail.ts         # 详情小窗口（v1.14.0）
-│   └── clipboard-window.ts # 剪切板历史小窗口（v1.32.0）
+│   ├── clipboard-window.ts # 剪切板历史小窗口（v1.32.0）
+│   ├── notes.ts          # 便签管理窗口（v1.38.0）
+│   └── note.ts           # 桌面便签窗口（v1.38.0）
 ├── components/           # UI 组件（含 recovery/ 子目录）
-├── composables/          # useAppState、useTheme、useAutoLock、useToast、useProductTour（v1.24.0）
+├── composables/          # useAppState、useTheme、useAutoLock、useToast、useProductTour（v1.24.0）、useNotes（v1.38.0）
 ├── services/
 │   └── vaultApi.ts       # 渲染层 API 门面
 ├── shared/

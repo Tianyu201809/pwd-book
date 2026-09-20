@@ -1,0 +1,50 @@
+# 轻量便签（管理窗 / 桌面窗）
+
+**v1.38.0** 在保险库中增加加密便签：独立管理窗口、可置顶桌面窗、单层便签本、文本/待办块、颜色、收藏与回收站。便签走会话密钥 AES，纳入备份与同步；窗口几何和桌面可见性只留本机。
+
+## 模块一览
+
+| 模块 | 路径 | 职责 |
+|------|------|------|
+| 窗口 | `src/main/noteWindows.ts` | 唯一管理窗、每条便签最多一个桌面窗、锁定隐藏、解锁恢复 |
+| 服务 | `src/main/services/noteService.ts` | 便签/便签本 CRUD、加解密、搜索、软删除、导入导出、同步实体 |
+| 块逻辑 | `src/shared/noteBlocks.ts` | schema、规范化、拆合、缩进、类型切换、`- `/`[] ` 前缀 |
+| 管理 UI | `src/components/notes/NotesManagerApp.vue` | 筛选、便签本、列表、右键、重命名/删除弹窗 |
+| 编辑器 | `NoteEditor.vue`、`NoteBlockEditor.vue` | 自动保存、草稿保护、标题/块导航 |
+| 桌面 UI | `src/components/notes/StickyNoteApp.vue` | 无边框纸张窗、置顶、颜色、隐藏、删除 |
+| 状态 | `src/composables/useNotes.ts` | 管理窗列表与筛选 |
+| 入口 | `VaultSidebar.vue` | 工具箱「便签」（剪切板下方） |
+| 渲染入口 | `src/renderer/notes.{html,ts}`、`note.{html,ts}` | 独立 Vue 应用 |
+
+IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-and-data-flow.md#便签)。表结构见 [database-schema.md](./database-schema.md#表note_books--notes)。
+
+## 窗口行为
+
+| 行为 | 说明 |
+|------|------|
+| 管理窗 | 默认 1080×720，最小 820×560；重复打开聚焦已有实例 |
+| 桌面窗 | 默认约 360×420，最小 280×240；坐标校正到当前显示器工作区 |
+| 关闭桌面窗 | 只隐藏（`is_desktop_visible = 0`），不删除 |
+| 置顶 | 按便签保存 `is_always_on_top` |
+| 锁定 | 先 `notes:flush`，再隐藏管理窗与桌面窗，然后清会话密钥 |
+| 解锁 | 恢复本次锁定前可见集合；本会话首次解锁按 `is_desktop_visible` 恢复 |
+| 未解锁 | 拒绝打开管理窗 / 桌面窗 |
+
+## 编辑器
+
+- 停输约 400ms 自动保存；失焦、关窗、锁定前 `flush`。
+- 有本地未保存修改时，较旧的 `notes:changed` 不会覆盖草稿。
+- 底栏分段开关转换**当前焦点段**；待办行只显示勾选框。
+- `Ctrl+Enter` / `Cmd+Enter` 切换当前段类型。
+- 空待办行首退格先变回文本；有缩进则先减缩进。
+
+## 同步与备份
+
+- 导出 `ExportPayload.version = 3`，含 `noteBooks`、`notes`（含回收站）。旧载荷缺字段视为空集合。
+- SyncBundle 含便签本、便签与删除墓碑；实体级 `updated_at` LWW。
+- `is_desktop_visible`、窗口几何、置顶不同步，避免另一台设备自动弹窗。
+- 丢失便签本引用的便签归入默认本 `notes-default`。
+
+## 不在首期
+
+提醒、多层便签本、富文本/图片、透明度、自定义主题、便签设置 Tab。

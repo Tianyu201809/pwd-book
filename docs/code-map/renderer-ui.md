@@ -47,6 +47,8 @@ App.vue
 # 独立渲染入口 quickbar.html → QuickBarApp.vue（置顶快捷搜索，见 [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md)）
 # 独立渲染入口 detail.html → DetailWindowApp.vue（v1.14.0 详情小窗口，见下文）
 # 独立渲染入口 clipboard-window.html → ClipboardWindowApp.vue（v1.32.0，见 [clipboard-history.md](./clipboard-history.md)）
+# 独立渲染入口 notes.html → NotesManagerApp.vue（v1.38.0，见 [sticky-notes.md](./sticky-notes.md)）
+# 独立渲染入口 note.html → StickyNoteApp.vue（v1.38.0）
 ```
 
 ### 条目展示图标 `display_icon`（**v1.30.0**）
@@ -84,6 +86,10 @@ App.vue
 
 独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储。`↑`/`↓` 选择，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览；复制 Toast。**v1.34.0** 默认不固定，未固定时失焦收起；工具栏「快捷模式」开启后回车复制并关窗；`Delete` / `Backspace` 删除当前条目（先二次确认）。详见 [clipboard-history.md](./clipboard-history.md)。
 
+### NotesManagerApp / StickyNoteApp（**v1.38.0**）
+
+独立渲染入口 `notes.html` / `note.html`。管理窗含便签本、列表与块编辑器；桌面窗复用 `NoteEditor`。便签本右键重命名/删除；编辑器底栏切换文本/待办。详见 [sticky-notes.md](./sticky-notes.md)。
+
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
 - 侧栏（`placement="after"`）与详情（`placement="before"`）共用的 **4px 边缘**：悬停/收起/调宽时显示 **圆形描边箭头** 折叠钮；分割线在钮位挖空，`z-index` 高于邻列。
@@ -96,7 +102,7 @@ App.vue
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删；**v1.25.0** 改用 `UiModal` 二次确认）。
 - **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
 - **分类切换**（v1.18.0）：`onItemPointerDown` 在非当前分类上 **立即 `selectCategory`**（先于拖拽阈值判断）；`selectCategory` 将 `selectedEntryId` 置 `null`，右侧详情清空，不再回退列表首条。
-- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康、**v1.32.0** 剪切板）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。
+- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康、**v1.32.0** 剪切板、**v1.38.0** 便签）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。
 - **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
 
 > **v1.25.0 前**：「工具与设置」折叠区 + 侧栏内 `TagFilterPanel`（`pwdbook-sidebar-utilities-expanded` / `pwdbook-sidebar-tag-filter-expanded`）— 已移除，标签筛选迁至 `PasswordList.vue`。

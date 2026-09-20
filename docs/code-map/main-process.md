@@ -86,6 +86,20 @@
 
 未固定时失焦（点到其他程序或其它窗口）会收起；固定后失焦保持可见。关闭也可用 Esc、关闭按钮或再次 `Alt+Shift+O`。**v1.34.0** 默认未固定。
 
+### noteService / noteWindows（**v1.38.0**）
+
+`src/main/services/noteService.ts` 与 `src/main/noteWindows.ts` — 加密便签与窗口生命周期。详见 [sticky-notes.md](./sticky-notes.md)。
+
+| 函数 / 行为 | 说明 |
+|-------------|------|
+| `listNotes` / `createNote` / `updateNote` | 解锁后加解密 CRUD；搜索含拼音 |
+| `deleteNote` / `restoreNote` / `permanentlyDeleteNote` | 软删除、恢复、彻底删除 |
+| `createNoteBook` / `updateNoteBook` / `deleteNoteBook` | 默认本不可删；删除须移走或一并回收便签 |
+| `openNotesManager` | 唯一管理窗；未解锁拒绝 |
+| `openNoteWindow` / `hideNoteWindow` | 每条便签最多一个桌面窗；关闭只隐藏 |
+| `hideNoteWindowsOnLock` | `vault:lock` 先 flush 再隐藏 |
+| `restoreNoteWindowsAfterUnlock` | 恢复锁定前可见集合或 `is_desktop_visible` |
+
 ### detailWindow（v1.14.0）
 
 `src/main/detailWindow.ts` — 条目详情独立小窗口。

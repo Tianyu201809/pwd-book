@@ -68,7 +68,7 @@
 | `clipboard:read-system` | 否 | **v1.32.0** 读系统剪贴板文本 |
 | `clipboard:read-content` | 否 | **v1.32.0** 读文本 + 图片 Data URL |
 | `clipboard:write-image` | 否 | **v1.32.0** 将 Data URL 写回系统剪贴板 |
-| `data:export` | 是 | JSON 结构 `ExportPayload`（**v1.22.0** 含 `attachments`、`version: 2`） |
+| `data:export` | 是 | JSON 结构 `ExportPayload`（**v1.22.0** 含 `attachments`；**v1.38.0** `version: 3` 含便签） |
 | `data:import` | 是 | 批量导入条目（**v1.22.0** 可含附件） |
 
 ### 条目附件（v1.22.0）
@@ -81,7 +81,7 @@
 | `attachments:open` | 是 | 解密到临时文件并用系统默认应用打开 |
 | `attachments:save-as` | 是 | 解密并另存为 |
 
-### 便签
+### 便签（**v1.38.0**）
 
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|

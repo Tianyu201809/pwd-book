@@ -41,7 +41,7 @@ sequenceDiagram
 ```json
 {
   "format": "pwdbook-sync",
-  "version": 2,
+  "version": 3,
   "deviceId": "uuid",
   "revision": 42,
   "exportedAt": "ISO8601",
@@ -49,11 +49,14 @@ sequenceDiagram
   "entries": [],
   "attachments": [],
   "attachmentDeletions": [],
+  "noteBooks": [],
+  "notes": [],
   "settings": { "trashRetentionDays": 30 }
 }
 ```
 
 - **v1.22.0** `version` 升至 **2**：`entries` 含 `customFields`；`attachments` 为元数据；实际文件为同目录 `attachments/{id}.pwdattach`（Wi-Fi WebDAV `/sync/attachments/{id}.pwdattach`）。
+- **v1.38.0** `version` 升至 **3**：增加 `noteBooks` / `notes`（含删除墓碑）。窗口几何与桌面可见性不进包。旧包缺字段视为空集合。
 
 - **不传输** `master_salt` / 各设备独立的 `password_encrypted` 形态；合并后在本地用会话密钥重新加密条目。
 - 传输密钥：`deriveSyncTransportKey(masterPassword)`（跨设备一致）。

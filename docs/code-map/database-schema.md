@@ -46,9 +46,9 @@
 
 文件内容 AES 加密存于 `{userData}/attachments/{id}.enc`，不入 SQLite BLOB。
 
-## 表：note_books / notes
+## 表：note_books / notes（**v1.38.0**）
 
-便签与便签本为独立领域，标题、本名称和块 JSON 使用会话密钥加密。系统视图「全部 / 收藏 / 回收站」不是便签本记录；默认本 id 为 `notes-default`。
+便签与便签本为独立领域，标题、本名称和块 JSON 使用会话密钥加密。系统视图「全部 / 收藏 / 回收站」不是便签本记录；默认本 id 为 `notes-default`。详见 [sticky-notes.md](./sticky-notes.md)。
 
 ### note_books
 
@@ -177,15 +177,17 @@
 
 ## 备份 JSON 结构
 
-`ExportPayload`（`data:export`），**v1.22.0** 起 `version: 2`：
+`ExportPayload`（`data:export`），**v1.22.0** 起 `version: 2`（附件）；**v1.38.0** 起 `version: 3`（便签）：
 
 ```json
 {
-  "version": 2,
+  "version": 3,
   "exportedAt": "ISO-8601",
   "categories": [ /* VaultCategory[] */ ],
   "entries": [ /* PasswordEntry[] 含明文 password、customFields */ ],
-  "attachments": [ /* ExportAttachment[]，含 dataBase64 */ ]
+  "attachments": [ /* ExportAttachment[]，含 dataBase64 */ ],
+  "noteBooks": [ /* NoteBook[] */ ],
+  "notes": [ /* StickyNote[]，含回收站 */ ]
 }
 ```
 
