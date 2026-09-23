@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.39.0**（`package.json`）— 便签管理全局快捷键与设置分区。v1.38.0 起有加密轻量便签；v1.33.0 起设置已分区。
+**当前版本：v1.40.0**（`package.json`）— 便签管理分栏调宽、右键移动到其他便签本及只读便签本名称。v1.39.0 起支持便签管理全局快捷键；v1.38.0 起有加密轻量便签。
 
 ## 文档索引
 
@@ -15,7 +15,7 @@
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
 | [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试（**v1.26.0** 条数可配 / 定位主窗口 / 滚动） |
 | [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块、条数上限、使用向导；**v1.34.0** 默认不固定、快捷模式 |
-| [sticky-notes.md](./sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键与设置 → 便签 |
+| [sticky-notes.md](./sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动 |
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 | [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
