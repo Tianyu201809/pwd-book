@@ -13,6 +13,7 @@ const { t } = useI18n()
 const { books, notes, filter, query, selectedId, selectedNote, loading, error, refresh, selectFilter, createNote } = useNotes()
 const newBookName = ref('')
 const addingBook = ref(false)
+const creatingBook = ref(false)
 const renamingBookName = ref('')
 const pendingRenameBook = ref<NoteBook | null>(null)
 const pendingBook = ref<NoteBook | null>(null)
@@ -57,6 +58,10 @@ const showBookDelete = computed({
 const showBookRename = computed({
   get: () => pendingRenameBook.value !== null,
   set: (open: boolean) => { if (!open) cancelRename() },
+})
+const showNewBook = computed({
+  get: () => addingBook.value,
+  set: (open: boolean) => { if (!open) cancelNewBook() },
 })
 let removeNotesListener: (() => void) | undefined
 let removeFlushListener: (() => void) | undefined
@@ -155,13 +160,47 @@ async function close(): Promise<void> {
 }
 function minimize(): void { window.electronAPI?.minimize() }
 
+function openNewBook(): void {
+  newBookName.value = ''
+  addingBook.value = true
+}
+
+function cancelNewBook(): void {
+  addingBook.value = false
+  newBookName.value = ''
+  creatingBook.value = false
+}
+
+function focusNewBookInput(): void {
+  const input = document.querySelector('.book-create-input input, .book-create-input .input-field') as HTMLInputElement | null
+  input?.focus()
+  input?.select()
+}
+
+function onNewBookKeydown(event: KeyboardEvent): void {
+  if (event.isComposing) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    cancelNewBook()
+    return
+  }
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    void submitBook()
+  }
+}
+
 async function submitBook(): Promise<void> {
   const name = newBookName.value.trim()
-  if (!name || !window.electronAPI) return
-  await window.electronAPI.createNoteBook(name)
-  newBookName.value = ''
-  addingBook.value = false
-  await refresh()
+  if (!name || !window.electronAPI || creatingBook.value) return
+  creatingBook.value = true
+  try {
+    await window.electronAPI.createNoteBook(name)
+    cancelNewBook()
+    await refresh()
+  } finally {
+    creatingBook.value = false
+  }
 }
 
 function cancelRename(): void {
@@ -406,6 +445,13 @@ watch(showBookRename, (open) => {
   })
 })
 
+watch(showNewBook, (open) => {
+  if (!open) return
+  void nextTick(() => {
+    window.setTimeout(focusNewBookInput, 0)
+  })
+})
+
 watch(() => selectedNote.value?.id, (id) => {
   if (!id || filter.value === 'trash') return
   void nextTick(() => {
@@ -471,11 +517,8 @@ onUnmounted(() => {
         </button>
         <div class="books-heading">
           <span>{{ $t('notes.books') }}</span>
-          <button type="button" :title="$t('notes.newBook')" @click="addingBook = true"><Plus :size="15" /></button>
+          <button type="button" :title="$t('notes.newBook')" :aria-label="$t('notes.newBook')" @click="openNewBook"><Plus :size="15" /></button>
         </div>
-        <form v-if="addingBook" class="new-book-form" @submit.prevent="submitBook">
-          <input v-model="newBookName" maxlength="80" autofocus :placeholder="$t('notes.newBook')">
-        </form>
         <div v-for="book in books" :key="book.id" class="book-row-wrap">
           <button
             type="button"
@@ -627,6 +670,29 @@ onUnmounted(() => {
     </UiModal>
 
     <UiModal
+      v-model:open="showNewBook"
+      :title="t('notes.newBook')"
+      :width="400"
+      :mask-closable="false"
+      :show-footer="false"
+      @close="cancelNewBook"
+    >
+      <UiInput
+        v-model="newBookName"
+        class="book-create-input"
+        :maxlength="80"
+        :placeholder="t('notes.bookNamePlaceholder')"
+        @keydown="onNewBookKeydown"
+      />
+      <template #footer>
+        <div class="confirm-modal-actions">
+          <UiButton variant="default" :disabled="creatingBook" @click="cancelNewBook">{{ $t('common.cancel') }}</UiButton>
+          <UiButton variant="primary" :loading="creatingBook" :disabled="!newBookName.trim()" @click="submitBook">{{ $t('notes.createBook') }}</UiButton>
+        </div>
+      </template>
+    </UiModal>
+
+    <UiModal
       v-model:open="showBookRename"
       :title="t('notes.renameBookTitle')"
       :width="400"
@@ -705,7 +771,6 @@ onUnmounted(() => {
 .notebook-panel { padding: 14px 10px; overflow-y: auto; }
 .nav-row { width: 100%; min-height: 38px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 7px; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary); text-align: left; cursor: pointer; }.nav-row:hover { background: var(--bg-hover); color: var(--text-primary); }.nav-row.active { background: var(--accent-subtle); color: var(--accent-primary); }.nav-row small { font-size: 11px; color: var(--text-muted); }
 .books-heading { display: flex; align-items: center; justify-content: space-between; margin: 18px 8px 7px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; }.books-heading button { width: 26px; height: 26px; display: grid; place-items: center; border: 0; background: transparent; color: inherit; cursor: pointer; }
-.new-book-form { padding: 0 4px 7px; }.new-book-form input { width: 100%; height: 34px; padding: 0 9px; border: 1px solid var(--border-accent); border-radius: 6px; outline: 0; background: var(--input-bg); color: var(--text-primary); }
 .book-row-wrap { position: relative; }
 .list-error { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; color: var(--status-danger); font-size: 12px; }.list-error button { border: 0; background: transparent; color: var(--accent-primary); cursor: pointer; }
 .notes-list-panel { display: flex; flex-direction: column; background: var(--bg-app); }.list-toolbar { height: 58px; flex: 0 0 58px; display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border-default); }
@@ -731,7 +796,8 @@ onUnmounted(() => {
 .delete-confirm-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
 .confirm-modal-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; }
 .confirm-modal-actions :deep(.ui-classic-btn) { min-width: 96px; padding: 10px 22px; }
-.book-rename-input { width: 100%; }
+.book-rename-input,
+.book-create-input { width: 100%; }
 .book-delete-options { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 .book-delete-hint { margin: 0; font-size: 13px; color: var(--text-muted); }
 .book-delete-option { width: 100%; min-height: 38px; padding: 8px 12px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-elevated); color: var(--text-primary); text-align: left; cursor: pointer; font-size: 13px; }

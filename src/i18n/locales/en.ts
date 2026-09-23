@@ -47,6 +47,7 @@ export default {
     books: 'Notebooks',
     defaultBook: 'Default notebook',
     newBook: 'New notebook',
+    createBook: 'Create',
     newNote: 'New note',
     resizeNotebooks: 'Resize notebooks pane',
     resizeNoteList: 'Resize note list pane',

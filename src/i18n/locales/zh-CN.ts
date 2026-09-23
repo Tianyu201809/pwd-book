@@ -47,6 +47,7 @@ export default {
     books: '便签本',
     defaultBook: '默认便签本',
     newBook: '新建便签本',
+    createBook: '创建',
     newNote: '新建便签',
     resizeNotebooks: '调整便签本栏宽度',
     resizeNoteList: '调整便签列表宽度',
