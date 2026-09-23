@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.40.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.41.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -270,6 +270,7 @@ npm run dev
 
 从侧栏底部 **工具箱 → 便签**，或全局快捷键 **`Alt+Shift+N`**（**v1.39.0**）打开独立管理窗口（须已解锁；已打开再按一次收起；锁定态会先唤起主窗口）。可在 **设置 → 便签** 关闭该快捷键。
 
+- **v1.41.0** 列表右键、编辑工具栏、回收站预览和桌面便签标题栏可复制当前便签全部内容（标题、正文、待办勾选与缩进；编辑中的草稿一并复制）
 - **v1.40.0** 管理窗口的便签本栏与便签列表栏支持拖拽或键盘调宽，宽度保存在本机；便签列表条目右键可从子菜单移动到其他便签本，编辑器工具栏显示只读便签本名称
 - 创建、搜索、收藏、换色、移到便签本；可弹出为桌面便签（拖动、缩放、置顶）。关闭桌面窗只隐藏，可从管理窗再显示
 - 正文为文本段与待办段混排；底栏切换当前段类型，行首 `- ` / `[] ` 可变成待办
@@ -453,7 +454,16 @@ npm run dev
 
 ## 版本更新
 
-### v1.40.0（当前）
+### v1.41.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1410---2026-09-23)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 复制便签 | 列表右键、管理窗工具栏、回收站预览、桌面窗标题栏复制全部内容 |
+| 内容 | 含标题、正文、待办勾选与缩进；编辑中的草稿一并复制；损坏内容不可复制 |
+
+### v1.40.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1400---2026-09-23)**。摘要：
 
@@ -818,7 +828,7 @@ pwd-book/
 | [docs/code-map/database-schema.md](./docs/code-map/database-schema.md) | 表结构与 `app_settings` 键 |
 | [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md) | 快捷搜索条、最近打开与全局快捷键（**v1.26.0**） |
 | [docs/code-map/clipboard-history.md](./docs/code-map/clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块；**v1.34.0** 默认不固定、快捷模式 |
-| [docs/code-map/sticky-notes.md](./docs/code-map/sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动 |
+| [docs/code-map/sticky-notes.md](./docs/code-map/sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动；**v1.41.0** 复制全部内容 |
 | [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0；**v1.17.0** 安装向导；**v1.33.0** 设置 → 浏览器） |
 | [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md) | Wi-Fi 局域网同步（v1.9.0） |
 | [docs/code-map/folder-sync.md](./docs/code-map/folder-sync.md) | 文件夹同步（v1.19.0） |

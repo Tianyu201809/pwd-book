@@ -89,7 +89,7 @@ App.vue
 
 ### NotesManagerApp / StickyNoteApp（**v1.38.0**）
 
-独立渲染入口 `notes.html` / `note.html`。管理窗含便签本、列表与块编辑器；桌面窗复用 `NoteEditor`。便签本右键重命名/删除；**v1.40.0** 管理窗分栏可调宽，便签列表右键可移动到其他便签本，编辑器工具栏仅显示便签本名称；底栏切换文本/待办。详见 [sticky-notes.md](./sticky-notes.md)。
+独立渲染入口 `notes.html` / `note.html`。管理窗含便签本、列表与块编辑器；桌面窗复用 `NoteEditor`。便签本右键重命名/删除；**v1.40.0** 管理窗分栏可调宽，便签列表右键可移动到其他便签本，编辑器工具栏仅显示便签本名称；**v1.41.0** 列表右键、工具栏、回收站预览和桌面窗标题栏可复制全部内容；底栏切换文本/待办。详见 [sticky-notes.md](./sticky-notes.md)。
 
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
