@@ -112,6 +112,13 @@ const imageCount = computed(() => items.value.filter((item) => item.kind === 'im
 const pinnedCount = computed(() => items.value.filter((item) => item.pinned).length)
 const favoriteCount = computed(() => favoriteItems.value.length)
 const clearableCount = computed(() => items.value.length)
+const filterTabs = computed(() => [
+  { id: 'all' as const, label: t('common.all'), count: items.value.length },
+  { id: 'text' as const, label: t('tools.clipboardText'), count: textCount.value },
+  { id: 'image' as const, label: t('tools.clipboardImages'), count: imageCount.value },
+  { id: 'pinned' as const, label: t('tools.clipboardPinned'), count: pinnedCount.value },
+  { id: 'favorite' as const, label: t('tools.clipboardFavorites'), count: favoriteCount.value },
+])
 
 function snapshot(source: ClipboardItem[]): ClipboardItem[] {
   return source.map((item) => ({ ...toRaw(item) }))
@@ -719,13 +726,6 @@ onUnmounted(() => {
 
     <div v-if="!unlocked" class="clipboard-popup-locked"><Clipboard :size="26" /><p>{{ t('quickBar.locked') }}</p><button type="button" @click="closeWindow">{{ t('common.close') }}</button></div>
     <template v-else>
-      <div class="clipboard-popup-summary">
-        <span><strong>{{ items.length }}</strong> {{ t('tools.clipboardTotal') }}</span>
-        <span><strong>{{ textCount }}</strong> {{ t('tools.clipboardText') }}</span>
-        <span><strong>{{ imageCount }}</strong> {{ t('tools.clipboardImages') }}</span>
-        <span><strong>{{ pinnedCount }}</strong> {{ t('tools.clipboardPinned') }}</span>
-        <span><strong>{{ favoriteCount }}</strong> {{ t('tools.clipboardFavorites') }}</span>
-      </div>
       <div class="clipboard-popup-tools">
         <div class="clipboard-popup-search"><Search :size="14" /><input v-model="query" :placeholder="t('common.search')" /></div>
         <button type="button" class="clipboard-popup-tool-button" :title="t('tools.clipboardCapture')" :disabled="!clipboardEnabled" @click="captureSystemClipboard({ notifyOnError: true })"><ClipboardPaste :size="15" /></button>
@@ -736,8 +736,9 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="clipboard-popup-filters">
-        <button v-for="tab in (['all', 'text', 'image', 'pinned', 'favorite'] as const)" :key="tab" type="button" :class="{ active: filter === tab }" @click="filter = tab">
-          {{ tab === 'all' ? t('common.all') : tab === 'text' ? t('tools.clipboardText') : tab === 'image' ? t('tools.clipboardImages') : tab === 'pinned' ? t('tools.clipboardPinned') : t('tools.clipboardFavorites') }}
+        <button v-for="tab in filterTabs" :key="tab.id" type="button" :class="{ active: filter === tab.id }" @click="filter = tab.id">
+          <span>{{ tab.label }}</span>
+          <span class="clipboard-popup-filter-count">{{ tab.count }}</span>
         </button>
       </div>
       <div class="clipboard-popup-content" :style="splitGridStyle">

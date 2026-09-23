@@ -4,6 +4,7 @@ import {
   createNoteBlock,
   mergeNoteBlocks,
   noteMatchesQuery,
+  formatNotePlainText,
   normalizeNoteContent,
   parseNoteContentResult,
   sanitizeNoteInput,
@@ -77,6 +78,29 @@ describe('note blocks', () => {
     expect(parsed.invalid).toBe(true)
     expect(parsed.content.blocks).toHaveLength(1)
     expect(parseNoteContentResult('{"version":1,"blocks":[{"id":"a","type":"text","text":"ok","indent":0,"checked":false}]}').invalid).toBe(false)
+  })
+
+  it('copies the title and every block, including checklist marks and indent', () => {
+    const text = formatNotePlainText({
+      title: '  购物  ',
+      content: {
+        version: 1,
+        blocks: [
+          createNoteBlock('text', '记得带钥匙'),
+          { ...createNoteBlock('checklist', '牛奶'), checked: false },
+          { ...createNoteBlock('checklist', '面包'), checked: true, indent: 1 },
+          createNoteBlock('text', ''),
+        ],
+      },
+    })
+    expect(text).toBe('购物\n\n记得带钥匙\n[ ] 牛奶\n  [x] 面包')
+  })
+
+  it('omits a blank title and trailing empty blocks', () => {
+    expect(formatNotePlainText({
+      title: '   ',
+      content: { version: 1, blocks: [createNoteBlock('text', '只有正文'), createNoteBlock('text', '  ')] },
+    })).toBe('只有正文')
   })
 
   it('matches titles, block text and pinyin initials', () => {

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, toRaw, watch } from 'vue'
-import { ExternalLink, Star, Trash2 } from 'lucide-vue-next'
+import { Check, Copy, ExternalLink, Star, Trash2 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import NoteBlockEditor from './NoteBlockEditor.vue'
-import { NOTE_COLORS, normalizeNoteContent } from '@/shared/noteBlocks'
+import { copyFormattedNote } from './copyNoteText'
+import { showToast } from '@/composables/useToast'
+import { NOTE_COLORS, formatNotePlainText, normalizeNoteContent } from '@/shared/noteBlocks'
 import type { NoteBook, NoteColor, NoteContent, StickyNote, StickyNoteInput } from '@/shared/types'
 
 function cloneContent(content: NoteContent): NoteContent {
@@ -31,6 +33,8 @@ const bookName = computed(() => {
 })
 
 const draft = ref<StickyNoteInput>(toDraft(props.note))
+const copyState = ref<'idle' | 'copied'>('idle')
+let copyTimer: ReturnType<typeof setTimeout> | null = null
 const saveState = ref<'saved' | 'saving' | 'failed'>('saved')
 const showSaveState = ref(false)
 const titleInputRef = ref<HTMLInputElement | null>(null)
@@ -154,6 +158,27 @@ function setColor(color: NoteColor): void { draft.value.color = color }
 function toggleFavorite(): void { draft.value.isFavorite = !draft.value.isFavorite }
 function openDesktop(): void { void window.electronAPI?.openNoteWindow(props.note.id) }
 
+function plainText(): string {
+  return formatNotePlainText({ title: draft.value.title, content: draft.value.content })
+}
+
+function plainTextFor(id: string): string | null {
+  return props.note.id === id ? plainText() : null
+}
+
+async function copyNote(): Promise<void> {
+  if (props.note.contentInvalid) return
+  const ok = await copyFormattedNote({ title: draft.value.title, content: draft.value.content })
+  if (copyTimer) clearTimeout(copyTimer)
+  if (!ok) {
+    showToast(t('notes.copyFailed'), 'error')
+    return
+  }
+  copyState.value = 'copied'
+  showToast(t('notes.copied'), 'success')
+  copyTimer = setTimeout(() => { copyState.value = 'idle' }, 1600)
+}
+
 async function flush(): Promise<boolean> {
   return save()
 }
@@ -161,8 +186,9 @@ async function flush(): Promise<boolean> {
 onBeforeUnmount(() => {
   if (saveTimer && !props.note.contentInvalid) void save()
   if (saveLabelTimer) clearTimeout(saveLabelTimer)
+  if (copyTimer) clearTimeout(copyTimer)
 })
-defineExpose({ flush, focusEditor })
+defineExpose({ flush, focusEditor, plainText, plainTextFor })
 </script>
 
 <template>
@@ -174,6 +200,18 @@ defineExpose({ flush, focusEditor })
         {{ $t(`notes.${saveState === 'failed' ? 'saveFailed' : saveState}`) }}
         <button v-if="saveState === 'failed'" type="button" class="retry-save" @click="save">{{ $t('notes.retry') }}</button>
       </span>
+      <button
+        type="button"
+        class="copy-action"
+        :class="{ 'is-copied': copyState === 'copied' }"
+        :disabled="note.contentInvalid"
+        :title="copyState === 'copied' ? $t('notes.copied') : $t('notes.copy')"
+        @click="copyNote"
+      >
+        <Check v-if="copyState === 'copied'" :size="15" />
+        <Copy v-else :size="15" />
+        <span>{{ copyState === 'copied' ? $t('notes.copiedShort') : $t('notes.copy') }}</span>
+      </button>
       <div class="color-row" :aria-label="$t('notes.color')">
         <button
           v-for="color in NOTE_COLORS"
@@ -220,7 +258,7 @@ defineExpose({ flush, focusEditor })
 .note-editor[data-note-color="blue"] { --note-paper: var(--note-blue); }
 .note-editor[data-note-color="pink"] { --note-paper: var(--note-pink); }
 .note-editor[data-note-color="violet"] { --note-paper: var(--note-violet); }
-.editor-toolbar { min-height: 48px; display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-bottom: 1px solid var(--border-default); background: var(--bg-surface); }
+.editor-toolbar { min-height: 48px; display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-bottom: 1px solid var(--border-default); background: var(--bg-surface); container-type: inline-size; }
 .book-label { min-width: 0; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 12px; }
 .toolbar-spacer { flex: 1; }
 .save-state { min-width: 100px; text-align: right; font-size: 12px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
@@ -231,6 +269,14 @@ defineExpose({ flush, focusEditor })
 .color-swatch { width: 18px; height: 18px; padding: 0; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--note-paper); cursor: pointer; }
 .color-swatch[data-color="yellow"] { background: var(--note-yellow); }.color-swatch[data-color="green"] { background: var(--note-green); }.color-swatch[data-color="blue"] { background: var(--note-blue); }.color-swatch[data-color="pink"] { background: var(--note-pink); }.color-swatch[data-color="violet"] { background: var(--note-violet); }
 .color-swatch--active { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.copy-action { height: 32px; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px 0 9px; border: 1px solid color-mix(in srgb, var(--text-primary) 16%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--bg-elevated) 88%, var(--note-paper)); color: var(--text-secondary); font-size: 12px; letter-spacing: 0.04em; cursor: pointer; }
+@container (max-width: 560px) { .copy-action { width: 32px; padding: 0; justify-content: center; border-radius: 6px; } .copy-action span { display: none; } }
+.copy-action:hover:not(:disabled) { color: var(--accent-primary); border-color: var(--accent-primary); background: var(--accent-subtle); }
+.copy-action.is-copied { color: var(--accent-primary); border-color: var(--accent-primary); background: var(--accent-subtle); }
+.copy-action.is-copied svg { animation: note-copy-pop 280ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.copy-action:disabled { opacity: .45; cursor: default; }
+.copy-action:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+@keyframes note-copy-pop { from { transform: scale(0.55); opacity: 0; } to { transform: none; opacity: 1; } }
 .icon-action { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary); cursor: pointer; }
 .icon-action:hover,.icon-action.active { color: var(--accent-primary); background: var(--accent-subtle); }.icon-action--danger:hover { color: var(--status-danger); background: color-mix(in srgb, var(--status-danger) 10%, transparent); }
 .editor-paper { flex: 1; min-height: 0; overflow: auto; padding: 28px clamp(22px, 5vw, 64px) 48px; }

@@ -65,6 +65,19 @@ export function parseNoteContent(serialized: string): NoteContent {
   return parseNoteContentResult(serialized).content
 }
 
+export function formatNotePlainText(note: { title: string; content: NoteContent }): string {
+  const lines = note.content.blocks.map((block) => {
+    const indent = '  '.repeat(Math.max(0, block.indent))
+    const marker = block.type === 'checklist' ? (block.checked ? '[x] ' : '[ ] ') : ''
+    return `${indent}${marker}${block.text}`
+  })
+  while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop()
+  const body = lines.join('\n')
+  const title = note.title.trim()
+  if (title && body) return `${title}\n\n${body}`
+  return title || body
+}
+
 export function noteMatchesQuery(note: { title: string; content: NoteContent }, query: string): boolean {
   const q = query.trim()
   if (!q) return true

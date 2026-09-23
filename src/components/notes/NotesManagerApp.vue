@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ArchiveRestore, BookOpen, ChevronRight, ExternalLink, FileText, Minus, Pencil, Plus, Search, Star, StickyNote, Trash2, X } from 'lucide-vue-next'
+import { ArchiveRestore, BookOpen, ChevronRight, Copy, ExternalLink, FileText, Minus, Pencil, Plus, Search, Star, StickyNote, Trash2, X } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import NoteEditor from './NoteEditor.vue'
+import { copyFormattedNote, writeClipboardText } from './copyNoteText'
+import ToastHost from '@/components/ToastHost.vue'
 import { UiButton, UiInput, UiModal } from '@/components/ui'
+import { showToast } from '@/composables/useToast'
 import { useNotes } from '@/composables/useNotes'
 import { clampNotesPaneWidths, NOTES_DIVIDER_WIDTH, NOTES_MIN_EDITOR, NOTES_MIN_LIST, NOTES_MIN_NOTEBOOK } from '@/shared/notesManagerLayout'
 import { moveNoteInput } from '@/shared/noteMove'
@@ -295,6 +298,17 @@ function onSaved(saved: StickyNoteModel): void {
   if (index >= 0) notes.value[index] = saved
 }
 
+async function copyListedNote(note: StickyNoteModel): Promise<void> {
+  closeContextMenu()
+  if (note.contentInvalid) {
+    showToast(t('notes.copyFailed'), 'error')
+    return
+  }
+  const live = filter.value !== 'trash' ? editorRef.value?.plainTextFor(note.id) : undefined
+  const ok = typeof live === 'string' ? await writeClipboardText(live) : await copyFormattedNote(note)
+  showToast(ok ? t('notes.copied') : t('notes.copyFailed'), ok ? 'success' : 'error')
+}
+
 function closeContextMenu(): void {
   if (movingNote.value) return
   contextMenu.value = null
@@ -583,6 +597,7 @@ onUnmounted(() => {
           <div class="trash-preview" :data-note-color="selectedNote.color">
             <div><h2>{{ displayTitle(selectedNote) }}</h2><p>{{ preview(selectedNote) }}</p></div>
             <div class="trash-actions">
+              <button type="button" class="copy-btn" :disabled="selectedNote.contentInvalid" @click="copyListedNote(selectedNote)"><Copy :size="16" />{{ $t('notes.copy') }}</button>
               <button type="button" class="restore-btn" @click="restoreSelected"><ArchiveRestore :size="16" />{{ $t('notes.restore') }}</button>
               <button type="button" class="delete-btn" @click="permanentlyDeleteSelected"><Trash2 :size="16" />{{ $t('notes.deletePermanent') }}</button>
             </div>
@@ -611,6 +626,9 @@ onUnmounted(() => {
           </button>
         </template>
         <template v-else-if="filter === 'trash'">
+          <button type="button" :disabled="contextMenu.note.contentInvalid" @click="copyListedNote(contextMenu.note)">
+            <Copy :size="15" />{{ $t('notes.copy') }}
+          </button>
           <button type="button" @click="restoreSelected(); closeContextMenu()">
             <ArchiveRestore :size="15" />{{ $t('notes.restore') }}
           </button>
@@ -619,6 +637,9 @@ onUnmounted(() => {
           </button>
         </template>
         <template v-else>
+          <button type="button" :disabled="contextMenu.note.contentInvalid" @click="copyListedNote(contextMenu.note)">
+            <Copy :size="15" />{{ $t('notes.copy') }}
+          </button>
           <button type="button" @click="openDesktop(contextMenu.note.id)">
             <ExternalLink :size="15" />{{ $t('notes.openDesktop') }}
           </button>
@@ -753,6 +774,7 @@ onUnmounted(() => {
         </div>
       </template>
     </UiModal>
+    <ToastHost />
   </div>
 </template>
 
@@ -781,7 +803,7 @@ onUnmounted(() => {
 .empty-list,.no-selection { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); text-align: center; }.empty-list { min-height: 260px; padding: 24px; }.empty-list strong { color: var(--text-secondary); }.empty-list span { font-size: 12px; }
 .editor-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-surface); }
 .editor-panel :deep(.note-editor) { flex: 1; min-height: 0; height: auto; }
-.trash-preview { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 48px; background: var(--note-paper); color: var(--note-ink); }.trash-preview h2 { margin: 0 0 16px; }.trash-preview p { color: var(--note-muted); white-space: pre-wrap; }.trash-actions { display: flex; gap: 10px; }.trash-actions button { min-height: 36px; display: inline-flex; align-items: center; gap: 7px; padding: 0 13px; border-radius: 6px; cursor: pointer; }.restore-btn { border: 0; background: var(--accent-primary); color: var(--btn-primary-text); }.delete-btn { border: 1px solid color-mix(in srgb, var(--status-danger) 38%, transparent); background: transparent; color: var(--status-danger); }
+.trash-preview { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 48px; background: var(--note-paper); color: var(--note-ink); }.trash-preview h2 { margin: 0 0 16px; }.trash-preview p { color: var(--note-muted); white-space: pre-wrap; }.trash-actions { display: flex; gap: 10px; }.trash-actions button { min-height: 36px; display: inline-flex; align-items: center; gap: 7px; padding: 0 13px; border-radius: 6px; cursor: pointer; }.copy-btn { border: 1px solid color-mix(in srgb, var(--note-ink) 22%, transparent); background: color-mix(in srgb, var(--note-paper) 55%, transparent); color: var(--note-ink); }.copy-btn:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); }.copy-btn:disabled { opacity: .45; cursor: default; }.restore-btn { border: 0; background: var(--accent-primary); color: var(--btn-primary-text); }.delete-btn { border: 1px solid color-mix(in srgb, var(--status-danger) 38%, transparent); background: transparent; color: var(--status-danger); }
 .note-context-menu { position: fixed; z-index: 100; min-width: 188px; padding: 4px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-popover); box-shadow: var(--shadow-popover); }
 .note-context-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; font-size: 13px; }
 .note-context-menu button:hover { background: var(--bg-hover); }
