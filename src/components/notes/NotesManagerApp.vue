@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import NoteEditor from './NoteEditor.vue'
 import { UiButton, UiInput, UiModal } from '@/components/ui'
 import { useNotes } from '@/composables/useNotes'
+import { clampNotesPaneWidths, NOTES_DIVIDER_WIDTH, NOTES_MIN_EDITOR, NOTES_MIN_LIST, NOTES_MIN_NOTEBOOK } from '@/shared/notesManagerLayout'
 import type { NoteBook, NoteFilter, StickyNote as StickyNoteModel } from '@/shared/types'
 
 const { t } = useI18n()
@@ -16,6 +17,18 @@ const pendingRenameBook = ref<NoteBook | null>(null)
 const pendingBook = ref<NoteBook | null>(null)
 const bookDeleteMode = ref<'move' | 'trash'>('move')
 const editorRef = ref<InstanceType<typeof NoteEditor> | null>(null)
+const workspaceRef = ref<HTMLElement | null>(null)
+const workspaceWidth = ref(820)
+const notebookWidth = ref(220)
+const listWidth = ref(300)
+const isResizing = ref(false)
+const paneStyle = computed(() => ({
+  '--notes-notebook-width': `${notebookWidth.value}px`,
+  '--notes-list-width': `${listWidth.value}px`,
+}))
+const paneStorageKey = 'pwdbook-notes-manager-panes'
+let workspaceObserver: ResizeObserver | null = null
+let previousUserSelect = ''
 const contextMenu = ref<
   | { kind: 'note'; note: StickyNoteModel; x: number; y: number }
   | { kind: 'book'; book: NoteBook; x: number; y: number }
@@ -38,6 +51,74 @@ const showBookRename = computed({
 let removeNotesListener: (() => void) | undefined
 let removeFlushListener: (() => void) | undefined
 let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+function applyPaneWidths(notebook: number, list: number): void {
+  const widths = clampNotesPaneWidths(workspaceWidth.value, notebook, list)
+  notebookWidth.value = widths.notebook
+  listWidth.value = widths.list
+}
+
+function persistPaneWidths(): void {
+  try {
+    localStorage.setItem(paneStorageKey, JSON.stringify({ notebook: notebookWidth.value, list: listWidth.value }))
+  } catch { /* Storage may be disabled in an embedded window. */ }
+}
+
+function resizePane(pane: 'notebook' | 'list', width: number): void {
+  const available = workspaceWidth.value - 2 * NOTES_DIVIDER_WIDTH - NOTES_MIN_EDITOR
+  if (pane === 'notebook') {
+    applyPaneWidths(Math.min(width, available - listWidth.value), listWidth.value)
+  } else {
+    applyPaneWidths(notebookWidth.value, width)
+  }
+}
+
+function stopPaneResize(persist = true): void {
+  if (!isResizing.value) return
+  isResizing.value = false
+  window.removeEventListener('pointermove', onPanePointerMove)
+  window.removeEventListener('pointerup', onPanePointerEnd)
+  window.removeEventListener('pointercancel', onPanePointerEnd)
+  document.body.style.userSelect = previousUserSelect
+  if (persist) persistPaneWidths()
+}
+
+let activePane: 'notebook' | 'list' = 'notebook'
+let pointerStart = 0
+let widthStart = 0
+function onPanePointerMove(event: PointerEvent): void {
+  resizePane(activePane, widthStart + event.clientX - pointerStart)
+}
+function onPanePointerEnd(): void { stopPaneResize() }
+
+function startPaneResize(pane: 'notebook' | 'list', event: PointerEvent): void {
+  if (event.button !== 0) return
+  event.preventDefault()
+  stopPaneResize()
+  activePane = pane
+  pointerStart = event.clientX
+  widthStart = pane === 'notebook' ? notebookWidth.value : listWidth.value
+  previousUserSelect = document.body.style.userSelect
+  document.body.style.userSelect = 'none'
+  isResizing.value = true
+  window.addEventListener('pointermove', onPanePointerMove)
+  window.addEventListener('pointerup', onPanePointerEnd)
+  window.addEventListener('pointercancel', onPanePointerEnd)
+}
+
+function onPaneResizeKeydown(pane: 'notebook' | 'list', event: KeyboardEvent): void {
+  const current = pane === 'notebook' ? notebookWidth.value : listWidth.value
+  const minimum = pane === 'notebook' ? NOTES_MIN_NOTEBOOK : NOTES_MIN_LIST
+  const maximum = pane === 'notebook'
+    ? workspaceWidth.value - listWidth.value - 2 * NOTES_DIVIDER_WIDTH - NOTES_MIN_EDITOR
+    : workspaceWidth.value - notebookWidth.value - 2 * NOTES_DIVIDER_WIDTH - NOTES_MIN_EDITOR
+  const target = event.key === 'Home' ? minimum : event.key === 'End' ? maximum
+    : event.key === 'ArrowLeft' ? current - 16 : event.key === 'ArrowRight' ? current + 16 : null
+  if (target === null) return
+  event.preventDefault()
+  resizePane(pane, target)
+  persistPaneWidths()
+}
 
 const filters = computed(() => [
   { id: 'all' as NoteFilter, label: 'notes.all', icon: StickyNote },
@@ -247,6 +328,23 @@ watch(() => selectedNote.value?.id, (id) => {
 })
 
 onMounted(async () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(paneStorageKey) || 'null')
+    if (stored && typeof stored.notebook === 'number' && typeof stored.list === 'number') {
+      notebookWidth.value = stored.notebook
+      listWidth.value = stored.list
+    }
+  } catch { /* Ignore malformed or unavailable local storage. */ }
+  if (workspaceRef.value) {
+    workspaceWidth.value = workspaceRef.value.clientWidth
+    applyPaneWidths(notebookWidth.value, listWidth.value)
+    workspaceObserver = new ResizeObserver(([entry]) => {
+      if (!entry) return
+      workspaceWidth.value = entry.contentRect.width
+      applyPaneWidths(notebookWidth.value, listWidth.value)
+    })
+    workspaceObserver.observe(workspaceRef.value)
+  }
   await refresh()
   removeNotesListener = window.electronAPI?.onNotesChanged(() => void refresh())
   removeFlushListener = window.electronAPI?.onNotesFlush(() => { void editorRef.value?.flush() })
@@ -254,6 +352,8 @@ onMounted(async () => {
   window.addEventListener('blur', closeContextMenu)
 })
 onUnmounted(() => {
+  stopPaneResize(false)
+  workspaceObserver?.disconnect()
   if (searchTimer) clearTimeout(searchTimer)
   removeNotesListener?.()
   removeFlushListener?.()
@@ -271,7 +371,7 @@ onUnmounted(() => {
         <button type="button" :aria-label="$t('common.close')" @click="close"><X :size="16" /></button>
       </div>
     </header>
-    <main class="manager-workspace">
+    <main ref="workspaceRef" class="manager-workspace" :class="{ 'is-resizing': isResizing }" :style="paneStyle">
       <aside class="notebook-panel">
         <button
           v-for="item in filters"
@@ -302,6 +402,11 @@ onUnmounted(() => {
           </button>
         </div>
       </aside>
+
+      <div class="pane-resizer" role="separator" tabindex="0" aria-orientation="vertical"
+        :aria-label="$t('notes.resizeNotebooks')" :aria-valuenow="notebookWidth" :aria-valuemin="NOTES_MIN_NOTEBOOK"
+        :aria-valuemax="Math.max(NOTES_MIN_NOTEBOOK, workspaceWidth - listWidth - 2 * NOTES_DIVIDER_WIDTH - NOTES_MIN_EDITOR)"
+        @pointerdown="startPaneResize('notebook', $event)" @keydown="onPaneResizeKeydown('notebook', $event)" />
 
       <section class="notes-list-panel">
         <div class="list-toolbar">
@@ -338,6 +443,11 @@ onUnmounted(() => {
           </div>
         </div>
       </section>
+
+      <div class="pane-resizer" role="separator" tabindex="0" aria-orientation="vertical"
+        :aria-label="$t('notes.resizeNoteList')" :aria-valuenow="listWidth" :aria-valuemin="NOTES_MIN_LIST"
+        :aria-valuemax="Math.max(NOTES_MIN_LIST, workspaceWidth - notebookWidth - 2 * NOTES_DIVIDER_WIDTH - NOTES_MIN_EDITOR)"
+        @pointerdown="startPaneResize('list', $event)" @keydown="onPaneResizeKeydown('list', $event)" />
 
       <section class="editor-panel">
         <template v-if="selectedNote && filter === 'trash'">
@@ -484,8 +594,13 @@ onUnmounted(() => {
 .manager-titlebar { height: 38px; flex: 0 0 38px; display: flex; align-items: center; justify-content: space-between; padding-left: 14px; border-bottom: 1px solid var(--titlebar-border); background: var(--titlebar-base); box-shadow: var(--titlebar-shadow); }
 .manager-brand { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }.manager-brand svg { color: var(--accent-primary); }
 .window-actions { height: 100%; display: flex; }.window-actions button { width: 44px; height: 100%; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--text-secondary); }.window-actions button:hover { background: var(--bg-hover); color: var(--text-primary); }
-.manager-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: 220px 300px minmax(300px, 1fr); -webkit-app-region: no-drag; }
-.notebook-panel,.notes-list-panel { min-height: 0; border-right: 1px solid var(--border-default); background: var(--bg-surface); }
+.manager-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: var(--notes-notebook-width) 8px var(--notes-list-width) 8px minmax(0, 1fr); -webkit-app-region: no-drag; }
+.manager-workspace.is-resizing { user-select: none; }
+.pane-resizer { position: relative; z-index: 1; min-width: 0; background: var(--bg-surface); cursor: col-resize; touch-action: none; }
+.pane-resizer::after { content: ''; position: absolute; inset: 0 3px; background: var(--border-default); transition: background 120ms ease; }
+.pane-resizer:hover::after,.pane-resizer:focus-visible::after,.is-resizing .pane-resizer:hover::after { background: var(--accent-primary); }
+.pane-resizer:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: -2px; }
+.notebook-panel,.notes-list-panel { min-width: 0; min-height: 0; background: var(--bg-surface); }
 .notebook-panel { padding: 14px 10px; overflow-y: auto; }
 .nav-row { width: 100%; min-height: 38px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 7px; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary); text-align: left; cursor: pointer; }.nav-row:hover { background: var(--bg-hover); color: var(--text-primary); }.nav-row.active { background: var(--accent-subtle); color: var(--accent-primary); }.nav-row small { font-size: 11px; color: var(--text-muted); }
 .books-heading { display: flex; align-items: center; justify-content: space-between; margin: 18px 8px 7px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; }.books-heading button { width: 26px; height: 26px; display: grid; place-items: center; border: 0; background: transparent; color: inherit; cursor: pointer; }
