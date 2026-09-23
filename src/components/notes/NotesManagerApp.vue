@@ -6,6 +6,7 @@ import NoteEditor from './NoteEditor.vue'
 import { UiButton, UiInput, UiModal } from '@/components/ui'
 import { useNotes } from '@/composables/useNotes'
 import { clampNotesPaneWidths, NOTES_DIVIDER_WIDTH, NOTES_MIN_EDITOR, NOTES_MIN_LIST, NOTES_MIN_NOTEBOOK } from '@/shared/notesManagerLayout'
+import { moveNoteInput } from '@/shared/noteMove'
 import type { NoteBook, NoteFilter, StickyNote as StickyNoteModel } from '@/shared/types'
 
 const { t } = useI18n()
@@ -35,6 +36,15 @@ const contextMenu = ref<
   | null
 >(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
+const submenuRef = ref<HTMLElement | null>(null)
+const submenuOpen = ref(false)
+const submenuStyle = ref<Record<string, string>>({})
+const movingNote = ref(false)
+const moveError = ref(false)
+const targetBooks = computed(() => {
+  const menu = contextMenu.value
+  return menu?.kind === 'note' ? books.value.filter((book) => book.id !== menu.note.bookId) : []
+})
 const deleteConfirm = ref<{ id: string; title: string; permanent: boolean } | null>(null)
 const showDeleteConfirm = computed({
   get: () => deleteConfirm.value !== null,
@@ -247,7 +257,79 @@ function onSaved(saved: StickyNoteModel): void {
 }
 
 function closeContextMenu(): void {
+  if (movingNote.value) return
   contextMenu.value = null
+  submenuOpen.value = false
+  moveError.value = false
+}
+
+async function openMoveSubmenu(focusFirst = false): Promise<void> {
+  if (movingNote.value || !targetBooks.value.length) return
+  submenuOpen.value = true
+  submenuStyle.value = {}
+  await nextTick()
+  const submenu = submenuRef.value
+  if (!submenu) return
+  const rect = submenu.getBoundingClientRect()
+  const trigger = submenu.parentElement?.getBoundingClientRect()
+  submenuStyle.value = {
+    ...(rect.right > window.innerWidth - 8 ? { left: 'auto', right: 'calc(100% - 4px)' } : {}),
+    top: `${Math.max(8, Math.min(trigger?.top ?? rect.top, window.innerHeight - rect.height - 8)) - (trigger?.top ?? rect.top)}px`,
+  }
+  if (focusFirst) submenu.querySelector<HTMLButtonElement>('button')?.focus()
+}
+
+function onMoveTriggerKeydown(event: KeyboardEvent): void {
+  if (event.key === 'ArrowRight' || event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    void openMoveSubmenu(true)
+  } else if (event.key === 'Escape' || event.key === 'ArrowLeft') {
+    event.preventDefault()
+    submenuOpen.value = false
+  }
+}
+
+function onSubmenuKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape' || event.key === 'ArrowLeft') {
+    event.preventDefault()
+    submenuOpen.value = false
+    contextMenuRef.value?.querySelector<HTMLButtonElement>('.move-menu-trigger')?.focus()
+    return
+  }
+  if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+  event.preventDefault()
+  const items = Array.from(submenuRef.value?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+  const index = items.indexOf(document.activeElement as HTMLButtonElement)
+  items[(index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus()
+}
+
+async function moveNote(id: string, targetBookId: string): Promise<void> {
+  if (movingNote.value) return
+  if (!window.electronAPI) {
+    moveError.value = true
+    return
+  }
+  movingNote.value = true
+  moveError.value = false
+  try {
+    await nextTick()
+    if (selectedId.value === id && !await editorRef.value?.flush()) throw new Error('NOTE_SAVE_FAILED')
+    const latest = await window.electronAPI.getNote(id)
+    if (!latest || latest.deletedAt) throw new Error('NOTE_NOT_FOUND')
+    await window.electronAPI.updateNote(id, moveNoteInput(latest, targetBookId))
+    contextMenu.value = null
+    submenuOpen.value = false
+    await refresh()
+  } catch {
+    moveError.value = true
+  } finally {
+    movingNote.value = false
+    if (moveError.value) {
+      await nextTick()
+      adjustContextMenuPosition()
+      if (submenuOpen.value) await openMoveSubmenu()
+    }
+  }
 }
 
 function adjustContextMenuPosition(): void {
@@ -265,6 +347,8 @@ function handleNoteContextMenu(note: StickyNoteModel, event: MouseEvent): void {
   event.preventDefault()
   event.stopPropagation()
   selectedId.value = note.id
+  submenuOpen.value = false
+  moveError.value = false
   contextMenu.value = { kind: 'note', note, x: event.clientX, y: event.clientY }
   void nextTick(adjustContextMenuPosition)
 }
@@ -273,6 +357,8 @@ function handleBookContextMenu(book: NoteBook, event: MouseEvent): void {
   event.preventDefault()
   event.stopPropagation()
   if (book.id === 'notes-default') return
+  submenuOpen.value = false
+  moveError.value = false
   contextMenu.value = { kind: 'book', book, x: event.clientX, y: event.clientY }
   void nextTick(adjustContextMenuPosition)
 }
@@ -497,6 +583,21 @@ onUnmounted(() => {
             <Star :size="15" :fill="contextMenu.note.isFavorite ? 'currentColor' : 'none'" />
             {{ contextMenu.note.isFavorite ? $t('notes.unfavorite') : $t('common.favorite') }}
           </button>
+          <div class="move-menu-group" @pointerenter="openMoveSubmenu()" @pointerleave="submenuOpen = false">
+            <button type="button" class="move-menu-trigger" :disabled="!targetBooks.length || movingNote"
+              aria-haspopup="menu" :aria-expanded="submenuOpen" @click="openMoveSubmenu()"
+              @focus="openMoveSubmenu()" @keydown="onMoveTriggerKeydown">
+              <BookOpen :size="15" />{{ $t('notes.moveToBook') }}<ChevronRight class="submenu-chevron" :size="14" />
+            </button>
+            <div v-if="submenuOpen" ref="submenuRef" class="move-submenu" :style="submenuStyle" role="menu"
+              :aria-label="$t('notes.moveToBook')" @keydown="onSubmenuKeydown">
+              <button v-for="book in targetBooks" :key="book.id" type="button" role="menuitem" :disabled="movingNote"
+                @click="moveNote(contextMenu.note.id, book.id)">
+                <BookOpen :size="14" /><span>{{ book.id === 'notes-default' ? $t('notes.defaultBook') : book.name }}</span>
+              </button>
+            </div>
+          </div>
+          <p v-if="moveError" class="move-error" role="alert">{{ $t('notes.moveFailed') }}</p>
           <button type="button" class="danger" @click="deleteSelected(contextMenu.note.id)">
             <Trash2 :size="15" />{{ $t('common.delete') }}
           </button>
@@ -619,7 +720,14 @@ onUnmounted(() => {
 .note-context-menu { position: fixed; z-index: 100; min-width: 188px; padding: 4px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-popover); box-shadow: var(--shadow-popover); }
 .note-context-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; font-size: 13px; }
 .note-context-menu button:hover { background: var(--bg-hover); }
+.note-context-menu button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: -2px; }
+.note-context-menu button:disabled { opacity: .45; cursor: default; }
 .note-context-menu button.danger { color: var(--status-danger); }
+.move-menu-group { position: relative; }
+.submenu-chevron { margin-left: auto; }
+.move-submenu { position: absolute; z-index: 1; top: 0; left: calc(100% - 4px); min-width: 188px; max-width: min(260px, calc(100vw - 16px)); max-height: calc(100vh - 16px); overflow-y: auto; padding: 4px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-popover); box-shadow: var(--shadow-popover); }
+.move-submenu button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.move-error { margin: 4px 8px; max-width: 170px; color: var(--status-danger); font-size: 12px; line-height: 1.4; }
 .delete-confirm-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
 .confirm-modal-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; }
 .confirm-modal-actions :deep(.ui-classic-btn) { min-width: 96px; padding: 10px 22px; }

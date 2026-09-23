@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, toRaw, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, toRaw, watch } from 'vue'
 import { ExternalLink, Star, Trash2 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import NoteBlockEditor from './NoteBlockEditor.vue'
 import { NOTE_COLORS, normalizeNoteContent } from '@/shared/noteBlocks'
 import type { NoteBook, NoteColor, NoteContent, StickyNote, StickyNoteInput } from '@/shared/types'
@@ -23,6 +24,11 @@ const props = withDefaults(defineProps<{ note: StickyNote; books?: NoteBook[]; d
   books: () => [], desktop: false,
 })
 const emit = defineEmits<{ saved: [note: StickyNote]; delete: [id: string] }>()
+const { t } = useI18n()
+const bookName = computed(() => {
+  const book = props.books.find((item) => item.id === props.note.bookId)
+  return book?.id === 'notes-default' ? t('notes.defaultBook') : book?.name ?? t('notes.defaultBook')
+})
 
 const draft = ref<StickyNoteInput>(toDraft(props.note))
 const saveState = ref<'saved' | 'saving' | 'failed'>('saved')
@@ -31,6 +37,7 @@ const titleInputRef = ref<HTMLInputElement | null>(null)
 const blockEditorRef = ref<InstanceType<typeof NoteBlockEditor> | null>(null)
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 let saveLabelTimer: ReturnType<typeof setTimeout> | null = null
+let inFlightSave: Promise<boolean> | null = null
 let hydrating = false
 let lastSavedAt = props.note.updatedAt
 let lastSavedSnapshot = snapshotDraft(draft.value)
@@ -60,8 +67,8 @@ function hydrate(note: StickyNote): void {
   void nextTick(() => { hydrating = false })
 }
 
-watch(() => [props.note.id, props.note.updatedAt] as const, () => {
-  if (props.note.updatedAt <= lastSavedAt) return
+watch(() => [props.note.id, props.note.updatedAt, props.note.bookId] as const, () => {
+  if (props.note.updatedAt <= lastSavedAt && props.note.bookId === draft.value.bookId) return
   if (isDirty()) {
     void save()
     return
@@ -69,39 +76,46 @@ watch(() => [props.note.id, props.note.updatedAt] as const, () => {
   hydrate(props.note)
 })
 
-async function save(): Promise<void> {
-  if (!window.electronAPI || props.note.contentInvalid) return
+async function save(): Promise<boolean> {
+  if (!window.electronAPI || props.note.contentInvalid) return false
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = null
-  if (!isDirty() && saveState.value !== 'failed') return
+  if (inFlightSave) {
+    if (!await inFlightSave) return false
+    if (!isDirty()) return true
+  }
+  if (!isDirty()) return true
+  const input: StickyNoteInput = {
+    title: draft.value.title,
+    content: cloneContent(draft.value.content),
+    bookId: draft.value.bookId,
+    color: draft.value.color,
+    isFavorite: draft.value.isFavorite,
+  }
   if (saveLabelTimer) clearTimeout(saveLabelTimer)
   saveState.value = 'saving'
-  try {
-    const saved = await window.electronAPI.updateNote(props.note.id, {
-      title: draft.value.title,
-      content: cloneContent(draft.value.content),
-      bookId: draft.value.bookId,
-      color: draft.value.color,
-      isFavorite: draft.value.isFavorite,
-    })
-    lastSavedAt = saved.updatedAt
-    lastSavedSnapshot = snapshotDraft({
-      title: saved.title,
-      content: cloneContent(saved.content),
-      bookId: saved.bookId,
-      color: saved.color,
-      isFavorite: saved.isFavorite,
-    })
-    saveState.value = 'saved'
-    showSaveState.value = true
-    if (saveLabelTimer) clearTimeout(saveLabelTimer)
-    saveLabelTimer = setTimeout(() => {
-      if (saveState.value === 'saved') showSaveState.value = false
-    }, 1200)
-    emit('saved', saved)
-  } catch {
-    saveState.value = 'failed'
-  }
+  const pending = (async (): Promise<boolean> => {
+    try {
+      const saved = await window.electronAPI!.updateNote(props.note.id, input)
+      lastSavedAt = saved.updatedAt
+      lastSavedSnapshot = snapshotDraft(toDraft(saved))
+      saveState.value = 'saved'
+      showSaveState.value = true
+      if (saveLabelTimer) clearTimeout(saveLabelTimer)
+      saveLabelTimer = setTimeout(() => {
+        if (saveState.value === 'saved') showSaveState.value = false
+      }, 1200)
+      emit('saved', saved)
+      return true
+    } catch {
+      saveState.value = 'failed'
+      return false
+    }
+  })()
+  inFlightSave = pending
+  const success = await pending
+  if (inFlightSave === pending) inFlightSave = null
+  return success && (!isDirty() || await save())
 }
 
 watch(draft, () => {
@@ -140,9 +154,8 @@ function setColor(color: NoteColor): void { draft.value.color = color }
 function toggleFavorite(): void { draft.value.isFavorite = !draft.value.isFavorite }
 function openDesktop(): void { void window.electronAPI?.openNoteWindow(props.note.id) }
 
-async function flush(): Promise<void> {
-  if (props.note.contentInvalid) return
-  await save()
+async function flush(): Promise<boolean> {
+  return save()
 }
 
 onBeforeUnmount(() => {
@@ -155,9 +168,7 @@ defineExpose({ flush, focusEditor })
 <template>
   <section class="note-editor" :data-note-color="draft.color">
     <header v-if="!desktop" class="editor-toolbar">
-      <select v-model="draft.bookId" class="book-select" :aria-label="$t('notes.moveTo')">
-        <option v-for="book in books" :key="book.id" :value="book.id">{{ book.id === 'notes-default' ? $t('notes.defaultBook') : book.name }}</option>
-      </select>
+      <span class="book-label" :title="bookName">{{ bookName }}</span>
       <div class="toolbar-spacer" />
       <span v-if="showSaveState" class="save-state" :class="`save-state--${saveState}`">
         {{ $t(`notes.${saveState === 'failed' ? 'saveFailed' : saveState}`) }}
@@ -210,7 +221,7 @@ defineExpose({ flush, focusEditor })
 .note-editor[data-note-color="pink"] { --note-paper: var(--note-pink); }
 .note-editor[data-note-color="violet"] { --note-paper: var(--note-violet); }
 .editor-toolbar { min-height: 48px; display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-bottom: 1px solid var(--border-default); background: var(--bg-surface); }
-.book-select { width: 150px; height: 32px; padding: 0 28px 0 9px; border: 1px solid var(--border-default); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); }
+.book-label { min-width: 0; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 12px; }
 .toolbar-spacer { flex: 1; }
 .save-state { min-width: 100px; text-align: right; font-size: 12px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
 .save-state--failed { color: var(--status-danger); }

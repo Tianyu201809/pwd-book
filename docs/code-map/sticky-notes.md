@@ -24,6 +24,7 @@ IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-
 | 行为 | 说明 |
 |------|------|
 | 管理窗 | 默认 1080×720，最小 820×560；重复打开聚焦已有实例 |
+| 管理窗分栏 | 便签本、列表与编辑区之间的两处分隔条可拖拽或用方向键调整；宽度保存在本机 `localStorage`，缩窄窗口时保留编辑区最小宽度 |
 | 全局快捷键 | **v1.39.0** 默认 `Alt+Shift+N`（`notesManagerAccelerator`）；`notesManagerShortcutEnabled` 控制注册；已显示再按一次收起；锁定时 `showFromTray()` |
 | 桌面窗 | 默认约 360×420，最小 280×240；坐标校正到当前显示器工作区 |
 | 关闭桌面窗 | 只隐藏（`is_desktop_visible = 0`），不删除 |
@@ -35,6 +36,7 @@ IPC 常量见 `src/shared/types.ts`，通道表见 [ipc-and-data-flow.md](./ipc-
 ## 编辑器
 
 - 停输约 400ms 自动保存；失焦、关窗、锁定前 `flush`。
+- 工具栏只显示当前便签本名称；在列表条目上右键，通过「移动到便签本」子菜单移动。移动前等待未保存草稿写入，保存失败时不执行移动；回收站不提供移动入口。
 - 有本地未保存修改时，较旧的 `notes:changed` 不会覆盖草稿。
 - 底栏分段开关转换**当前焦点段**；待办行只显示勾选框。
 - `Ctrl+Enter` / `Cmd+Enter` 切换当前段类型。
