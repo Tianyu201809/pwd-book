@@ -22,6 +22,8 @@ const CLIPBOARD_WINDOW_PINNED_TOGGLE = 'clipboard-window:toggle-pinned'
 let clipboardWindow: BrowserWindow | null = null
 let registeredAccelerator: string | null = null
 let clipboardWindowPinned = CLIPBOARD_WINDOW_DEFAULT_PINNED
+let clipboardWindowShowRequested = false
+let clipboardWindowLoadEventQueued = false
 
 function clipboardWindowUrl(): string {
   if (process.env.ELECTRON_RENDERER_URL) return `${process.env.ELECTRON_RENDERER_URL}/clipboard-window.html`
@@ -56,9 +58,24 @@ function createClipboardWindow(): BrowserWindow {
       nodeIntegration: false,
     },
   })
+  clipboardWindowShowRequested = false
+  clipboardWindowLoadEventQueued = false
   const url = clipboardWindowUrl()
   if (url.startsWith('http')) void win.loadURL(url)
   else void win.loadFile(url)
+  win.once('ready-to-show', () => {
+    if (clipboardWindow !== win || win.isDestroyed() || !clipboardWindowShowRequested) return
+    if (!win.isVisible()) win.show()
+    win.focus()
+    notifyClipboardWindowReady(win)
+  })
+  win.on('closed', () => {
+    if (clipboardWindow === win) {
+      clipboardWindow = null
+      clipboardWindowShowRequested = false
+      clipboardWindowLoadEventQueued = false
+    }
+  })
   win.on('blur', () => {
     if (!win.isDestroyed() && shouldHideClipboardWindowOnBlur(clipboardWindowPinned)) {
       hideClipboardWindow()
@@ -74,7 +91,23 @@ function ensureClipboardWindow(): BrowserWindow {
 }
 
 export function hideClipboardWindow(): void {
+  clipboardWindowShowRequested = false
   if (clipboardWindow && !clipboardWindow.isDestroyed()) clipboardWindow.hide()
+}
+
+function notifyClipboardWindowReady(win: BrowserWindow): void {
+  if (win.isDestroyed() || win.webContents.isDestroyed()) return
+  if (win.webContents.isLoading()) {
+    if (clipboardWindowLoadEventQueued) return
+    clipboardWindowLoadEventQueued = true
+    win.webContents.once('did-finish-load', () => {
+      clipboardWindowLoadEventQueued = false
+      if (clipboardWindow === win && !win.isDestroyed() && win.isVisible()) notifyClipboardWindowReady(win)
+    })
+    return
+  }
+  win.webContents.send(IPC_EVENTS.themeChanged)
+  win.webContents.send(IPC_EVENTS.clipboardWindowShown)
 }
 
 function notifyClipboardWindowDisabled(): void {
@@ -94,11 +127,12 @@ export function showClipboardWindow(): void {
     return
   }
   const win = ensureClipboardWindow()
+  clipboardWindowShowRequested = true
   if (win.isMinimized()) win.restore()
+  if (win.webContents.isLoading()) return
   if (!win.isVisible()) win.show()
   win.focus()
-  win.webContents.send(IPC_EVENTS.themeChanged)
-  win.webContents.send(IPC_EVENTS.clipboardWindowShown)
+  notifyClipboardWindowReady(win)
 }
 
 export function toggleClipboardWindow(): void {
@@ -114,6 +148,8 @@ export function destroyClipboardWindow(): void {
   if (clipboardWindow && !clipboardWindow.isDestroyed()) clipboardWindow.destroy()
   clipboardWindow = null
   clipboardWindowPinned = CLIPBOARD_WINDOW_DEFAULT_PINNED
+  clipboardWindowShowRequested = false
+  clipboardWindowLoadEventQueued = false
 }
 
 export function hideClipboardWindowOnLock(): void {
@@ -122,7 +158,7 @@ export function hideClipboardWindowOnLock(): void {
 
 export function refreshClipboardWindowIfVisible(): void {
   if (clipboardWindow && !clipboardWindow.isDestroyed() && clipboardWindow.isVisible()) {
-    clipboardWindow.webContents.send(IPC_EVENTS.clipboardWindowShown)
+    notifyClipboardWindowReady(clipboardWindow)
   }
 }
 
@@ -141,7 +177,9 @@ export function registerClipboardWindowShortcut(): void {
 }
 
 export function notifyClipboardWindowThemeSync(): void {
-  if (clipboardWindow && !clipboardWindow.isDestroyed()) clipboardWindow.webContents.send(IPC_EVENTS.themeChanged)
+  if (clipboardWindow && !clipboardWindow.isDestroyed() && !clipboardWindow.webContents.isLoading()) {
+    clipboardWindow.webContents.send(IPC_EVENTS.themeChanged)
+  }
 }
 
 export function registerClipboardWindowIpc(): void {

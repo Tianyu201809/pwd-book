@@ -8,6 +8,7 @@ import {
   Eye,
   GripHorizontal,
   Minus,
+  Pencil,
   Pin,
   PinOff,
   Search,
@@ -43,6 +44,7 @@ interface ClipboardItem {
   id: string
   kind: ClipboardKind
   content: string
+  title: string
   createdAt: number
   pinned: boolean
   favorite: boolean
@@ -66,6 +68,8 @@ const query = ref('')
 const filter = ref<ClipboardFilter>('all')
 const draft = ref('')
 const isCaptureOpen = ref(false)
+const editingTitleItem = ref<ClipboardItem | null>(null)
+const titleDraft = ref('')
 const lightboxItem = ref<ClipboardItem | null>(null)
 const pendingDelete = ref<ClipboardItem | null>(null)
 const pendingDeleteNextId = ref<string | null>(null)
@@ -77,6 +81,7 @@ const splitRatio = ref(0.5)
 const isResizing = ref(false)
 const contextMenu = ref<{ item: ClipboardItem; x: number; y: number } | null>(null)
 const contextMenuRef = ref<HTMLElement | null>(null)
+const titleInputRef = ref<HTMLInputElement | null>(null)
 const lightboxRef = ref<HTMLElement | null>(null)
 const MIN_SPLIT_RATIO = 0.33
 const MAX_SPLIT_RATIO = 0.67
@@ -90,6 +95,7 @@ let defaultExpiry: ClipboardExpiry = 300
 let removeShownListener: (() => void) | undefined
 let stopResize: (() => void) | undefined
 let ignoreContextMenuClick = false
+let refreshPromise: Promise<void> | null = null
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pwdbook-clipboard') : null
 
 const splitGridStyle = computed<Record<string, string>>(() => ({
@@ -103,7 +109,9 @@ const visibleItems = computed(() => {
     .filter((item) => filter.value === 'all'
       || filter.value === 'favorite'
       || (filter.value === 'pinned' ? item.pinned : item.kind === filter.value))
-    .filter((item) => !normalized || item.content.toLowerCase().includes(normalized))
+    .filter((item) => !normalized
+      || item.title.toLowerCase().includes(normalized)
+      || (item.kind === 'text' && item.content.toLowerCase().includes(normalized)))
     .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.createdAt - a.createdAt)
 })
 const selected = computed(() => visibleSource.value.find((item) => item.id === selectedId.value) ?? visibleItems.value[0] ?? null)
@@ -134,6 +142,7 @@ function normalizeItems(source: unknown): ClipboardItem[] {
       id: item.id,
       kind: item.kind,
       content: item.content,
+      title: typeof item.title === 'string' ? item.title.trim() : '',
       createdAt: Number(item.createdAt) || Date.now(),
       pinned: Boolean(item.pinned),
       favorite: Boolean(item.favorite),
@@ -148,7 +157,7 @@ function readStoredFavorites(): ClipboardItem[] {
     const stored = localStorage.getItem(FAVORITES_STORAGE_KEY)
     return stored ? normalizeItems(JSON.parse(stored)).map((item) => ({ ...item, favorite: true })) : []
   } catch {
-    localStorage.removeItem(FAVORITES_STORAGE_KEY)
+    try { localStorage.removeItem(FAVORITES_STORAGE_KEY) } catch { /* storage may be unavailable */ }
     return []
   }
 }
@@ -168,12 +177,18 @@ function broadcastState(): void {
 }
 
 function persistHistory(): void {
-  const serialized = JSON.stringify(snapshot(items.value))
-  sessionStorage.setItem(STORAGE_KEY, serialized)
-  if (settingsLoaded.value) {
+  let serialized: string
+  try {
+    serialized = JSON.stringify(snapshot(items.value))
+  } catch {
+    return
+  }
+  try { sessionStorage.setItem(STORAGE_KEY, serialized) } catch { /* keep the live state usable */ }
+  if (!settingsLoaded.value) return
+  try {
     if (clipboardPersistence.value) localStorage.setItem(PERSISTENT_STORAGE_KEY, serialized)
     else localStorage.removeItem(PERSISTENT_STORAGE_KEY)
-  }
+  } catch { /* storage quota or privacy mode must not block the window */ }
 }
 
 function sync(next: ClipboardItem[], announce = false): void {
@@ -200,8 +215,10 @@ function syncFavorites(next: ClipboardItem[], announce = false): void {
   const favoriteIds = new Set(normalized.map((item) => item.id))
   items.value = items.value.map((item) => ({ ...item, favorite: favoriteIds.has(item.id) }))
   persistHistory()
-  if (normalized.length) localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(snapshot(normalized)))
-  else localStorage.removeItem(FAVORITES_STORAGE_KEY)
+  try {
+    if (normalized.length) localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(snapshot(normalized)))
+    else localStorage.removeItem(FAVORITES_STORAGE_KEY)
+  } catch { /* storage quota or privacy mode must not block the window */ }
   if (!selectedId.value || !visibleSource.value.some((item) => item.id === selectedId.value)) {
     selectedId.value = visibleItems.value[0]?.id ?? null
   }
@@ -230,6 +247,7 @@ function addItem(kind: ClipboardKind, content: string, expiry: ClipboardExpiry =
     id: `${createdAt}-${Math.random().toString(16).slice(2)}`,
     kind,
     content: normalized,
+    title: '',
     createdAt,
     pinned: false,
     favorite: false,
@@ -274,9 +292,36 @@ async function captureSystemClipboard(options: { notifyOnError?: boolean } = {})
 }
 
 async function refresh(): Promise<void> {
-  const status = await window.electronAPI?.getVaultStatus?.()
+  if (refreshPromise) return refreshPromise
+  const task = refreshInternal()
+  refreshPromise = task
+  try {
+    await task
+  } finally {
+    if (refreshPromise === task) refreshPromise = null
+  }
+}
+
+function settleWithTimeout<T>(task: () => Promise<T> | undefined, fallback: T, timeoutMs = 1500): Promise<T> {
+  return new Promise((resolve) => {
+    let settled = false
+    const finish = (value: T): void => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      resolve(value)
+    }
+    const timer = window.setTimeout(() => finish(fallback), timeoutMs)
+    Promise.resolve().then(task).then((value) => finish(value ?? fallback), () => finish(fallback))
+  })
+}
+
+async function refreshInternal(): Promise<void> {
+  const [status, settings] = await Promise.all([
+    settleWithTimeout(() => window.electronAPI?.getVaultStatus?.(), null),
+    settleWithTimeout(() => window.electronAPI?.getSettings?.(), null),
+  ])
   unlocked.value = Boolean(status?.unlocked)
-  const settings = await window.electronAPI?.getSettings?.()
   clipboardEnabled.value = Boolean(settings?.clipboardEnabled)
   clipboardPersistence.value = Boolean(settings?.clipboardPersistence)
   historyLimit.value = clampClipboardHistoryLimit(settings?.clipboardHistoryLimit)
@@ -368,6 +413,39 @@ function closeLightbox(): void {
   lightboxItem.value = null
 }
 
+function openTitleEditor(item: ClipboardItem): void {
+  closeContextMenu()
+  selectedId.value = item.id
+  editingTitleItem.value = item
+  titleDraft.value = item.title
+  void nextTick(() => {
+    titleInputRef.value?.focus()
+    titleInputRef.value?.select()
+  })
+}
+
+function closeTitleEditor(): void {
+  editingTitleItem.value = null
+  titleDraft.value = ''
+}
+
+function setTitle(item: ClipboardItem, title: string): void {
+  const normalizedTitle = title.trim()
+  const update = (entry: ClipboardItem) => entry.id === item.id ? { ...entry, title: normalizedTitle } : entry
+  const inHistory = items.value.some((entry) => entry.id === item.id)
+  const inFavorites = favoriteItems.value.some((entry) => entry.id === item.id)
+  if (inHistory) sync(items.value.map(update))
+  if (inFavorites) syncFavorites(favoriteItems.value.map(update), true)
+  else if (inHistory) broadcastState()
+}
+
+function saveTitle(): void {
+  const item = editingTitleItem.value
+  const nextTitle = titleDraft.value
+  closeTitleEditor()
+  if (item) setTitle(item, nextTitle)
+}
+
 function closeContextMenu(): void {
   contextMenu.value = null
 }
@@ -400,10 +478,14 @@ function contextMenuItem(): ClipboardItem | null {
   return id ? visibleSource.value.find((entry) => entry.id === id) ?? null : null
 }
 
-async function runContextAction(action: 'preview' | 'copy' | 'pin' | 'favorite' | 'delete'): Promise<void> {
+async function runContextAction(action: 'preview' | 'copy' | 'pin' | 'favorite' | 'edit-title' | 'delete'): Promise<void> {
   const item = contextMenuItem()
   closeContextMenu()
   if (!item) return
+  if (action === 'edit-title') {
+    openTitleEditor(item)
+    return
+  }
   if (action === 'preview') openImagePreview(item)
   else if (action === 'copy') await copyItem(item)
   else if (action === 'pin') togglePin(item)
@@ -544,13 +626,17 @@ function handleEsc(): void {
     isCaptureOpen.value = false
     return
   }
+  if (editingTitleItem.value) {
+    closeTitleEditor()
+    return
+  }
   closeWindow()
 }
 
 function isArrowNavBlocked(target: EventTarget | null): boolean {
-  if (isCaptureOpen.value || lightboxItem.value || pendingDelete.value) return true
+  if (isCaptureOpen.value || editingTitleItem.value || lightboxItem.value || pendingDelete.value) return true
   if (!(target instanceof HTMLElement)) return false
-  return target.matches('textarea, select, [contenteditable="true"]')
+  return target.matches('input, textarea, select, [contenteditable="true"]')
 }
 
 function isListActionBlocked(target: EventTarget | null): boolean {
@@ -751,7 +837,7 @@ onUnmounted(() => {
                 </span>
                 <Type v-else :size="14" />
               </div>
-              <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTime(item.createdAt) }}</time></div><p v-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
+              <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTime(item.createdAt) }}</time></div><p v-if="item.title" class="clipboard-popup-item-title"><SearchHighlightText :text="item.title" :query="query" /></p><p v-else-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
               <div class="clipboard-popup-item-actions">
                 <button type="button" :class="{ 'is-favorite': item.favorite }" :title="item.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="item.favorite" @click.stop="toggleFavorite(item)">
                   <Star :size="13" :fill="item.favorite ? 'currentColor' : 'none'" />
@@ -770,7 +856,7 @@ onUnmounted(() => {
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
             <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.favorite }" :title="selected.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="selected.favorite" @click="toggleFavorite(selected)"><Star :size="14" :fill="selected.favorite ? 'currentColor' : 'none'" /></button><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="requestRemoveItem(selected)"><X :size="15" /></button></div></div>
-            <div class="clipboard-popup-preview-content"><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
+            <div class="clipboard-popup-preview-content"><p v-if="selected.title" class="clipboard-popup-preview-title">{{ selected.title }}</p><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
             <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
           <div v-else class="clipboard-popup-preview-placeholder"><Clipboard :size="21" /><span>{{ t('tools.clipboardSelectHint') }}</span></div>
@@ -793,6 +879,7 @@ onUnmounted(() => {
       </div>
     </div>
     <div v-if="isCaptureOpen" class="clipboard-popup-overlay" @click.self="isCaptureOpen = false"><div class="clipboard-popup-dialog"><div class="clipboard-popup-dialog-head"><strong>{{ t('tools.clipboardCaptureTitle') }}</strong><button type="button" :aria-label="t('common.close')" @click="isCaptureOpen = false"><X :size="16" /></button></div><textarea v-model="draft" autofocus :placeholder="t('tools.clipboardPlaceholder')" @keydown.ctrl.enter="saveDraft" /><div class="clipboard-popup-dialog-actions"><button type="button" @click="isCaptureOpen = false">{{ t('common.cancel') }}</button><button type="button" class="clipboard-popup-copy" :disabled="!draft.trim()" @click="saveDraft"><ClipboardPaste :size="14" />{{ t('tools.clipboardSave') }}</button></div></div></div>
+    <div v-if="editingTitleItem" class="clipboard-popup-overlay" @click.self="closeTitleEditor"><div class="clipboard-popup-dialog" role="dialog" aria-modal="true" aria-labelledby="clipboard-title-dialog-title"><div class="clipboard-popup-dialog-head"><strong id="clipboard-title-dialog-title">{{ t('tools.clipboardTitleEdit') }}</strong><button type="button" :aria-label="t('common.close')" @click="closeTitleEditor"><X :size="16" /></button></div><p class="clipboard-popup-dialog-body">{{ t('tools.clipboardTitleEditDesc') }}</p><input ref="titleInputRef" v-model="titleDraft" class="clipboard-popup-dialog-input" :placeholder="t('tools.clipboardTitlePlaceholder')" maxlength="120" @keydown.enter.prevent="saveTitle" @keydown.esc.prevent="closeTitleEditor" /><div class="clipboard-popup-dialog-actions"><button type="button" @click="closeTitleEditor">{{ t('common.cancel') }}</button><button type="button" class="clipboard-popup-copy" @click="saveTitle"><Pencil :size="14" />{{ t('tools.clipboardTitleSave') }}</button></div></div></div>
     <div v-if="lightboxItem" ref="lightboxRef" class="clipboard-popup-overlay clipboard-popup-lightbox" tabindex="-1" @click.self="closeLightbox" @keydown.esc.stop="closeLightbox">
       <button type="button" class="clipboard-popup-lightbox-close" :aria-label="t('common.close')" :title="t('common.close')" @click="closeLightbox"><X :size="18" /></button>
       <img v-if="lightboxItem.kind === 'image'" :src="lightboxItem.content" :alt="t('tools.clipboardImageLabel')" />
@@ -812,6 +899,9 @@ onUnmounted(() => {
         </button>
         <button type="button" class="clipboard-popup-context-item" @click="runContextAction('copy')">
           <Copy :size="14" />{{ t('tools.clipboardCopy') }}
+        </button>
+        <button type="button" class="clipboard-popup-context-item" @click="runContextAction('edit-title')">
+          <Pencil :size="14" />{{ t('tools.clipboardTitleEdit') }}
         </button>
         <button type="button" class="clipboard-popup-context-item" :class="{ 'is-favorite': contextMenuItem()?.favorite }" @click="runContextAction('favorite')">
           <Star :size="14" :fill="contextMenuItem()?.favorite ? 'currentColor' : 'none'" />{{ contextMenuItem()?.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite') }}
