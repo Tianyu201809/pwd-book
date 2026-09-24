@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.41.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.42.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -263,6 +263,7 @@ npm run dev
 
 - 开启 **设置 → 剪切板 → 剪切板历史** 后自动捕获系统剪切板中的文本与图片；关闭后不轮询，仍可手动新建文本
 - 列表 / 预览分栏：搜索、筛选、固定单条、按条设置过期、复制回系统剪切板、清空历史；**v1.33.0** 可设条数上限；**v1.34.0** 可开**快捷模式**，回车复制后自动关窗
+- **v1.42.0** 文本与图片条目都支持通过右键菜单设置自定义标题；标题显示在列表和预览中，并参与搜索，清空后恢复默认显示
 - 小窗置顶且不占任务栏；**v1.34.0** 第一次打开默认不固定，未固定时点到其他程序会收起；用 Esc、关闭按钮或再次快捷键也可收起
 - 记录仅存本机（会话或可选持久化），不写入保险库、不参与同步。详见 [docs/code-map/clipboard-history.md](./docs/code-map/clipboard-history.md)
 
@@ -271,6 +272,7 @@ npm run dev
 从侧栏底部 **工具箱 → 便签**，或全局快捷键 **`Alt+Shift+N`**（**v1.39.0**）打开独立管理窗口（须已解锁；已打开再按一次收起；锁定态会先唤起主窗口）。可在 **设置 → 便签** 关闭该快捷键。
 
 - **v1.41.0** 列表右键、编辑工具栏、回收站预览和桌面便签标题栏可复制当前便签全部内容（标题、正文、待办勾选与缩进；编辑中的草稿一并复制）
+- **v1.42.0** 修复回收站预览操作按钮在窄宽度下被压缩成逐字换行的问题，按钮文字保持单行并支持操作区自适应换行
 - **v1.40.0** 管理窗口的便签本栏与便签列表栏支持拖拽或键盘调宽，宽度保存在本机；便签列表条目右键可从子菜单移动到其他便签本，编辑器工具栏显示只读便签本名称
 - 创建、搜索、收藏、换色、移到便签本；可弹出为桌面便签（拖动、缩放、置顶）。关闭桌面窗只隐藏，可从管理窗再显示
 - 正文为文本段与待办段混排；底栏切换当前段类型，行首 `- ` / `[] ` 可变成待办
@@ -454,7 +456,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.41.0（当前）
+### v1.42.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1420---2026-09-24)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 剪切板标题 | 文本与图片条目支持右键修改标题，标题参与列表搜索并同步历史/收藏 |
+| 剪切板稳定性 | 启动刷新串行化，等待窗口就绪，IPC 与存储异常不再阻塞小窗 |
+| 便签回收站 | 操作按钮保持单行显示，窄宽度下自动换行 |
+
+### v1.41.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1410---2026-09-23)**。摘要：
 
@@ -827,8 +839,8 @@ pwd-book/
 | [docs/code-map/overview.md](./docs/code-map/overview.md) | 三层进程模型与目录说明 |
 | [docs/code-map/database-schema.md](./docs/code-map/database-schema.md) | 表结构与 `app_settings` 键 |
 | [docs/code-map/quickbar-and-shortcuts.md](./docs/code-map/quickbar-and-shortcuts.md) | 快捷搜索条、最近打开与全局快捷键（**v1.26.0**） |
-| [docs/code-map/clipboard-history.md](./docs/code-map/clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块；**v1.34.0** 默认不固定、快捷模式 |
-| [docs/code-map/sticky-notes.md](./docs/code-map/sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动；**v1.41.0** 复制全部内容 |
+| [docs/code-map/clipboard-history.md](./docs/code-map/clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块；**v1.34.0** 默认不固定、快捷模式；**v1.42.0** 条目标题与启动稳定性 |
+| [docs/code-map/sticky-notes.md](./docs/code-map/sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动；**v1.41.0** 复制全部内容；**v1.42.0** 回收站预览布局修复 |
 | [docs/code-map/browser-autofill.md](./docs/code-map/browser-autofill.md) | 浏览器自动填充架构（v1.6.0；**v1.17.0** 安装向导；**v1.33.0** 设置 → 浏览器） |
 | [docs/code-map/wifi-sync.md](./docs/code-map/wifi-sync.md) | Wi-Fi 局域网同步（v1.9.0） |
 | [docs/code-map/folder-sync.md](./docs/code-map/folder-sync.md) | 文件夹同步（v1.19.0） |
