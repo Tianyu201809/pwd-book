@@ -65,6 +65,7 @@ export default {
     copyFailed: 'Could not copy this note',
     openDesktop: 'Show on desktop',
     hide: 'Hide note',
+    minimize: 'Minimize',
     alwaysOnTop: 'Always on top',
     restore: 'Restore',
     deletePermanent: 'Delete permanently',

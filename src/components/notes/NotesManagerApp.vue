@@ -409,11 +409,16 @@ function handleNoteContextMenu(note: StickyNoteModel, event: MouseEvent): void {
 function handleBookContextMenu(book: NoteBook, event: MouseEvent): void {
   event.preventDefault()
   event.stopPropagation()
-  if (book.id === 'notes-default') return
   submenuOpen.value = false
   moveError.value = false
   contextMenu.value = { kind: 'book', book, x: event.clientX, y: event.clientY }
   void nextTick(adjustContextMenuPosition)
+}
+
+async function createNoteInBook(book: NoteBook): Promise<void> {
+  closeContextMenu()
+  await editorRef.value?.flush()
+  await createNote(book.id)
 }
 
 function requestDeleteBook(book: NoteBook): void {
@@ -618,12 +623,17 @@ onUnmounted(() => {
         @contextmenu.prevent.stop
       >
         <template v-if="contextMenu.kind === 'book'">
-          <button type="button" @click="startRename(contextMenu.book)">
-            <Pencil :size="15" />{{ $t('notes.renameBook') }}
+          <button type="button" @click="createNoteInBook(contextMenu.book)">
+            <Plus :size="15" />{{ $t('notes.newNote') }}
           </button>
-          <button type="button" class="danger" @click="requestDeleteBook(contextMenu.book)">
-            <Trash2 :size="15" />{{ $t('notes.deleteBook') }}
-          </button>
+          <template v-if="contextMenu.book.id !== 'notes-default'">
+            <button type="button" @click="startRename(contextMenu.book)">
+              <Pencil :size="15" />{{ $t('notes.renameBook') }}
+            </button>
+            <button type="button" class="danger" @click="requestDeleteBook(contextMenu.book)">
+              <Trash2 :size="15" />{{ $t('notes.deleteBook') }}
+            </button>
+          </template>
         </template>
         <template v-else-if="filter === 'trash'">
           <button type="button" :disabled="contextMenu.note.contentInvalid" @click="copyListedNote(contextMenu.note)">

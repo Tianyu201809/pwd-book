@@ -113,6 +113,7 @@ export function openNoteWindow(noteId: string): boolean {
   if (!isUnlocked() || !getNote(noteId)) return false
   const existing = noteWindows.get(noteId)
   if (existing && !existing.isDestroyed()) {
+    if (existing.isMinimized()) existing.restore()
     existing.show()
     existing.focus()
     updateNoteWindowState(noteId, { isDesktopVisible: true })
@@ -169,7 +170,7 @@ export function hideNoteWindowsOnLock(): void {
   managerWindow = null
   visibleBeforeLock.clear()
   noteWindows.forEach((win, id) => {
-    if (!win.isDestroyed() && win.isVisible()) visibleBeforeLock.add(id)
+    if (!win.isDestroyed() && (win.isVisible() || win.isMinimized())) visibleBeforeLock.add(id)
     closingForLock.add(id)
     noteWindows.delete(id)
     win.destroy()

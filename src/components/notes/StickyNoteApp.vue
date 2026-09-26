@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Check, Copy, GripHorizontal, Pin, PinOff, Trash2, X } from 'lucide-vue-next'
+import { Check, Copy, GripHorizontal, Minus, Pin, PinOff, Trash2, X } from 'lucide-vue-next'
 import NoteEditor from './NoteEditor.vue'
 import { copyFormattedNote, writeClipboardText } from './copyNoteText'
 import ToastHost from '@/components/ToastHost.vue'
@@ -29,6 +29,11 @@ async function load(): Promise<void> {
 async function hide(): Promise<void> {
   await editorRef.value?.flush()
   window.electronAPI?.hideNoteWindow(noteId)
+}
+
+function minimize(): void {
+  void editorRef.value?.flush()
+  window.electronAPI?.minimize()
 }
 
 async function togglePin(): Promise<void> {
@@ -97,6 +102,7 @@ onUnmounted(() => {
         <button type="button" class="copy-window-btn" :class="{ 'is-copied': justCopied }" :disabled="note.contentInvalid" :title="justCopied ? $t('notes.copied') : $t('notes.copy')" @click="copyNote"><Check v-if="justCopied" :size="15" /><Copy v-else :size="15" /></button>
         <button type="button" :title="$t('notes.alwaysOnTop')" @click="togglePin"><PinOff v-if="pinned" :size="15" /><Pin v-else :size="15" /></button>
         <button type="button" :title="$t('common.delete')" @click="requestDelete"><Trash2 :size="15" /></button>
+        <button type="button" :title="$t('notes.minimize')" :aria-label="$t('notes.minimize')" @click="minimize"><Minus :size="15" /></button>
         <button type="button" :title="$t('notes.hide')" @click="hide"><X :size="15" /></button>
       </div>
     </header>

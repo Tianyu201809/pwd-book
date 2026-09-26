@@ -40,18 +40,21 @@ async function selectFilter(next: NoteFilter): Promise<void> {
   await refresh()
 }
 
-async function createNote(): Promise<StickyNote | null> {
+async function createNote(bookId?: string): Promise<StickyNote | null> {
   if (!window.electronAPI) return null
   error.value = ''
   try {
+    const targetBookId = bookId
+      ?? (!['all', 'favorite', 'trash'].includes(filter.value) ? filter.value : undefined)
     const input: Partial<StickyNoteInput> = {
-      bookId: !['all', 'favorite', 'trash'].includes(filter.value) ? filter.value : undefined,
+      bookId: targetBookId,
       title: '',
       content: createEmptyNoteContent(),
       color: 'yellow',
     }
     const note = await window.electronAPI.createNote(input)
-    if (filter.value === 'trash' || filter.value === 'favorite') filter.value = 'all'
+    if (bookId) filter.value = bookId
+    else if (filter.value === 'trash' || filter.value === 'favorite') filter.value = 'all'
     await refresh()
     selectedId.value = note.id
     return note

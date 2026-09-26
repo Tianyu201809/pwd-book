@@ -65,6 +65,7 @@ export default {
     copyFailed: '无法复制这条便签',
     openDesktop: '显示在桌面',
     hide: '隐藏便签',
+    minimize: '最小化',
     alwaysOnTop: '置顶',
     restore: '恢复',
     deletePermanent: '彻底删除',
