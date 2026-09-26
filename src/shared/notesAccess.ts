@@ -1,4 +1,4 @@
-export const NOTES_MANAGER_ACCELERATOR = 'Alt+Shift+N'
+export { NOTES_MANAGER_ACCELERATOR } from './globalAccelerator'
 
 export type NotesManagerOpenResult = 'locked' | 'toggle'
 

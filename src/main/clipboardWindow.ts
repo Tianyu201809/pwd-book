@@ -5,6 +5,7 @@ import {
   resolveClipboardWindowOpen,
   shouldHideClipboardWindowOnBlur,
 } from '../shared/clipboardWindowAccess'
+import { CLIPBOARD_ACCELERATOR, normalizeAccelerator } from '../shared/globalAccelerator'
 import { IPC_EVENTS } from '../shared/types'
 import { isUnlocked } from './services/sessionService'
 import { getSecuritySettings } from './services/settingsService'
@@ -15,7 +16,6 @@ const CLIPBOARD_WINDOW_HEIGHT = 680
 const CLIPBOARD_WINDOW_MIN_WIDTH = 560
 const CLIPBOARD_WINDOW_MIN_HEIGHT = 480
 const CLIPBOARD_WINDOW_TOP_OFFSET = 58
-const CLIPBOARD_ACCELERATOR = 'Alt+Shift+O'
 const CLIPBOARD_WINDOW_PINNED_GET = 'clipboard-window:get-pinned'
 const CLIPBOARD_WINDOW_PINNED_TOGGLE = 'clipboard-window:toggle-pinned'
 
@@ -169,11 +169,19 @@ export function unregisterClipboardWindowShortcut(): void {
   }
 }
 
-export function registerClipboardWindowShortcut(): void {
+export function registerClipboardWindowShortcut(): boolean {
   unregisterClipboardWindowShortcut()
-  if (globalShortcut.register(CLIPBOARD_ACCELERATOR, toggleClipboardWindow)) {
-    registeredAccelerator = CLIPBOARD_ACCELERATOR
+  const accelerator =
+    normalizeAccelerator(getSecuritySettings().clipboardAccelerator) ?? CLIPBOARD_ACCELERATOR
+  try {
+    if (globalShortcut.register(accelerator, toggleClipboardWindow)) {
+      registeredAccelerator = accelerator
+      return true
+    }
+  } catch {
+    return false
   }
+  return false
 }
 
 export function notifyClipboardWindowThemeSync(): void {

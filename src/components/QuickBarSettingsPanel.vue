@@ -3,12 +3,24 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Keyboard, Layers, PanelTop } from 'lucide-vue-next'
 import { UiButton, UiCard, UiSelect, UiSwitch } from '@/components/ui'
+import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { useAppState } from '@/composables/useAppState'
+import { DEFAULT_ACCELERATORS, otherAccelerators } from '@/shared/globalAccelerator'
 
 const { t } = useI18n()
 const { securitySettings, updateSecuritySettings } = useAppState()
 
 const enabled = computed(() => securitySettings.value.quickBarEnabled)
+const quickBarAccelerator = computed(() => securitySettings.value.quickBarAccelerator)
+const mainAccelerator = computed(() => securitySettings.value.mainWindowShortcutAccelerator)
+const shortcutLabels = computed(() => ({
+  notes: t('settings.shortcutSlotNotes'),
+  clipboard: t('settings.shortcutSlotClipboard'),
+  quickBar: t('settings.shortcutSlotQuickBar'),
+  main: t('settings.shortcutSlotMain'),
+}))
+const quickBarReserved = computed(() => otherAccelerators(securitySettings.value, 'quickBar', shortcutLabels.value))
+const mainReserved = computed(() => otherAccelerators(securitySettings.value, 'main', shortcutLabels.value))
 const quickBarRecentLimitOptions = Array.from({ length: 16 }, (_, index) => index + 5)
 
 const quickBarRecentLimitSelectOptions = computed(() =>
@@ -28,6 +40,14 @@ async function onQuickBarRecentLimitChange(value: string): Promise<void> {
 
 async function onMainWindowShortcutEnabledChange(next: boolean): Promise<void> {
   await updateSecuritySettings({ mainWindowShortcutEnabled: next })
+}
+
+async function saveQuickBarAccelerator(next: string): Promise<void> {
+  await updateSecuritySettings({ quickBarAccelerator: next })
+}
+
+async function saveMainAccelerator(next: string): Promise<void> {
+  await updateSecuritySettings({ mainWindowShortcutAccelerator: next })
 }
 
 function openQuickBar(): void {
@@ -84,12 +104,29 @@ function openQuickBar(): void {
           </p>
           <p class="row-title">{{ t('settings.quickBar') }}</p>
           <p class="row-desc">
-            {{ t('settings.quickBarDesc', { accelerator: securitySettings.quickBarAccelerator }) }}
+            {{ t('settings.quickBarDesc') }}
           </p>
         </div>
         <UiSwitch
           :model-value="enabled"
           @update:model-value="onQuickBarEnabledChange"
+        />
+      </div>
+    </UiCard>
+
+    <UiCard class="settings-card">
+      <div class="row last">
+        <div>
+          <p class="row-title">
+            {{ t('settings.mainWindowShortcut') }}
+          </p>
+          <p class="row-desc">
+            {{ t('settings.mainWindowShortcutDesc') }}
+          </p>
+        </div>
+        <UiSwitch
+          :model-value="securitySettings.mainWindowShortcutEnabled"
+          @update:model-value="onMainWindowShortcutEnabledChange"
         />
       </div>
     </UiCard>
@@ -130,12 +167,52 @@ function openQuickBar(): void {
       </div>
     </div>
 
+    <section>
+      <h4>{{ t('settings.shortcutSection') }}</h4>
+      <UiCard class="settings-card">
+        <div class="row shortcut-row">
+          <div>
+            <p class="row-title">
+              {{ t('settings.quickBar') }}
+            </p>
+            <p class="row-desc">
+              {{ t('settings.quickBarShortcutDesc') }}
+            </p>
+          </div>
+          <ShortcutRecorder
+            :accelerator="quickBarAccelerator"
+            :fallback="DEFAULT_ACCELERATORS.quickBar"
+            :reserved="quickBarReserved"
+            :save="saveQuickBarAccelerator"
+          />
+        </div>
+        <div class="row last shortcut-row">
+          <div>
+            <p class="row-title">
+              {{ t('settings.mainWindowShortcutKey') }}
+            </p>
+            <p class="row-desc">
+              {{ t('settings.mainWindowShortcutKeyDesc') }}
+            </p>
+          </div>
+          <ShortcutRecorder
+            :accelerator="mainAccelerator"
+            :fallback="DEFAULT_ACCELERATORS.main"
+            :reserved="mainReserved"
+            :save="saveMainAccelerator"
+          />
+        </div>
+      </UiCard>
+    </section>
+
     <section :class="{ dormant: !enabled }">
       <h4>{{ t('settings.quickBarRulesTitle') }}</h4>
       <UiCard class="settings-card">
-        <div class="row">
+        <div class="row last">
           <div>
-            <p class="row-title">{{ t('settings.quickBarRecentLimit') }}</p>
+            <p class="row-title">
+              {{ t('settings.quickBarRecentLimit') }}
+            </p>
             <p class="row-desc">{{ t('settings.quickBarRecentLimitDesc') }}</p>
           </div>
           <UiSelect
@@ -143,22 +220,6 @@ function openQuickBar(): void {
             class="settings-select"
             :options="quickBarRecentLimitSelectOptions"
             @update:model-value="onQuickBarRecentLimitChange"
-          />
-        </div>
-        <div class="row last">
-          <div>
-            <p class="row-title">{{ t('settings.mainWindowShortcut') }}</p>
-            <p class="row-desc">
-              {{
-                t('settings.mainWindowShortcutDesc', {
-                  accelerator: securitySettings.mainWindowShortcutAccelerator,
-                })
-              }}
-            </p>
-          </div>
-          <UiSwitch
-            :model-value="securitySettings.mainWindowShortcutEnabled"
-            @update:model-value="onMainWindowShortcutEnabledChange"
           />
         </div>
       </UiCard>
@@ -357,6 +418,11 @@ h4 {
 
   .policy-strip {
     grid-template-columns: 1fr;
+  }
+
+  .shortcut-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

@@ -1,6 +1,11 @@
 import { getDefaultSettings } from './sessionService'
 import { getSetting, setSetting } from '../db/helpers'
 import { clampClipboardHistoryLimit } from '../../shared/clipboardHistoryLimit'
+import { appError, ErrorCode } from '../../shared/errors'
+import {
+  readStoredAccelerator,
+  resolveAccelerators,
+} from '../../shared/globalAccelerator'
 import { clampQuickBarRecentLimit } from '../../shared/quickBarLimits'
 import type { CloseWindowAction, SecuritySettings } from '../../shared/types'
 import { truncateQuickBarRecentToLimit } from './quickBarRecentService'
@@ -13,6 +18,7 @@ const SETTINGS_KEYS = {
   clipboardPersistence: 'clipboard_persistence',
   clipboardHistoryLimit: 'clipboard_history_limit',
   clipboardQuickMode: 'clipboard_quick_mode',
+  clipboardAccelerator: 'clipboard_accelerator',
   clipboardClearSeconds: 'clipboard_clear_seconds',
   closeWindowAction: 'close_window_action',
   quickBarEnabled: 'quick_bar_enabled',
@@ -54,6 +60,10 @@ export function getSecuritySettings(): SecuritySettings {
     clipboardQuickMode:
       (getSetting(SETTINGS_KEYS.clipboardQuickMode) ?? String(defaults.clipboardQuickMode)) ===
       'true',
+    clipboardAccelerator: readStoredAccelerator(
+      getSetting(SETTINGS_KEYS.clipboardAccelerator),
+      defaults.clipboardAccelerator,
+    ),
     clipboardClearSeconds: Number(
       getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
     ),
@@ -62,22 +72,27 @@ export function getSecuritySettings(): SecuritySettings {
     ),
     quickBarEnabled:
       (getSetting(SETTINGS_KEYS.quickBarEnabled) ?? String(defaults.quickBarEnabled)) === 'true',
-    quickBarAccelerator:
-      getSetting(SETTINGS_KEYS.quickBarAccelerator) ?? defaults.quickBarAccelerator,
+    quickBarAccelerator: readStoredAccelerator(
+      getSetting(SETTINGS_KEYS.quickBarAccelerator),
+      defaults.quickBarAccelerator,
+    ),
     quickBarRecentLimit: clampQuickBarRecentLimit(
       getSetting(SETTINGS_KEYS.quickBarRecentLimit) ?? defaults.quickBarRecentLimit,
     ),
     mainWindowShortcutEnabled:
       (getSetting(SETTINGS_KEYS.mainWindowShortcutEnabled) ??
         String(defaults.mainWindowShortcutEnabled)) === 'true',
-    mainWindowShortcutAccelerator:
-      getSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator) ??
+    mainWindowShortcutAccelerator: readStoredAccelerator(
+      getSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator),
       defaults.mainWindowShortcutAccelerator,
+    ),
     notesManagerShortcutEnabled:
       (getSetting(SETTINGS_KEYS.notesManagerShortcutEnabled) ??
         String(defaults.notesManagerShortcutEnabled)) === 'true',
-    notesManagerAccelerator:
-      getSetting(SETTINGS_KEYS.notesManagerAccelerator) ?? defaults.notesManagerAccelerator,
+    notesManagerAccelerator: readStoredAccelerator(
+      getSetting(SETTINGS_KEYS.notesManagerAccelerator),
+      defaults.notesManagerAccelerator,
+    ),
     browserFillEnabled:
       (getSetting(SETTINGS_KEYS.browserFillEnabled) ?? String(defaults.browserFillEnabled)) ===
       'true',
@@ -97,9 +112,29 @@ function parseClipboardDefaultExpiry(raw: string, fallback: SecuritySettings['cl
 
 export function updateSecuritySettings(partial: Partial<SecuritySettings>): SecuritySettings {
   const current = getSecuritySettings()
+  const accelerators = resolveAccelerators(
+    {
+      quickBarAccelerator: current.quickBarAccelerator,
+      mainWindowShortcutAccelerator: current.mainWindowShortcutAccelerator,
+      notesManagerAccelerator: current.notesManagerAccelerator,
+      clipboardAccelerator: current.clipboardAccelerator,
+    },
+    {
+      quickBarAccelerator: partial.quickBarAccelerator,
+      mainWindowShortcutAccelerator: partial.mainWindowShortcutAccelerator,
+      notesManagerAccelerator: partial.notesManagerAccelerator,
+      clipboardAccelerator: partial.clipboardAccelerator,
+    },
+  )
+  if (!accelerators.ok) {
+    throw appError(
+      accelerators.reason === 'invalid' ? ErrorCode.SHORTCUT_INVALID : ErrorCode.SHORTCUT_CONFLICT,
+    )
+  }
   const next = {
     ...current,
     ...partial,
+    ...accelerators.accelerators,
     quickBarRecentLimit: clampQuickBarRecentLimit(
       partial.quickBarRecentLimit ?? current.quickBarRecentLimit,
     ),
@@ -115,6 +150,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.clipboardPersistence, String(next.clipboardPersistence))
   setSetting(SETTINGS_KEYS.clipboardHistoryLimit, String(next.clipboardHistoryLimit))
   setSetting(SETTINGS_KEYS.clipboardQuickMode, String(next.clipboardQuickMode))
+  setSetting(SETTINGS_KEYS.clipboardAccelerator, next.clipboardAccelerator)
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
   setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
   setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))

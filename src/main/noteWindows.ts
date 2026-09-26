@@ -1,6 +1,7 @@
 import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
-import { NOTES_MANAGER_ACCELERATOR, resolveNotesManagerOpen } from '../shared/notesAccess'
+import { NOTES_MANAGER_ACCELERATOR, normalizeAccelerator } from '../shared/globalAccelerator'
+import { resolveNotesManagerOpen } from '../shared/notesAccess'
 import { IPC, IPC_EVENTS } from '../shared/types'
 import { getNote, listDesktopVisibleNoteIds, updateNoteWindowState } from './services/noteService'
 import { getSecuritySettings } from './services/settingsService'
@@ -70,14 +71,20 @@ export function unregisterNotesManagerShortcut(): void {
   }
 }
 
-export function registerNotesManagerShortcut(): void {
+export function registerNotesManagerShortcut(): boolean {
   unregisterNotesManagerShortcut()
   const { notesManagerShortcutEnabled, notesManagerAccelerator } = getSecuritySettings()
-  if (!notesManagerShortcutEnabled) return
-  const accelerator = notesManagerAccelerator || NOTES_MANAGER_ACCELERATOR
-  if (globalShortcut.register(accelerator, toggleNotesManager)) {
-    registeredManagerAccelerator = accelerator
+  if (!notesManagerShortcutEnabled) return true
+  const accelerator = normalizeAccelerator(notesManagerAccelerator) ?? NOTES_MANAGER_ACCELERATOR
+  try {
+    if (globalShortcut.register(accelerator, toggleNotesManager)) {
+      registeredManagerAccelerator = accelerator
+      return true
+    }
+  } catch {
+    return false
   }
+  return false
 }
 
 function clampBounds(noteId: string): Electron.Rectangle {

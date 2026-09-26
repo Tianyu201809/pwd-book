@@ -1,3 +1,4 @@
+import { DEFAULT_ACCELERATORS } from '../../shared/globalAccelerator'
 import type { SecuritySettings } from '../../shared/types'
 import { appError, ErrorCode } from '../../shared/errors'
 
@@ -9,15 +10,16 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   clipboardPersistence: false,
   clipboardHistoryLimit: 50,
   clipboardQuickMode: false,
+  clipboardAccelerator: DEFAULT_ACCELERATORS.clipboard,
   clipboardClearSeconds: 30,
   closeWindowAction: 'ask',
   quickBarEnabled: true,
-  quickBarAccelerator: 'Alt+Shift+P',
+  quickBarAccelerator: DEFAULT_ACCELERATORS.quickBar,
   quickBarRecentLimit: 5,
   mainWindowShortcutEnabled: true,
-  mainWindowShortcutAccelerator: 'Alt+Shift+M',
+  mainWindowShortcutAccelerator: DEFAULT_ACCELERATORS.main,
   notesManagerShortcutEnabled: true,
-  notesManagerAccelerator: 'Alt+Shift+N',
+  notesManagerAccelerator: DEFAULT_ACCELERATORS.notes,
   browserFillEnabled: false,
   trashRetentionDays: 30,
   launchAtLoginEnabled: false,

@@ -3,17 +3,31 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Keyboard, Lock, StickyNote } from 'lucide-vue-next'
 import { UiButton, UiCard, UiSwitch } from '@/components/ui'
+import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
+import { DEFAULT_ACCELERATORS, otherAccelerators } from '@/shared/globalAccelerator'
 
 const { t } = useI18n()
 const { securitySettings, updateSecuritySettings } = useAppState()
 
 const enabled = computed(() => securitySettings.value.notesManagerShortcutEnabled)
 const accelerator = computed(() => securitySettings.value.notesManagerAccelerator)
+const reserved = computed(() =>
+  otherAccelerators(securitySettings.value, 'notes', {
+    notes: t('settings.shortcutSlotNotes'),
+    clipboard: t('settings.shortcutSlotClipboard'),
+    quickBar: t('settings.shortcutSlotQuickBar'),
+    main: t('settings.shortcutSlotMain'),
+  }),
+)
 
 async function onShortcutEnabledChange(next: boolean): Promise<void> {
   await updateSecuritySettings({ notesManagerShortcutEnabled: next })
+}
+
+async function saveAccelerator(next: string): Promise<void> {
+  await updateSecuritySettings({ notesManagerAccelerator: next })
 }
 
 async function openNotesManager(): Promise<void> {
@@ -74,12 +88,31 @@ async function openNotesManager(): Promise<void> {
           </p>
           <p class="row-title">{{ t('settings.notesManagerShortcut') }}</p>
           <p class="row-desc">
-            {{ t('settings.notesManagerShortcutDesc', { accelerator }) }}
+            {{ t('settings.notesManagerShortcutDesc') }}
           </p>
         </div>
         <UiSwitch
           :model-value="enabled"
           @update:model-value="onShortcutEnabledChange"
+        />
+      </div>
+    </UiCard>
+
+    <UiCard class="settings-card shortcut-card">
+      <div class="shortcut-row">
+        <div>
+          <p class="row-title">
+            {{ t('settings.shortcutSection') }}
+          </p>
+          <p class="row-desc">
+            {{ t('settings.shortcutSectionDesc') }}
+          </p>
+        </div>
+        <ShortcutRecorder
+          :accelerator="accelerator"
+          :fallback="DEFAULT_ACCELERATORS.notes"
+          :reserved="reserved"
+          :save="saveAccelerator"
         />
       </div>
     </UiCard>
@@ -202,7 +235,8 @@ async function openNotesManager(): Promise<void> {
   border-color: color-mix(in srgb, #d88924 22%, var(--border-default));
 }
 
-.power-row {
+.power-row,
+.shortcut-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -289,6 +323,11 @@ async function openNotesManager(): Promise<void> {
 
   .policy-strip {
     grid-template-columns: 1fr;
+  }
+
+  .shortcut-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

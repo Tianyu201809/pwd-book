@@ -247,6 +247,8 @@ export interface SecuritySettings {
   clipboardHistoryLimit: 20 | 50 | 100 | 200
   /** 剪切板小窗快捷模式：回车复制后自动关闭窗口 */
   clipboardQuickMode: boolean
+  /** Electron globalShortcut 加速器，如 Alt+Shift+O */
+  clipboardAccelerator: string
   clipboardClearSeconds: number
   closeWindowAction: CloseWindowAction
   /** 悬浮快捷搜索条 */

@@ -26,6 +26,7 @@ import {
   clampClipboardHistoryLimit,
   trimClipboardHistory,
 } from '@/shared/clipboardHistoryLimit'
+import { DEFAULT_ACCELERATORS } from '@/shared/globalAccelerator'
 import { applyClipboardFavoriteFlags, toggleClipboardFavorite } from '@/shared/clipboardFavorites'
 import { UiSwitch } from '@/components/ui'
 import {
@@ -61,6 +62,7 @@ const favoriteItems = ref<ClipboardItem[]>([])
 const selectedId = ref<string | null>(null)
 const unlocked = ref(false)
 const clipboardEnabled = ref(false)
+const clipboardAccelerator = ref<string>(DEFAULT_ACCELERATORS.clipboard)
 const clipboardPersistence = ref(false)
 const historyLimit = ref(CLIPBOARD_HISTORY_LIMIT_DEFAULT)
 const settingsLoaded = ref(false)
@@ -323,6 +325,7 @@ async function refreshInternal(): Promise<void> {
   ])
   unlocked.value = Boolean(status?.unlocked)
   clipboardEnabled.value = Boolean(settings?.clipboardEnabled)
+  clipboardAccelerator.value = settings?.clipboardAccelerator || DEFAULT_ACCELERATORS.clipboard
   clipboardPersistence.value = Boolean(settings?.clipboardPersistence)
   historyLimit.value = clampClipboardHistoryLimit(settings?.clipboardHistoryLimit)
   quickMode.value = Boolean(settings?.clipboardQuickMode)
@@ -797,7 +800,7 @@ onUnmounted(() => {
       <div class="clipboard-popup-title">
         <span class="clipboard-popup-drag-handle" aria-hidden="true"><GripHorizontal :size="16" /></span>
         <span class="clipboard-popup-icon"><Clipboard :size="17" /></span>
-        <div><strong>{{ t('tools.clipboardTitle') }}</strong><span>{{ t('tools.clipboardShortcutHint') }}</span></div>
+        <div><strong>{{ t('tools.clipboardTitle') }}</strong><span>{{ clipboardAccelerator }}</span></div>
       </div>
       <div class="clipboard-popup-head-actions">
         <button type="button" class="clipboard-popup-minimize" :aria-label="t('titlebar.minimize')" :title="t('titlebar.minimize')" @click="minimizeWindow">

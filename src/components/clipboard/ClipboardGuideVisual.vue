@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import gsap from 'gsap'
 import { Check, Clipboard, HardDrive, Keyboard, Pin, ToggleRight } from 'lucide-vue-next'
+import { acceleratorKeyLabel, splitAccelerator } from '@/shared/globalAccelerator'
 
 const props = defineProps<{
   step: number
+  accelerator?: string
 }>()
 
 const { t } = useI18n()
 const rootRef = ref<HTMLElement | null>(null)
 let ctx: gsap.Context | null = null
+const shortcutCaps = computed(() =>
+  splitAccelerator(props.accelerator || 'Alt+Shift+O').map((part) => acceleratorKeyLabel(part)),
+)
 
 function killAnimations(): void {
   ctx?.revert()
@@ -189,11 +194,13 @@ onUnmounted(() => {
         class="guide-visual__shortcut"
         data-guide-part
       >
-        <kbd class="guide-visual__keycap">Shift</kbd>
-        <span>+</span>
-        <kbd class="guide-visual__keycap">Alt</kbd>
-        <span>+</span>
-        <kbd class="guide-visual__keycap">O</kbd>
+        <template
+          v-for="(cap, index) in shortcutCaps"
+          :key="`${cap}-${index}`"
+        >
+          <span v-if="index > 0">+</span>
+          <kbd class="guide-visual__keycap">{{ cap }}</kbd>
+        </template>
       </div>
       <Keyboard
         class="guide-visual__scene-icon"

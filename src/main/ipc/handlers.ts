@@ -2,18 +2,17 @@ import { clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
 import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
-import { hideQuickBarOnLock, registerQuickBarShortcut } from '../quickBar'
-import { hideClipboardWindow, hideClipboardWindowOnLock, refreshClipboardWindowIfVisible, registerClipboardWindowShortcut } from '../clipboardWindow'
+import { hideQuickBarOnLock } from '../quickBar'
+import { hideClipboardWindow, hideClipboardWindowOnLock, refreshClipboardWindowIfVisible } from '../clipboardWindow'
 import { hideDetailWindowOnLock } from '../detailWindow'
 import {
   broadcastNotesChanged,
   closeNoteWindowForDeletion,
   hideNoteWindowsOnLock,
-  registerNotesManagerShortcut,
   requestNoteDraftFlush,
   restoreNoteWindowsAfterUnlock,
 } from '../noteWindows'
-import { registerMainWindowShortcut } from '../mainWindowShortcut'
+import { reregisterGlobalShortcuts } from '../shortcutRegistration'
 import { isLaunchAtLoginAvailable, syncLaunchAtLogin } from '../launchAtLogin'
 import { IPC } from '../../shared/types'
 import type {
@@ -569,13 +568,11 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.launchAtLoginAvailable, () => isLaunchAtLoginAvailable())
 
   ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
+    const previous = getSecuritySettings()
     const next = updateSecuritySettings(partial)
     if (partial.clipboardEnabled === false) hideClipboardWindow()
     if (partial.clipboardHistoryLimit !== undefined) refreshClipboardWindowIfVisible()
-    registerQuickBarShortcut()
-    registerClipboardWindowShortcut()
-    registerNotesManagerShortcut()
-    registerMainWindowShortcut()
+    reregisterGlobalShortcuts(partial, previous)
     syncBrowserBridge()
     if (partial.launchAtLoginEnabled !== undefined) {
       syncLaunchAtLogin(next.launchAtLoginEnabled)

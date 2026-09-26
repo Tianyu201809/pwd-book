@@ -1,5 +1,6 @@
 import { BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
 import { join } from 'path'
+import { DEFAULT_ACCELERATORS, normalizeAccelerator } from '../shared/globalAccelerator'
 import { QUICK_BAR_RESULTS_MAX_HEIGHT_PX } from '../shared/quickBarLimits'
 import { IPC_EVENTS } from '../shared/types'
 import { getSecuritySettings } from './services/settingsService'
@@ -127,16 +128,23 @@ export function unregisterQuickBarShortcut(): void {
   }
 }
 
-export function registerQuickBarShortcut(): void {
+export function registerQuickBarShortcut(): boolean {
   const { quickBarEnabled, quickBarAccelerator } = getSecuritySettings()
   unregisterQuickBarShortcut()
-  if (!quickBarEnabled) return
-  const ok = globalShortcut.register(quickBarAccelerator, () => {
-    toggleQuickBar()
-  })
-  if (ok) {
-    registeredAccelerator = quickBarAccelerator
+  if (!quickBarEnabled) return true
+  const accelerator = normalizeAccelerator(quickBarAccelerator) ?? DEFAULT_ACCELERATORS.quickBar
+  try {
+    const ok = globalShortcut.register(accelerator, () => {
+      toggleQuickBar()
+    })
+    if (ok) {
+      registeredAccelerator = accelerator
+      return true
+    }
+  } catch {
+    return false
   }
+  return false
 }
 
 export function notifyQuickBarThemeSync(): void {

@@ -3,9 +3,11 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookOpen, Clipboard, Clock3, HardDrive, Layers } from 'lucide-vue-next'
 import ClipboardGuideModal from '@/components/clipboard/ClipboardGuideModal.vue'
+import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { UiButton, UiCard, UiSelect, UiSwitch } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { CLIPBOARD_HISTORY_LIMITS } from '@/shared/clipboardHistoryLimit'
+import { DEFAULT_ACCELERATORS, otherAccelerators } from '@/shared/globalAccelerator'
 
 const CLIPBOARD_SESSION_STORAGE_KEY = 'pwdbook-clipboard-session'
 const CLIPBOARD_PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
@@ -16,6 +18,15 @@ const { securitySettings, updateSecuritySettings, openClipboard } = useAppState(
 
 const clipboardGuideOpen = ref(false)
 const historyEnabled = computed(() => securitySettings.value.clipboardEnabled)
+const accelerator = computed(() => securitySettings.value.clipboardAccelerator)
+const reserved = computed(() =>
+  otherAccelerators(securitySettings.value, 'clipboard', {
+    notes: t('settings.shortcutSlotNotes'),
+    clipboard: t('settings.shortcutSlotClipboard'),
+    quickBar: t('settings.shortcutSlotQuickBar'),
+    main: t('settings.shortcutSlotMain'),
+  }),
+)
 
 const clipboardExpirySelectOptions = computed(() => [
   { value: '30', label: t('settings.clipboardExpiry30s') },
@@ -40,6 +51,10 @@ const expiryLabel = computed(() => {
 
 async function onClipboardEnabledChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ clipboardEnabled: enabled })
+}
+
+async function saveAccelerator(next: string): Promise<void> {
+  await updateSecuritySettings({ clipboardAccelerator: next })
 }
 
 async function onClipboardDefaultExpiryChange(value: string): Promise<void> {
@@ -91,7 +106,7 @@ async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
         </p>
       </div>
       <div class="clipboard-hero-aside">
-        <span class="clipboard-shortcut">{{ t('tools.clipboardShortcutHint') }}</span>
+        <span class="clipboard-shortcut">{{ accelerator }}</span>
         <div class="clipboard-hero-actions">
           <UiButton
             variant="default"
@@ -172,9 +187,29 @@ async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
       </div>
     </div>
 
+    <UiCard class="settings-card shortcut-card">
+      <div class="shortcut-row">
+        <div>
+          <p class="row-title">
+            {{ t('settings.shortcutSection') }}
+          </p>
+          <p class="row-desc">
+            {{ t('settings.clipboardShortcutDesc') }}
+          </p>
+        </div>
+        <ShortcutRecorder
+          :accelerator="accelerator"
+          :fallback="DEFAULT_ACCELERATORS.clipboard"
+          :reserved="reserved"
+          :save="saveAccelerator"
+        />
+      </div>
+    </UiCard>
+
     <ClipboardGuideModal
       v-model:open="clipboardGuideOpen"
       :history-enabled="historyEnabled"
+      :accelerator="accelerator"
       @open-window="openClipboard"
     />
 
@@ -329,7 +364,8 @@ async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
   border-color: color-mix(in srgb, var(--accent-primary) 22%, var(--border-default));
 }
 
-.power-row {
+.power-row,
+.shortcut-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -443,6 +479,11 @@ h4 {
 
   .policy-strip {
     grid-template-columns: 1fr;
+  }
+
+  .shortcut-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

@@ -11,6 +11,7 @@ const open = defineModel<boolean>('open', { default: false })
 
 const props = defineProps<{
   historyEnabled: boolean
+  accelerator?: string
 }>()
 
 const emit = defineEmits<{
@@ -36,6 +37,9 @@ const steps = computed(() => {
 })
 
 const stepMeta = computed(() => steps.value[currentStep.value])
+const stepDescription = computed(() =>
+  (stepMeta.value?.desc ?? '').replaceAll('{accelerator}', props.accelerator || 'Alt+Shift+O'),
+)
 const progressPercent = computed(() => ((currentStep.value + 1) / STEP_COUNT) * 100)
 const isLastStep = computed(() => currentStep.value >= STEP_COUNT - 1)
 const showOpenWindow = computed(() => currentStep.value === 1 || currentStep.value === 5)
@@ -225,14 +229,17 @@ onUnmounted(() => {
         {{ t('settings.clipboardGuide.stepOf', { current: currentStep + 1, total: STEP_COUNT }) }}
       </p>
 
-      <ClipboardGuideVisual :step="currentStep" />
+      <ClipboardGuideVisual
+        :step="currentStep"
+        :accelerator="accelerator"
+      />
 
       <div
         v-if="stepMeta"
         class="guide-step-copy"
       >
         <h4>{{ stepMeta.title }}</h4>
-        <p>{{ stepMeta.desc }}</p>
+        <p>{{ stepDescription }}</p>
         <p
           v-if="stepMeta.tip"
           class="guide-step-tip"
