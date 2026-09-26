@@ -69,8 +69,9 @@
 
 ### quickBar / mainWindowShortcut
 
-- `src/main/quickBar.ts` — 快捷条窗口与 `Alt+Shift+P` 注册
-- `src/main/mainWindowShortcut.ts` — 主窗口 `Alt+Shift+M` 注册，调用 `showFromTray()`
+- `src/main/quickBar.ts` — 快捷条窗口；快捷键默认 `Alt+Shift+P`（**v1.43.0** 读 `quickBarAccelerator`）
+- `src/main/mainWindowShortcut.ts` — 主窗口快捷键默认 `Alt+Shift+M`，调用 `showFromTray()`
+- `src/main/shortcutRegistration.ts` — **v1.43.0** `settings:update` 时重注册四组快捷键，占用则回滚并抛 `SHORTCUT_IN_USE`
 
 ### clipboardWindow（**v1.32.0**）
 
@@ -81,14 +82,14 @@
 | `showClipboardWindow` / `toggleClipboardWindow` | 已解锁且已开启剪切板历史则显示/切换 760×680 无边框置顶窗；未解锁改 `showFromTray()`；功能关闭则拦截并提示去设置 |
 | `hideClipboardWindow` / `hideClipboardWindowOnLock` | 隐藏；锁定时由 `vault:lock` 调用 |
 | `destroyClipboardWindow` | `before-quit` 销毁窗口并重置固定状态 |
-| `registerClipboardWindowShortcut` | 注册 `Alt+Shift+O`；启动与 `settings:update` 时调用 |
+| `registerClipboardWindowShortcut` | 注册 `clipboardAccelerator`（默认 `Alt+Shift+O`）；启动时直接调用，`settings:update` 经 `reregisterGlobalShortcuts` |
 | `registerClipboardWindowIpc` | `clipboard-window:show` / `hide` / `get-pinned` / `toggle-pinned`；主题同步 |
 
-未固定时失焦（点到其他程序或其它窗口）会收起；固定后失焦保持可见。关闭也可用 Esc、关闭按钮或再次 `Alt+Shift+O`。**v1.34.0** 默认未固定。
+未固定时失焦（点到其他程序或其它窗口）会收起；固定后失焦保持可见。关闭也可用 Esc、关闭按钮或再次按下当前剪切板快捷键。**v1.34.0** 默认未固定。**v1.43.0** 托盘「打开剪切板」同样走 `showClipboardWindow()`。
 
 ### noteService / noteWindows（**v1.38.0**）
 
-`src/main/services/noteService.ts` 与 `src/main/noteWindows.ts` — 加密便签与窗口生命周期。**v1.39.0** `registerNotesManagerShortcut()` 按 `notesManagerShortcutEnabled` 注册 `Alt+Shift+N`。详见 [sticky-notes.md](./sticky-notes.md)。
+`src/main/services/noteService.ts` 与 `src/main/noteWindows.ts` — 加密便签与窗口生命周期。**v1.39.0** `registerNotesManagerShortcut()` 按 `notesManagerShortcutEnabled` 注册快捷键（默认 `Alt+Shift+N`，**v1.43.0** 可改）。桌面窗最小化走 `window-minimize`（非主窗口 `win.minimize()`）；锁定恢复包含已最小化的窗。详见 [sticky-notes.md](./sticky-notes.md)。
 
 | 函数 / 行为 | 说明 |
 |-------------|------|

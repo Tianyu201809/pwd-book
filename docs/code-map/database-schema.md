@@ -110,15 +110,16 @@
 | `clipboard_persistence` | 重启后保留剪切板历史（v1.32.0，默认 `false`） |
 | `clipboard_history_limit` | 历史条数上限：`20` / `50` / `100` / `200`（v1.33.0，默认 `50`） |
 | `clipboard_quick_mode` | 剪切板小窗快捷模式：回车复制后关闭（v1.34.0，默认 `false`） |
+| `clipboard_accelerator` | 剪切板小窗全局快捷键（**v1.43.0**，默认 `Alt+Shift+O`）；始终注册 |
 | `close_window_action` | `ask` / `tray` / `quit` |
 | `trash_retention_days` | 回收站保留天数，默认 `30`（v1.7.0） |
 | `quick_bar_enabled` | 快捷搜索条开关 |
-| `quick_bar_accelerator` | 快捷条快捷键，默认 `Alt+Shift+P` |
+| `quick_bar_accelerator` | 快捷条快捷键，默认 `Alt+Shift+P`（**v1.43.0** 可在设置中录制更换） |
 | `quick_bar_recent_limit` | 快捷条最近打开/搜索结果条数（5–20，默认 5；**v1.26.0**） |
 | `main_window_shortcut_enabled` | 主窗口全局快捷键开关 |
-| `main_window_shortcut_accelerator` | 主窗口快捷键，默认 `Alt+Shift+M` |
+| `main_window_shortcut_accelerator` | 主窗口快捷键，默认 `Alt+Shift+M`（**v1.43.0** 可在设置中录制更换） |
 | `notes_manager_shortcut_enabled` | 便签管理窗口全局快捷键开关（**v1.39.0**，默认 `true`） |
-| `notes_manager_accelerator` | 便签管理窗口快捷键，默认 `Alt+Shift+N`（**v1.39.0**） |
+| `notes_manager_accelerator` | 便签管理窗口快捷键，默认 `Alt+Shift+N`（**v1.39.0**；**v1.43.0** 可录制更换） |
 | `browser_fill_enabled` | 浏览器自动填充桥接开关（v1.6.0） |
 | `attachment_deletion_tombstones` | JSON：`Record<attachmentId, deletedAt>`，同步删除合并用（v1.22.0） |
 | `browser_extension_id` | 上次注册的 Chrome 扩展 ID（32 位 a–p） |

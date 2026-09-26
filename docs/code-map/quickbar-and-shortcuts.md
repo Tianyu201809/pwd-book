@@ -4,32 +4,40 @@
 
 **v1.26.0**：启动优先级为本地程序 → 打开网址 → 无目标时 `quickbar:focus-entry` 定位主窗口；`quickBarRecentLimit`（5–20）同时约束最近打开与搜索结果；结果区固定高度滚动；`before-quit` / `markQuitting` 保证 macOS 可退出。
 
+**v1.43.0**：便签、剪切板、悬浮窗、主窗口四组启动快捷键都可在对应设置页用 `ShortcutRecorder` 录制更换。校验在 `src/shared/globalAccelerator.ts`，重注册与占用回滚在 `src/main/shortcutRegistration.ts`。
+
 ## 模块一览
 
 | 模块 | 路径 | 职责 |
 |------|------|------|
 | 快捷条窗口 | `src/main/quickBar.ts` | 置顶 BrowserWindow、显示/隐藏、快捷条全局快捷键 |
 | 主窗口快捷键 | `src/main/mainWindowShortcut.ts` | 全局快捷键唤起主窗口 |
+| 快捷键校验 | `src/shared/globalAccelerator.ts` | **v1.43.0** 规范化、主键修饰键、四槽冲突 |
+| 重注册 | `src/main/shortcutRegistration.ts` | **v1.43.0** `settings:update` 后注册四组快捷键；占用则回滚被改字段 |
+| 录制 UI | `src/components/ShortcutRecorder.vue` | 点击录制、Esc 取消、恢复默认、冲突提示 |
 | 最近打开 | `src/main/services/quickBarRecentService.ts` | 快捷条专用最近列表（与 `last_used_at` 分离） |
 | 快捷条 UI | `src/components/QuickBarApp.vue` | 搜索、最近打开、移除；Enter：程序 → 网址 → 定位主窗口 |
 | 样式 | `src/assets/styles/quickbar.css` | 快捷条独立样式（含选中高亮） |
 | 渲染入口 | `src/renderer/quickbar.html` + `quickbar.ts` | 独立 Vue 应用 |
 
-设置项定义于 `SecuritySettings`（`src/shared/types.ts`），界面在 **设置 → 悬浮条**（`QuickBarSettingsPanel.vue`，**v1.33.0** 从安全页拆出）。持久化键见 [database-schema.md](./database-schema.md#快捷条与快捷键)。
+设置项定义于 `SecuritySettings`（`src/shared/types.ts`），界面在 **设置 → 悬浮条**（`QuickBarSettingsPanel.vue`，**v1.33.0** 从安全页拆出）。**v1.43.0** 悬浮条页顺序：悬浮条开关、其下独立的「快捷键唤起主窗口」开关、策略条、**启动快捷键**（悬浮窗与主窗口各一块录制）、快捷条显示条数（悬浮条关闭时该段休眠）。便签与剪切板的录制分别在各自设置页。持久化键见 [database-schema.md](./database-schema.md#快捷条与快捷键)。
 
 ## 全局快捷键
 
-| 功能 | 默认快捷键 | 设置键 | 注册函数 |
-|------|------------|--------|----------|
-| 快捷搜索条 | `Alt+Shift+P` | `quickBarEnabled` | `registerQuickBarShortcut()` |
-| 唤起主窗口 | `Alt+Shift+M` | `mainWindowShortcutEnabled` | `registerMainWindowShortcut()` |
-| 剪切板历史 | `Alt+Shift+O` | （始终注册） | `registerClipboardWindowShortcut()`（**v1.32.0**，见 [clipboard-history.md](./clipboard-history.md)） |
-| 便签管理 | `Alt+Shift+N` | `notesManagerShortcutEnabled` | `registerNotesManagerShortcut()`（**v1.39.0**，设置 → 便签，见 [sticky-notes.md](./sticky-notes.md)） |
+| 功能 | 默认快捷键 | 开关 | 组合键设置 | 注册函数 |
+|------|------------|------|------------|----------|
+| 快捷搜索条 | `Alt+Shift+P` | `quickBarEnabled` | `quickBarAccelerator` | `registerQuickBarShortcut()` |
+| 唤起主窗口 | `Alt+Shift+M` | `mainWindowShortcutEnabled` | `mainWindowShortcutAccelerator` | `registerMainWindowShortcut()` |
+| 剪切板历史 | `Alt+Shift+O` | （始终注册） | `clipboardAccelerator`（**v1.43.0**） | `registerClipboardWindowShortcut()`（**v1.32.0**，见 [clipboard-history.md](./clipboard-history.md)） |
+| 便签管理 | `Alt+Shift+N` | `notesManagerShortcutEnabled` | `notesManagerAccelerator`（**v1.43.0** 可改） | `registerNotesManagerShortcut()`（**v1.39.0**，设置 → 便签，见 [sticky-notes.md](./sticky-notes.md)） |
 
-- 应用启动时（`src/main/index.ts`）与 **设置更新**（`handlers.ts` → `settings:update`）时重新注册。
+- 应用启动时（`src/main/index.ts`）分别注册；**设置更新**（`handlers.ts` → `settings:update`）经 `reregisterGlobalShortcuts()` 重新注册四组。
 - 退出前（`before-quit`）统一 `unregister*`。
+- **v1.43.0** `resolveAccelerators()`：组合键须含 Ctrl、Alt、Super 或 Command（仅 Shift 无效，`SHORTCUT_INVALID`）；四个槽位即使对应功能关闭也不能重复（`SHORTCUT_CONFLICT`）。修饰键顺序规范为 Command、Ctrl、Alt、Shift、Super。
+- 本次改过的快捷键或开关若 `globalShortcut.register` 失败，回滚该字段（只改开关则回滚开关）并抛出 `SHORTCUT_IN_USE`。无关设置更新时，已有快捷键注册失败不抛错。
 - 快捷条锁定时：`showQuickBar()` 会改为 `showFromTray()` 引导解锁。
-- 主窗口快捷键：始终 `showFromTray()`（还原最小化、显示并聚焦）。
+- 主窗口快捷键：始终 `showFromTray()`（还原最小化、显示并聚焦）。开关与录制分开：开关在悬浮条开关正下方，录制在「启动快捷键」。
+- 托盘（**v1.43.0**）顺序见 `trayMenuActions()`：显示主窗口、快捷搜索（仅悬浮条开启）、打开剪切板、打开便签、设置、退出。文案在 `src/shared/trayLabels.ts`。
 
 ## 「最近打开」数据模型
 
@@ -117,7 +125,7 @@
 1. 读 `app_settings` 中 `quick_bar_recent_ids` 实际值（`[]` vs 未设置 vs 有 id）。
 2. 确认调用链是 `removeQuickBarRecentEntry` 还是误用 `clearEntryLastUsed`（已废弃）。
 3. 快捷条刷新：`onQuickBarShown` → `refreshEntries()` → `listQuickBarRecent()`。
-4. 全局快捷键冲突：Electron `globalShortcut.register` 返回 false 时静默失败，检查是否与系统/其他应用占用相同 accelerator。
+4. 全局快捷键：设置里改组合键失败会回滚并提示占用（`SHORTCUT_IN_USE`）。启动时注册失败仍不打断启动，检查是否与系统或其他应用占用同一 accelerator。四个功能之间的重复在保存前就会被 `SHORTCUT_CONFLICT` 拒绝。
 
 ## 相关 UI 文件
 

@@ -1,19 +1,19 @@
 # 剪切板历史（独立小窗口）
 
-**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导。**v1.34.0** 第一次打开默认不固定；可开快捷模式，回车复制后关窗。未固定时失焦（点到其他程序）会收起小窗。**v1.42.0** 文本与图片条目支持自定义标题，且修复小窗启动偶发卡死/空白问题。
+**v1.32.0** 在独立渲染窗口中管理本机复制过的文本与图片：轮询系统剪切板、按条过期清理、可选重启后保留。历史记录不写入 SQLite，仅存渲染进程 `sessionStorage` / `localStorage`。**v1.33.0** 设置迁至独立「剪切板」Tab，新增条数上限与使用向导。**v1.34.0** 第一次打开默认不固定；可开快捷模式，回车复制后关窗。未固定时失焦（点到其他程序）会收起小窗。**v1.42.0** 文本与图片条目支持自定义标题，且修复小窗启动偶发卡死/空白问题。**v1.43.0** 唤出快捷键可录制更换（默认仍是 `Alt+Shift+O`），托盘右键可打开剪切板。
 
 ## 模块一览
 
 | 模块 | 路径 | 职责 |
 |------|------|------|
-| 小窗口 | `src/main/clipboardWindow.ts` | 无边框置顶窗、`Alt+Shift+O`、未固定失焦隐藏、锁定隐藏 |
+| 小窗口 | `src/main/clipboardWindow.ts` | 无边框置顶窗、可改全局快捷键（默认 `Alt+Shift+O`）、未固定失焦隐藏、锁定隐藏 |
 | UI | `src/components/ClipboardWindowApp.vue` | 捕获、列表、预览、标题编辑、标题搜索、置顶、过期、分栏拖拽 |
 | 样式 | `src/assets/styles/clipboard-window.css` | 小窗口独立样式 |
 | 渲染入口 | `src/renderer/clipboard-window.html` + `clipboard-window.ts` | 独立 Vue 应用（`electron.vite.config.ts` → `clipboardWindow`） |
-| 设置 | `ClipboardSettingsPanel.vue`、`settingsService.ts` | 开关、清理周期、条数上限、持久化、使用向导 |
+| 设置 | `ClipboardSettingsPanel.vue`、`ShortcutRecorder.vue`、`settingsService.ts` | 开关、清理周期、条数上限、持久化、使用向导、**v1.43.0** 快捷键录制 |
 | 使用向导 | `src/components/clipboard/ClipboardGuideModal.vue`、`ClipboardGuideVisual.vue` | **v1.33.0** 设置页「使用向导」分步弹窗 |
 | 条数上限 | `src/shared/clipboardHistoryLimit.ts` | `20` / `50` / `100` / `200`，默认 `50`；先删最旧未固定项 |
-| 入口 | `TitleBar.vue`、`VaultSidebar.vue`、`useAppState.openClipboard` | 标题栏按钮、工具箱子菜单、唤起小窗 |
+| 入口 | `TitleBar.vue`、`VaultSidebar.vue`、`tray.ts`、`useAppState.openClipboard` | 标题栏按钮、工具箱子菜单、**v1.43.0** 托盘「打开剪切板」、唤起小窗 |
 
 设置项定义于 `SecuritySettings`（`src/shared/types.ts`），持久化键见 [database-schema.md](./database-schema.md#应用设置)。
 
@@ -31,7 +31,7 @@
 | 主题 / 刷新 | 显示时等待页面就绪后下发 `theme:changed` 与 `clipboard-window:shown`；渲染进程串行刷新并对 IPC 超时兜底 |
 | 退出 | `before-quit` 调用 `destroyClipboardWindow()` |
 
-全局快捷键 `Alt+Shift+O` 在启动与 `settings:update` 时注册，退出前注销。未开启「剪切板历史」时，标题栏、工具箱与快捷键都会拦截小窗，并提示到 **设置 → 剪切板** 开启。
+全局快捷键默认 `Alt+Shift+O`（`clipboard_accelerator`），**v1.43.0** 起可在 **设置 → 剪切板** 录制更换。始终注册：功能关闭时快捷键仍会唤起，但与标题栏、工具箱、托盘一样拦截小窗，并提示到 **设置 → 剪切板** 开启。启动与 `settings:update` 时经 `shortcutRegistration.ts` 重新注册，退出前注销。被系统占用时回滚该字段并抛出 `SHORTCUT_IN_USE`。使用向导里的按键提示跟随当前组合键。
 
 小窗内键盘（**v1.33.0**）：`↑`/`↓` 选择条目，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览，`Esc` 关闭。**v1.34.0** 开启**快捷模式**后，`Enter` 复制成功即关闭小窗（点击复制按钮不关）。`Delete` / `Backspace` 删除当前选中条目（输入框内除外），先弹出二次确认，确认后选中相邻下一条。列表按钮、预览删除与右键删除同样需要确认。复制成功经小窗 `ToastHost` 提示。
 
@@ -44,6 +44,7 @@
 | `clipboardPersistence` | `clipboard_persistence` | `false` | `true` 时写入 `localStorage`；关闭时删除持久化副本 |
 | `clipboardHistoryLimit` | `clipboard_history_limit` | `50` | **v1.33.0** `20` / `50` / `100` / `200`；先删最旧未固定项 |
 | `clipboardQuickMode` | `clipboard_quick_mode` | `false` | **v1.34.0** 小窗「快捷模式」：回车复制后关闭窗口 |
+| `clipboardAccelerator` | `clipboard_accelerator` | `Alt+Shift+O` | **v1.43.0** 唤出小窗的全局快捷键；始终注册 |
 
 与既有「剪贴板自动清除」（`clipboard_clear_*`，复制密码后清空系统剪贴板）相互独立，后者仍在 **设置 → 安全**。
 
@@ -88,9 +89,10 @@ ClipboardItem {
 
 | 入口 | 条件 |
 |------|------|
-| 全局快捷键 `Alt+Shift+O` | 始终注册；锁定态引导解锁；功能关闭时拦截并提示去设置 |
+| 全局快捷键（默认 `Alt+Shift+O`，**v1.43.0** 可改） | 始终注册；锁定态引导解锁；功能关闭时拦截并提示去设置 |
 | 标题栏剪切板按钮 | 已解锁且非详情小窗口；功能关闭时拦截并提示去设置 |
 | 侧栏 **工具箱 → 剪切板** | 已解锁；功能关闭时拦截并提示去设置 |
+| 托盘「打开剪切板」（**v1.43.0**） | `showClipboardWindow()`；锁定态引导解锁；功能关闭时拦截并提示去设置 |
 
 ## 安全边界
 

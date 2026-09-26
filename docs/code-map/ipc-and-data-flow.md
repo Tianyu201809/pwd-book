@@ -62,7 +62,7 @@
 | 通道 | 需解锁 | 说明 |
 |------|--------|------|
 | `settings:get` | 否 | `SecuritySettings` |
-| `settings:update` | 否 | 部分更新；会重新注册全局快捷键（快捷条 + 主窗口 + **v1.32.0** 剪切板 `Alt+Shift+O` + **v1.39.0** 便签 `Alt+Shift+N`）；同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
+| `settings:update` | 否 | 部分更新；**v1.43.0** 经 `reregisterGlobalShortcuts` 重注册四组全局快捷键（组合键可改，默认仍为快捷条 `Alt+Shift+P`、主窗口 `Alt+Shift+M`、剪切板 `Alt+Shift+O`、便签 `Alt+Shift+N`）。本次改过的快捷键被占用则回滚并返回 `SHORTCUT_IN_USE`。同步 `browserBridgeService`；变更 `launchAtLoginEnabled` 时同步 `launchAtLogin.ts`（**v1.21.0**） |
 | `launch-at-login:available` | 否 | 是否可注册系统登录项（`app.isPackaged`，**v1.23.0**） |
 | `clipboard:copy-secret` | 否 | 主进程写剪贴板 + 定时清除 |
 | `clipboard:read-system` | 否 | **v1.32.0** 读系统剪贴板文本 |

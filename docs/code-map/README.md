@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.41.0**（`package.json`）— 便签可复制全部内容。v1.40.0 起支持管理窗分栏调宽与右键移动；v1.39.0 起支持便签管理全局快捷键；v1.38.0 起有加密轻量便签。
+**当前版本：v1.43.0**（`package.json`）— 四组全局快捷键可录制更换；托盘可打开剪切板和便签；桌面便签可最小化；便签本右键可新建。v1.42.0 起剪切板支持条目标题；v1.41.0 起便签可复制全部内容。
 
 ## 文档索引
 
@@ -13,9 +13,9 @@
 | [renderer-ui.md](./renderer-ui.md) | 渲染进程：组件树、composables、状态 |
 | [ipc-and-data-flow.md](./ipc-and-data-flow.md) | IPC 通道表、解锁/保存/恢复流程图 |
 | [database-schema.md](./database-schema.md) | SQLite 表结构与 `app_settings` 键 |
-| [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试（**v1.26.0** 条数可配 / 定位主窗口 / 滚动） |
-| [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块、条数上限、使用向导；**v1.34.0** 默认不固定、快捷模式 |
-| [sticky-notes.md](./sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动；**v1.41.0** 复制全部内容 |
+| [quickbar-and-shortcuts.md](./quickbar-and-shortcuts.md) | 快捷搜索条、最近打开、全局快捷键与调试（**v1.26.0** 条数可配 / 定位主窗口 / 滚动；**v1.43.0** 四组启动快捷键可改） |
+| [clipboard-history.md](./clipboard-history.md) | **v1.32.0** 剪切板历史；**v1.33.0** 独立设置模块、条数上限、使用向导；**v1.34.0** 默认不固定、快捷模式；**v1.42.0** 条目标题；**v1.43.0** 快捷键可改、托盘入口 |
+| [sticky-notes.md](./sticky-notes.md) | **v1.38.0** 轻量便签；**v1.39.0** 管理窗快捷键；**v1.40.0** 分栏调宽与右键移动；**v1.41.0** 复制全部内容；**v1.42.0** 回收站预览布局；**v1.43.0** 桌面窗最小化、便签本右键新建、快捷键可改 |
 | [browser-autofill.md](./browser-autofill.md) | **v1.6.0** 浏览器扩展、Native Host、桥接协议、注册与安全（**v1.17.0** 安装向导与填充修复；**v1.15.0** 填充条拖拽/收起） |
 | [wifi-sync.md](./wifi-sync.md) | **v1.9.0** Wi-Fi 局域网同步、SyncBundle、合并与 IPC |
 | [folder-sync.md](./folder-sync.md) | **v1.19.0** 文件夹同步（Enpass 式）、Sync Hub、目录 merge-write |
@@ -67,7 +67,8 @@
 | 改 Wi-Fi 同步 / 合并 | [wifi-sync.md](./wifi-sync.md)、`wifiSyncService.ts`、`syncMergeService.ts`、`shared/syncMerge.ts` |
 | 改文件夹同步 / Sync Hub | [folder-sync.md](./folder-sync.md)、`folderSyncService.ts`、`SyncHubView.vue`、`FolderSyncView.vue` |
 | 改 Wi-Fi 同步冲突 UI | `WifiSyncView.vue`、`FolderSyncView.vue`、`sync/SyncConflictModal.vue`、`shared/syncMerge.ts` |
-| 改托盘文案 / 语言 | `shared/trayLabels.ts`、`main/tray.ts`；`app_settings.ui_locale` |
+| 改托盘文案 / 语言 / 打开剪切板与便签 | `shared/trayLabels.ts`、`main/tray.ts`；`app_settings.ui_locale`（**v1.43.0** 菜单含「打开剪切板」「打开便签」） |
+| 改全局快捷键录制 | `shared/globalAccelerator.ts`、`main/shortcutRegistration.ts`、`ShortcutRecorder.vue`（**v1.43.0**） |
 | 改托盘打开设置 | `main/tray.ts`（`openSettingsFromTray`）、`useAppState.ts`（`openSettingsFromTray`、`pendingScreenAfterUnlock`）、`App.vue`；`tray:open-settings`（**v1.23.0**） |
 | 改数据库损坏隔离 | `main/db/database.ts`（`isValidSqliteFile`、`quarantineCorruptDatabaseFile`）、`main/index.ts` 启动弹窗（**v1.23.0**） |
 | 改标题栏 / 最大化按钮 | `TitleBar.vue`、`tokens.css`（`--titlebar-*`）；`window:get-maximized` / `window:maximize-changed`（**v1.23.0**） |

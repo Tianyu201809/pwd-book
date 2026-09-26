@@ -89,7 +89,7 @@ App.vue
 
 ### NotesManagerApp / StickyNoteApp（**v1.38.0**）
 
-独立渲染入口 `notes.html` / `note.html`。管理窗含便签本、列表与块编辑器；桌面窗复用 `NoteEditor`。便签本右键重命名/删除；**v1.40.0** 管理窗分栏可调宽，便签列表右键可移动到其他便签本，编辑器工具栏仅显示便签本名称；**v1.41.0** 列表右键、工具栏、回收站预览和桌面窗标题栏可复制全部内容；底栏切换文本/待办。详见 [sticky-notes.md](./sticky-notes.md)。
+独立渲染入口 `notes.html` / `note.html`。管理窗含便签本、列表与块编辑器；桌面窗复用 `NoteEditor`。便签本右键可新建（**v1.43.0**，含默认本），非默认本还可重命名/删除；**v1.40.0** 管理窗分栏可调宽，便签列表右键可移动到其他便签本，编辑器工具栏仅显示便签本名称；**v1.41.0** 列表右键、工具栏、回收站预览和桌面窗标题栏可复制全部内容；**v1.43.0** 桌面窗标题栏可最小化到任务栏；底栏切换文本/待办。详见 [sticky-notes.md](./sticky-notes.md)。
 
 ### PanelEdge.vue（v1.17.0；**v1.20.0** 分割线/调宽）
 
@@ -103,7 +103,7 @@ App.vue
 - 自定义分类（非「全部 / 收藏」）支持 **右键菜单**：编辑（`CategoryManagePanel.openEditDialog`）、删除（空分类可删；**v1.25.0** 改用 `UiModal` 二次确认）。
 - **按住拖动排序**（v1.17.0）：Pointer 事件 + `TransitionGroup` 实时预览；纵向移动 **≥ `DRAG_ACTIVATION_PX`（15）** 才进入拖拽；边缘 `autoScrollNav`；`reorderSidebarCategories` 持久化；搜索激活时禁用。
 - **分类切换**（v1.18.0）：`onItemPointerDown` 在非当前分类上 **立即 `selectCategory`**（先于拖拽阈值判断）；`selectCategory` 将 `selectedEntryId` 置 `null`，右侧详情清空，不再回退列表首条。
-- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康、**v1.32.0** 剪切板、**v1.38.0** 便签）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。
+- **底部图标栏**（**v1.25.0**）：**工具箱**（随机密码、密码健康、**v1.32.0** 剪切板、**v1.38.0** 便签）、**管理**（分类/标签）、**回收站**、**设置** 四图标；悬停 tooltip，工具箱/管理弹出子菜单；`CategoryManagePanel` / `TagManagePanel` 无触发按钮挂载于侧栏内。**v1.24.0** / **v1.25.0** 监听 `pwdbook-tour-prepare` 展开对应子菜单。**v1.43.0** 工具箱「便签」不再显示快捷键提示。
 - **侧栏收缩**（v1.14.0）：右缘 `PanelEdge` 收起至 40px（`pwdbook-sidebar-collapsed`）；`clampSidebarWidth` 在视口不足时自动收起；展开后恢复拖拽调宽（`pwdbook-sidebar-width`）。
 
 > **v1.25.0 前**：「工具与设置」折叠区 + 侧栏内 `TagFilterPanel`（`pwdbook-sidebar-utilities-expanded` / `pwdbook-sidebar-tag-filter-expanded`）— 已移除，标签筛选迁至 `PasswordList.vue`。
@@ -121,10 +121,10 @@ App.vue
 
 - **v1.33.0** 起分区 Tab；现为安全 / 剪切板 / **便签** / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 关于；Tab 图标使用 `IconBadge`（v1.11.0）；侧栏 `overflow-y: auto`。
 - **安全** Tab：开机启动、自动锁定、**复制密码后清除系统剪贴板**、关闭窗口、邮箱备份、恢复密钥；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
-- **剪切板** Tab：`ClipboardSettingsPanel` — 历史开关、默认清理周期、条数上限、持久化、**使用向导**（`ClipboardGuideModal`）。
-- **便签** Tab（**v1.39.0**）：`NotesSettingsPanel` — 管理窗全局快捷键开关（默认 `Alt+Shift+N`）与加速器展示。
+- **剪切板** Tab：`ClipboardSettingsPanel` — 历史开关、默认清理周期、条数上限、持久化、**使用向导**（`ClipboardGuideModal`）、**v1.43.0** `ShortcutRecorder`（默认 `Alt+Shift+O`）。
+- **便签** Tab（**v1.39.0**）：`NotesSettingsPanel` — 管理窗全局快捷键开关；**v1.43.0** 可录制更换，默认 `Alt+Shift+N`。
 - **浏览器** Tab：`BrowserSettingsPanel` — 自动填充、Native Host、**安装向导**（`BrowserExtensionGuideModal` + `BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page`。
-- **悬浮条** Tab：`QuickBarSettingsPanel` — 快捷搜索、显示条数（5–20 → `quickBarRecentLimit`）、唤起主窗口快捷键。
+- **悬浮条** Tab：`QuickBarSettingsPanel` — 快捷搜索开关、其下独立的唤起主窗口开关、**v1.43.0**「启动快捷键」里的悬浮窗与主窗口录制、显示条数（5–20 → `quickBarRecentLimit`，悬浮条关闭时休眠）。
 - **回收站** Tab：`TrashSettingsPanel` — 保留期限 + 打开回收站。
 
 ### UiInput.vue（`components/ui/`）
