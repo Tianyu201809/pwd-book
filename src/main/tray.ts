@@ -3,8 +3,16 @@ import { existsSync } from 'fs'
 import { join } from 'path'
 import { getSetting } from './db/helpers'
 import { getSecuritySettings } from './services/settingsService'
+import { showClipboardWindow } from './clipboardWindow'
+import { openNotesManager } from './noteWindows'
 import { showQuickBar } from './quickBar'
-import { getTrayLabels, UI_LOCALE_SETTING_KEY, type TrayLocale } from '../shared/trayLabels'
+import {
+  getTrayLabels,
+  trayMenuActions,
+  UI_LOCALE_SETTING_KEY,
+  type TrayLocale,
+  type TrayMenuAction,
+} from '../shared/trayLabels'
 import { IPC_EVENTS } from '../shared/types'
 
 let tray: Tray | null = null
@@ -72,16 +80,30 @@ export function rebuildTrayMenu(): void {
 
   const labels = getTrayLabels(readTrayLocale())
   const quickBarEnabled = getSecuritySettings().quickBarEnabled
-  const contextMenu = Menu.buildFromTemplate([
-    { label: labels.showMain, click: () => showFromTray() },
-    ...(quickBarEnabled
-      ? [{ label: labels.quickSearch, click: () => showQuickBar() } as Electron.MenuItemConstructorOptions]
-      : []),
-    { label: labels.settings, click: () => openSettingsFromTray() },
-    { type: 'separator' },
-    { label: labels.quit, click: () => requestQuit() },
-  ])
+  const contextMenu = Menu.buildFromTemplate(
+    trayMenuActions(quickBarEnabled).map((action) => trayMenuItem(action, labels)),
+  )
   tray.setContextMenu(contextMenu)
+}
+
+function openNotesFromTray(): void {
+  if (!openNotesManager()) showFromTray()
+}
+
+function trayMenuItem(
+  action: TrayMenuAction | 'separator',
+  labels: ReturnType<typeof getTrayLabels>,
+): Electron.MenuItemConstructorOptions {
+  if (action === 'separator') return { type: 'separator' }
+  const click: Record<TrayMenuAction, () => void> = {
+    showMain: showFromTray,
+    quickSearch: showQuickBar,
+    clipboard: showClipboardWindow,
+    notes: openNotesFromTray,
+    settings: openSettingsFromTray,
+    quit: requestQuit,
+  }
+  return { label: labels[action], click: click[action] }
 }
 
 function ensureTray(): void {
