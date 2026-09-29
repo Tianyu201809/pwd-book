@@ -13,8 +13,9 @@ PwdBook 当前使用 Electron + Vue 3，版本号来自 `package.json`，electro
 ## 目标
 
 - 通过 `electron-updater` 使用 GitHub Releases 检查、下载和安装正式版本。
+- 提供持久化的“自动更新”开关，默认开启，用户可在“版本更新”栏目中关闭后台检查和自动下载。
 - 仅接受非 Draft、非 Prerelease 且版本号符合 SemVer 的 Release。
-- 启动完成后静默检查一次，之后每 6 小时检查一次；设置页可手动检查。
+- 自动更新开启时，启动完成后静默检查一次，之后每 6 小时检查一次；无论开关状态，设置页都可手动检查。
 - 将检查、下载进度、失败重试和重启安装全部放在现有设置的“版本更新”栏目中。
 - 将用户可见的栏目名称从“关于”改为“版本更新”，保留应用简介、当前版本和 Release 列表入口。
 - 支持当前构建平台：Windows x64、macOS x64/arm64、Linux x64 AppImage。
@@ -24,6 +25,7 @@ PwdBook 当前使用 Electron + Vue 3，版本号来自 `package.json`，electro
 
 - 不在本次范围内增加自建更新服务器、更新代理或账号鉴权。
 - 不自动重启、不在下载完成后强制退出、不修改保险库数据库格式。
+- 关闭自动更新后不执行启动检查、定时检查或后台下载，但仍允许用户手动检查并按需下载。
 - 不在本次范围内增加 Windows 代码签名或 macOS 公证；沿用当前未签名发布策略。
 - 不追踪 Draft、Prerelease 或不符合 SemVer 的 GitHub Release。
 
@@ -40,11 +42,13 @@ PwdBook 当前使用 Electron + Vue 3，版本号来自 `package.json`，electro
 - 仅在 `app.isPackaged` 且非截图模式初始化；开发环境不发起更新网络请求。
 - 配置 GitHub provider：`owner: Tianyu201809`、`repo: pwd-book`、`private: false`。
 - 设置 `autoDownload = true`，发现正式更新后立即在后台下载；“立即下载”仅作为自动下载失败后的手动重试入口。
+- 自动更新开关读取现有设置服务中的持久化 `autoUpdateEnabled`，默认值为 `true`。关闭时停止定时器并取消尚未完成的后台下载；已下载完成的更新仍可由用户手动重启安装。
 - 设置 `autoInstallOnAppQuit = false`，只在用户点击“重启并安装”时调用 `quitAndInstall()`。
 - 监听 `checking-for-update`、`update-available`、`update-not-available`、`download-progress`、`update-downloaded` 和 `error`，转换成 renderer 可消费的稳定状态对象。
-- 启动后首次检查在主窗口创建并完成加载后触发；后续使用 6 小时定时器。手动检查复用同一请求锁，避免并发检查。
+- 开启自动更新时，首次检查在主窗口创建并完成加载后触发，后续使用 6 小时定时器；手动检查复用同一请求锁，避免并发检查。
 - 仅展示正式版本：对返回版本执行 SemVer 解析，并拒绝 prerelease；provider 返回的 draft 不作为可用更新。
 - 通过 `webContents.send` 广播状态，并提供 IPC 查询当前快照、手动检查、开始下载和重启安装。
+- 手动检查不受自动更新开关限制；开关关闭时手动检查使用 `autoDownload = false`，仅在用户点击“立即下载”后调用 `downloadUpdate()`。
 
 内部状态包括：`idle`、`checking`、`available`、`downloading`、`downloaded`、`not-available`、`error`。状态可携带当前版本、目标版本、Release notes 纯文本、下载百分比和最近错误代码。远程 Release notes 只作为文本传递，不注入 HTML。
 
@@ -52,14 +56,17 @@ PwdBook 当前使用 Electron + Vue 3，版本号来自 `package.json`，electro
 
 在 `src/shared/types.ts` 增加更新相关 IPC channel 和事件常量；在 `src/main/ipc/handlers.ts` 注册查询、检查、下载、安装处理器；在 `src/preload/api.ts` 暴露类型化方法和事件订阅；在 `src/env.d.ts` 同步 `Window.electronAPI` 类型。事件监听器必须返回取消函数，供 Vue 组件卸载时清理。
 
+在现有 `SecuritySettings`、`settingsService` 和设置 IPC 更新流程中增加 `autoUpdateEnabled` 及对应数据库设置键。切换开关时主进程立即通知更新服务启停后台检查；该设置与保险库数据分离，沿用现有本地设置存储。
+
 ### 设置页
 
 修改 `src/components/SettingsView.vue`：
 
 - 继续使用内部 `SettingsTab = 'about'`，避免无关的导航状态迁移。
 - 将该栏目标题、侧栏标签和相关 i18n 文案统一改为“版本更新 / Version Updates”。
+- 增加“自动更新”开关，默认开启；关闭后明确显示自动检查和后台下载已停用。
 - 保留应用名称、当前版本、应用描述和“软件发布列表”外链。
-- 增加“检查更新”“立即下载（失败重试）”“重启并安装”等操作及状态反馈。
+- 增加“检查更新”“立即下载（失败重试）”“重启并安装”等操作及状态反馈。自动更新开启时发现新版本即后台下载；关闭时只有用户主动检查并点击下载才会下载。
 - 显示更新版本、Release notes 摘要和下载百分比；下载期间允许用户离开该页面，状态由 IPC 快照恢复。
 - 对开发版、无可用平台资产或不支持自动更新的情况隐藏安装动作，保留版本信息和 Release 列表入口。
 
@@ -114,6 +121,7 @@ updateService 状态机
 ### 自动化测试
 
 - 更新服务：正式版本过滤、SemVer 比较、状态转换、并发检查锁、错误映射和事件广播。
+- 更新开关：默认值、持久化读写、关闭时停止后台任务、开启后恢复检查，以及关闭状态下的手动检查/下载。
 - IPC/preload：查询、手动检查、下载、安装调用以及监听取消函数。
 - 设置页：无更新、发现更新、下载中、已下载、失败和开发环境状态下的文案与按钮行为。
 - 运行现有 `npm run typecheck`、`npm run lint`、`npm test`。
@@ -132,8 +140,9 @@ updateService 状态机
 
 - `package.json`、`package-lock.json`：更新依赖、GitHub publish 配置、macOS ZIP target。
 - `.github/workflows/release.yml`：发布原始更新资产和元数据。
-- `src/main/services/updateService.ts`：新增核心更新服务。
-- `src/main/index.ts`、`src/main/ipc/handlers.ts`、`src/shared/types.ts`、`src/preload/api.ts`、`src/env.d.ts`：生命周期、IPC 和类型桥接。
+- `src/main/services/updateService.ts`：新增核心更新服务和自动更新开关联动。
+- `src/main/services/settingsService.ts`、`src/shared/types.ts`：持久化 `autoUpdateEnabled` 设置及其类型。
+- `src/main/index.ts`、`src/main/ipc/handlers.ts`、`src/shared/types.ts`、`src/preload/api.ts`、`src/env.d.ts`：生命周期、IPC、更新开关和类型桥接。
 - `src/components/SettingsView.vue`、中英文 i18n：版本更新栏目和交互。
 - 新增更新服务及设置页相关测试文件。
 
