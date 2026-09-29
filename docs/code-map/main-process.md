@@ -49,7 +49,11 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**便签管理快捷键**、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**等）。界面分区见 **设置 → 安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站**（**v1.33.0**；便签 Tab 为 **v1.39.0**）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**便签管理快捷键**、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**、**自动更新开关**（**v1.44.0**）等）。界面分区见 **设置 → 安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 版本更新**（**v1.33.0**；便签 Tab 为 **v1.39.0**）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+
+### updateService（**v1.44.0**）
+
+`src/main/services/updateService.ts` 封装 `electron-updater`，仅在正式打包环境连接 GitHub Releases `Tianyu201809/pwd-book`。自动更新开启时启动后检查一次、每 6 小时检查一次并后台下载正式版本；关闭后停止自动检查和下载，但保留设置页手动检查、下载与重启安装。更新状态通过 `update:*` IPC 通道和 `update:status-changed` 事件同步到“版本更新”栏目。
 
 ### browserBridgeService / browserMatchService / nativeHostRegistryService（v1.6.0）
 

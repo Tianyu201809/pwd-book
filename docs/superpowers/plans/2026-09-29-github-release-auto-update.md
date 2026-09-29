@@ -131,7 +131,7 @@ it('cancels an active background download when automatic updates are disabled', 
 it('maps download-progress and update-downloaded events to stable status', ...)
 ```
 
-Use mocked `app.isPackaged = true` and a stable `1.43.0` update fixture for the packaged cases. Assert `autoDownload` is `true` for scheduled checks with the preference enabled, `false` for manual checks while disabled, and `quitAndInstall` is only called by `installUpdate()`.
+Use mocked `app.isPackaged = true` and a stable `1.44.0` update fixture for the packaged cases. Assert `autoDownload` is `true` for scheduled checks with the preference enabled, `false` for manual checks while disabled, and `quitAndInstall` is only called by `installUpdate()`.
 
 - [ ] **Step 3: Run the focused test and verify it fails**
 

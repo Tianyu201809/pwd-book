@@ -16,7 +16,7 @@ App.vue
 │   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge；v1.18.0 pointerdown 立即切换分类）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作；**v1.22.0** 列表/方块布局
 │   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）；附件与自定义字段（**v1.22.0**）；v1.14.0 弹出小窗口；v1.17.0 PanelEdge
-├── SettingsView.vue          # 设置页 Tab 容器（安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 关于）
+├── SettingsView.vue          # 设置页 Tab 容器（安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 版本更新）
 │   ├── ClipboardSettingsPanel.vue
 │   ├── clipboard/ClipboardGuideModal.vue   # v1.33.0 使用向导
 │   ├── NotesSettingsPanel.vue              # v1.39.0 便签管理快捷键
@@ -119,13 +119,14 @@ App.vue
 
 ### SettingsView.vue
 
-- **v1.33.0** 起分区 Tab；现为安全 / 剪切板 / **便签** / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 关于；Tab 图标使用 `IconBadge`（v1.11.0）；侧栏 `overflow-y: auto`。
+- **v1.33.0** 起分区 Tab；现为安全 / 剪切板 / **便签** / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 版本更新；Tab 图标使用 `IconBadge`（v1.11.0）；侧栏 `overflow-y: auto`。
 - **安全** Tab：开机启动、自动锁定、**复制密码后清除系统剪贴板**、关闭窗口、邮箱备份、恢复密钥；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
 - **剪切板** Tab：`ClipboardSettingsPanel` — 历史开关、默认清理周期、条数上限、持久化、**使用向导**（`ClipboardGuideModal`）、**v1.43.0** `ShortcutRecorder`（默认 `Alt+Shift+O`）。
 - **便签** Tab（**v1.39.0**）：`NotesSettingsPanel` — 管理窗全局快捷键开关；**v1.43.0** 可录制更换，默认 `Alt+Shift+N`。
 - **浏览器** Tab：`BrowserSettingsPanel` — 自动填充、Native Host、**安装向导**（`BrowserExtensionGuideModal` + `BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page`。
 - **悬浮条** Tab：`QuickBarSettingsPanel` — 快捷搜索开关、其下独立的唤起主窗口开关、**v1.43.0**「启动快捷键」里的悬浮窗与主窗口录制、显示条数（5–20 → `quickBarRecentLimit`，悬浮条关闭时休眠）。
 - **回收站** Tab：`TrashSettingsPanel` — 保留期限 + 打开回收站。
+- **版本更新** Tab（**v1.44.0**）：当前版本、GitHub Releases 发布列表、自动更新开关、检查/下载进度、重启安装与错误重试；状态由 `update:status-changed` 事件实时同步。
 
 ### UiInput.vue（`components/ui/`）
 

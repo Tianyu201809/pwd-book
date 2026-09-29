@@ -71,7 +71,7 @@ import {
 } from './updateService'
 
 const stableInfo = {
-  version: '1.43.0',
+  version: '1.44.0',
   releaseNotes: 'Bug fixes',
   files: [],
   path: '',
@@ -105,7 +105,7 @@ describe('updateService', () => {
     mocks.app.isPackaged = true
     mocks.settings.autoUpdateEnabled = false
     mocks.updater.checkForUpdates.mockResolvedValue({
-      updateInfo: { ...stableInfo, version: '1.43.0-beta.1' },
+      updateInfo: { ...stableInfo, version: '1.44.0-beta.1' },
     })
     initializeUpdateService()
     const result = await checkForUpdates(true)
@@ -118,7 +118,7 @@ describe('updateService', () => {
     initializeUpdateService()
     await checkForUpdates(false)
     expect(mocks.updater.autoDownload).toBe(true)
-    expect(getUpdateStatus()).toMatchObject({ state: 'available', version: '1.43.0' })
+    expect(getUpdateStatus()).toMatchObject({ state: 'available', version: '1.44.0' })
   })
 
   it('uses manual download when the preference is disabled', async () => {

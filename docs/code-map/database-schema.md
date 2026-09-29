@@ -103,6 +103,7 @@
 |-----|------|
 | `auto_lock_minutes` | 自动锁定分钟数；正整数为空闲锁定分钟；`-1` 表示跟随系统锁屏（v1.8.0，`AUTO_LOCK_FOLLOW_SYSTEM`） |
 | `launch_at_login_enabled` | 开机自动启动（v1.21.0）；`true` / `false`，默认 `false` |
+| `auto_update_enabled` | GitHub Releases 自动更新开关（**v1.44.0**）；`true` / `false`，默认 `true` |
 | `clipboard_clear_enabled` | 剪贴板定时清除 |
 | `clipboard_clear_seconds` | 清除延迟秒数 |
 | `clipboard_enabled` | 剪切板历史系统监听（v1.32.0，默认 `false`） |
