@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import packageJson from '../../package.json'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
@@ -38,7 +38,7 @@ import ExportDataModal from '@/components/export/ExportDataModal.vue'
 import { useAppState } from '@/composables/useAppState'
 import type { ExportDestinationId } from '@/shared/exportFormats'
 import type { SettingsTab } from '@/types'
-import { AUTO_LOCK_FOLLOW_SYSTEM } from '@/shared/types'
+import { AUTO_LOCK_FOLLOW_SYSTEM, type UpdateStatus } from '@/shared/types'
 import { vaultApi } from '@/services/vaultApi'
 import { parseErrorMessage } from '@/shared/utils'
 import { useToast } from '@/composables/useToast'
@@ -64,6 +64,8 @@ const statusMessage = ref('')
 const importModalOpen = ref(false)
 const exportModalOpen = ref(false)
 const launchAtLoginAvailable = ref(true)
+const updateStatus = ref<UpdateStatus>({ state: 'idle', currentVersion: packageJson.version })
+let removeUpdateStatusListener: (() => void) | null = null
 const RELEASE_LIST_URL = 'https://github.com/Tianyu201809/pwd-book/releases'
 
 const tabs = computed(() => [
@@ -115,6 +117,22 @@ async function onLaunchAtLoginChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ launchAtLoginEnabled: enabled })
 }
 
+async function onAutoUpdateChange(enabled: boolean): Promise<void> {
+  await updateSecuritySettings({ autoUpdateEnabled: enabled })
+}
+
+async function checkForUpdates(): Promise<void> {
+  updateStatus.value = await window.electronAPI?.checkForUpdates?.() ?? updateStatus.value
+}
+
+async function downloadUpdate(): Promise<void> {
+  updateStatus.value = await window.electronAPI?.downloadUpdate?.() ?? updateStatus.value
+}
+
+function installUpdate(): void {
+  void window.electronAPI?.installUpdate?.()
+}
+
 async function openReleaseList(): Promise<void> {
   try {
     await vaultApi.openExternal(RELEASE_LIST_URL)
@@ -127,6 +145,16 @@ onMounted(() => {
   void window.electronAPI?.isLaunchAtLoginAvailable?.().then((available) => {
     launchAtLoginAvailable.value = available
   })
+  void window.electronAPI?.getUpdateStatus?.().then((next) => {
+    if (next) updateStatus.value = next
+  })
+  removeUpdateStatusListener = window.electronAPI?.onUpdateStatusChanged?.((next) => {
+    updateStatus.value = next
+  }) ?? null
+})
+
+onBeforeUnmount(() => {
+  removeUpdateStatusListener?.()
 })
 
 function openExportModal(): void {
@@ -425,6 +453,79 @@ async function handleReset(): Promise<void> {
             <p class="about-desc">
               {{ t('settings.aboutDesc') }}
             </p>
+            <div class="row update-preference-row">
+              <div>
+                <p class="row-title">
+                  {{ t('settings.autoUpdate') }}
+                </p>
+                <p class="row-desc">
+                  {{ t('settings.autoUpdateDesc') }}
+                </p>
+              </div>
+              <UiSwitch
+                :model-value="securitySettings.autoUpdateEnabled"
+                @update:model-value="onAutoUpdateChange"
+              />
+            </div>
+            <div class="update-status" aria-live="polite">
+              <div class="update-status-line">
+                <span>{{ t(`settings.updateState.${updateStatus.state}`) }}</span>
+                <span v-if="updateStatus.version">{{ updateStatus.version }}</span>
+              </div>
+              <div
+                v-if="updateStatus.state === 'downloading' || updateStatus.state === 'downloaded'"
+                class="update-progress"
+              >
+                <div
+                  class="update-progress-bar"
+                  :style="{ width: `${updateStatus.progress ?? 0}%` }"
+                />
+              </div>
+              <p
+                v-if="updateStatus.error"
+                class="row-desc row-desc--hint"
+              >
+                {{ updateStatus.error }}
+              </p>
+              <p
+                v-if="updateStatus.releaseNotes"
+                class="update-notes"
+              >
+                {{ updateStatus.releaseNotes }}
+              </p>
+              <div class="update-actions">
+                <UiButton
+                  variant="default"
+                  :disabled="updateStatus.state === 'checking' || updateStatus.state === 'downloading'"
+                  @click="checkForUpdates"
+                >
+                  <template #icon>
+                    <RefreshCw :size="15" :stroke-width="1.8" />
+                  </template>
+                  {{ updateStatus.state === 'error' ? t('settings.retryUpdate') : t('settings.checkUpdates') }}
+                </UiButton>
+                <UiButton
+                  v-if="updateStatus.state === 'available'"
+                  variant="primary"
+                  @click="downloadUpdate"
+                >
+                  <template #icon>
+                    <Download :size="15" :stroke-width="1.8" />
+                  </template>
+                  {{ t('settings.downloadUpdate') }}
+                </UiButton>
+                <UiButton
+                  v-if="updateStatus.state === 'downloaded'"
+                  variant="primary"
+                  @click="installUpdate"
+                >
+                  <template #icon>
+                    <RefreshCw :size="15" :stroke-width="1.8" />
+                  </template>
+                  {{ t('settings.restartInstall') }}
+                </UiButton>
+              </div>
+            </div>
             <UiButton
               class="release-list-btn"
               variant="default"
@@ -674,5 +775,56 @@ h3 {
 
 .release-list-btn {
   margin-top: 16px;
+}
+
+.update-preference-row {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-default);
+}
+
+.update-status {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-default);
+}
+
+.update-status-line,
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.update-status-line {
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.update-progress {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-hover);
+}
+
+.update-progress-bar {
+  height: 100%;
+  background: var(--accent-primary);
+  transition: width 0.2s ease;
+}
+
+.update-notes {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.update-actions {
+  margin-top: 12px;
 }
 </style>

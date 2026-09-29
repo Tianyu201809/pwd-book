@@ -50,6 +50,7 @@ import { getSecuritySettings } from './services/settingsService'
 import { registerSystemAutoLock } from './autoLock'
 import { syncLaunchAtLogin } from './launchAtLogin'
 import { IPC, IPC_EVENTS } from '../shared/types'
+import { destroyUpdateService, initializeUpdateService } from './services/updateService'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -222,6 +223,7 @@ if (gotSingleInstanceLock) {
     })
 
     createWindow()
+    initializeUpdateService()
 
     if (isScreenshotMode() && mainWindow) {
       mainWindow.webContents.once('did-finish-load', () => {
@@ -264,6 +266,7 @@ if (gotSingleInstanceLock) {
   app.on('before-quit', () => {
     // Cmd+Q / Dock「退出」不会经过 requestQuit，必须在此标记，否则 close 拦截会取消退出
     markQuitting()
+    destroyUpdateService()
     unregisterQuickBarShortcut()
     unregisterClipboardWindowShortcut()
     unregisterNotesManagerShortcut()

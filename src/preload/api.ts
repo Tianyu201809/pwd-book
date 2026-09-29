@@ -47,6 +47,7 @@ import type {
   NoteFilter,
   StickyNote,
   StickyNoteInput,
+  UpdateStatus,
 } from '../shared/types'
 import type {
   SyncMergeResult,
@@ -149,6 +150,15 @@ export const electronAPI = {
   getSettings: (): Promise<SecuritySettings> => invoke(IPC.settingsGet),
   updateSettings: (partial: Partial<SecuritySettings>): Promise<SecuritySettings> =>
     invoke(IPC.settingsUpdate, partial),
+  getUpdateStatus: (): Promise<UpdateStatus> => invoke(IPC.updateGetStatus),
+  checkForUpdates: (): Promise<UpdateStatus> => invoke(IPC.updateCheck),
+  downloadUpdate: (): Promise<UpdateStatus> => invoke(IPC.updateDownload),
+  installUpdate: (): Promise<void> => invoke(IPC.updateInstall),
+  onUpdateStatusChanged: (handler: (status: UpdateStatus) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, next: UpdateStatus): void => handler(next)
+    ipcRenderer.on(IPC_EVENTS.updateStatusChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_EVENTS.updateStatusChanged, listener)
+  },
   setUiLocale: (locale: 'zh-CN' | 'en'): Promise<'zh-CN' | 'en'> =>
     invoke(IPC.settingsSetUiLocale, locale),
 

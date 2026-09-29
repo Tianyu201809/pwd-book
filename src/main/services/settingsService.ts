@@ -31,6 +31,7 @@ const SETTINGS_KEYS = {
   browserFillEnabled: 'browser_fill_enabled',
   trashRetentionDays: 'trash_retention_days',
   launchAtLoginEnabled: 'launch_at_login_enabled',
+  autoUpdateEnabled: 'auto_update_enabled',
 } as const
 
 function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
@@ -102,6 +103,9 @@ export function getSecuritySettings(): SecuritySettings {
     launchAtLoginEnabled:
       (getSetting(SETTINGS_KEYS.launchAtLoginEnabled) ??
         String(defaults.launchAtLoginEnabled)) === 'true',
+    autoUpdateEnabled:
+      (getSetting(SETTINGS_KEYS.autoUpdateEnabled) ??
+        String(defaults.autoUpdateEnabled)) === 'true',
   }
 }
 
@@ -163,6 +167,7 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.browserFillEnabled, String(next.browserFillEnabled))
   setSetting(SETTINGS_KEYS.trashRetentionDays, String(next.trashRetentionDays))
   setSetting(SETTINGS_KEYS.launchAtLoginEnabled, String(next.launchAtLoginEnabled))
+  setSetting(SETTINGS_KEYS.autoUpdateEnabled, String(next.autoUpdateEnabled))
 
   if (next.quickBarRecentLimit !== current.quickBarRecentLimit) {
     truncateQuickBarRecentToLimit()

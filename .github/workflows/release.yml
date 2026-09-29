@@ -66,7 +66,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: release/PwdBook-*-Setup.zip
+          path: |
+            release/PwdBook-*-Setup.exe
+            release/PwdBook-*-Setup.exe.blockmap
+            release/PwdBook-*-Setup.zip
+            release/latest.yml
           if-no-files-found: error
 
   build-linux:
@@ -114,7 +118,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux
-          path: release/PwdBook-*.AppImage
+          path: |
+            release/PwdBook-*.AppImage
+            release/PwdBook-*.AppImage.blockmap
+            release/latest-linux.yml
           if-no-files-found: error
 
   build-macos:
@@ -148,7 +155,7 @@ jobs:
       - name: Set package.json version
         run: npm version "${VERSION}" --no-git-tag-version --allow-same-version
 
-      - name: Build macOS DMGs
+      - name: Build macOS DMGs and ZIPs
         run: npm run dist:mac
 
       - name: Upload macOS artifacts
@@ -158,6 +165,13 @@ jobs:
           path: |
             release/PwdBook-*-x64.dmg
             release/PwdBook-*-arm64.dmg
+            release/PwdBook-*-x64.dmg.blockmap
+            release/PwdBook-*-arm64.dmg.blockmap
+            release/PwdBook-*-x64.zip
+            release/PwdBook-*-arm64.zip
+            release/PwdBook-*-x64.zip.blockmap
+            release/PwdBook-*-arm64.zip.blockmap
+            release/latest-mac.yml
           if-no-files-found: error
 
   publish-release:

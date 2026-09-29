@@ -35,6 +35,14 @@
       "output": "release",
       "buildResources": "icon"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Tianyu201809",
+        "repo": "pwd-book",
+        "private": false
+      }
+    ],
     "icon": "icon.png",
     "afterPack": "scripts/after-pack.mjs",
     "electronDist": "node_modules/electron/dist",
@@ -104,6 +112,13 @@
             "x64",
             "arm64"
           ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "artifactName": "${productName}-${version}-${arch}.${ext}"
@@ -115,7 +130,9 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "category": "Utility",
@@ -127,6 +144,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "^2.0.0",
     "bonjour-service": "^1.3.0",
+    "electron-updater": "^6.8.9",
     "gsap": "^3.15.0",
     "lucide-vue-next": "^0.511.0",
     "nodemailer": "^8.0.10",

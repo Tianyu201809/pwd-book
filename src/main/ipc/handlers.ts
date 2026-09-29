@@ -82,6 +82,13 @@ import {
 import type { CategoryInput, RecoveryResetPayload, TagInput } from '../../shared/types'
 import { getSecuritySettings, updateSecuritySettings } from '../services/settingsService'
 import {
+  checkForUpdates,
+  downloadUpdate,
+  getUpdateStatus,
+  installUpdate,
+  setAutoUpdateEnabled,
+} from '../services/updateService'
+import {
   getEmailBackupSettings,
   sendBackupNow,
   testEmailConnection,
@@ -565,6 +572,11 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC.settingsGet, () => getSecuritySettings())
 
+  ipcMain.handle(IPC.updateGetStatus, () => getUpdateStatus())
+  ipcMain.handle(IPC.updateCheck, () => checkForUpdates(true))
+  ipcMain.handle(IPC.updateDownload, () => downloadUpdate())
+  ipcMain.handle(IPC.updateInstall, () => installUpdate())
+
   ipcMain.handle(IPC.launchAtLoginAvailable, () => isLaunchAtLoginAvailable())
 
   ipcMain.handle(IPC.settingsUpdate, (_event, partial: Partial<SecuritySettings>) => {
@@ -576,6 +588,9 @@ export function registerIpcHandlers(): void {
     syncBrowserBridge()
     if (partial.launchAtLoginEnabled !== undefined) {
       syncLaunchAtLogin(next.launchAtLoginEnabled)
+    }
+    if (partial.autoUpdateEnabled !== undefined) {
+      setAutoUpdateEnabled(next.autoUpdateEnabled)
     }
     return next
   })

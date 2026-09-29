@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   browserFillEnabled: false,
   trashRetentionDays: 30,
   launchAtLoginEnabled: false,
+  autoUpdateEnabled: true,
 }
 
 let sessionKey: Buffer | null = null

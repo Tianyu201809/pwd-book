@@ -274,6 +274,26 @@ export interface SecuritySettings {
   trashRetentionDays: number
   /** 系统登录后自动启动应用 */
   launchAtLoginEnabled: boolean
+  /** 自动检查并下载正式版本更新 */
+  autoUpdateEnabled: boolean
+}
+
+export type UpdateState =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'downloading'
+  | 'downloaded'
+  | 'not-available'
+  | 'error'
+
+export interface UpdateStatus {
+  state: UpdateState
+  currentVersion: string
+  version?: string
+  releaseNotes?: string
+  progress?: number
+  error?: string
 }
 
 export interface VaultStatus {
@@ -509,6 +529,10 @@ export const IPC = {
   noteWindowOpen: 'note-window:open',
   noteWindowHide: 'note-window:hide',
   noteWindowToggleAlwaysOnTop: 'note-window:toggle-always-on-top',
+  updateGetStatus: 'update:get-status',
+  updateCheck: 'update:check',
+  updateDownload: 'update:download',
+  updateInstall: 'update:install',
 } as const
 
 export const IPC_EVENTS = {
@@ -528,6 +552,7 @@ export const IPC_EVENTS = {
   notesChanged: 'notes:changed',
   notesFlush: 'notes:flush',
   noteWindowSelected: 'note-window:selected',
+  updateStatusChanged: 'update:status-changed',
 } as const
 
 export const RESERVED_CATEGORY_NAMES = [

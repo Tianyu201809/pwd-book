@@ -26,6 +26,7 @@ import type {
   NoteFilter,
   StickyNote,
   StickyNoteInput,
+  UpdateStatus,
 } from '@/shared/types'
 import type {
   SyncMergeResult,
@@ -86,6 +87,11 @@ declare global {
       deleteTag: (name: string) => Promise<void>
       getSettings: () => Promise<SecuritySettings>
       updateSettings: (partial: Partial<SecuritySettings>) => Promise<SecuritySettings>
+      getUpdateStatus: () => Promise<UpdateStatus>
+      checkForUpdates: () => Promise<UpdateStatus>
+      downloadUpdate: () => Promise<UpdateStatus>
+      installUpdate: () => Promise<void>
+      onUpdateStatusChanged: (handler: (status: UpdateStatus) => void) => () => void
       setUiLocale: (locale: 'zh-CN' | 'en') => Promise<'zh-CN' | 'en'>
       getBrowserBridgeStatus: () => Promise<BrowserBridgeStatus>
       regenerateBrowserBridgeToken: () => Promise<BrowserBridgeStatus>
