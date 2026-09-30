@@ -75,6 +75,7 @@ App.vue
 - **v1.23.0**：经典皮肤 `--titlebar-base` / `--titlebar-accent-wash` / `--titlebar-top-shine` 渐变层（`tokens.css`）；动森皮肤在 `animal-skin.css` 关闭伪元素；最大化时显示叠窗 **还原** SVG，订阅 `window:maximize-changed`。
 - `detailWindow` prop 为 true 时：隐藏最大化、快速锁定、产品学习与剪切板；关闭按钮直接 `closeDetailWindow`；按钮顺序：置顶 → 最小化 → 换肤 → 关闭。
 - 主窗口按钮顺序：换肤 → **产品学习**（已解锁）→ 锁定（已解锁时）→ **剪切板**（已解锁）→ 置顶 → 分隔线 → 最小化 → 最大化 → 关闭。
+- **v1.46.0**：左上角品牌标识由 lucide `ShieldCheck` 线稿改为 `assets/images/brand/app-icon-sm.png`（`.titlebar-mark`，显示 18px、圆角 4px）。
 
 ### QuickBarApp.vue
 
@@ -220,6 +221,8 @@ App.vue
 
 创建保险库成功后可选进入 `RecoveryKeySetup`；跳过则调用 `recovery:clear`。
 
+**v1.46.0**：页面顶部品牌标识由 lucide `ShieldCheck` 改为 `assets/images/brand/app-icon.png`（`.brand-icon`，64px 圆角图标 + `--shadow-popover`），不再使用 accent 底色方块。
+
 ## 分类与图标
 
 - `categoryIcons.ts` — **60** 个 Lucide 图形图标 + **26** 个字母图标（`LetterA`–`LetterZ`）；`BASE_CATEGORY_ICON_OPTIONS` / `LETTER_ICON_OPTIONS`；`isLetterIcon()` / `getLetterFromIcon()`
@@ -229,6 +232,17 @@ App.vue
 - `CategoryIconView.vue` — 图形图标或字母渲染；字母图标在徽章内显示加粗字符
 - `VaultSidebar.vue` — 按住拖动排序（v1.17.0）、分类右键菜单，`reorderSidebarCategories` 持久化
 - `CategoryManagePanel.vue` — 新建/编辑/删除分类，复用 IconPicker；可由侧栏右键「编辑」唤起
+
+## 品牌资源（v1.46.0）
+
+应用内品牌标识统一引用 `src/assets/images/brand/`（Vite 静态资源导入；`tsconfig.web.json` 已含 `vite/client`，`*.png` 有类型声明）：
+
+| 资源 | 尺寸 | 使用位置 |
+|------|------|----------|
+| `app-icon.png` | 256 | `LockScreen.vue` 锁定页品牌标识（显示 64px）、`SettingsView.vue` 设置 → 关于卡片 `.about-mark`（显示 56px） |
+| `app-icon-sm.png` | 64 | `TitleBar.vue` 标题栏左上角（显示 18px）、`AppearancePanel.vue` 外观主题预览 `.preview-icon`（显示 24px） |
+
+这两个资源由 `npm run icons` 生成时已按尺寸做过轻度锐化（见 [overview.md](./overview.md) 的「图标资源」小节），因此**不要**用 256px 资源直接缩放到标题栏等小尺寸位置。上述位置原先均使用 `lucide-vue-next` 的 `ShieldCheck` 线稿图标。
 
 ## 样式
 

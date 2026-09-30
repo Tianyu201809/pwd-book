@@ -89,11 +89,13 @@ sequenceDiagram
 
 | 文件 | 说明 |
 |------|------|
-| `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`content_scripts` |
+| `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`content_scripts`；**v1.46.0** 增加 `icons` 与 `action.default_icon` |
+| `icons/` | 扩展工具栏与弹窗图标 16 / 32 / 48 / 128（**v1.46.0**，与桌面应用同一套图标资源） |
 | `background.js` | `connectNative('com.pwdbook.app')` 转发 |
 | `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter；匹配后自动填充，切换账号立刻覆盖，填充成功后不拆条 |
 | `content.css` | 填充条布局与交互样式（**v1.15.0** 收起态、拖拽光标） |
 | `popup.js` | 连接状态（已连接 / 锁定 / BRIDGE_NOT_RUNNING 等） |
+| `popup.html` / `popup.css` | 弹窗页头品牌标识（**v1.46.0** 由内联 SVG 改为 `icons/icon-48.png`，显示 24px） |
 | `pwdbook-theme.css` | 与经典主题一致的配色变量 |
 
 **扩展 ID**：未打包扩展从**固定目录路径**加载时 ID 稳定；与 `allowed_origins` 必须一致。

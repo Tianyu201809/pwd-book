@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.45.0（`package.json`） |
+| 版本 | 1.46.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch`、`quickBarLimits`、`launchEntry`、`presetIcons`、`noteBlocks` 等 |
@@ -89,6 +89,7 @@ src/
 │   └── services/         # vault、recovery、category、settings、sync*、wifiSync、folderSync、browserBridge、attachment*、note*（v1.38.0）
 ├── extension/            # Chrome/Edge MV3（v1.6.0）
 ├── native-host/          # Native Messaging Host（v1.6.0）
+├── icon/                 # 应用图标：母版 source.png + 生成的 icon.png / icon.ico / icon-<尺寸>.png（v1.46.0）
 ├── preload/
 │   ├── index.ts          # contextBridge 暴露
 │   └── api.ts            # typed IPC 封装
@@ -154,6 +155,20 @@ src/
 | `npm run dist:linux` | Linux x64 | `release/PwdBook-{version}.AppImage` |
 
 macOS / Windows 当前未配置代码签名（Windows `signAndEditExecutable: false`）；分发时目标机器可能提示 SmartScreen / Gatekeeper。
+
+### 图标资源（v1.46.0）
+
+`npm run icons`（`scripts/generate-icons.mjs`，由 `predist*` 钩子在打包前自动执行）从母版 `icon/source.png` 生成：
+
+| 产物 | 尺寸 | 用途 |
+|------|------|------|
+| `icon.png` | 1024 | electron-builder 的 mac / linux 图标源；经 `extraResources` 供主进程读取 |
+| `icon.ico` | 16 / 20 / 24 / 32 / 40 / 48 / 64 / 96 / 128 / 256 | Windows exe、NSIS 安装 / 卸载程序、系统托盘 |
+| `icon-<尺寸>.png` | 16 … 1024 | 各尺寸备用资源 |
+
+母版四角为**不透明白底**，脚本按实测圆角几何（起点 `(23, 24)`、边长 976、半径 ≈ 边长 × 0.2325）裁切并套透明圆角遮罩，否则 macOS / 托盘 / 深色界面会露出白方块；≤64px 追加轻度锐化以保证托盘与标题栏下可辨认。母版文件名**不可**以 `icon-` 开头（会被 `.gitignore` 的 `icon/icon-*.png` 忽略）。
+
+Windows exe 内嵌图标另由 `afterPack`（`scripts/after-pack.mjs`）通过 `rcedit` 写入。
 
 ### GitHub Release CI
 

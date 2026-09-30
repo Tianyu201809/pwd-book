@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.45.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.46.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -461,7 +461,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.45.0（当前）
+### v1.46.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1460---2026-09-30)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 产品图标 | 桌面快捷方式、任务栏与窗口、系统托盘、安装 / 卸载程序、macOS 与 Linux 打包图标，以及应用内标题栏、锁定页、设置 → 关于、外观主题预览与浏览器扩展工具栏 / 弹窗标识，全部更换为新图标 |
+| 托盘适配 | 托盘图标按平台尺寸缩放（macOS 18px，Windows / Linux 16px），不再把 1024px 原图直接交给系统 |
+| 图标管线 | 母版改为 `icon/source.png`；`npm run icons` 生成 `icon.png`、`icon.ico`（10 种尺寸）与 `icon-<尺寸>.png`，小尺寸追加轻度锐化；移除 `icon/icon.svg` |
+
+### v1.45.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1450---2026-09-30)**。摘要：
 
