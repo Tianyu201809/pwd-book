@@ -7,11 +7,13 @@ import {
   ArrowRight,
   Check,
   Download,
+  Search,
 } from 'lucide-vue-next'
 import { UiModal, UiButton, UiCard } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { countExportableForFormat } from '@/shared/exportParsers'
+import type { PasswordEntry } from '@/shared/types'
 import {
   EXPORT_DESTINATIONS,
   getExportDestination,
@@ -32,10 +34,12 @@ const { entries, exportData, exportDataAsExcel, exportDataAsCsv } = useAppState(
 
 const EXPORT_MODAL_WIDTH = 760
 
-type WizardStep = 'format' | 'confirm'
+type WizardStep = 'format' | 'entries' | 'confirm'
 
 const step = ref<WizardStep>('format')
 const selectedId = ref<ExportDestinationId | null>(null)
+const selectedEntryIds = ref<string[]>([])
+const entrySearch = ref('')
 const exporting = ref(false)
 const errorMessage = ref('')
 const showPlainTextConfirm = ref(false)
@@ -52,17 +56,51 @@ const selectedDestination = computed(() =>
   selectedId.value ? getExportDestination(selectedId.value) : undefined,
 )
 
-const stepIndex = computed(() => (step.value === 'format' ? 0 : 1))
+const showSelectionStep = computed(() => selectedId.value !== null && selectedId.value !== 'pwdbook-json')
+
+const selectedEntries = computed(() => {
+  const selected = new Set(selectedEntryIds.value)
+  return entries.value.filter((entry) => selected.has(entry.id))
+})
+
+const filteredEntries = computed(() => {
+  const query = entrySearch.value.trim().toLowerCase()
+  if (!query) return entries.value
+  return entries.value.filter((entry) =>
+    [entry.title, entry.username, entry.url, entry.categoryName]
+      .join(' ')
+      .toLowerCase()
+      .includes(query),
+  )
+})
+
+const allEntriesSelected = computed(
+  () => entries.value.length > 0 && selectedEntryIds.value.length === entries.value.length,
+)
+
+const stepLabels = computed(() =>
+  showSelectionStep.value
+    ? [t('export.steps.format'), t('export.steps.entries'), t('export.steps.confirm')]
+    : [t('export.steps.format'), t('export.steps.confirm')],
+)
+
+const stepIndex = computed(() => {
+  if (step.value === 'format') return 0
+  if (step.value === 'entries') return showSelectionStep.value ? 1 : 0
+  return showSelectionStep.value ? 2 : 1
+})
 
 const exportStats = computed(() => {
   if (!selectedId.value) return { total: 0, exportable: 0, skipped: 0 }
-  return countExportableForFormat(selectedId.value, entries.value)
+  const sourceEntries = showSelectionStep.value ? selectedEntries.value : entries.value
+  return countExportableForFormat(selectedId.value, sourceEntries)
 })
 
 const canGoNext = computed(() => step.value === 'format' && selectedId.value !== null)
 
 const canExport = computed(() => {
   if (step.value !== 'confirm' || !selectedId.value || exporting.value) return false
+  if (showSelectionStep.value && selectedEntries.value.length === 0) return false
   if (isThirdPartyCsvExport(selectedId.value)) {
     return exportStats.value.exportable > 0
   }
@@ -81,8 +119,6 @@ const showExpectedColumns = computed(() => {
   return Boolean(dest && dest.expectedColumns.length > 0)
 })
 
-const stepLabels = computed(() => [t('export.steps.format'), t('export.steps.confirm')])
-
 watch(open, (isOpen) => {
   if (!isOpen) resetState()
 })
@@ -90,6 +126,8 @@ watch(open, (isOpen) => {
 function resetState(): void {
   step.value = 'format'
   selectedId.value = null
+  selectedEntryIds.value = []
+  entrySearch.value = ''
   exporting.value = false
   errorMessage.value = ''
   showPlainTextConfirm.value = false
@@ -101,11 +139,18 @@ function close(): void {
 
 function pickFormat(id: ExportDestinationId): void {
   selectedId.value = id
+  selectedEntryIds.value = []
+  entrySearch.value = ''
   errorMessage.value = ''
 }
 
 function goBack(): void {
   if (step.value === 'confirm') {
+    step.value = showSelectionStep.value ? 'entries' : 'format'
+    errorMessage.value = ''
+    return
+  }
+  if (step.value === 'entries') {
     step.value = 'format'
     errorMessage.value = ''
     return
@@ -115,9 +160,36 @@ function goBack(): void {
 
 function goNext(): void {
   if (step.value === 'format' && canGoNext.value) {
+    if (showSelectionStep.value) {
+      selectedEntryIds.value = entries.value.map((entry) => entry.id)
+      step.value = 'entries'
+    } else {
+      step.value = 'confirm'
+    }
+    errorMessage.value = ''
+  } else if (step.value === 'entries' && selectedEntryIds.value.length > 0) {
     step.value = 'confirm'
     errorMessage.value = ''
   }
+}
+
+function isEntrySelected(id: string): boolean {
+  return selectedEntryIds.value.includes(id)
+}
+
+function toggleEntry(id: string): void {
+  selectedEntryIds.value = isEntrySelected(id)
+    ? selectedEntryIds.value.filter((entryId) => entryId !== id)
+    : [...selectedEntryIds.value, id]
+}
+
+function toggleAllEntries(): void {
+  selectedEntryIds.value = allEntriesSelected.value ? [] : entries.value.map((entry) => entry.id)
+}
+
+function isEntryExportable(entry: PasswordEntry): boolean {
+  if (!selectedId.value || !isThirdPartyCsvExport(selectedId.value)) return true
+  return Boolean(entry.title?.trim() && entry.password)
 }
 
 function formatDisplayName(dest: (typeof EXPORT_DESTINATIONS)[number]): string {
@@ -178,10 +250,10 @@ async function executeExport(): Promise<void> {
       const json = await exportData()
       triggerDownload(new Blob([json], { type: dest.mimeType }), filename)
     } else if (formatId === 'pwdbook-xlsx') {
-      const bytes = await exportDataAsExcel()
+      const bytes = await exportDataAsExcel(selectedEntryIds.value)
       triggerDownload(new Blob([new Uint8Array(bytes)], { type: dest.mimeType }), filename)
     } else {
-      const csv = await exportDataAsCsv(formatId)
+      const csv = await exportDataAsCsv(formatId, selectedEntryIds.value)
       triggerDownload(new Blob([csv], { type: dest.mimeType }), filename)
     }
 
@@ -309,6 +381,85 @@ async function executeExport(): Promise<void> {
       </section>
 
       <section
+        v-else-if="step === 'entries'"
+        class="step-panel entry-selection-panel"
+      >
+        <div class="selection-heading">
+          <div>
+            <h4>{{ t('export.selection.title') }}</h4>
+            <p>{{ t('export.selection.lead') }}</p>
+          </div>
+          <span class="selection-count">
+            {{ t('export.selection.selectedCount', { selected: selectedEntryIds.length, total: entries.length }) }}
+          </span>
+        </div>
+
+        <div class="selection-toolbar">
+          <label class="entry-search">
+            <Search
+              :size="15"
+              :stroke-width="1.7"
+            />
+            <input
+              v-model="entrySearch"
+              type="search"
+              :placeholder="t('export.selection.searchPlaceholder')"
+            >
+          </label>
+          <UiButton
+            variant="ghost"
+            @click="toggleAllEntries"
+          >
+            {{ allEntriesSelected ? t('export.selection.clearAll') : t('export.selection.selectAll') }}
+          </UiButton>
+        </div>
+
+        <div class="entry-table">
+          <div class="entry-table-head">
+            <span aria-hidden="true" />
+            <span>{{ t('export.selection.entry') }}</span>
+            <span>{{ t('export.selection.username') }}</span>
+            <span>{{ t('export.selection.category') }}</span>
+            <span>{{ t('export.selection.status') }}</span>
+          </div>
+          <div class="entry-table-body">
+            <label
+              v-for="entry in filteredEntries"
+              :key="entry.id"
+              class="entry-option"
+              :class="{ selected: isEntrySelected(entry.id) }"
+            >
+              <input
+                type="checkbox"
+                :checked="isEntrySelected(entry.id)"
+                @change="toggleEntry(entry.id)"
+              >
+              <span class="entry-primary">
+                <strong>{{ entry.title || t('detail.untitled') }}</strong>
+                <small>{{ entry.url || t('detail.noUrl') }}</small>
+              </span>
+              <span class="entry-cell entry-cell--muted">
+                {{ entry.username || t('vault.noAccount') }}
+              </span>
+              <span class="entry-cell">{{ entry.categoryName }}</span>
+              <span
+                class="entry-status"
+                :class="{ 'entry-status--warning': !isEntryExportable(entry) }"
+              >
+                {{ isEntryExportable(entry) ? t('export.selection.ready') : t('export.selection.willSkip') }}
+              </span>
+            </label>
+            <p
+              v-if="filteredEntries.length === 0"
+              class="selection-empty"
+            >
+              {{ t('export.selection.noMatches') }}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
         v-else-if="step === 'confirm'"
         class="step-panel step-panel--confirm"
       >
@@ -431,9 +582,9 @@ async function executeExport(): Promise<void> {
         </UiButton>
         <div class="footer-actions">
           <UiButton
-            v-if="step === 'format'"
+            v-if="step !== 'confirm'"
             variant="primary"
-            :disabled="!canGoNext"
+            :disabled="step === 'format' ? !canGoNext : selectedEntryIds.length === 0"
             @click="goNext"
           >
             {{ t('common.next') }}
@@ -670,8 +821,209 @@ async function executeExport(): Promise<void> {
   color: var(--format-accent, var(--accent-primary));
 }
 
+.entry-selection-panel {
+  min-height: 0;
+}
+
+.selection-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.selection-heading h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.selection-heading p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.selection-count {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.selection-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.entry-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+}
+
+.entry-search:focus-within {
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 14%, transparent);
+}
+
+.entry-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.entry-table {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+
+.entry-table-head,
+.entry-option {
+  display: grid;
+  grid-template-columns: 24px minmax(180px, 1.6fr) minmax(100px, 1fr) minmax(90px, 0.8fr) minmax(66px, auto);
+  align-items: center;
+  gap: 10px;
+}
+
+.entry-table-head {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.entry-table-body {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.entry-option {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 70%, transparent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.entry-option:last-child {
+  border-bottom: 0;
+}
+
+.entry-option:hover,
+.entry-option.selected {
+  background: var(--bg-hover);
+}
+
+.entry-option input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--accent-primary);
+}
+
+.entry-primary,
+.entry-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entry-primary strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.entry-primary small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+}
+
+.entry-cell {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.entry-cell--muted {
+  color: var(--text-muted);
+}
+
+.entry-status {
+  color: var(--status-success, var(--accent-primary));
+  font-size: 10px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.entry-status--warning {
+  color: var(--status-warning, var(--status-danger));
+}
+
+.selection-empty {
+  margin: 0;
+  padding: 28px 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
 .step-panel--confirm {
   gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .selection-heading {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .entry-table-head,
+  .entry-option {
+    grid-template-columns: 24px minmax(150px, 1fr) minmax(90px, 0.75fr) minmax(58px, auto);
+  }
+
+  .entry-table-head span:nth-child(4),
+  .entry-option .entry-cell:nth-of-type(3) {
+    display: none;
+  }
+
+  .entry-table-head span:last-child {
+    grid-column: 4;
+  }
 }
 
 .format-banner {

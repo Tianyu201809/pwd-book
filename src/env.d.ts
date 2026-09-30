@@ -106,8 +106,8 @@ declare global {
       openExternal: (url: string) => Promise<void>
       openLocalProgram: (programPath: string) => Promise<void>
       exportData: () => Promise<ExportPayload>
-      exportDataAsExcel: () => Promise<Uint8Array>
-      exportDataAsCsv: (formatId: string) => Promise<string>
+      exportDataAsExcel: (entryIds?: string[]) => Promise<Uint8Array>
+      exportDataAsCsv: (formatId: string, entryIds?: string[]) => Promise<string>
       importData: (payload: VaultImportPayload) => Promise<number>
       previewImport: (request: ImportPreviewRequest) => Promise<ImportPreviewResult>
       commitImport: (request: ImportCommitRequest) => Promise<number>

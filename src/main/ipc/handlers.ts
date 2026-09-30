@@ -700,19 +700,22 @@ export function registerIpcHandlers(): void {
     }),
   )
 
-  ipcMain.handle(IPC.dataExportExcel, () =>
+  ipcMain.handle(IPC.dataExportExcel, (_event, entryIds?: string[]) =>
     wrap(() => {
       ensureUnlocked()
       const payload = buildExportPayload()
-      return buildExcelBuffer(payload)
+      return buildExcelBuffer(payload, entryIds)
     }),
   )
 
-  ipcMain.handle(IPC.dataExportCsv, (_event, formatId: CsvExportId) =>
-    wrap(() => {
-      ensureUnlocked()
-      return buildExportCsv(formatId)
-    }),
+  ipcMain.handle(
+    IPC.dataExportCsv,
+    (_event, payload: { formatId: CsvExportId; entryIds?: string[] } | CsvExportId) =>
+      wrap(() => {
+        ensureUnlocked()
+        const request = typeof payload === 'string' ? { formatId: payload } : payload
+        return buildExportCsv(request.formatId, request.entryIds)
+      }),
   )
 
   ipcMain.handle(IPC.dataImport, (_event, payload: VaultImportPayload) =>

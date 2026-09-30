@@ -1231,14 +1231,14 @@ async function exportData(): Promise<string> {
   return JSON.stringify(payload, null, 2)
 }
 
-async function exportDataAsExcel(): Promise<Uint8Array> {
-  const bytes = await vaultApi.exportDataAsExcel()
+async function exportDataAsExcel(entryIds?: string[]): Promise<Uint8Array> {
+  const bytes = await vaultApi.exportDataAsExcel(entryIds)
   touchActivity()
   return bytes
 }
 
-async function exportDataAsCsv(formatId: string): Promise<string> {
-  const csv = await vaultApi.exportDataAsCsv(formatId)
+async function exportDataAsCsv(formatId: string, entryIds?: string[]): Promise<string> {
+  const csv = await vaultApi.exportDataAsCsv(formatId, entryIds)
   touchActivity()
   return csv
 }

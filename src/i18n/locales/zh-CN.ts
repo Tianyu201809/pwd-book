@@ -1185,7 +1185,23 @@ export default {
     exportedCsv: 'CSV 已导出',
     steps: {
       format: '选择格式',
+      entries: '选择条目',
       confirm: '确认导出',
+    },
+    selection: {
+      title: '选择要导出的条目',
+      lead: '默认已选择全部条目。这里仅展示用于识别条目的信息，不会显示密码。',
+      selectedCount: '已选 {selected} / {total} 条',
+      searchPlaceholder: '搜索标题、账号、网址或分类…',
+      selectAll: '全选',
+      clearAll: '取消全选',
+      entry: '条目',
+      username: '账号',
+      category: '分类',
+      status: '状态',
+      ready: '可导出',
+      willSkip: '将跳过',
+      noMatches: '没有符合搜索条件的条目',
     },
     groups: {
       pwdbook: 'PwdBook 备份',

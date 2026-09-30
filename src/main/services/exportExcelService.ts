@@ -4,12 +4,15 @@ import {
   PWD_BOOK_CATEGORY_HEADERS,
   PWD_BOOK_ENTRY_HEADERS,
 } from '../../shared/exportEntryColumns'
+import { selectCategoriesForExport, selectEntriesForExport } from '../../shared/exportSelection'
 import type { ExportPayload } from '../../shared/types'
 
-export function buildExcelBuffer(payload: ExportPayload): Buffer {
-  const entryRows = payload.entries.map(entryToPwdBookRow)
+export function buildExcelBuffer(payload: ExportPayload, entryIds?: string[]): Buffer {
+  const entries = selectEntriesForExport(payload.entries, entryIds)
+  const entryRows = entries.map(entryToPwdBookRow)
 
-  const categoryRows = payload.categories.map((cat) => [
+  const categories = selectCategoriesForExport(payload.categories, entries, entryIds !== undefined)
+  const categoryRows = categories.map((cat) => [
     cat.id,
     cat.name,
     cat.icon,

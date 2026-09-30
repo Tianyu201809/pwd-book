@@ -1190,7 +1190,23 @@ export default {
     exportedCsv: 'CSV exported',
     steps: {
       format: 'Format',
+      entries: 'Entries',
       confirm: 'Confirm',
+    },
+    selection: {
+      title: 'Choose entries to export',
+      lead: 'All entries are selected by default. Passwords are hidden from this preview.',
+      selectedCount: '{selected} of {total} selected',
+      searchPlaceholder: 'Search title, account, URL, or category…',
+      selectAll: 'Select all',
+      clearAll: 'Clear all',
+      entry: 'Entry',
+      username: 'Account',
+      category: 'Category',
+      status: 'Status',
+      ready: 'Ready',
+      willSkip: 'Will skip',
+      noMatches: 'No entries match your search',
     },
     groups: {
       pwdbook: 'PwdBook backup',

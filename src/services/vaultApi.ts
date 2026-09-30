@@ -112,8 +112,10 @@ export const vaultApi = {
   openLocalProgram: (programPath: string): Promise<void> => getApi().openLocalProgram(programPath),
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
-  exportDataAsExcel: (): Promise<Uint8Array> => getApi().exportDataAsExcel(),
-  exportDataAsCsv: (formatId: string): Promise<string> => getApi().exportDataAsCsv(formatId),
+  exportDataAsExcel: (entryIds?: string[]): Promise<Uint8Array> =>
+    getApi().exportDataAsExcel(entryIds),
+  exportDataAsCsv: (formatId: string, entryIds?: string[]): Promise<string> =>
+    getApi().exportDataAsCsv(formatId, entryIds),
   importData: (payload: VaultImportPayload): Promise<number> => getApi().importData(payload),
   previewImport: (request: ImportPreviewRequest): Promise<ImportPreviewResult> =>
     getApi().previewImport(request),
