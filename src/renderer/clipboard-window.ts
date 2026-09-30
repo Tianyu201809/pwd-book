@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import ClipboardWindowApp from '@/components/ClipboardWindowApp.vue'
 import '@/assets/styles/global.css'
+import 'animal-island-vue/style'
 import '@/assets/styles/clipboard-window.css'
 import { bindSystemThemeListener, bindThemeStorageSync, initTheme, syncThemeFromStorage } from '@/composables/useTheme'
 import { bindLocaleStorageSync, initLocale, syncLocaleFromStorage } from '@/composables/useLocale'
