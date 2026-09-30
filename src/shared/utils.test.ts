@@ -15,7 +15,7 @@ vi.hoisted(() => {
   })
 })
 
-import { getAvatarMeta } from './utils'
+import { cloneForIpc, getAvatarMeta } from './utils'
 
 describe('getAvatarMeta', () => {
   it('uses the first trimmed character and falls back to ?', () => {
@@ -36,5 +36,13 @@ describe('getAvatarMeta', () => {
     expect(meta.color.toLowerCase()).not.toBe('white')
     expect(meta.bg).toMatch(/rgba?\(/i)
     expect(meta.bg).not.toBe(meta.color)
+  })
+})
+
+describe('cloneForIpc', () => {
+  it('strips Proxy wrappers so Electron structured clone can send the value', () => {
+    const proxiedIds = new Proxy(['one', 'two', 'three'], {})
+    expect(() => structuredClone(proxiedIds)).toThrow()
+    expect(structuredClone(cloneForIpc(proxiedIds))).toEqual(['one', 'two', 'three'])
   })
 })

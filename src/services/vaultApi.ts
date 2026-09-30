@@ -1,4 +1,5 @@
 import { i18n } from '@/i18n'
+import { cloneForIpc } from '@/shared/utils'
 import type {
   CategoryInput,
   ExportPayload,
@@ -113,9 +114,12 @@ export const vaultApi = {
 
   exportData: (): Promise<ExportPayload> => getApi().exportData(),
   exportDataAsExcel: (entryIds?: string[]): Promise<Uint8Array> =>
-    getApi().exportDataAsExcel(entryIds),
+    getApi().exportDataAsExcel(entryIds === undefined ? undefined : cloneForIpc(entryIds)),
   exportDataAsCsv: (formatId: string, entryIds?: string[]): Promise<string> =>
-    getApi().exportDataAsCsv(formatId, entryIds),
+    getApi().exportDataAsCsv(
+      formatId,
+      entryIds === undefined ? undefined : cloneForIpc(entryIds),
+    ),
   importData: (payload: VaultImportPayload): Promise<number> => getApi().importData(payload),
   previewImport: (request: ImportPreviewRequest): Promise<ImportPreviewResult> =>
     getApi().previewImport(request),

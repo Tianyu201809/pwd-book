@@ -1232,13 +1232,18 @@ async function exportData(): Promise<string> {
 }
 
 async function exportDataAsExcel(entryIds?: string[]): Promise<Uint8Array> {
-  const bytes = await vaultApi.exportDataAsExcel(entryIds)
+  const bytes = await vaultApi.exportDataAsExcel(
+    entryIds === undefined ? undefined : cloneForIpc(entryIds),
+  )
   touchActivity()
   return bytes
 }
 
 async function exportDataAsCsv(formatId: string, entryIds?: string[]): Promise<string> {
-  const csv = await vaultApi.exportDataAsCsv(formatId, entryIds)
+  const csv = await vaultApi.exportDataAsCsv(
+    formatId,
+    entryIds === undefined ? undefined : cloneForIpc(entryIds),
+  )
   touchActivity()
   return csv
 }
