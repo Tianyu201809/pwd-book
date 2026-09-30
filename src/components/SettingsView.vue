@@ -570,6 +570,15 @@ async function handleReset(): Promise<void> {
                   {{ updateStatus.state === 'error' ? t('settings.retryUpdate') : t('settings.checkUpdates') }}
                 </UiButton>
                 <UiButton
+                  variant="default"
+                  @click="openReleaseList"
+                >
+                  <template #icon>
+                    <ExternalLink :size="16" :stroke-width="1.8" />
+                  </template>
+                  {{ t('settings.releaseList') }}
+                </UiButton>
+                <UiButton
                   v-if="updateStatus.state === 'available'"
                   variant="primary"
                   @click="downloadUpdate"
@@ -591,16 +600,6 @@ async function handleReset(): Promise<void> {
                 </UiButton>
               </div>
             </div>
-            <UiButton
-              class="release-list-btn"
-              variant="default"
-              @click="openReleaseList"
-            >
-              <template #icon>
-                <ExternalLink :size="16" :stroke-width="1.8" />
-              </template>
-              {{ t('settings.releaseList') }}
-            </UiButton>
           </UiCard>
           <Footer
             v-if="isAnimalIsland"
@@ -836,10 +835,6 @@ h3 {
   margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
-}
-
-.release-list-btn {
-  margin-top: 16px;
 }
 
 .update-preference-row {
