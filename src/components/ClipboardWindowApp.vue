@@ -21,6 +21,7 @@ import {
 import { showToast } from '@/composables/useToast'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
 import ToastHost from '@/components/ToastHost.vue'
+import { formatClipboardTimestamp } from '@/shared/clipboardTimestamp'
 import {
   CLIPBOARD_HISTORY_LIMIT_DEFAULT,
   clampClipboardHistoryLimit,
@@ -53,7 +54,7 @@ interface ClipboardItem {
   expiresAt: number | null
 }
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
 const STORAGE_KEY = 'pwdbook-clipboard-session'
 const PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
 const FAVORITES_STORAGE_KEY = 'pwdbook-clipboard-favorites'
@@ -521,8 +522,8 @@ function setExpiry(item: ClipboardItem, expiry: ClipboardExpiry): void {
   else if (inHistory) broadcastState()
 }
 
-function formatTime(timestamp: number): string {
-  return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(timestamp)
+function formatTimestamp(timestamp: number): string {
+  return formatClipboardTimestamp(timestamp, locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 }
 
 function relativeExpiry(item: ClipboardItem): string {
@@ -840,7 +841,7 @@ onUnmounted(() => {
                 </span>
                 <Type v-else :size="14" />
               </div>
-              <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTime(item.createdAt) }}</time></div><p v-if="item.title" class="clipboard-popup-item-title"><SearchHighlightText :text="item.title" :query="query" /></p><p v-else-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
+              <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTimestamp(item.createdAt) }}</time></div><p v-if="item.title" class="clipboard-popup-item-title"><SearchHighlightText :text="item.title" :query="query" /></p><p v-else-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
               <div class="clipboard-popup-item-actions">
                 <button type="button" :class="{ 'is-favorite': item.favorite }" :title="item.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="item.favorite" @click.stop="toggleFavorite(item)">
                   <Star :size="13" :fill="item.favorite ? 'currentColor' : 'none'" />

@@ -56,6 +56,7 @@ function createClipboardWindow(): BrowserWindow {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      backgroundThrottling: false,
     },
   })
   clipboardWindowShowRequested = false
@@ -102,7 +103,7 @@ function notifyClipboardWindowReady(win: BrowserWindow): void {
     clipboardWindowLoadEventQueued = true
     win.webContents.once('did-finish-load', () => {
       clipboardWindowLoadEventQueued = false
-      if (clipboardWindow === win && !win.isDestroyed() && win.isVisible()) notifyClipboardWindowReady(win)
+      if (clipboardWindow === win && !win.isDestroyed()) notifyClipboardWindowReady(win)
     })
     return
   }
@@ -156,10 +157,13 @@ export function hideClipboardWindowOnLock(): void {
   hideClipboardWindow()
 }
 
-export function refreshClipboardWindowIfVisible(): void {
-  if (clipboardWindow && !clipboardWindow.isDestroyed() && clipboardWindow.isVisible()) {
-    notifyClipboardWindowReady(clipboardWindow)
+export function syncClipboardWindowMonitoring(): void {
+  const access = resolveClipboardWindowOpen(isUnlocked(), getSecuritySettings().clipboardEnabled)
+  if (access === 'allow') {
+    notifyClipboardWindowReady(ensureClipboardWindow())
+    return
   }
+  if (clipboardWindow && !clipboardWindow.isDestroyed()) notifyClipboardWindowReady(clipboardWindow)
 }
 
 export function unregisterClipboardWindowShortcut(): void {

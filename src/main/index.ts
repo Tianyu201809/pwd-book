@@ -23,6 +23,7 @@ import {
   destroyClipboardWindow,
   registerClipboardWindowIpc,
   registerClipboardWindowShortcut,
+  syncClipboardWindowMonitoring,
   unregisterClipboardWindowShortcut,
 } from './clipboardWindow'
 import {
@@ -223,6 +224,7 @@ if (gotSingleInstanceLock) {
     })
 
     createWindow()
+    syncClipboardWindowMonitoring()
     initializeUpdateService()
 
     if (isScreenshotMode() && mainWindow) {

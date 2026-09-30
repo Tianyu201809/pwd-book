@@ -3,7 +3,11 @@ import { rebuildTrayMenu } from '../tray'
 import { setSetting } from '../db/helpers'
 import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock } from '../quickBar'
-import { hideClipboardWindow, hideClipboardWindowOnLock, refreshClipboardWindowIfVisible } from '../clipboardWindow'
+import {
+  hideClipboardWindow,
+  hideClipboardWindowOnLock,
+  syncClipboardWindowMonitoring,
+} from '../clipboardWindow'
 import { hideDetailWindowOnLock } from '../detailWindow'
 import {
   broadcastNotesChanged,
@@ -202,6 +206,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultSetup, (_event, payload: VaultSetupPayload) =>
     wrap(() => {
       setupVault(payload.masterPassword, payload.confirmPassword)
+      syncClipboardWindowMonitoring()
       return getVaultStatus()
     }),
   )
@@ -215,6 +220,7 @@ export function registerIpcHandlers(): void {
       void restoreWifiSyncServerIfNeeded()
       restoreFolderSyncOnUnlock()
       restoreNoteWindowsAfterUnlock()
+      syncClipboardWindowMonitoring()
       return getVaultStatus()
     }),
   )
@@ -227,6 +233,7 @@ export function registerIpcHandlers(): void {
       hideDetailWindowOnLock()
       hideNoteWindowsOnLock()
       lockVault()
+      syncClipboardWindowMonitoring()
       resetScheduledBackupNotification()
       return getVaultStatus()
     } catch (error) {
@@ -239,6 +246,8 @@ export function registerIpcHandlers(): void {
     try {
       resetVault()
       await initDatabase()
+      hideClipboardWindowOnLock()
+      syncClipboardWindowMonitoring()
       return getVaultStatus()
     } catch (error) {
       const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
@@ -583,7 +592,16 @@ export function registerIpcHandlers(): void {
     const previous = getSecuritySettings()
     const next = updateSecuritySettings(partial)
     if (partial.clipboardEnabled === false) hideClipboardWindow()
-    if (partial.clipboardHistoryLimit !== undefined) refreshClipboardWindowIfVisible()
+    if (
+      partial.clipboardEnabled !== undefined
+      || partial.clipboardDefaultExpiry !== undefined
+      || partial.clipboardPersistence !== undefined
+      || partial.clipboardHistoryLimit !== undefined
+      || partial.clipboardQuickMode !== undefined
+      || partial.clipboardAccelerator !== undefined
+    ) {
+      syncClipboardWindowMonitoring()
+    }
     reregisterGlobalShortcuts(partial, previous)
     syncBrowserBridge()
     if (partial.launchAtLoginEnabled !== undefined) {
@@ -635,6 +653,9 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC.clipboardReadContent, () =>
     wrap(() => {
+      if (!isUnlocked() || !getSecuritySettings().clipboardEnabled) {
+        return { text: '', image: null }
+      }
       const image = clipboard.readImage()
       const imageData = image.isEmpty() ? null : `data:image/png;base64,${image.toPNG().toString('base64')}`
       return { text: clipboard.readText(), image: imageData }
