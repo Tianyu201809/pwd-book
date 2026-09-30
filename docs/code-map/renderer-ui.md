@@ -39,7 +39,7 @@ App.vue
 ├── notes/NotesManagerApp.vue   # 独立便签管理窗口（侧栏工具箱入口）
 ├── notes/StickyNoteApp.vue     # 桌面便签小窗口
 ├── import/ImportDataModal.vue  # 多来源 CSV/JSON 导入向导
-├── export/ExportDataModal.vue  # 导出到其他应用 CSV
+├── export/ExportDataModal.vue  # PwdBook JSON / CSV / Excel 与第三方 CSV 导出向导；CSV / Excel 支持条目预览选择（v1.45.0）
 ├── IconPickerModal.vue       # 条目/分类图标选择（图标/字母；**v1.30.0** 条目另有品牌页）
 ├── IconBadge.vue             # 侧栏/设置页彩色图标徽章（v1.11.0）
 ├── CategoryIconView.vue      # 彩色图标、字母或预设品牌图（**v1.30.0**）
@@ -162,7 +162,7 @@ App.vue
 | 分类 | `createCategory`、`updateCategory`、`deleteCategory`（**v1.25.0** 成功 Toast）、`reorderSidebarCategories` 等 |
 | `exportData` / `importData` | PwdBook JSON 备份导入 |
 | `previewImportData` / `commitImportData` | 多来源导入（含 PwdBook CSV）预览与提交 |
-| `exportDataAsCsv` | PwdBook / 第三方 CSV 导出 |
+| `exportDataAsCsv` | PwdBook / 第三方 CSV 导出；**v1.45.0** CSV / Excel 导出接收所选条目 ID |
 | `openSync` / `openWifiSync` / `openFolderSync` | Sync Hub 与两种同步页导航（v1.19.0） |
 | `loadWifiSyncState` / `loadFolderSyncState` | 同步状态加载 |
 | `startWifiSyncServer` / `pullWifiSyncMerge` | Wi-Fi 服务端开关、客户端拉取合并 |

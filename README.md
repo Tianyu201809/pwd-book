@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.43.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.45.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -214,7 +214,7 @@ npm run dev
 
 | 入口 | 说明 |
 |------|------|
-| **导出数据** | 两步向导：选格式 → 确认条数 → 保存文件（见 [数据导入导出](#数据导入导出)） |
+| **导出数据** | JSON 两步向导；CSV / Excel 三步向导，可预览并选择条目（见 [数据导入导出](#数据导入导出)） |
 | **导入数据** | 三步向导：选来源 → 上传文件 → 预览确认（见下） |
 | **同步** | **v1.19.0** 同步方式选择页 + **文件夹同步**（Enpass 式目录同步）；**v1.9.0** 局域网 Wi-Fi 同步（见 [同步](#同步-v1190)） |
 | **清除所有数据** | 二次确认后 wipe 本地库并重置为未初始化状态 |
@@ -461,7 +461,20 @@ npm run dev
 
 ## 版本更新
 
-### v1.43.0（当前）
+### v1.45.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1450---2026-09-30)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 按条目导出 | CSV / Excel 导出前可预览并选择条目，默认全选；Excel 分类表仅包含所选条目涉及的分类 |
+| JSON 备份 | 保持完整备份语义，仍包含附件与便签，不受 CSV / Excel 的条目选择影响 |
+
+### v1.44.0
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1440)**。摘要：GitHub Releases 自动更新与版本更新设置。
+
+### v1.43.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1430---2026-09-26)**。摘要：
 

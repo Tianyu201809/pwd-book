@@ -75,6 +75,12 @@
 | `data:export` | 是 | JSON 结构 `ExportPayload`（**v1.22.0** 含 `attachments`；**v1.38.0** `version: 3` 含便签） |
 | `data:import` | 是 | 批量导入条目（**v1.22.0** 可含附件） |
 
+### 数据导出
+
+**v1.45.0** CSV / Excel 导出从 `ExportDataModal.vue` 进入三步流程：选择格式 → 预览条目 → 确认导出。预览默认全选，搜索只过滤当前显示列表；逐条选择、全选/清空操作维护选中 ID 集合。确认时 `useAppState.exportDataAsCsv` 将所选 ID 传到 `vaultApi` 和 preload IPC，主进程导出服务再过滤条目。旧版 CSV 字符串 IPC 参数保持兼容，视为全量导出。
+
+第三方 CSV 对缺少标题或密码的所选条目标记为「将跳过」，现有确认页统计仍负责告知实际导出数量。Excel 分类工作表仅输出所选条目引用的分类，并按当前导出条目重新统计分类条数。JSON 仍使用 `data:export` 完整导出，包括附件与便签，不应用此筛选。
+
 ### 条目附件（v1.22.0）
 
 | 通道 | 需解锁 | 说明 |
