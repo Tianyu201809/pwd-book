@@ -419,7 +419,7 @@ npm run dev
 | `npm run lint` | ESLint 检查（**v1.18.0** flat config） |
 | `npm run lint:fix` | ESLint 自动修复 |
 | `npm test` | 单元测试（含同步合并、加密封包等） |
-| `npm run icons` | 从 `icon.png` 生成应用图标资源 |
+| `npm run icons` | 从 `icon/source.png` 母版生成 `icon.png`、`icon.ico` 与 `icon-<尺寸>.png`（打包前自动执行） |
 | `npm run dist:win` | 构建并生成 Windows NSIS 安装包（输出 `release/`） |
 | `npm run dist:win:dir` | 构建 Windows 未打包目录版，便于本地调试 |
 | `npm run dist:mac` | 构建并生成 macOS DMG（x64 / arm64，输出 `release/`） |
@@ -849,6 +849,7 @@ pwd-book/
 │   ├── i18n/           # 中英文文案
 │   └── shared/         # 类型、IPC、同步合并/传输、导入/导出解析、entrySearch 等
 ├── extension/          # Chrome/Edge MV3 自动填充扩展
+├── icon/               # 应用图标：母版 source.png，及生成的 icon.png / icon.ico / icon-<尺寸>.png
 ├── native-host/        # Native Messaging Host（桥接 Chrome ↔ PwdBook）
 ├── deps/               # 打包依赖脚本（NSIS 卸载时可选删除用户数据）
 ├── docs/images/        # README 等产品截图

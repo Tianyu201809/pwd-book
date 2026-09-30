@@ -23,6 +23,7 @@ import {
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import BrowserSettingsPanel from '@/components/BrowserSettingsPanel.vue'
+import appIcon from '@/assets/images/brand/app-icon.png'
 import ClipboardSettingsPanel from '@/components/ClipboardSettingsPanel.vue'
 import NotesSettingsPanel from '@/components/NotesSettingsPanel.vue'
 import QuickBarSettingsPanel from '@/components/QuickBarSettingsPanel.vue'
@@ -510,6 +511,13 @@ async function handleReset(): Promise<void> {
         >
           <h3>{{ t('settings.about') }}</h3>
           <UiCard class="about-card">
+            <img
+              class="about-mark"
+              :src="appIcon"
+              alt=""
+              width="56"
+              height="56"
+            >
             <p class="font-display about-title">
               {{ t('common.appName') }}
             </p>
@@ -814,6 +822,17 @@ h3 {
 
 .about-card {
   padding: 20px;
+}
+
+.about-mark {
+  width: 56px;
+  height: 56px;
+  display: block;
+  margin-bottom: 14px;
+  border-radius: 13px;
+  box-shadow: var(--shadow-popover);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .about-title {

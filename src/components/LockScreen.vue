@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Eye, EyeOff } from 'lucide-vue-next'
+import { Eye, EyeOff } from 'lucide-vue-next'
+import appIcon from '@/assets/images/brand/app-icon.png'
 import RecoveryMenu from '@/components/recovery/RecoveryMenu.vue'
 import RecoveryKeyInput from '@/components/recovery/RecoveryKeyInput.vue'
 import RecoveryResetPassword from '@/components/recovery/RecoveryResetPassword.vue'
@@ -224,12 +225,13 @@ async function handleCopyRecoveryKey(): Promise<void> {
 
     <div class="lock-content">
       <div class="brand">
-        <div class="brand-icon">
-          <ShieldCheck
-            :size="32"
-            :stroke-width="1.5"
-          />
-        </div>
+        <img
+          class="brand-icon"
+          :src="appIcon"
+          alt=""
+          width="64"
+          height="64"
+        >
         <h1 class="font-display">
           {{ t('common.appName') }}
         </h1>
@@ -409,14 +411,12 @@ async function handleCopyRecoveryKey(): Promise<void> {
 .brand-icon {
   width: 64px;
   height: 64px;
+  display: block;
   margin: 0 auto 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  background: var(--accent-subtle);
-  border: 1px solid var(--border-accent);
-  color: var(--accent-primary);
+  border-radius: 15px;
+  box-shadow: var(--shadow-popover);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 h1 {

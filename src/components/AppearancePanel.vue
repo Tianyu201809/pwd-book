@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Sun, Moon, Monitor, ShieldCheck, Check, TreePalm } from 'lucide-vue-next'
+import { Sun, Moon, Monitor, Check, TreePalm } from 'lucide-vue-next'
+import appIconSm from '@/assets/images/brand/app-icon-sm.png'
 import { Card, Button, Input } from 'animal-island-vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
@@ -170,10 +171,12 @@ const modeIcons = {
       >
         <div class="preview-header">
           <div class="preview-icon">
-            <ShieldCheck
-              :size="16"
-              :stroke-width="1.5"
-            />
+            <img
+              :src="appIconSm"
+              alt=""
+              width="24"
+              height="24"
+            >
           </div>
           <div>
             <p class="preview-title">
@@ -284,9 +287,13 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-subtle);
-  border: 1px solid var(--border-accent);
-  color: var(--accent-primary);
+}
+
+.preview-icon img {
+  display: block;
+  border-radius: 5px;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .preview-title {

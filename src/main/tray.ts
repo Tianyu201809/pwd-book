@@ -69,10 +69,10 @@ function buildTrayImage(): Electron.NativeImage | null {
   const image = nativeImage.createFromPath(iconPath)
   if (image.isEmpty()) return null
 
-  if (process.platform === 'win32') {
-    return image.resize({ width: 16, height: 16 })
-  }
-  return image
+  // 托盘只占十几像素，必须按平台菜单栏/通知区域尺寸缩放；
+  // 否则 macOS / Linux 会把 1024px 原图直接交给系统。
+  const size = process.platform === 'darwin' ? 18 : 16
+  return image.resize({ width: size, height: size, quality: 'best' })
 }
 
 export function rebuildTrayMenu(): void {

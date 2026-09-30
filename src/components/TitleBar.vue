@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShieldCheck, Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap, Clipboard } from 'lucide-vue-next'
+import { Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap, Clipboard } from 'lucide-vue-next'
+import appIconSm from '@/assets/images/brand/app-icon-sm.png'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { useTheme } from '@/composables/useTheme'
@@ -212,11 +213,13 @@ onUnmounted(() => {
     :class="{ 'titlebar--animal': isAnimalIsland }"
   >
     <div class="titlebar-left">
-      <ShieldCheck
-        class="icon-accent titlebar-no-drag"
-        :size="14"
-        :stroke-width="1.5"
-      />
+      <img
+        class="titlebar-mark titlebar-no-drag"
+        :src="appIconSm"
+        alt=""
+        width="18"
+        height="18"
+      >
       <span class="title">{{ t('common.appName') }}</span>
     </div>
     <div
@@ -512,8 +515,14 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-.icon-accent {
-  color: var(--accent-primary);
+.titlebar-mark {
+  width: 18px;
+  height: 18px;
+  display: block;
+  border-radius: 4px;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .title {

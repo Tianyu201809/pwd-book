@@ -30,14 +30,13 @@ body {
   width: 32px;
   height: 32px;
   border-radius: var(--pb-radius-sm);
-  background: var(--pb-accent-subtle);
-  border: 1px solid var(--pb-border-accent);
-  color: var(--pb-accent-400);
 }
 
-.pwdbook-popup-header .pwdbook-mark svg {
-  width: 16px;
-  height: 16px;
+.pwdbook-popup-header .pwdbook-mark img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  border-radius: 6px;
 }
 
 .pwdbook-popup-header h1 {
