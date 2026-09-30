@@ -91,6 +91,7 @@ describe('updateService', () => {
     mocks.updater.quitAndInstall.mockReset()
     mocks.updater.setFeedURL.mockReset()
     mocks.app.isPackaged = false
+    mocks.app.getVersion.mockReturnValue('1.42.0')
     mocks.settings.autoUpdateEnabled = true
   })
 
@@ -119,6 +120,27 @@ describe('updateService', () => {
     await checkForUpdates(false)
     expect(mocks.updater.autoDownload).toBe(true)
     expect(getUpdateStatus()).toMatchObject({ state: 'available', version: '1.44.0' })
+  })
+
+  it.each(['1.44.0', '1.43.0'])('does not report %s as an update over the current version', async (version) => {
+    mocks.app.isPackaged = true
+    mocks.app.getVersion.mockReturnValue('1.44.0')
+    mocks.updater.checkForUpdates.mockResolvedValue({
+      updateInfo: { ...stableInfo, version },
+    })
+    initializeUpdateService()
+    const result = await checkForUpdates(true)
+    expect(result).toMatchObject({ state: 'not-available', currentVersion: '1.44.0' })
+    expect(result.version).toBeUndefined()
+  })
+
+  it('reports a newer stable version as available', async () => {
+    mocks.app.isPackaged = true
+    mocks.app.getVersion.mockReturnValue('1.43.0')
+    mocks.updater.checkForUpdates.mockResolvedValue({ updateInfo: stableInfo })
+    initializeUpdateService()
+    const result = await checkForUpdates(true)
+    expect(result).toMatchObject({ state: 'available', currentVersion: '1.43.0', version: '1.44.0' })
   })
 
   it('uses manual download when the preference is disabled', async () => {

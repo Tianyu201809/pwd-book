@@ -68,6 +68,72 @@ const updateStatus = ref<UpdateStatus>({ state: 'idle', currentVersion: packageJ
 let removeUpdateStatusListener: (() => void) | null = null
 const RELEASE_LIST_URL = 'https://github.com/Tianyu201809/pwd-book/releases'
 
+const RELEASE_NOTE_TAGS = new Set([
+  'a',
+  'blockquote',
+  'br',
+  'code',
+  'em',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'li',
+  'ol',
+  'p',
+  'pre',
+  'strong',
+  'ul',
+])
+
+function sanitizeReleaseNotes(notes: string): string {
+  const document = new DOMParser().parseFromString(notes, 'text/html')
+  const container = document.createElement('div')
+
+  const copyChildren = (source: Node, target: Node): void => {
+    for (const child of Array.from(source.childNodes)) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        target.appendChild(document.createTextNode(child.textContent ?? ''))
+        continue
+      }
+      if (child.nodeType !== Node.ELEMENT_NODE) continue
+
+      const sourceElement = child as HTMLElement
+      const tagName = sourceElement.tagName.toLowerCase()
+      if (!RELEASE_NOTE_TAGS.has(tagName)) {
+        copyChildren(sourceElement, target)
+        continue
+      }
+
+      const targetElement = document.createElement(tagName)
+      if (tagName === 'a') {
+        const href = sourceElement.getAttribute('href')
+        if (href) {
+          try {
+            const url = new URL(href, window.location.origin)
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+              targetElement.setAttribute('href', url.href)
+              targetElement.setAttribute('target', '_blank')
+              targetElement.setAttribute('rel', 'noreferrer noopener')
+            }
+          } catch {
+            // Ignore malformed or unsafe release-note links.
+          }
+        }
+      }
+      target.appendChild(targetElement)
+      copyChildren(sourceElement, targetElement)
+    }
+  }
+
+  copyChildren(document.body, container)
+  return container.innerHTML
+}
+
+const sanitizedReleaseNotes = computed(() => (
+  updateStatus.value.releaseNotes ? sanitizeReleaseNotes(updateStatus.value.releaseNotes) : ''
+))
+
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
   { id: 'clipboard' as SettingsTab, label: t('settings.clipboardTab'), icon: Clipboard, iconStyle: NAV_ICON_STYLES.clipboard },
@@ -487,12 +553,11 @@ async function handleReset(): Promise<void> {
               >
                 {{ updateStatus.error }}
               </p>
-              <p
-                v-if="updateStatus.releaseNotes"
+              <div
+                v-if="sanitizedReleaseNotes"
                 class="update-notes"
-              >
-                {{ updateStatus.releaseNotes }}
-              </p>
+                v-html="sanitizedReleaseNotes"
+              />
               <div class="update-actions">
                 <UiButton
                   variant="default"
@@ -819,9 +884,54 @@ h3 {
 
 .update-notes {
   margin: 10px 0 0;
-  white-space: pre-wrap;
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
   color: var(--text-secondary);
   font-size: 13px;
+  line-height: 1.55;
+}
+
+.update-notes :deep(p),
+.update-notes :deep(ul),
+.update-notes :deep(ol),
+.update-notes :deep(blockquote),
+.update-notes :deep(pre) {
+  margin: 0 0 8px;
+}
+
+.update-notes :deep(p:last-child),
+.update-notes :deep(ul:last-child),
+.update-notes :deep(ol:last-child),
+.update-notes :deep(blockquote:last-child),
+.update-notes :deep(pre:last-child) {
+  margin-bottom: 0;
+}
+
+.update-notes :deep(ul),
+.update-notes :deep(ol) {
+  padding-left: 20px;
+}
+
+.update-notes :deep(blockquote) {
+  padding-left: 12px;
+  border-left: 3px solid var(--border-default);
+}
+
+.update-notes :deep(code),
+.update-notes :deep(pre) {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.update-notes :deep(code) {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--bg-hover);
+}
+
+.update-notes :deep(a) {
+  color: var(--accent-primary);
+  text-decoration: underline;
 }
 
 .update-actions {

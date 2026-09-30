@@ -44,6 +44,21 @@ function isStableSemVer(version: unknown): version is string {
   )
 }
 
+function compareStableVersions(left: string, right: string): number {
+  const leftCore = left.split('+', 1)[0].split('.').map(Number)
+  const rightCore = right.split('+', 1)[0].split('.').map(Number)
+  for (let index = 0; index < 3; index += 1) {
+    if (leftCore[index] !== rightCore[index]) {
+      return leftCore[index] > rightCore[index] ? 1 : -1
+    }
+  }
+  return 0
+}
+
+function isNewerStableVersion(version: unknown): version is string {
+  return isStableSemVer(version) && isStableSemVer(currentVersion()) && compareStableVersions(version, currentVersion()) > 0
+}
+
 function normalizeReleaseNotes(notes: UpdateInfo['releaseNotes']): string | undefined {
   if (typeof notes === 'string') return notes
   if (!Array.isArray(notes)) return undefined
@@ -118,7 +133,7 @@ function configureUpdater(): void {
     emitStatus({ state: 'checking' })
   })
   addUpdaterListener('update-available', (info: UpdateInfo) => {
-    if (!isStableSemVer(info.version)) {
+    if (!isNewerStableVersion(info.version)) {
       backgroundDownloadActive = false
       emitStatus({ state: 'not-available' })
       return
@@ -139,6 +154,11 @@ function configureUpdater(): void {
     })
   })
   addUpdaterListener('update-downloaded', (info: UpdateInfo) => {
+    if (!isNewerStableVersion(info.version)) {
+      backgroundDownloadActive = false
+      emitStatus({ state: 'not-available' })
+      return
+    }
     backgroundDownloadActive = false
     infoStatus('downloaded', info)
     status = { ...status, progress: 100 }
@@ -216,7 +236,7 @@ export async function checkForUpdates(manual = false): Promise<UpdateStatus> {
     })
     .then((result) => {
       const info = result?.updateInfo
-      if (info && !isStableSemVer(info.version)) return emitStatus({ state: 'not-available' })
+      if (info && !isNewerStableVersion(info.version)) return emitStatus({ state: 'not-available' })
       if (info) return infoStatus('available', info)
       return getUpdateStatus()
     })
