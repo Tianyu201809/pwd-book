@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { createEmptyNoteContent } from '@/shared/noteBlocks'
+import { resolveCreateNoteBookId, resolveFilterAfterCreate } from '@/shared/noteCreate'
 import type { NoteBook, NoteFilter, StickyNote, StickyNoteInput } from '@/shared/types'
 
 const books = ref<NoteBook[]>([])
@@ -44,8 +45,7 @@ async function createNote(bookId?: string): Promise<StickyNote | null> {
   if (!window.electronAPI) return null
   error.value = ''
   try {
-    const targetBookId = bookId
-      ?? (!['all', 'favorite', 'trash'].includes(filter.value) ? filter.value : undefined)
+    const targetBookId = resolveCreateNoteBookId(bookId, filter.value)
     const input: Partial<StickyNoteInput> = {
       bookId: targetBookId,
       title: '',
@@ -53,8 +53,7 @@ async function createNote(bookId?: string): Promise<StickyNote | null> {
       color: 'yellow',
     }
     const note = await window.electronAPI.createNote(input)
-    if (bookId) filter.value = bookId
-    else if (filter.value === 'trash' || filter.value === 'favorite') filter.value = 'all'
+    filter.value = resolveFilterAfterCreate(bookId, filter.value)
     await refresh()
     selectedId.value = note.id
     return note

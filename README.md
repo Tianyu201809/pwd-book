@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.46.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.46.2-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -461,7 +461,15 @@ npm run dev
 
 ## 版本更新
 
-### v1.46.0（当前）
+### v1.46.2（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1462---2026-10-01)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 新建便签 | 管理窗列表工具栏「+」恢复可用。点击不再把鼠标事件当成便签本 ID，避免创建失败并显示「便签加载失败」 |
+
+### v1.46.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1460---2026-09-30)**。摘要：
 

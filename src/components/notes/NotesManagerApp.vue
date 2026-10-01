@@ -559,7 +559,7 @@ onUnmounted(() => {
       <section class="notes-list-panel">
         <div class="list-toolbar">
           <label class="search-field"><Search :size="16" /><input v-model="query" :placeholder="$t('notes.searchPlaceholder')"></label>
-          <button type="button" class="new-note-btn" :title="$t('notes.newNote')" @click="createNote"><Plus :size="17" /></button>
+          <button type="button" class="new-note-btn" :title="$t('notes.newNote')" @click="createNote()"><Plus :size="17" /></button>
         </div>
         <div v-if="error" class="list-error">
           <span>{{ $t('notes.loadFailed') }}</span>
