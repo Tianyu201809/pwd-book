@@ -77,7 +77,6 @@ const securitySettings = ref<SecuritySettings>({
   notesManagerAccelerator: 'Alt+Shift+N',
   trashRetentionDays: 30,
   launchAtLoginEnabled: false,
-  autoUpdateEnabled: true,
 })
 
 const selectedCategory = ref<FilterCategory>('all')

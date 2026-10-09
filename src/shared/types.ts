@@ -274,8 +274,6 @@ export interface SecuritySettings {
   trashRetentionDays: number
   /** 系统登录后自动启动应用 */
   launchAtLoginEnabled: boolean
-  /** 自动检查并下载正式版本更新 */
-  autoUpdateEnabled: boolean
 }
 
 export type UpdateState =

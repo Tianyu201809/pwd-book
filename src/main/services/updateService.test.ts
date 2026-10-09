@@ -46,7 +46,6 @@ const mocks = vi.hoisted(() => {
       isPackaged: false,
       getVersion: vi.fn(() => '1.42.0'),
     },
-    settings: { autoUpdateEnabled: true },
   }
 })
 
@@ -56,9 +55,6 @@ vi.mock('electron', () => ({
 }))
 
 vi.mock('electron-updater', () => ({ autoUpdater: mocks.updater }))
-vi.mock('./settingsService', () => ({
-  getSecuritySettings: vi.fn(() => ({ autoUpdateEnabled: mocks.settings.autoUpdateEnabled })),
-}))
 
 import {
   checkForUpdates,
@@ -67,7 +63,6 @@ import {
   getUpdateStatus,
   initializeUpdateService,
   installUpdate,
-  setAutoUpdateEnabled,
 } from './updateService'
 
 const stableInfo = {
@@ -92,7 +87,6 @@ describe('updateService', () => {
     mocks.updater.setFeedURL.mockReset()
     mocks.app.isPackaged = false
     mocks.app.getVersion.mockReturnValue('1.42.0')
-    mocks.settings.autoUpdateEnabled = true
   })
 
   it('does not initialize network update checks when app is not packaged', async () => {
@@ -104,12 +98,11 @@ describe('updateService', () => {
 
   it('rejects prerelease update info and reports not-available', async () => {
     mocks.app.isPackaged = true
-    mocks.settings.autoUpdateEnabled = false
     mocks.updater.checkForUpdates.mockResolvedValue({
       updateInfo: { ...stableInfo, version: '1.44.0-beta.1' },
     })
     initializeUpdateService()
-    const result = await checkForUpdates(true)
+    const result = await checkForUpdates()
     expect(result.state).toBe('not-available')
   })
 
@@ -117,8 +110,8 @@ describe('updateService', () => {
     mocks.app.isPackaged = true
     mocks.updater.checkForUpdates.mockResolvedValue({ updateInfo: stableInfo })
     initializeUpdateService()
-    await checkForUpdates(false)
-    expect(mocks.updater.autoDownload).toBe(true)
+    await checkForUpdates()
+    expect(mocks.updater.autoDownload).toBe(false)
     expect(getUpdateStatus()).toMatchObject({ state: 'available', version: '1.44.0' })
   })
 
@@ -129,7 +122,7 @@ describe('updateService', () => {
       updateInfo: { ...stableInfo, version },
     })
     initializeUpdateService()
-    const result = await checkForUpdates(true)
+    const result = await checkForUpdates()
     expect(result).toMatchObject({ state: 'not-available', currentVersion: '1.44.0' })
     expect(result.version).toBeUndefined()
   })
@@ -139,38 +132,26 @@ describe('updateService', () => {
     mocks.app.getVersion.mockReturnValue('1.43.0')
     mocks.updater.checkForUpdates.mockResolvedValue({ updateInfo: stableInfo })
     initializeUpdateService()
-    const result = await checkForUpdates(true)
+    const result = await checkForUpdates()
     expect(result).toMatchObject({ state: 'available', currentVersion: '1.43.0', version: '1.44.0' })
   })
 
   it('uses manual download when the preference is disabled', async () => {
     mocks.app.isPackaged = true
-    mocks.settings.autoUpdateEnabled = false
     mocks.updater.checkForUpdates.mockResolvedValue({ updateInfo: stableInfo })
     mocks.updater.downloadUpdate.mockResolvedValue([])
     initializeUpdateService()
-    await checkForUpdates(true)
+    await checkForUpdates()
     expect(mocks.updater.autoDownload).toBe(false)
     await downloadUpdate()
     expect(mocks.updater.downloadUpdate).toHaveBeenCalledTimes(1)
   })
 
-  it('cancels an active background download when automatic updates are disabled', async () => {
-    mocks.app.isPackaged = true
-    mocks.updater.checkForUpdates.mockResolvedValue({ updateInfo: stableInfo })
-    initializeUpdateService()
-    await checkForUpdates(false)
-    mocks.updater.emit('update-available', stableInfo)
-    setAutoUpdateEnabled(false)
-    expect(mocks.updater.cancelDownload).toHaveBeenCalledTimes(1)
-  })
-
   it('maps download progress and downloaded events to stable status', async () => {
     mocks.app.isPackaged = true
-    mocks.settings.autoUpdateEnabled = false
     mocks.updater.checkForUpdates.mockResolvedValue({ updateInfo: stableInfo })
     initializeUpdateService()
-    await checkForUpdates(true)
+    await checkForUpdates()
     mocks.updater.emit('download-progress', { percent: 42 })
     expect(getUpdateStatus()).toMatchObject({ state: 'downloading', progress: 42 })
     mocks.updater.emit('update-downloaded', stableInfo)

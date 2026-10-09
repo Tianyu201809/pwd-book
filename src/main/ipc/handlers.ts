@@ -90,7 +90,6 @@ import {
   downloadUpdate,
   getUpdateStatus,
   installUpdate,
-  setAutoUpdateEnabled,
 } from '../services/updateService'
 import {
   getEmailBackupSettings,
@@ -582,7 +581,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.settingsGet, () => getSecuritySettings())
 
   ipcMain.handle(IPC.updateGetStatus, () => getUpdateStatus())
-  ipcMain.handle(IPC.updateCheck, () => checkForUpdates(true))
+  ipcMain.handle(IPC.updateCheck, () => checkForUpdates())
   ipcMain.handle(IPC.updateDownload, () => downloadUpdate())
   ipcMain.handle(IPC.updateInstall, () => installUpdate())
 
@@ -606,9 +605,6 @@ export function registerIpcHandlers(): void {
     syncBrowserBridge()
     if (partial.launchAtLoginEnabled !== undefined) {
       syncLaunchAtLogin(next.launchAtLoginEnabled)
-    }
-    if (partial.autoUpdateEnabled !== undefined) {
-      setAutoUpdateEnabled(next.autoUpdateEnabled)
     }
     return next
   })

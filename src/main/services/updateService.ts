@@ -2,9 +2,6 @@ import { app, BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { CancellationToken, ProgressInfo, UpdateInfo } from 'electron-updater'
 import { IPC_EVENTS, type UpdateStatus } from '../../shared/types'
-import { getSecuritySettings } from './settingsService'
-
-const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
 const GITHUB_PROVIDER = {
   provider: 'github' as const,
   owner: 'Tianyu201809',
@@ -13,7 +10,6 @@ const GITHUB_PROVIDER = {
 }
 
 let initialized = false
-let timer: NodeJS.Timeout | null = null
 let checkPromise: Promise<UpdateStatus> | null = null
 let downloadPromise: Promise<UpdateStatus> | null = null
 let backgroundDownloadActive = false
@@ -102,28 +98,6 @@ function addUpdaterListener(event: string, listener: UpdaterListener): void {
   updaterListeners.push([event, listener])
 }
 
-function clearTimer(): void {
-  if (!timer) return
-  clearInterval(timer)
-  timer = null
-}
-
-function scheduleAutomaticChecks(): void {
-  clearTimer()
-  const run = (): void => {
-    if (!getSecuritySettings().autoUpdateEnabled) return
-    void checkForUpdates(false)
-  }
-  const win = BrowserWindow.getAllWindows().find((candidate) => !candidate.isDestroyed())
-  if (win) {
-    win.webContents.once('did-finish-load', run)
-  } else {
-    run()
-  }
-  timer = setInterval(run, CHECK_INTERVAL_MS)
-  timer.unref?.()
-}
-
 function configureUpdater(): void {
   autoUpdater.setFeedURL(GITHUB_PROVIDER)
   autoUpdater.allowPrerelease = false
@@ -179,12 +153,9 @@ export function initializeUpdateService(): void {
   if (initialized || !app.isPackaged || process.env.PWD_BOOK_SCREENSHOT === '1') return
   initialized = true
   configureUpdater()
-  autoUpdater.autoDownload = getSecuritySettings().autoUpdateEnabled
-  if (getSecuritySettings().autoUpdateEnabled) scheduleAutomaticChecks()
 }
 
 export function destroyUpdateService(): void {
-  clearTimer()
   if (backgroundDownloadActive) {
     activeCancellationToken?.cancel()
     ;(autoUpdater as unknown as { cancelDownload?: () => void }).cancelDownload?.()
@@ -207,27 +178,11 @@ export function getUpdateStatus(): UpdateStatus {
   return { ...status }
 }
 
-export function setAutoUpdateEnabled(enabled: boolean): void {
-  autoUpdater.autoDownload = enabled
-  if (!enabled) {
-    clearTimer()
-    if (backgroundDownloadActive) {
-      backgroundDownloadActive = false
-      activeCancellationToken?.cancel()
-      ;(autoUpdater as unknown as { cancelDownload?: () => void }).cancelDownload?.()
-    }
-    activeCancellationToken = null
-    return
-  }
-  if (initialized) scheduleAutomaticChecks()
-}
-
-export async function checkForUpdates(manual = false): Promise<UpdateStatus> {
+export async function checkForUpdates(): Promise<UpdateStatus> {
   if (!initialized) return getUpdateStatus()
-  if (!manual && !getSecuritySettings().autoUpdateEnabled) return getUpdateStatus()
   if (checkPromise) return checkPromise
 
-  autoUpdater.autoDownload = !manual && getSecuritySettings().autoUpdateEnabled
+  autoUpdater.autoDownload = false
   checkPromise = autoUpdater
     .checkForUpdates()
     .then((result) => {

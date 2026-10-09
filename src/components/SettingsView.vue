@@ -184,11 +184,9 @@ async function onLaunchAtLoginChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ launchAtLoginEnabled: enabled })
 }
 
-async function onAutoUpdateChange(enabled: boolean): Promise<void> {
-  await updateSecuritySettings({ autoUpdateEnabled: enabled })
-}
-
 async function checkForUpdates(): Promise<void> {
+  const confirmed = window.confirm(t('settings.internetUpdateWarning'))
+  if (!confirmed) return
   updateStatus.value = await window.electronAPI?.checkForUpdates?.() ?? updateStatus.value
 }
 
@@ -527,20 +525,9 @@ async function handleReset(): Promise<void> {
             <p class="about-desc">
               {{ t('settings.aboutDesc') }}
             </p>
-            <div class="row update-preference-row">
-              <div>
-                <p class="row-title">
-                  {{ t('settings.autoUpdate') }}
-                </p>
-                <p class="row-desc">
-                  {{ t('settings.autoUpdateDesc') }}
-                </p>
-              </div>
-              <UiSwitch
-                :model-value="securitySettings.autoUpdateEnabled"
-                @update:model-value="onAutoUpdateChange"
-              />
-            </div>
+            <p class="row-desc update-manual-desc">
+              {{ t('settings.manualUpdateDesc') }}
+            </p>
             <div class="update-status" aria-live="polite">
               <div class="update-status-line">
                 <span>{{ t(`settings.updateState.${updateStatus.state}`) }}</span>
