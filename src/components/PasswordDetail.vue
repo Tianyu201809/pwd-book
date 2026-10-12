@@ -55,6 +55,7 @@ function readDetailMaxWidth(): number {
 
 const {
   selectedEntry,
+  pendingEditEntryId,
   isCreating,
   loading,
   vaultCategories,
@@ -414,6 +415,17 @@ watch(
 function startEditing(): void {
   isEditing.value = true
 }
+
+// Wait for selection's draft reset before entering edit mode for the requested entry.
+watch(
+  pendingEditEntryId,
+  (id) => {
+    if (!id || props.detached || isCreating.value || selectedEntry.value?.id !== id) return
+    startEditing()
+    pendingEditEntryId.value = null
+  },
+  { flush: 'post' },
+)
 
 function cancelEditing(): void {
   isEditing.value = false

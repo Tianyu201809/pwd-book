@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.47.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.48.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -461,7 +461,15 @@ npm run dev
 
 ## 版本更新
 
-### v1.47.0（当前）
+### v1.48.0（当前）
+
+| 类别 | 内容 |
+|------|------|
+| 条目编辑 | 列表/网格的右键和「⋯」菜单新增「编辑」，点击后选中该条目、展开详情并直接进入编辑模式；保存或取消沿用详情表单逻辑 |
+| 独立详情 | 已打开独立详情窗口时，菜单编辑会关闭该窗口并返回主窗口编辑 |
+| 技术说明 | [条目菜单编辑](./docs/features/entry-menu-edit.md) · [v1.48.0 自测报告](./docs/testing/v1.48.0-self-check.md) |
+
+### v1.47.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1430---2026-10-08)**。摘要：
 

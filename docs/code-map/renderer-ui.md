@@ -135,6 +135,8 @@ App.vue
 
 ### EntryListMenu.vue
 
+**v1.48.0**：「编辑」位于「创建副本」之前，所有列表/网格右键与「⋯」入口共用。`handleEdit` 先缓存目标 ID、发出 `action` 关闭菜单，再调用 `useAppState.startEditEntry`：验证条目仍存在，关闭独立详情（若已打开），`selectEntry` 展开主面板，然后设置 `pendingEditEntryId`。`PasswordDetail` 的 `flush: 'post'` watcher 在选中条目的草稿重置完成后进入编辑并清空请求，避免切换条目时被只读重置覆盖。普通 `selectEntry` 会清空未消费的请求；同条目取消后可再次进入编辑。保存/取消复用原逻辑。详见 [条目菜单编辑](../features/entry-menu-edit.md) 和 [自测报告](../testing/v1.48.0-self-check.md)。
+
 列表项右键 / 「⋯」菜单；含 **复制到剪贴板**（`copyEntryData`）、**创建副本**（`duplicateEntry`，标题追加 ` - 副本`）、移动、打开网址/程序等。「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
 
 `PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。**v1.23.0** 搜索前缀放大镜 `pointer-events: none`，避免遮挡输入框点击。**v1.25.0** 工具栏 **#** 按钮展开 `TagFilterPanel` popover（`list-tag-filter` / `list-tag-filter-panel`）；监听 `TOUR_PREPARE_EVENT` 的 `expand-tag-filter` / `collapse-list-menus`。

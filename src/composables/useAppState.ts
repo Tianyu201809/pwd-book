@@ -157,6 +157,7 @@ const vaultCategories = ref<VaultCategory[]>([])
 const vaultTags = ref<VaultTag[]>([])
 const sidebarCategoryOrder = ref<string[]>(['all', 'favorite', 'attachments'])
 const isCreating = ref(false)
+const pendingEditEntryId = ref<string | null>(null)
 const DETAIL_COLLAPSED_STORAGE_KEY = 'pwdbook-detail-collapsed'
 const detailCollapsed = ref(localStorage.getItem(DETAIL_COLLAPSED_STORAGE_KEY) === 'true')
 const detachedDetailOpen = ref(false)
@@ -738,6 +739,7 @@ function openClipboard(): void {
 }
 
 function selectEntry(id: string): void {
+  pendingEditEntryId.value = null
   isCreating.value = false
   selectedEntryId.value = id
   window.electronAPI?.detailWindowSelectEntry?.(id)
@@ -745,6 +747,16 @@ function selectEntry(id: string): void {
     expandDetailPanel()
   }
   touchActivity()
+}
+
+function startEditEntry(id: string): void {
+  if (!entries.value.some((entry) => entry.id === id)) return
+  if (detachedDetailOpen.value) {
+    window.electronAPI?.closeDetailWindow?.()
+    detachedDetailOpen.value = false
+  }
+  selectEntry(id)
+  pendingEditEntryId.value = id
 }
 
 async function openDetachedDetail(): Promise<boolean> {
@@ -1318,6 +1330,7 @@ export function useAppState() {
     vaultCategories,
     vaultTags,
     isCreating,
+    pendingEditEntryId,
     detailCollapsed,
     detachedDetailOpen,
     expandDetailPanel,
@@ -1355,6 +1368,7 @@ export function useAppState() {
     toggleTagFilter,
     clearTagFilters,
     selectEntry,
+    startEditEntry,
     startCreateEntry,
     cancelCreateEntry,
     getCreateDefaultCategoryId,

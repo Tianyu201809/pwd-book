@@ -22,6 +22,7 @@ const {
   openLocalProgramForEntry,
   copyEntryData,
   duplicateEntry,
+  startEditEntry,
   moveEntryToCategory,
   toggleFavorite,
 } = useAppState()
@@ -60,6 +61,13 @@ async function handleDuplicate(event: MouseEvent): Promise<void> {
   event.stopPropagation()
   done()
   await duplicateEntry(props.entry)
+}
+
+function handleEdit(event: MouseEvent): void {
+  event.stopPropagation()
+  const id = props.entry.id
+  done()
+  startEditEntry(id)
 }
 
 async function handleToggleFavorite(event: MouseEvent): Promise<void> {
@@ -190,6 +198,13 @@ function scheduleCloseMoveSubmenu(): void {
     @click="handleCopy"
   >
     {{ t('vault.copyData') }}
+  </button>
+  <button
+    type="button"
+    class="action-menu-item"
+    @click="handleEdit"
+  >
+    {{ t('common.edit') }}
   </button>
   <button
     type="button"
