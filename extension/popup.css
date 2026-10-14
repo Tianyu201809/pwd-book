@@ -67,3 +67,177 @@ body {
 #status.err {
   color: #f87171;
 }
+
+.pwdbook-quick-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--pb-border-accent);
+  border-radius: var(--pb-radius-sm);
+  background: var(--pb-accent-subtle);
+  color: var(--pb-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pwdbook-quick-add:hover {
+  border-color: var(--pb-accent-400);
+}
+
+.pwdbook-quick-add strong,
+.pwdbook-quick-add small {
+  display: block;
+}
+
+.pwdbook-quick-add strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pwdbook-quick-add small {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--pb-text-secondary);
+}
+
+.pwdbook-quick-add-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--pb-accent-500);
+  color: var(--pb-btn-primary-text);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.pwdbook-add-card {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--pb-border-strong);
+  border-radius: var(--pb-radius-md);
+  background: var(--pb-bg-elevated);
+  box-shadow: var(--pb-shadow);
+}
+
+.pwdbook-add-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pwdbook-add-card-head h2 {
+  margin: 0;
+  font-family: var(--pb-font-display);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pwdbook-add-card label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--pb-text-secondary);
+}
+
+.pwdbook-add-card input,
+.pwdbook-add-card select,
+.pwdbook-add-card textarea {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 7px 8px;
+  border: 1px solid var(--pb-border-strong);
+  border-radius: 6px;
+  background: var(--pb-bg-surface);
+  color: var(--pb-text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.pwdbook-add-card textarea {
+  resize: vertical;
+  min-height: 56px;
+}
+
+.pwdbook-password-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pwdbook-password-row input {
+  margin-top: 0;
+}
+
+.pwdbook-icon-btn,
+.pwdbook-btn {
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pwdbook-icon-btn {
+  flex: none;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pb-text-secondary);
+  font-size: 12px;
+}
+
+.pwdbook-add-card-head .pwdbook-icon-btn {
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.pwdbook-icon-btn:hover,
+.pwdbook-btn-ghost:hover {
+  background: var(--pb-bg-hover);
+  color: var(--pb-text-primary);
+}
+
+.pwdbook-add-error {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #f87171;
+}
+
+.pwdbook-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pwdbook-btn {
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pwdbook-btn-ghost {
+  background: transparent;
+  color: var(--pb-text-secondary);
+}
+
+.pwdbook-btn-primary {
+  background: var(--pb-accent-500);
+  color: var(--pb-btn-primary-text);
+}
+
+.pwdbook-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

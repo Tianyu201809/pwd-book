@@ -106,8 +106,13 @@ export function notifyDetailWindowThemeSync(): void {
 }
 
 function broadcastVaultDataChanged(source: Electron.WebContents): void {
+  notifyVaultDataChanged(source)
+}
+
+/** 通知所有窗口刷新保险库。浏览器桥接等无 WebContents 来源时不传 source。 */
+export function notifyVaultDataChanged(source?: Electron.WebContents): void {
   for (const win of BrowserWindow.getAllWindows()) {
-    if (win.isDestroyed() || win.webContents === source) continue
+    if (win.isDestroyed() || (source && win.webContents === source)) continue
     win.webContents.send(IPC_EVENTS.vaultDataChanged)
   }
 }

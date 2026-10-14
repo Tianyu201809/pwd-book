@@ -4,6 +4,8 @@ import net from 'net'
 import path from 'path'
 import { app } from 'electron'
 import type {
+  BridgeCategoryOption,
+  BridgeCreateEntryData,
   BridgeCredentialData,
   BridgeRequest,
   BridgeResponse,
@@ -12,10 +14,12 @@ import type {
 } from '../../shared/browserBridgeProtocol'
 import { ErrorCode } from '../../shared/errors'
 import { entryUrlMatchesPage } from '../../shared/urlMatch'
+import { notifyVaultDataChanged } from '../detailWindow'
 import { matchLoginsForPage } from './browserMatchService'
+import { listCategories } from './categoryService'
 import { getSecuritySettings } from './settingsService'
 import { isUnlocked } from './sessionService'
-import { getEntryById, getVaultStatus, touchEntry } from './vaultService'
+import { createEntry, getEntryById, getVaultStatus, touchEntry } from './vaultService'
 
 const BRIDGE_VERSION = '1.0.0'
 
@@ -113,9 +117,59 @@ function handleBridgeRequest(req: BridgeRequest): BridgeResponse {
       }
       return { ok: true, data }
     }
+    case 'listCategories': {
+      if (!isUnlocked()) {
+        return { ok: false, error: ErrorCode.VAULT_LOCKED }
+      }
+      const categories: BridgeCategoryOption[] = listCategories().map((category) => ({
+        id: category.id,
+        name: category.name,
+      }))
+      return { ok: true, data: { categories } }
+    }
+    case 'createEntry': {
+      if (!isUnlocked()) {
+        return { ok: false, error: ErrorCode.VAULT_LOCKED }
+      }
+      const input = req.entry
+      const title = input?.title?.trim() ?? ''
+      const password = input?.password ?? ''
+      if (!title) return { ok: false, error: ErrorCode.TITLE_REQUIRED }
+      if (!password) return { ok: false, error: ErrorCode.PASSWORD_REQUIRED }
+      if (title.length > 200) return { ok: false, error: ErrorCode.TITLE_TOO_LONG }
+      if (password.length > 1024) return { ok: false, error: ErrorCode.PASSWORD_TOO_LONG }
+      const url = input?.url?.trim() ?? ''
+      const username = input?.username?.trim() ?? ''
+      const note = input?.note?.trim() ?? ''
+      if (url.length > 2048) return { ok: false, error: ErrorCode.URL_TOO_LONG }
+      if (username.length > 320) return { ok: false, error: ErrorCode.USERNAME_TOO_LONG }
+      if (note.length > 4000) return { ok: false, error: ErrorCode.NOTE_TOO_LONG }
+      try {
+        const created = createEntry({
+          title,
+          url,
+          username,
+          password,
+          note,
+          categoryId: input?.categoryId?.trim() || undefined,
+        })
+        notifyVaultDataChanged()
+        const data: BridgeCreateEntryData = { id: created.id, title: created.title }
+        return { ok: true, data }
+      } catch (error) {
+        return { ok: false, error: bridgeErrorCode(error) }
+      }
+    }
     default:
       return { ok: false, error: ErrorCode.OPERATION_FAILED }
   }
+}
+
+function bridgeErrorCode(error: unknown): string {
+  if (error instanceof Error && error.message.startsWith('@ERR:')) {
+    return error.message.slice('@ERR:'.length).split(':')[0] || ErrorCode.ENTRY_CREATE_FAILED
+  }
+  return ErrorCode.ENTRY_CREATE_FAILED
 }
 
 function handleSocketLine(line: string): string {

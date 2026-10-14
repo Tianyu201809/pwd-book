@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.48.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.49.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -377,6 +377,7 @@ npm run dev
 3. **手动安装** — Chrome/Edge 打开扩展管理页，开启开发者模式，**加载已解压的扩展程序**。安装版先点 **「打开 resources 目录」**，再选择其中的 `extension` 文件夹；开发版选择仓库中的 `extension/`。
 4. **注册 Native Host** — 在 **设置 → 浏览器**，粘贴扩展 **ID**，点击 **「注册到 Chrome / Edge」**（也可使用 `npm run register-native-host -- <扩展ID>`）。**v1.12.0** 起支持 **macOS**（写入 `~/Library/Application Support/.../NativeMessagingHosts/`；入口 `pwdbook-native-host.sh`）。
 5. **使用** — 完全退出并重新打开浏览器；打开带登录表单的 HTTPS 页面，若库中有同域名条目，右上角出现 **PwdBook** 填充条；点击后写入用户名与密码。**v1.15.0** 起填充条标题栏可 **拖拽** 移动位置，**收起** 按钮可折叠为紧凑图标条（偏好写入页面 `localStorage`，同站点跨页保持）。**v1.17.0** 起跳过隐藏字段，并兼容受控输入框框架。
+6. **快捷添加（v1.49.0）** — 点击扩展图标，弹窗在「已连接本地保险库」下方显示 **快捷添加**。点开卡片后，标题和网址已填入当前网页；选择分类并填写用户名、密码、备注，点 **添加** 即写入保险库。修改扩展后需在扩展管理页重新加载。
 
 安装版可在 `%INSTDIR%\resources\extension\` 找到扩展源文件。断网时仍可填充（仅访问目标网站本身可能需要网络）。
 
@@ -461,7 +462,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.48.0（当前）
+### v1.49.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1490---2026-10-14)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 浏览器扩展 | 点击扩展图标后，弹窗新增「快捷添加」：卡片预填当前网页标题和网址，补充分类、用户名、密码、备注后写入保险库 |
+
+### v1.48.0
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1480---2026-10-12)**。摘要：
 
 | 类别 | 内容 |
 |------|------|

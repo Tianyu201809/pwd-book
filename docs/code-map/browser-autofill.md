@@ -53,6 +53,8 @@ sequenceDiagram
 | `status` | 否 | `{ unlocked, entryCount }` |
 | `matchLogins` | 是 | `{ pageUrl }` → `[{ id, title, username }]`，不含密码 |
 | `getCredential` | 是 | `{ entryId, pageUrl }` → 校验 hostname 后返回密码；`touchEntry` |
+| `listCategories` | 是 | **v1.49.0** `{ categories: [{ id, name }] }`，供弹窗快捷添加 |
+| `createEntry` | 是 | **v1.49.0** `{ entry: { title, url, username, password, note, categoryId } }` → `{ id, title }`；成功后 `notifyVaultDataChanged()` |
 
 - **断连**：socket `ECONNRESET` / `EPIPE` 已处理，避免拖垮主进程。
 
@@ -89,13 +91,13 @@ sequenceDiagram
 
 | 文件 | 说明 |
 |------|------|
-| `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`content_scripts`；**v1.46.0** 增加 `icons` 与 `action.default_icon` |
+| `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`tabs`、`content_scripts`；**v1.46.0** 增加 `icons` 与 `action.default_icon`；**v1.49.0** 扩展版本 1.1.0，增加 `tabs` 以读取当前页标题和网址 |
 | `icons/` | 扩展工具栏与弹窗图标 16 / 32 / 48 / 128（**v1.46.0**，与桌面应用同一套图标资源） |
 | `background.js` | `connectNative('com.pwdbook.app')` 转发 |
 | `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter；匹配后自动填充，切换账号立刻覆盖，填充成功后不拆条 |
 | `content.css` | 填充条布局与交互样式（**v1.15.0** 收起态、拖拽光标） |
-| `popup.js` | 连接状态（已连接 / 锁定 / BRIDGE_NOT_RUNNING 等） |
-| `popup.html` / `popup.css` | 弹窗页头品牌标识（**v1.46.0** 由内联 SVG 改为 `icons/icon-48.png`，显示 24px） |
+| `popup.js` | 连接状态（已连接 / 锁定 / BRIDGE_NOT_RUNNING 等）；**v1.49.0** 快捷添加卡片 |
+| `popup.html` / `popup.css` | 弹窗页头品牌标识（**v1.46.0** 由内联 SVG 改为 `icons/icon-48.png`，显示 24px）；**v1.49.0** 快捷添加入口与表单卡片 |
 | `pwdbook-theme.css` | 与经典主题一致的配色变量 |
 
 **扩展 ID**：未打包扩展从**固定目录路径**加载时 ID 稳定；与 `allowed_origins` 必须一致。
@@ -176,6 +178,7 @@ sequenceDiagram
 2. 加载 `extension/` 为已解压扩展，复制 ID。
 3. 粘贴 ID → 注册 → **完全退出并重启浏览器**。
 4. 保持 PwdBook 运行且已解锁，在登录页使用填充条。
+5. **快捷添加（v1.49.0）**：点击扩展图标 → 快捷添加 → 核对预填的标题/网址，填写密码等 → 添加。改过 `extension/` 后在扩展管理页重新加载。
 
 ## 故障排查
 

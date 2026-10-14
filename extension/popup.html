@@ -22,6 +22,54 @@
       </div>
     </header>
     <p id="status">检查连接…</p>
+    <button id="quick-add" class="pwdbook-quick-add" type="button" hidden>
+      <span class="pwdbook-quick-add-icon" aria-hidden="true">+</span>
+      <span>
+        <strong>快捷添加</strong>
+        <small>把当前网页存进保险库</small>
+      </span>
+    </button>
+
+    <div id="add-card" class="pwdbook-add-card" hidden>
+      <div class="pwdbook-add-card-head">
+        <h2>添加到保险库</h2>
+        <button id="add-close" class="pwdbook-icon-btn" type="button" aria-label="关闭">×</button>
+      </div>
+      <form id="add-form">
+        <label>
+          标题
+          <input id="field-title" name="title" type="text" maxlength="200" required autocomplete="off" />
+        </label>
+        <label>
+          网址
+          <input id="field-url" name="url" type="url" maxlength="2048" autocomplete="off" />
+        </label>
+        <label>
+          分类
+          <select id="field-category" name="categoryId"></select>
+        </label>
+        <label>
+          用户名
+          <input id="field-username" name="username" type="text" maxlength="320" autocomplete="off" />
+        </label>
+        <label>
+          密码
+          <span class="pwdbook-password-row">
+            <input id="field-password" name="password" type="password" maxlength="1024" required autocomplete="new-password" />
+            <button id="toggle-password" class="pwdbook-icon-btn" type="button" aria-label="显示密码">显示</button>
+          </span>
+        </label>
+        <label>
+          备注
+          <textarea id="field-note" name="note" rows="3" maxlength="4000"></textarea>
+        </label>
+        <p id="add-error" class="pwdbook-add-error" hidden></p>
+        <div class="pwdbook-add-actions">
+          <button id="add-cancel" class="pwdbook-btn pwdbook-btn-ghost" type="button">取消</button>
+          <button id="add-submit" class="pwdbook-btn pwdbook-btn-primary" type="submit">添加</button>
+        </div>
+      </form>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>
