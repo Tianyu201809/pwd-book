@@ -102,6 +102,7 @@ function forwardToBridge(config, payload) {
           token: config.token,
           pageUrl: payload.pageUrl,
           entryId: payload.entryId,
+          entry: payload.entry,
         }
         socket.write(`${JSON.stringify(req)}\n`)
       },

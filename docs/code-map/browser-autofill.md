@@ -64,7 +64,7 @@ sequenceDiagram
 |------|------|
 | `pwdbook-native-host.cmd` | **Windows**：Chrome 注册表 `path` 指向的入口，执行 `node index.mjs` |
 | `pwdbook-native-host.sh` | **macOS**（v1.12.0）：Chrome Native Messaging `path` 指向的 shell 入口 |
-| `index.mjs` | 读 4 字节长度 + JSON（Chrome 协议）→ 连 Bridge → 写回响应 |
+| `index.mjs` | 读 4 字节长度 + JSON（Chrome 协议）→ 连 Bridge → 写回响应。**转发请求时显式重建字段**（`action` / `pageUrl` / `entryId` / `entry`）；Bridge 新增请求字段时必须同步此白名单，否则字段会被丢弃 |
 | `com.pwdbook.app.json` | **仓库内仅为模板**（`REPLACE_EXTENSION_ID`），勿直接给浏览器用 |
 
 **运行时有效清单**（注册后，用户目录副本）：
