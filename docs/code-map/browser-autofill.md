@@ -91,11 +91,10 @@ sequenceDiagram
 
 | 文件 | 说明 |
 |------|------|
-| `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`tabs`、`content_scripts`；**v1.46.0** 增加 `icons` 与 `action.default_icon`；**v1.49.0** 扩展版本 1.1.0，增加 `tabs` 以读取当前页标题和网址 |
+| `manifest.json` | MV3；`nativeMessaging`、`activeTab`、`tabs`、`content_scripts`；**v1.46.0** 增加 `icons` 与 `action.default_icon`；**v1.49.0** 扩展版本 1.1.0，增加 `tabs` 以读取当前页标题和网址；扩展版本 **1.1.1** 修复表单靠改 `style` 显示时无填充条 |
 | `icons/` | 扩展工具栏与弹窗图标 16 / 32 / 48 / 128（**v1.46.0**，与桌面应用同一套图标资源） |
 | `background.js` | `connectNative('com.pwdbook.app')` 转发 |
-| `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter；匹配后自动填充，切换账号立刻覆盖，填充成功后不拆条 |
-| `content.css` | 填充条布局与交互样式（**v1.15.0** 收起态、拖拽光标） |
+| `content.js` | 检测表单、PwdBook 填充条、自定义账号下拉（避免原生 select 触发 MutationObserver 重建）；**v1.15.0** 填充条拖拽与收起；**v1.17.0** `isVisibleFillInput`、受控输入框 `value` setter；匹配后自动填充，切换账号立刻覆盖，填充成功后不拆条 || `content.css` | 填充条布局与交互样式（**v1.15.0** 收起态、拖拽光标） |
 | `popup.js` | 连接状态（已连接 / 锁定 / BRIDGE_NOT_RUNNING 等）；**v1.49.0** 快捷添加卡片 |
 | `popup.html` / `popup.css` | 弹窗页头品牌标识（**v1.46.0** 由内联 SVG 改为 `icons/icon-48.png`，显示 24px）；**v1.49.0** 快捷添加入口与表单卡片 |
 | `pwdbook-theme.css` | 与经典主题一致的配色变量 |
@@ -135,6 +134,12 @@ sequenceDiagram
 
 - `isVisibleFillInput` — 排除 `display:none`、`visibility:hidden`、`opacity:0`、零尺寸矩形。
 - `fillInput` — 优先 `HTMLInputElement.prototype.value` setter，再 `dispatchEvent('input'/'change')`，兼容 React / Vue 受控组件。
+
+### 重扫触发（修复：表单靠改 style 显示时无填充条）
+
+`MutationObserver` 观察 `document.documentElement` 的 `childList` + `subtree` + `attributes`，`attributeFilter` 限定为 `style` / `class` / `hidden` / `type` / `disabled` / `readonly`；变更经 250ms 防抖后重扫（`scheduleScan`），自身填充条的节点与属性变更通过 `shouldIgnoreMutation` 忽略。
+
+> **历史坑**：早期只观察 `childList`。登录表单若「已存在于 DOM、仅靠改内联 `style`/`class` 显示」（如 `showLoginOverlay()` 把 `#login-overlay` 的 `display:none` 改成 `flex`），不产生节点增删，观察者不触发 → 填充条永不出现。注册顺序为「先 `observe` 再首扫」，避免首扫 `await` 期间漏掉变更。
 
 ## IPC 通道
 
@@ -187,7 +192,9 @@ sequenceDiagram
 | `BRIDGE_NOT_RUNNING` | PwdBook 是否运行、开关是否开启、`%APPDATA%\pwd-book\native-bridge.json` 是否存在 |
 | 请先解锁 | 主窗口解锁保险库 |
 | Native 连不上 | 是否用设置页注册、ID 是否与 `chrome://extensions` 一致、是否重启浏览器 |
-| 无填充条 | 页面是否有 `type=password`、条目 url 域名是否一致 |
+| 无填充条 | 页面是否有 `type=password`、条目 url 域名是否一致（按 hostname 比较，端口/路径/协议不参与匹配） |
+| 无填充条（表单后出现） | 表单若是「已存在于 DOM、仅靠改 `style`/`class` 显示」（如 `#login-overlay` 由 `display:none` 改成 `flex`），旧版只观察 `childList` 不会重扫；须用带 `attributes` 观察的 content.js，并在 `chrome://extensions` 重新加载扩展 |
+| 有填充条但不自动填 | 查看控制台是否因 `localStorage` 抛异常中断（沙箱 / opaque origin）；已用 `storageGet` / `storageSet` 包裹 |
 | 主进程 ECONNRESET | 已修复；确保使用 v1.6.0+ 桥接代码 |
 
 ## 相关文档

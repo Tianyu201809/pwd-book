@@ -11,18 +11,36 @@ const CHEVRON_SVG = `<svg class="pwdbook-chevron" width="12" height="12" viewBox
 const COLLAPSE_SVG = `<svg class="pwdbook-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`
 const EXPAND_SVG = `<svg class="pwdbook-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>`
 
+// 部分页面（opaque origin / 禁用存储 / 沙箱 iframe）访问 localStorage 会抛异常，
+// 不能让 UI 偏好读写中断后续的自动填充流程。
+function storageGet(key) {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    /* 忽略：不影响填充 */
+  }
+}
+
 function readUiCollapsed() {
-  return localStorage.getItem(UI_STORAGE.collapsed) === '1'
+  return storageGet(UI_STORAGE.collapsed) === '1'
 }
 
 function saveUiCollapsed(collapsed) {
-  localStorage.setItem(UI_STORAGE.collapsed, collapsed ? '1' : '0')
+  storageSet(UI_STORAGE.collapsed, collapsed ? '1' : '0')
 }
 
 function saveUiPosition(root) {
   const rect = root.getBoundingClientRect()
-  localStorage.setItem(UI_STORAGE.x, String(Math.round(rect.left)))
-  localStorage.setItem(UI_STORAGE.y, String(Math.round(rect.top)))
+  storageSet(UI_STORAGE.x, String(Math.round(rect.left)))
+  storageSet(UI_STORAGE.y, String(Math.round(rect.top)))
 }
 
 function applyUiPreferences(root) {
@@ -30,8 +48,8 @@ function applyUiPreferences(root) {
     root.classList.add('is-collapsed')
   }
 
-  const x = localStorage.getItem(UI_STORAGE.x)
-  const y = localStorage.getItem(UI_STORAGE.y)
+  const x = storageGet(UI_STORAGE.x)
+  const y = storageGet(UI_STORAGE.y)
   if (x == null || y == null) return
 
   root.style.right = 'auto'
@@ -391,10 +409,22 @@ function scheduleScan() {
   scanTimer = setTimeout(() => void scan(), SCAN_DEBOUNCE_MS)
 }
 
-void scan()
+// 仅监听可能影响「密码框是否可填充」的属性，避免动画页面上频繁重扫
+const OBSERVED_ATTRIBUTES = ['style', 'class', 'hidden', 'type', 'disabled', 'readonly']
 
 const observer = new MutationObserver((records) => {
   if (records.every(shouldIgnoreMutation)) return
   scheduleScan()
 })
-observer.observe(document.documentElement, { childList: true, subtree: true })
+
+// 先注册观察者再首扫：登录表单常以「改内联 style / class」的方式显示
+// （如 app.js 的 showLoginOverlay 把 display:none 改成 flex），
+// 不增删节点，仅 childList 无法捕获；且须避免首扫 await 期间漏掉该变更。
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: OBSERVED_ATTRIBUTES,
+})
+
+void scan()

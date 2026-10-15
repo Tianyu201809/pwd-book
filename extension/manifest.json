@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PwdBook Autofill",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Fill passwords from local PwdBook desktop app. No cloud; native messaging only.",
   "permissions": ["nativeMessaging", "activeTab", "scripting", "tabs"],
   "icons": {
