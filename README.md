@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.49.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.49.1-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -462,7 +462,17 @@ npm run dev
 
 ## 版本更新
 
-### v1.49.0（当前）
+### v1.49.1（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1491---2026-10-15)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 浏览器扩展 | 修复登录表单「已存在于 DOM、仅靠切换 `style`/`class` 显隐」的页面上不出现填充条、不自动填充的问题（扩展版本 1.1.1） |
+| 浏览器扩展 | `localStorage` 不可用的页面（沙箱 / opaque origin）不再中断自动填充 |
+| 技术说明 | [浏览器自动填充 code-map](./docs/code-map/browser-autofill.md) · [v1.49.1 自测报告](./docs/testing/v1.49.1-self-check.md) |
+
+### v1.49.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1490---2026-10-14)**。摘要：
 

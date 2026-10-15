@@ -2,6 +2,17 @@
 
 本文件记录 PwdBook 各版本的面向用户变更。格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [1.49.1] - 2026-10-15
+
+### 修复
+
+- **表单靠改样式显示时不填充** — 登录表单若已存在于 DOM、仅靠切换 `style`/`class` 显隐（例如把 `#login-overlay` 的 `display:none` 改成 `flex`），页面不产生节点增删，内容脚本不会重新扫描，导致填充条不出现、也不自动填充。扩展的 DOM 观察器增加属性变更监听（`style` / `class` / `hidden` / `type` / `disabled` / `readonly`），并改为「先注册观察器再首次扫描」，避免首次扫描等待期间漏掉变更。扩展版本 1.1.1。
+- **存储不可用页面中断填充** — 沙箱或 opaque origin 页面上读写 `localStorage` 会抛异常，使填充条已出现但自动填充被静默跳过；改为容错读写，UI 偏好保存失败不再影响填充。
+
+### 文档
+
+- 浏览器自动填充 code-map 补充「重扫触发」小节与故障排查项，新增 [v1.49.1 自测报告](./docs/testing/v1.49.1-self-check.md)，README 与 code-map 同步至 v1.49.1。
+
 ## [1.49.0] - 2026-10-14
 
 ### 新增
