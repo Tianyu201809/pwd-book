@@ -86,7 +86,7 @@ App.vue
 
 ### ClipboardWindowApp.vue（**v1.32.0** / **v1.33.0** / **v1.34.0**）
 
-独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储。`↑`/`↓` 选择，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览；复制 Toast。**v1.34.0** 默认不固定，未固定时失焦收起；工具栏「快捷模式」开启后回车复制并关窗；`Delete` / `Backspace` 删除当前条目（先二次确认）。详见 [clipboard-history.md](./clipboard-history.md)。
+独立渲染入口 `clipboard-window.html` → `clipboard-window.ts`。捕获系统剪切板、列表/预览分栏、过期清理与本地存储。`↑`/`↓` 选择，`Enter` 复制，`Ctrl+Enter` / `Meta+Enter` 预览；复制 Toast。**v1.34.0** 默认不固定，未固定时失焦收起；工具栏「快捷模式」开启后回车复制并关窗；`Delete` / `Backspace` 删除当前条目（先二次确认）。**v1.50.0** 页面控件移出 Tab 顺序，焦点在搜索框或按钮上时回车仍复制当前条目。详见 [clipboard-history.md](./clipboard-history.md)。
 
 ### NotesManagerApp / StickyNoteApp（**v1.38.0**）
 
@@ -139,7 +139,7 @@ App.vue
 
 列表项右键 / 「⋯」菜单；含 **复制到剪贴板**（`copyEntryData`）、**创建副本**（`duplicateEntry`，标题追加 ` - 副本`）、移动、打开网址/程序等。「移动到」子菜单使用 `position: fixed` 视口定位，分类最多展示 5 条可滚动。
 
-`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。**v1.23.0** 搜索前缀放大镜 `pointer-events: none`，避免遮挡输入框点击。**v1.25.0** 工具栏 **#** 按钮展开 `TagFilterPanel` popover（`list-tag-filter` / `list-tag-filter-panel`）；监听 `TOUR_PREPARE_EVENT` 的 `expand-tag-filter` / `collapse-list-menus`。
+`PasswordList.vue` 在 `@contextmenu` 时调用 `selectEntry`，确保右键与高亮选中一致。**v1.22.0** 工具栏提供列表/方块布局切换（`listLayoutMode` → `localStorage` `pwdbook-entry-list-layout`）。**v1.23.0** 搜索前缀放大镜 `pointer-events: none`，避免遮挡输入框点击。**v1.25.0** 工具栏 **#** 按钮展开 `TagFilterPanel` popover（`list-tag-filter` / `list-tag-filter-panel`）；监听 `TOUR_PREPARE_EVENT` 的 `expand-tag-filter` / `collapse-list-menus`。**v1.50.0** 排序菜单在字段下增加正序/倒序（`listSortDirection`，各字段分别记忆；标题默认正序，最近使用与创建时间默认倒序）。勾选或清除标签调用 `keepSelectionIfStillVisible`：不再把筛选结果第一条设为选中，当前条目被筛掉时才清空选中。
 
 ## Composables
 
@@ -171,7 +171,7 @@ App.vue
 | `startWifiSyncServer` / `pullWifiSyncMerge` | Wi-Fi 服务端开关、客户端拉取合并 |
 | `pickFolderSyncDirectory` / `connectFolderSync` / `syncFolderNow` | 文件夹选择、连接、手动同步（v1.19.0） |
 | `disconnectFolderSync` / `updateFolderSyncAutoSync` | 断开文件夹同步、自动同步开关 |
-| `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 标签多选筛选（v1.12.0，AND 逻辑）；**v1.25.0** UI 入口在列表工具栏 |
+| `selectedTagFilters` / `toggleTagFilter` / `clearTagFilters` | 标签多选筛选（v1.12.0，AND 逻辑）；**v1.25.0** UI 入口在列表工具栏；**v1.50.0** 不自动选中筛选结果第一条 |
 | `openPasswordHealth` | 密码健康页导航（v1.12.0） |
 
 错误展示：`parseErrorMessage()`（`shared/utils.ts`）解析 IPC 嵌套错误。**v1.18.0** 主进程 `wrap` 与 Preload `invoke` 重抛时附带 `{ cause: error }`，便于 DevTools 追溯。
