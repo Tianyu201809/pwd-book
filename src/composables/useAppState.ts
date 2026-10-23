@@ -694,6 +694,13 @@ function selectCategory(id: FilterCategory): void {
   touchActivity()
 }
 
+function keepSelectionIfStillVisible(): void {
+  const currentId = selectedEntryId.value
+  if (!currentId) return
+  const stillVisible = filteredEntries.value.some((entry) => entry.id === currentId)
+  if (!stillVisible) selectedEntryId.value = null
+}
+
 function toggleTagFilter(tag: string): void {
   const normalized = tag.trim()
   if (!normalized) return
@@ -710,7 +717,7 @@ function toggleTagFilter(tag: string): void {
   }
 
   isCreating.value = false
-  selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  keepSelectionIfStillVisible()
   touchActivity()
 }
 
@@ -718,7 +725,7 @@ function clearTagFilters(): void {
   if (selectedTagFilters.value.length === 0) return
   selectedTagFilters.value = []
   isCreating.value = false
-  selectedEntryId.value = filteredEntries.value[0]?.id ?? null
+  keepSelectionIfStillVisible()
   touchActivity()
 }
 
