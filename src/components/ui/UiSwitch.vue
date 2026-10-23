@@ -9,6 +9,7 @@ withDefaults(
     disabled?: boolean
     loading?: boolean
     size?: 'small' | 'default'
+    tabindex?: number
   }>(),
   {
     disabled: false,
@@ -27,6 +28,7 @@ const { isAnimalIsland } = useTheme()
     :disabled="disabled"
     :loading="loading"
     :size="size"
+    :tabindex="tabindex"
   >
     <template
       v-if="$slots.checked"
@@ -50,6 +52,7 @@ const { isAnimalIsland } = useTheme()
       type="checkbox"
       class="ui-toggle-input"
       :disabled="disabled"
+      :tabindex="tabindex"
     >
     <span
       class="ui-toggle-track"

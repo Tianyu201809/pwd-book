@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   CLIPBOARD_WINDOW_DEFAULT_PINNED,
@@ -5,6 +6,8 @@ import {
   isClipboardItemDeleteKey,
   nextClipboardSelectionAfterDelete,
   resolveClipboardWindowOpen,
+  shouldBlockClipboardArrowNav,
+  shouldBlockClipboardListEnter,
   shouldCloseClipboardWindowAfterEnterCopy,
   shouldHideClipboardWindowOnBlur,
 } from './clipboardWindowAccess'
@@ -39,6 +42,39 @@ describe('resolveClipboardWindowOpen', () => {
   it('closes after Enter copy only when quick mode is on', () => {
     expect(shouldCloseClipboardWindowAfterEnterCopy(false)).toBe(false)
     expect(shouldCloseClipboardWindowAfterEnterCopy(true)).toBe(true)
+  })
+
+  it('lets Enter copy the selected item when a toolbar or item button is focused', () => {
+    expect(shouldBlockClipboardListEnter({
+      overlayOpen: false,
+      keepsOwnEnter: false,
+    })).toBe(false)
+  })
+
+  it('leaves Enter to open dialogs and to select or multiline fields', () => {
+    expect(shouldBlockClipboardListEnter({ overlayOpen: true, keepsOwnEnter: false })).toBe(true)
+    expect(shouldBlockClipboardListEnter({ overlayOpen: false, keepsOwnEnter: true })).toBe(true)
+  })
+
+  it('lets Up and Down move the list from the search box, but not from a select', () => {
+    expect(shouldBlockClipboardArrowNav({ overlayOpen: false, isSelect: false })).toBe(false)
+    expect(shouldBlockClipboardArrowNav({ overlayOpen: false, isSelect: true })).toBe(true)
+    expect(shouldBlockClipboardArrowNav({ overlayOpen: true, isSelect: false })).toBe(true)
+  })
+
+  it('keeps clipboard item action buttons out of Tab order', () => {
+    const source = readFileSync(new URL('../components/ClipboardWindowApp.vue', import.meta.url), 'utf8')
+    const actions = source.match(/class="clipboard-popup-item-actions"[\s\S]*?<\/div>/)?.[0] ?? ''
+    const buttons = actions.match(/<button/g) ?? []
+    expect(buttons.length).toBeGreaterThan(0)
+    expect(actions.match(/tabindex="-1"/g)?.length).toBe(buttons.length)
+  })
+
+  it('keeps the toolbar capture button out of Tab order', () => {
+    const source = readFileSync(new URL('../components/ClipboardWindowApp.vue', import.meta.url), 'utf8')
+    const toolButtons = source.match(/<button[^>]*clipboard-popup-tool-button[^>]*>/g) ?? []
+    expect(toolButtons).toHaveLength(2)
+    expect(toolButtons.every((button) => button.includes('tabindex="-1"'))).toBe(true)
   })
 
   it('treats Delete and Backspace as item-delete keys', () => {

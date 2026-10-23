@@ -12,17 +12,19 @@ import { useAppState } from '@/composables/useAppState'
 import { canRenderDisplayIcon } from '@/shared/presetIconAssets'
 import { getAvatarMeta } from '@/shared/utils'
 import { TOUR_PREPARE_EVENT, type TourPrepareAction } from '@/shared/productTourTypes'
-import type { ListLayoutMode, ListSortOrder, PasswordEntry } from '@/types'
+import type { ListLayoutMode, ListSortDirection, ListSortOrder, PasswordEntry } from '@/types'
 
 const {
   displayEntries,
   selectedEntryId,
   searchQuery,
   listSortOrder,
+  listSortDirection,
   listLayoutMode,
   selectEntry,
   isCreating,
   setListSortOrder,
+  setListSortDirection,
   setListLayoutMode,
   touchActivity,
   startCreateEntry,
@@ -39,6 +41,28 @@ const sortOptions = computed(() => [
   { id: 'title' as ListSortOrder, label: t('vault.sortTitle') },
   { id: 'created' as ListSortOrder, label: t('vault.sortCreated') },
 ])
+
+const sortDirectionOptions = computed(() => {
+  const byTime = listSortOrder.value !== 'title'
+  return [
+    {
+      id: 'asc' as ListSortDirection,
+      label: t('vault.sortAsc'),
+      hint: t(byTime ? 'vault.sortTimeAsc' : 'vault.sortTitleAsc'),
+    },
+    {
+      id: 'desc' as ListSortDirection,
+      label: t('vault.sortDesc'),
+      hint: t(byTime ? 'vault.sortTimeDesc' : 'vault.sortTitleDesc'),
+    },
+  ]
+})
+
+const sortButtonTitle = computed(() => {
+  const field = sortOptions.value.find((option) => option.id === listSortOrder.value)?.label ?? ''
+  const direction = sortDirectionOptions.value.find((option) => option.id === listSortDirection.value)
+  return `${t('vault.sortBy')}：${field} · ${direction?.label ?? ''} ${direction?.hint ?? ''}`.trim()
+})
 
 const activeSearchQuery = computed(() => searchQuery.value.trim())
 
@@ -174,6 +198,12 @@ function handleSelect(id: string): void {
 function handleSort(order: ListSortOrder, event: MouseEvent): void {
   event.stopPropagation()
   setListSortOrder(order)
+  closeMenus()
+}
+
+function handleSortDirection(direction: ListSortDirection, event: MouseEvent): void {
+  event.stopPropagation()
+  setListSortDirection(direction)
   closeMenus()
 }
 
@@ -328,8 +358,8 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
               active: showSortMenu && !isAnimalIsland,
               'vault-filter-btn--active': showSortMenu && isAnimalIsland,
             }"
-            :title="t('vault.sortBy')"
-            :aria-label="t('vault.sortBy')"
+            :title="sortButtonTitle"
+            :aria-label="sortButtonTitle"
             @click="toggleSortMenu"
           >
             <template #icon>
@@ -361,6 +391,27 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
                 :size="14"
                 :stroke-width="2"
               />
+            </button>
+            <p class="sort-menu-title sort-menu-title--section">
+              {{ t('vault.sortDirection') }}
+            </p>
+            <button
+              v-for="option in sortDirectionOptions"
+              :key="option.id"
+              type="button"
+              class="sort-menu-item"
+              :class="{ active: listSortDirection === option.id }"
+              @click="handleSortDirection(option.id, $event)"
+            >
+              <span>{{ option.label }}</span>
+              <span class="sort-menu-meta">
+                <span class="sort-menu-hint">{{ option.hint }}</span>
+                <Check
+                  v-if="listSortDirection === option.id"
+                  :size="14"
+                  :stroke-width="2"
+                />
+              </span>
             </button>
           </div>
         </div>
@@ -736,7 +787,7 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   top: calc(100% + 8px);
   right: 0;
   z-index: 30;
-  min-width: 160px;
+  min-width: 196px;
   padding: 8px;
 }
 
@@ -748,6 +799,27 @@ function handleContextMenu(entry: PasswordEntry, event: MouseEvent): void {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
+}
+
+.sort-menu-title--section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-default);
+}
+
+.sort-menu-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sort-menu-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.sort-menu-item.active .sort-menu-hint {
+  color: var(--accent-primary);
 }
 
 .sort-menu-item {

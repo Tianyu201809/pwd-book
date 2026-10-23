@@ -2,6 +2,7 @@ import { ref, computed, nextTick } from 'vue'
 import { i18n } from '@/i18n'
 import { vaultApi } from '@/services/vaultApi'
 import { entryMatchesSearch } from '@/shared/entrySearch'
+import { defaultListSortDirection, sortEntriesForList } from '@/shared/listSort'
 import {
   normalizeExternalUrl,
   cloneForIpc,
@@ -22,6 +23,7 @@ import type {
   EmailBackupSettingsUpdate,
   FilterCategory,
   ListLayoutMode,
+  ListSortDirection,
   ListSortOrder,
   PasswordEntry,
   PasswordEntryInput,
@@ -84,6 +86,12 @@ const selectedTagFilters = ref<string[]>([])
 const selectedEntryId = ref<string | null>(null)
 const searchQuery = ref('')
 const listSortOrder = ref<ListSortOrder>('title')
+const listSortDirections = ref<Record<ListSortOrder, ListSortDirection>>({
+  recent: defaultListSortDirection('recent'),
+  title: defaultListSortDirection('title'),
+  created: defaultListSortDirection('created'),
+})
+const listSortDirection = computed(() => listSortDirections.value[listSortOrder.value])
 const LIST_LAYOUT_STORAGE_KEY = 'pwdbook-entry-list-layout'
 
 function readListLayoutMode(): ListLayoutMode {
@@ -259,21 +267,7 @@ const selectedEntry = computed(() => {
 })
 
 function sortEntries(list: PasswordEntry[]): PasswordEntry[] {
-  const sorted = [...list]
-  if (listSortOrder.value === 'title') {
-    return sorted.sort((a, b) =>
-      a.title.localeCompare(b.title, i18n.global.locale.value),
-    )
-  }
-  if (listSortOrder.value === 'created') {
-    return sorted.sort((a, b) => b.createdAt - a.createdAt)
-  }
-  return sorted.sort((a, b) => {
-    const aTime = a.lastUsedAt ?? 0
-    const bTime = b.lastUsedAt ?? 0
-    if (aTime !== bTime) return bTime - aTime
-    return b.updatedAt - a.updatedAt
-  })
+  return sortEntriesForList(list, listSortOrder.value, listSortDirection.value, i18n.global.locale.value)
 }
 
 const displayEntries = computed(() =>
@@ -1307,6 +1301,14 @@ function setListSortOrder(order: ListSortOrder): void {
   touchActivity()
 }
 
+function setListSortDirection(direction: ListSortDirection): void {
+  listSortDirections.value = {
+    ...listSortDirections.value,
+    [listSortOrder.value]: direction,
+  }
+  touchActivity()
+}
+
 function setListLayoutMode(mode: ListLayoutMode): void {
   listLayoutMode.value = mode
   localStorage.setItem(LIST_LAYOUT_STORAGE_KEY, mode)
@@ -1324,6 +1326,7 @@ export function useAppState() {
     selectedEntryId,
     searchQuery,
     listSortOrder,
+    listSortDirection,
     listLayoutMode,
     entries,
     trashEntries,
@@ -1445,6 +1448,7 @@ export function useAppState() {
     resetAllData,
     switchSettingsTab,
     setListSortOrder,
+    setListSortDirection,
     setListLayoutMode,
     touchActivity,
     clearError,

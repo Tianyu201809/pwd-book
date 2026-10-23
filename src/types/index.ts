@@ -1,5 +1,7 @@
 export type ListSortOrder = 'recent' | 'title' | 'created'
 
+export type ListSortDirection = 'asc' | 'desc'
+
 export type ListLayoutMode = 'list' | 'grid'
 
 export type {

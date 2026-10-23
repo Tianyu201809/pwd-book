@@ -35,6 +35,8 @@ import {
   CLIPBOARD_WINDOW_DEFAULT_QUICK_MODE,
   isClipboardItemDeleteKey,
   nextClipboardSelectionAfterDelete,
+  shouldBlockClipboardArrowNav,
+  shouldBlockClipboardListEnter,
   shouldCloseClipboardWindowAfterEnterCopy,
 } from '@/shared/clipboardWindowAccess'
 
@@ -637,16 +639,30 @@ function handleEsc(): void {
   closeWindow()
 }
 
+function isClipboardOverlayOpen(): boolean {
+  return Boolean(isCaptureOpen.value || editingTitleItem.value || lightboxItem.value || pendingDelete.value)
+}
+
 function isArrowNavBlocked(target: EventTarget | null): boolean {
-  if (isCaptureOpen.value || editingTitleItem.value || lightboxItem.value || pendingDelete.value) return true
-  if (!(target instanceof HTMLElement)) return false
-  return target.matches('input, textarea, select, [contenteditable="true"]')
+  const element = target instanceof HTMLElement ? target : null
+  return shouldBlockClipboardArrowNav({
+    overlayOpen: isClipboardOverlayOpen(),
+    isSelect: Boolean(element?.matches('select')),
+  })
 }
 
 function isListActionBlocked(target: EventTarget | null): boolean {
-  if (isArrowNavBlocked(target)) return true
-  if (!(target instanceof HTMLElement)) return false
-  return target.matches('button, input[type="checkbox"]')
+  const element = target instanceof HTMLElement ? target : null
+  return shouldBlockClipboardListEnter({
+    overlayOpen: isClipboardOverlayOpen(),
+    keepsOwnEnter: Boolean(element?.matches('textarea, select')),
+  })
+}
+
+function blurListShortcutFocus(target: EventTarget | null): void {
+  if (!(target instanceof HTMLElement)) return
+  if (target.closest('.clipboard-popup-search, .clipboard-popup-overlay')) return
+  if (target.matches('button, input, select, [role="separator"], [role="button"]')) target.blur()
 }
 
 async function onQuickModeChange(enabled: boolean): Promise<void> {
@@ -760,6 +776,7 @@ function onDocumentKeydown(event: KeyboardEvent): void {
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
   if (!unlocked.value || isArrowNavBlocked(event.target)) return
   event.preventDefault()
+  blurListShortcutFocus(event.target)
   moveSelection(event.key === 'ArrowDown' ? 1 : -1)
 }
 
@@ -804,13 +821,13 @@ onUnmounted(() => {
         <div><strong>{{ t('tools.clipboardTitle') }}</strong><span>{{ clipboardAccelerator }}</span></div>
       </div>
       <div class="clipboard-popup-head-actions">
-        <button type="button" class="clipboard-popup-minimize" :aria-label="t('titlebar.minimize')" :title="t('titlebar.minimize')" @click="minimizeWindow">
+        <button type="button" tabindex="-1" class="clipboard-popup-minimize" :aria-label="t('titlebar.minimize')" :title="t('titlebar.minimize')" @click="minimizeWindow">
           <Minus :size="15" />
         </button>
-        <button type="button" class="clipboard-popup-pin" :class="{ active: windowPinned }" :aria-label="windowPinned ? t('tools.clipboardWindowUnpin') : t('tools.clipboardWindowPin')" :aria-pressed="windowPinned" :title="windowPinned ? t('tools.clipboardWindowUnpin') : t('tools.clipboardWindowPin')" @click="toggleWindowPinned">
+        <button type="button" tabindex="-1" class="clipboard-popup-pin" :class="{ active: windowPinned }" :aria-label="windowPinned ? t('tools.clipboardWindowUnpin') : t('tools.clipboardWindowPin')" :aria-pressed="windowPinned" :title="windowPinned ? t('tools.clipboardWindowUnpin') : t('tools.clipboardWindowPin')" @click="toggleWindowPinned">
           <PinOff v-if="windowPinned" :size="15" /><Pin v-else :size="15" />
         </button>
-        <button type="button" class="clipboard-popup-close" :aria-label="t('common.close')" @click="closeWindow"><X :size="16" /></button>
+        <button type="button" tabindex="-1" class="clipboard-popup-close" :aria-label="t('common.close')" @click="closeWindow"><X :size="16" /></button>
       </div>
     </header>
 
@@ -818,15 +835,15 @@ onUnmounted(() => {
     <template v-else>
       <div class="clipboard-popup-tools">
         <div class="clipboard-popup-search"><Search :size="14" /><input v-model="query" :placeholder="t('common.search')" /></div>
-        <button type="button" class="clipboard-popup-tool-button" :title="t('tools.clipboardCapture')" :disabled="!clipboardEnabled" @click="captureSystemClipboard({ notifyOnError: true })"><ClipboardPaste :size="15" /></button>
-        <button type="button" class="clipboard-popup-tool-button" :title="t('tools.clipboardNew')" @click="startCapture"><Type :size="15" /></button>
+        <button type="button" tabindex="-1" class="clipboard-popup-tool-button" :title="t('tools.clipboardCapture')" :disabled="!clipboardEnabled" @click="captureSystemClipboard({ notifyOnError: true })"><ClipboardPaste :size="15" /></button>
+        <button type="button" tabindex="-1" class="clipboard-popup-tool-button" :title="t('tools.clipboardNew')" @click="startCapture"><Type :size="15" /></button>
         <div class="clipboard-popup-quick-mode" :class="{ 'is-on': quickMode }" :title="t('tools.clipboardQuickModeHint')">
           <span>{{ t('tools.clipboardQuickMode') }}</span>
-          <UiSwitch :model-value="quickMode" size="small" @update:model-value="onQuickModeChange" />
+          <UiSwitch :model-value="quickMode" size="small" :tabindex="-1" @update:model-value="onQuickModeChange" />
         </div>
       </div>
       <div class="clipboard-popup-filters">
-        <button v-for="tab in filterTabs" :key="tab.id" type="button" :class="{ active: filter === tab.id }" @click="filter = tab.id">
+        <button v-for="tab in filterTabs" :key="tab.id" type="button" tabindex="-1" :class="{ active: filter === tab.id }" @click="filter = tab.id">
           <span>{{ tab.label }}</span>
           <span class="clipboard-popup-filter-count">{{ tab.count }}</span>
         </button>
@@ -843,30 +860,30 @@ onUnmounted(() => {
               </div>
               <div class="clipboard-popup-item-copy"><div class="clipboard-popup-item-meta"><span>{{ item.kind === 'image' ? t('tools.clipboardImageLabel') : t('tools.clipboardTextLabel') }}</span><time>{{ formatTimestamp(item.createdAt) }}</time></div><p v-if="item.title" class="clipboard-popup-item-title"><SearchHighlightText :text="item.title" :query="query" /></p><p v-else-if="item.kind === 'image'" class="clipboard-popup-item-image-hint">{{ t('tools.clipboardImagePreview') }}</p><p v-else><SearchHighlightText :text="item.content" :query="query" /></p><small v-if="item.expiresAt">{{ relativeExpiry(item) }}</small></div>
               <div class="clipboard-popup-item-actions">
-                <button type="button" :class="{ 'is-favorite': item.favorite }" :title="item.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="item.favorite" @click.stop="toggleFavorite(item)">
+                <button type="button" tabindex="-1" :class="{ 'is-favorite': item.favorite }" :title="item.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="item.favorite" @click.stop="toggleFavorite(item)">
                   <Star :size="13" :fill="item.favorite ? 'currentColor' : 'none'" />
                 </button>
-                <button type="button" :class="{ 'is-pinned': item.pinned }" :title="item.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="item.pinned" @click.stop="togglePin(item)">
+                <button type="button" tabindex="-1" :class="{ 'is-pinned': item.pinned }" :title="item.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="item.pinned" @click.stop="togglePin(item)">
                   <Pin :size="13" :fill="item.pinned ? 'currentColor' : 'none'" />
                 </button>
-                <button type="button" :title="t('tools.clipboardCopy')" @click.stop="copyItem(item)"><Copy :size="13" /></button>
-                <button type="button" :title="t('tools.clipboardDeleteShortcut')" @click.stop="requestRemoveItem(item)"><Trash2 :size="13" /></button>
+                <button type="button" tabindex="-1" :title="t('tools.clipboardCopy')" @click.stop="copyItem(item)"><Copy :size="13" /></button>
+                <button type="button" tabindex="-1" :title="t('tools.clipboardDeleteShortcut')" @click.stop="requestRemoveItem(item)"><Trash2 :size="13" /></button>
               </div>
             </article>
           </div>
-          <div v-else class="clipboard-popup-empty"><Star v-if="filter === 'favorite'" :size="24" /><Clipboard v-else :size="24" /><strong>{{ filter === 'favorite' ? t('tools.clipboardFavoriteEmptyTitle') : t('tools.clipboardEmptyTitle') }}</strong><p>{{ filter === 'favorite' ? t('tools.clipboardFavoriteEmptyDesc') : t('tools.clipboardEmptyDesc') }}</p><button v-if="filter !== 'favorite'" type="button" @click="startCapture"><Type :size="14" />{{ t('tools.clipboardNew') }}</button></div>
+          <div v-else class="clipboard-popup-empty"><Star v-if="filter === 'favorite'" :size="24" /><Clipboard v-else :size="24" /><strong>{{ filter === 'favorite' ? t('tools.clipboardFavoriteEmptyTitle') : t('tools.clipboardEmptyTitle') }}</strong><p>{{ filter === 'favorite' ? t('tools.clipboardFavoriteEmptyDesc') : t('tools.clipboardEmptyDesc') }}</p><button v-if="filter !== 'favorite'" type="button" tabindex="-1" @click="startCapture"><Type :size="14" />{{ t('tools.clipboardNew') }}</button></div>
         </section>
-        <div class="clipboard-popup-resizer" role="separator" tabindex="0" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
+        <div class="clipboard-popup-resizer" role="separator" tabindex="-1" aria-orientation="vertical" :aria-valuenow="Math.round(splitRatio * 100)" aria-valuemin="33" aria-valuemax="67" :aria-valuetext="`${Math.round(splitRatio * 100)}%`" :title="t('tools.clipboardResizePanels')" @pointerdown="startResize" @keydown.left.prevent="nudgeSplit(-0.03)" @keydown.right.prevent="nudgeSplit(0.03)" @keydown.home.prevent="splitRatio = MIN_SPLIT_RATIO" @keydown.end.prevent="splitRatio = MAX_SPLIT_RATIO" />
         <aside class="clipboard-popup-preview" :class="{ empty: !selected }">
           <template v-if="selected">
-            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" :class="{ active: selected.favorite }" :title="selected.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="selected.favorite" @click="toggleFavorite(selected)"><Star :size="14" :fill="selected.favorite ? 'currentColor' : 'none'" /></button><button type="button" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" :title="t('tools.clipboardDeleteShortcut')" @click="requestRemoveItem(selected)"><X :size="15" /></button></div></div>
-            <div class="clipboard-popup-preview-content"><p v-if="selected.title" class="clipboard-popup-preview-title">{{ selected.title }}</p><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="0" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
-            <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
+            <div class="clipboard-popup-preview-head"><span><ShieldCheck :size="13" />{{ t('tools.clipboardPreview') }}</span><div><button type="button" tabindex="-1" :class="{ active: selected.favorite }" :title="selected.favorite ? t('tools.clipboardUnfavorite') : t('tools.clipboardFavorite')" :aria-pressed="selected.favorite" @click="toggleFavorite(selected)"><Star :size="14" :fill="selected.favorite ? 'currentColor' : 'none'" /></button><button type="button" tabindex="-1" :class="{ active: selected.pinned }" :title="selected.pinned ? t('tools.clipboardUnpin') : t('tools.clipboardPin')" :aria-pressed="selected.pinned" @click="togglePin(selected)"><Pin :size="14" :fill="selected.pinned ? 'currentColor' : 'none'" /></button><button type="button" tabindex="-1" :title="t('tools.clipboardDeleteShortcut')" @click="requestRemoveItem(selected)"><X :size="15" /></button></div></div>
+            <div class="clipboard-popup-preview-content"><p v-if="selected.title" class="clipboard-popup-preview-title">{{ selected.title }}</p><img v-if="selected.kind === 'image'" :src="selected.content" :alt="t('tools.clipboardImageLabel')" :title="t('tools.clipboardPreviewShortcut')" role="button" tabindex="-1" @click="openImagePreview(selected)" /><pre v-else>{{ selected.content }}</pre></div>
+            <div class="clipboard-popup-preview-foot"><label>{{ t('tools.clipboardExpires') }}<select tabindex="-1" :value="selected.expiry" @change="setExpiry(selected, Number(($event.target as HTMLSelectElement).value) as ClipboardExpiry)"><option :value="30">{{ t('tools.clipboard30s') }}</option><option :value="300">{{ t('tools.clipboard5m') }}</option><option :value="900">{{ t('tools.clipboard15m') }}</option><option :value="1800">{{ t('tools.clipboard30m') }}</option><option :value="0">{{ t('tools.clipboardNever') }}</option></select></label><button type="button" tabindex="-1" class="clipboard-popup-copy" :title="quickMode ? t('tools.clipboardCopyShortcutQuick') : t('tools.clipboardCopyShortcut')" @click="copyItem(selected)"><Copy :size="14" />{{ t('tools.clipboardCopy') }}</button></div>
           </template>
           <div v-else class="clipboard-popup-preview-placeholder"><Clipboard :size="21" /><span>{{ t('tools.clipboardSelectHint') }}</span></div>
         </aside>
       </div>
-      <footer class="clipboard-popup-foot"><span><ShieldCheck :size="12" />{{ t('tools.clipboardLocalOnly') }}</span><button type="button" :disabled="!clearableCount" @click="clearAll"><Trash2 :size="13" />{{ t('tools.clipboardClear') }}</button></footer>
+      <footer class="clipboard-popup-foot"><span><ShieldCheck :size="12" />{{ t('tools.clipboardLocalOnly') }}</span><button type="button" tabindex="-1" :disabled="!clearableCount" @click="clearAll"><Trash2 :size="13" />{{ t('tools.clipboardClear') }}</button></footer>
     </template>
 
     <div v-if="pendingDelete" class="clipboard-popup-overlay" @click.self="cancelPendingDelete">

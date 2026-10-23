@@ -7,6 +7,26 @@ export function shouldCloseClipboardWindowAfterEnterCopy(quickModeEnabled: boole
   return quickModeEnabled
 }
 
+/**
+ * Enter copies the selected clipboard item unless a dialog is open,
+ * or focus is in a control that uses Enter itself (multiline field or select).
+ * Toolbar buttons, filters, and the search box must not swallow it.
+ */
+export function shouldBlockClipboardListEnter(input: {
+  overlayOpen: boolean
+  keepsOwnEnter: boolean
+}): boolean {
+  return input.overlayOpen || input.keepsOwnEnter
+}
+
+/** Up/Down moves the list unless a dialog is open or a select is using the arrows. */
+export function shouldBlockClipboardArrowNav(input: {
+  overlayOpen: boolean
+  isSelect: boolean
+}): boolean {
+  return input.overlayOpen || input.isSelect
+}
+
 export function isClipboardItemDeleteKey(key: string): boolean {
   return key === 'Delete' || key === 'Backspace'
 }
