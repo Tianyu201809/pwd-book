@@ -182,6 +182,7 @@ export default {
     openSettings: '打开设置',
     pinAlwaysOnTop: '窗口置顶',
     unpinAlwaysOnTop: '取消窗口置顶',
+    openGithub: '打开 GitHub 主页',
   },
   productTour: {
     openHub: '产品学习',

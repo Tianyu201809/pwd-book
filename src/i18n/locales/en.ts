@@ -183,6 +183,7 @@ export default {
     openSettings: 'Open settings',
     pinAlwaysOnTop: 'Keep window on top',
     unpinAlwaysOnTop: 'Stop keeping window on top',
+    openGithub: 'Open the GitHub homepage',
   },
   productTour: {
     openHub: 'Product tour',

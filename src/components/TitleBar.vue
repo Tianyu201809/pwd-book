@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap, Clipboard } from 'lucide-vue-next'
+import { Minus, Square, X, Palette, Check, TreePalm, Sparkles, Lock, Pin, GraduationCap, Clipboard, Github } from 'lucide-vue-next'
 import appIconSm from '@/assets/images/brand/app-icon-sm.png'
 import { UiModal, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { useTheme } from '@/composables/useTheme'
 import { useProductTour } from '@/composables/useProductTour'
+import { showToast } from '@/composables/useToast'
+import { parseErrorMessage } from '@/shared/utils'
 import type { CloseWindowAction } from '@/shared/types'
 import type { ThemeSkin } from '@/types'
 
@@ -37,6 +39,17 @@ const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
 const canOpenLearn = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
 const canOpenClipboard = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
+
+const PROJECT_GITHUB_URL = 'https://github.com/Tianyu201809/pwd-book'
+const PROJECT_GITHUB_LABEL = 'Tianyu201809/pwd-book'
+
+async function openProjectGithub(): Promise<void> {
+  try {
+    await window.electronAPI?.openExternal(PROJECT_GITHUB_URL)
+  } catch (error) {
+    showToast(parseErrorMessage(error), 'error')
+  }
+}
 
 function openLearnHub(): void {
   showSkinMenu.value = false
@@ -226,6 +239,29 @@ onUnmounted(() => {
       class="titlebar-actions titlebar-no-drag"
       :class="{ 'titlebar-actions--detail': detailWindow }"
     >
+      <button
+        type="button"
+        class="win-btn github-btn titlebar-no-drag"
+        :aria-label="`${t('titlebar.openGithub')} — ${PROJECT_GITHUB_LABEL}`"
+        @click="openProjectGithub"
+      >
+        <Github
+          :size="14"
+          :stroke-width="1.75"
+        />
+        <span class="github-tip" role="tooltip">
+          <span class="github-tip-mark" aria-hidden="true">
+            <Github
+              :size="12"
+              :stroke-width="2"
+            />
+          </span>
+          <span class="github-tip-copy">
+            <span class="github-tip-title">{{ t('titlebar.openGithub') }}</span>
+            <span class="github-tip-repo">{{ PROJECT_GITHUB_LABEL }}</span>
+          </span>
+        </span>
+      </button>
       <div class="skin-menu-wrap">
         <button
           ref="skinTriggerRef"
@@ -539,6 +575,10 @@ onUnmounted(() => {
   gap: 4px;
 }
 
+.titlebar-actions--detail .github-btn {
+  order: -1;
+}
+
 .titlebar-actions--detail .titlebar-always-on-top-btn {
   order: 0;
 }
@@ -713,6 +753,112 @@ onUnmounted(() => {
 
 .lock-btn:hover {
   color: var(--accent-primary);
+}
+
+.github-btn {
+  position: relative;
+  overflow: visible;
+}
+
+.github-btn:hover,
+.github-btn:focus-visible {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.github-tip {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: -2px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  padding: 7px 10px 7px 7px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-popover);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.github-btn:hover .github-tip,
+.github-btn:focus-visible .github-tip {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.16s;
+}
+
+.github-tip::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 12px;
+  border-width: 0 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--border-strong);
+}
+
+.github-tip::after {
+  content: '';
+  position: absolute;
+  top: -3.5px;
+  right: 13px;
+  border-width: 0 4px 4px;
+  border-style: solid;
+  border-color: transparent transparent var(--bg-elevated);
+}
+
+.github-tip-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.github-tip-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.github-tip-title {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.github-tip-repo {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .github-tip,
+  .github-btn:hover .github-tip,
+  .github-btn:focus-visible .github-tip {
+    transition: none;
+  }
 }
 
 .learn-btn {

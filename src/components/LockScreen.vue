@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import appIcon from '@/assets/images/brand/app-icon.png'
@@ -42,6 +42,7 @@ const {
 const { t } = useI18n()
 
 const lockMode = ref<LockMode>('unlock')
+const passwordWrapRef = ref<HTMLElement | null>(null)
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
@@ -112,9 +113,23 @@ function shakeOnError(): void {
   }, 400)
 }
 
+function focusPasswordField(): void {
+  void nextTick(() => {
+    const input = passwordWrapRef.value?.querySelector('input') as HTMLInputElement | null
+    if (!input) return
+    // Submitting disables the button, which blurs the focused control. Put the
+    // caret back after the error is rendered so typing can continue.
+    globalThis.window?.focus?.()
+    input.focus()
+  })
+}
+
 async function submitUnlockOrSetup(): Promise<void> {
+  if (loading.value) return
+
   if (password.value.length < 4) {
     shakeOnError()
+    focusPasswordField()
     return
   }
 
@@ -122,6 +137,7 @@ async function submitUnlockOrSetup(): Promise<void> {
     const ok = await setupVault(password.value, confirmPassword.value)
     if (!ok) {
       shakeOnError()
+      focusPasswordField()
       return
     }
     password.value = ''
@@ -138,6 +154,7 @@ async function submitUnlockOrSetup(): Promise<void> {
     return
   }
   shakeOnError()
+  focusPasswordField()
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -243,14 +260,16 @@ async function handleCopyRecoveryKey(): Promise<void> {
       <UiCard class="panel-glow lock-panel">
         <template v-if="showDefaultForm">
           <label class="label">{{ t('lock.masterPassword') }}</label>
-          <div class="input-wrap">
+          <div
+            ref="passwordWrapRef"
+            class="input-wrap"
+          >
             <UiInput
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               class="lock-input"
               :class="{ shake: hasError }"
               placeholder="••••••••••••"
-              :disabled="loading"
               @keydown="onKeydown"
             />
             <button
@@ -278,7 +297,6 @@ async function handleCopyRecoveryKey(): Promise<void> {
               :type="showPassword ? 'text' : 'password'"
               class="lock-input"
               :placeholder="t('lock.confirmPlaceholder')"
-              :disabled="loading"
               @keydown="onKeydown"
             />
           </template>
