@@ -2,6 +2,8 @@ import { randomUUID } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { app } from 'electron'
+import { getActiveAccountId } from '../accounts/activeAccount'
+import { accountDataPaths } from '../accounts/accountPaths'
 import { decryptSyncBundle, encryptSyncBundle } from '../crypto/syncBundleCrypto'
 import type { EntryRow } from '../db/helpers'
 import { getSetting, readEntryRow, readTrashedEntryRows, setSetting } from '../db/helpers'
@@ -130,7 +132,7 @@ export function decryptBundleFromTransport(payload: Buffer, masterPasswordOrKey:
 }
 
 export function getSyncServerDir(): string {
-  return path.join(app.getPath('userData'), 'sync-server')
+  return accountDataPaths(app.getPath('userData'), getActiveAccountId()).syncServer
 }
 
 export function getSyncBundlePath(): string {

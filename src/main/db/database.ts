@@ -2,6 +2,7 @@ import { app } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
+import { isValidSqliteHeader } from '../accounts/accountPaths'
 import { seedAndMigrateCategories } from './categories'
 import { appError, ErrorCode } from '../../shared/errors'
 
@@ -10,11 +11,23 @@ let db: Database | null = null
 let dbPath = ''
 let lastQuarantinedDbPath: string | null = null
 
-const SQLITE_HEADER = 'SQLite format 3\u0000'
+export class VaultFileDamagedError extends Error {
+  readonly quarantinedPath: string | null
 
-function isValidSqliteFile(buffer: Buffer): boolean {
-  if (buffer.length < 16) return false
-  return buffer.subarray(0, 16).toString('binary') === SQLITE_HEADER
+  constructor(quarantinedPath: string | null) {
+    super('VAULT_FILE_DAMAGED')
+    this.name = 'VaultFileDamagedError'
+    this.quarantinedPath = quarantinedPath
+  }
+}
+
+export function setDatabaseFile(filePath: string): void {
+  if (db) closeDatabase()
+  dbPath = filePath
+}
+
+export function getDatabaseFile(): string {
+  return dbPath
 }
 
 function quarantineCorruptDatabaseFile(): string {
@@ -59,32 +72,15 @@ export function persistDatabase(): void {
     .catch(() => {})
 }
 
-export async function initDatabase(): Promise<Database> {
-  if (db) return db
-
-  const SQL = await getSql()
-  dbPath = path.join(app.getPath('userData'), 'pwdbook.db')
-
-  if (fs.existsSync(dbPath)) {
-    const fileBuffer = fs.readFileSync(dbPath)
-    if (!isValidSqliteFile(fileBuffer)) {
-      quarantineCorruptDatabaseFile()
-      db = new SQL.Database()
-    } else {
-      db = new SQL.Database(fileBuffer)
-    }
-  } else {
-    db = new SQL.Database()
-  }
-
-  db.run(`
+function ensureSchema(database: Database): void {
+  database.run(`
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL
     )
   `)
 
-  db.run(`
+  database.run(`
     CREATE TABLE IF NOT EXISTS password_entries (
       id TEXT PRIMARY KEY NOT NULL,
       title TEXT NOT NULL,
@@ -102,15 +98,15 @@ export async function initDatabase(): Promise<Database> {
     )
   `)
 
-  seedAndMigrateCategories(db)
+  seedAndMigrateCategories(database)
 
-  migrateEntryDisplayIcon(db)
-  migrateEntryLocalProgramPath(db)
-  migrateEntryDeletedAt(db)
-  migrateEntryTotpSecret(db)
-  migrateEntryCustomFields(db)
+  migrateEntryDisplayIcon(database)
+  migrateEntryLocalProgramPath(database)
+  migrateEntryDeletedAt(database)
+  migrateEntryTotpSecret(database)
+  migrateEntryCustomFields(database)
 
-  db.run(`
+  database.run(`
     CREATE TABLE IF NOT EXISTS entry_attachments (
       id TEXT PRIMARY KEY NOT NULL,
       entry_id TEXT NOT NULL,
@@ -121,11 +117,11 @@ export async function initDatabase(): Promise<Database> {
       updated_at INTEGER NOT NULL
     )
   `)
-  db.run(`
+  database.run(`
     CREATE INDEX IF NOT EXISTS idx_attachments_entry_id ON entry_attachments(entry_id)
   `)
 
-  db.run(`
+  database.run(`
     CREATE TABLE IF NOT EXISTS note_books (
       id TEXT PRIMARY KEY NOT NULL,
       name_encrypted TEXT NOT NULL,
@@ -136,7 +132,7 @@ export async function initDatabase(): Promise<Database> {
     )
   `)
 
-  db.run(`
+  database.run(`
     CREATE TABLE IF NOT EXISTS notes (
       id TEXT PRIMARY KEY NOT NULL,
       book_id TEXT NOT NULL,
@@ -155,9 +151,35 @@ export async function initDatabase(): Promise<Database> {
       deleted_at INTEGER
     )
   `)
-  db.run('CREATE INDEX IF NOT EXISTS idx_notes_book_id ON notes(book_id)')
-  db.run('CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)')
+  database.run('CREATE INDEX IF NOT EXISTS idx_notes_book_id ON notes(book_id)')
+  database.run('CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)')
+}
 
+export async function initDatabase(): Promise<Database> {
+  if (db) return db
+
+  const filePath = getDatabaseFile()
+  if (!fs.existsSync(filePath)) {
+    throw new VaultFileDamagedError(null)
+  }
+
+  const fileBuffer = fs.readFileSync(filePath)
+  if (!isValidSqliteHeader(fileBuffer)) {
+    throw new VaultFileDamagedError(quarantineCorruptDatabaseFile())
+  }
+
+  const SQL = await getSql()
+  db = new SQL.Database(fileBuffer)
+  ensureSchema(db)
+  persistDatabase()
+  return db
+}
+
+export async function createEmptyDatabase(): Promise<Database> {
+  if (db) closeDatabase()
+  const SQL = await getSql()
+  db = new SQL.Database()
+  ensureSchema(db)
   persistDatabase()
   return db
 }
@@ -179,12 +201,16 @@ export function closeDatabase(): void {
 
 export function resetDatabaseFile(): void {
   closeDatabase()
+  if (!dbPath) return
   if (fs.existsSync(dbPath)) {
     fs.unlinkSync(dbPath)
   }
-  const attachmentsDir = path.join(path.dirname(dbPath), 'attachments')
-  if (fs.existsSync(attachmentsDir)) {
-    fs.rmSync(attachmentsDir, { recursive: true, force: true })
+  const accountDir = path.dirname(dbPath)
+  for (const name of ['attachments', 'sync-server', 'wifi-sync-certs']) {
+    const dir = path.join(accountDir, name)
+    if (fs.existsSync(dir)) {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   }
 }
 

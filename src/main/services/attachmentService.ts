@@ -2,6 +2,8 @@ import { randomUUID } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { app } from 'electron'
+import { getActiveAccountId } from '../accounts/activeAccount'
+import { accountDataPaths } from '../accounts/accountPaths'
 import { encryptBuffer, decryptBuffer } from '../crypto/vaultCrypto'
 import { getDatabase, persistDatabase } from '../db/database'
 import {
@@ -30,7 +32,7 @@ function assertUnlocked(): void {
 }
 
 export function getAttachmentsDir(): string {
-  return path.join(app.getPath('userData'), 'attachments')
+  return accountDataPaths(app.getPath('userData'), getActiveAccountId()).attachments
 }
 
 export function getAttachmentFilePath(attachmentId: string): string {

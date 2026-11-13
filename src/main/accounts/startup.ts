@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
+import { isValidSqliteHeader } from './accountPaths'
 import {
   DEFAULT_ACCOUNT_NAME,
   MACHINE_DB_KEYS,
@@ -16,7 +17,6 @@ export type BootResult =
   | { kind: 'fresh' }
   | { kind: 'blocked'; reason: 'registry-corrupt' | 'registry-inconsistent' | 'ambiguous-accounts' }
 
-const SQLITE_HEADER = 'SQLite format 3\u0000'
 const DELETING_SUFFIX = '.deleting'
 const MOVED_DIRECTORIES = ['attachments', 'sync-server', 'wifi-sync-certs'] as const
 
@@ -121,8 +121,8 @@ function hasSqliteHeader(file: string): boolean {
   const fd = fs.openSync(file, 'r')
   try {
     const buffer = Buffer.alloc(16)
-    const bytesRead = fs.readSync(fd, buffer, 0, 16, 0)
-    return bytesRead >= 16 && buffer.toString('binary') === SQLITE_HEADER
+    fs.readSync(fd, buffer, 0, 16, 0)
+    return isValidSqliteHeader(buffer)
   } finally {
     fs.closeSync(fd)
   }

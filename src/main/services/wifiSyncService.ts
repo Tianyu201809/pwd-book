@@ -5,6 +5,8 @@ import https from 'https'
 import os from 'os'
 import path from 'path'
 import { app } from 'electron'
+import { getActiveAccountId } from '../accounts/activeAccount'
+import { accountDataPaths } from '../accounts/accountPaths'
 import selfsigned from 'selfsigned'
 import { Bonjour } from 'bonjour-service'
 import { getSetting, setSetting } from '../db/helpers'
@@ -32,7 +34,6 @@ import { syncAttachmentFilesAfterMerge } from './attachmentSyncService'
 const SETTINGS_KEY = 'wifi_sync_settings'
 const SERVICE_TYPE = 'pwdbook-sync'
 const DEFAULT_PORT = 8765
-const CERT_DIR_NAME = 'wifi-sync-certs'
 
 let httpServer: http.Server | https.Server | null = null
 let bonjour: InstanceType<typeof Bonjour> | null = null
@@ -90,7 +91,7 @@ export function regenerateAccessPassword(): string {
 }
 
 function getCertDir(): string {
-  return path.join(app.getPath('userData'), CERT_DIR_NAME)
+  return accountDataPaths(app.getPath('userData'), getActiveAccountId()).wifiCerts
 }
 
 function ensureTlsMaterials(): https.ServerOptions {
