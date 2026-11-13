@@ -22,7 +22,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, lock, openClipboard } = useAppState()
+const { securitySettings, updateSecuritySettings, screen, navigateTo, vaultStatus, bootState, lock, openClipboard } = useAppState()
 const { skin, skinOptions, setSkin, isAnimalIsland } = useTheme()
 const { openHub, isActive: tourActive } = useProductTour()
 
@@ -37,6 +37,12 @@ const isMaximized = ref(false)
 
 const canOpenAppearanceSettings = computed(() => screen.value !== 'lock')
 const canQuickLock = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock')
+const showActiveAccount = computed(() =>
+  !props.detailWindow
+  && vaultStatus.value.unlocked
+  && screen.value !== 'lock'
+  && Boolean(bootState.value.activeAccountName),
+)
 const canOpenLearn = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
 const canOpenClipboard = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
 
@@ -234,6 +240,14 @@ onUnmounted(() => {
         height="18"
       >
       <span class="title">{{ t('common.appName') }}</span>
+      <button
+        v-if="showActiveAccount"
+        type="button"
+        class="account-lock-btn titlebar-no-drag"
+        @click="lock"
+      >
+        {{ bootState.activeAccountName }}
+      </button>
     </div>
     <div
       class="titlebar-actions titlebar-no-drag"
@@ -565,6 +579,26 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 500;
   letter-spacing: -0.01em;
+}
+
+.account-lock-btn {
+  max-width: 160px;
+  height: 28px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-lock-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .titlebar-actions {

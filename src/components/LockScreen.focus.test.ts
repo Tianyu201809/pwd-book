@@ -11,6 +11,15 @@ const vaultStatus = ref({
   entryCount: 1,
   recoveryConfigured: true,
 })
+const bootState = ref({
+  blocked: null,
+  warning: null,
+  accounts: [{ id: 'default', name: '默认账号' }],
+  activeAccountId: 'default',
+  activeAccountName: '默认账号',
+  vaultFile: 'ready' as const,
+  quarantinedPath: null as string | null,
+})
 
 vi.mock('@/composables/useTheme', () => ({
   useTheme: () => ({ isAnimalIsland: false }),
@@ -20,7 +29,7 @@ vi.mock('@/components/ui', () => {
   const passthrough = (tag: string) => ({
     inheritAttrs: false,
     setup(_: unknown, { attrs, slots }: { attrs: Record<string, unknown>, slots: { default?: () => unknown } }) {
-      return () => h(tag, attrs, slots.default?.())
+      return () => h(tag, attrs, slots.default?.() as never)
     },
   })
   return {
@@ -54,7 +63,11 @@ vi.mock('@/components/ui', () => {
 vi.mock('@/composables/useAppState', () => ({
   useAppState: () => ({
     vaultStatus,
+    bootState,
     setupVault: vi.fn(async () => false),
+    createAccount: vi.fn(async () => false),
+    selectAccount: vi.fn(async () => false),
+    rebuildVault: vi.fn(async () => false),
     unlock,
     loading,
     errorMessage,
@@ -187,9 +200,15 @@ afterEach(() => {
 describe('lock screen wrong password', () => {
   it('keeps the password field editable and focused after a wrong master password', async () => {
     const input = passwordInput()
-    await input.props.onInput?.({ target: { value: 'wrong-password' } })
+    const onInput = input.props.onInput
+    const onKeydown = input.props.onKeydown
+    if (typeof onInput === 'function') {
+      await onInput({ target: { value: 'wrong-password' } })
+    }
     await nextTick()
-    input.props.onKeydown?.({ key: 'Enter' })
+    if (typeof onKeydown === 'function') {
+      onKeydown({ key: 'Enter' })
+    }
     await settle()
 
     expect(unlock).toHaveBeenCalledWith('wrong-password')

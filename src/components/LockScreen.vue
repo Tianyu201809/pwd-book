@@ -12,10 +12,10 @@ import RecoveryProgressOverlay from '@/components/recovery/RecoveryProgressOverl
 import { UiCard, UiInput, UiButton } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { vaultApi } from '@/services/vaultApi'
+import { lockScreenMode } from '@/components/lockScreenMode'
 
 type LockMode =
-  | 'unlock'
-  | 'setup'
+  | 'credentials'
   | 'setup-recovery'
   | 'recovery-menu'
   | 'recovery-key'
@@ -24,8 +24,12 @@ type LockMode =
   | 'recovery-wipe-confirm'
 
 const {
+  bootState,
   vaultStatus,
   setupVault,
+  createAccount,
+  selectAccount,
+  rebuildVault,
   unlock,
   loading,
   errorMessage,
@@ -41,7 +45,9 @@ const {
 
 const { t } = useI18n()
 
-const lockMode = ref<LockMode>('unlock')
+const lockMode = ref<LockMode>('credentials')
+const creatingAccount = ref(false)
+const accountName = ref('')
 const passwordWrapRef = ref<HTMLElement | null>(null)
 const password = ref('')
 const confirmPassword = ref('')
@@ -52,40 +58,43 @@ const generatedRecoveryKey = ref('')
 const showProgress = ref(false)
 const localMessage = ref('')
 
-const isSetupMode = computed(() => !vaultStatus.value.initialized)
+const accountMode = computed(() => lockScreenMode({
+  accountCount: bootState.value.accounts.length,
+  initialized: vaultStatus.value.initialized,
+  creatingAccount: creatingAccount.value,
+}))
+const asksForAccountName = computed(
+  () => accountMode.value === 'boot-empty' || accountMode.value === 'create-account',
+)
+const asksForConfirm = computed(
+  () => asksForAccountName.value || accountMode.value === 'setup-password',
+)
+const vaultNeedsRebuild = computed(() =>
+  bootState.value.vaultFile !== 'ready'
+  && accountMode.value !== 'boot-empty'
+  && accountMode.value !== 'create-account',
+)
 const title = computed(() => {
   if (lockMode.value === 'setup-recovery') return t('lock.saveRecoveryKey')
-  if (lockMode.value === 'setup' && !vaultStatus.value.initialized) return t('lock.createMasterPassword')
   if (lockMode.value.startsWith('recovery-')) return t('lock.recoverAccess')
+  if (vaultNeedsRebuild.value) return t('account.vaultDamaged')
+  if (asksForAccountName.value) return t('account.newAccount')
+  if (accountMode.value === 'setup-password') return t('lock.createMasterPassword')
   return t('lock.unlockVault')
 })
 const submitLabel = computed(() =>
-  isSetupMode.value ? t('lock.createAndEnter') : t('lock.unlock'),
+  asksForConfirm.value ? t('lock.createAndEnter') : t('lock.unlock'),
 )
-const showDefaultForm = computed(
-  () => lockMode.value === 'unlock' || lockMode.value === 'setup',
-)
+const showDefaultForm = computed(() => lockMode.value === 'credentials')
 
 onMounted(async () => {
   clearError()
-  await refreshVaultStatus()
-  lockMode.value = vaultStatus.value.initialized ? 'unlock' : 'setup'
+  if (bootState.value.vaultFile === 'ready' && bootState.value.accounts.length > 0) {
+    await refreshVaultStatus()
+  }
 })
 
-watch(
-  () => vaultStatus.value.initialized,
-  (initialized) => {
-    if (!initialized && lockMode.value === 'unlock') {
-      lockMode.value = 'setup'
-      return
-    }
-    if (initialized && lockMode.value === 'setup') {
-      lockMode.value = 'unlock'
-    }
-  },
-)
-
-watch([password, confirmPassword], () => {
+watch([password, confirmPassword, accountName], () => {
   if (errorMessage.value) clearError()
   localMessage.value = ''
 })
@@ -124,8 +133,60 @@ function focusPasswordField(): void {
   })
 }
 
-async function submitUnlockOrSetup(): Promise<void> {
+function startCreateAccount(): void {
+  creatingAccount.value = true
+  accountName.value = ''
+  password.value = ''
+  confirmPassword.value = ''
+  clearError()
+  localMessage.value = ''
+}
+
+function cancelCreateAccount(): void {
+  creatingAccount.value = false
+  accountName.value = ''
+  password.value = ''
+  confirmPassword.value = ''
+  clearError()
+}
+
+async function chooseAccount(accountId: string): Promise<void> {
+  if (loading.value || accountId === bootState.value.activeAccountId) return
+  await selectAccount(accountId)
+  password.value = ''
+  confirmPassword.value = ''
+}
+
+async function submitRebuild(): Promise<void> {
   if (loading.value) return
+  const ok = await rebuildVault()
+  if (!ok) {
+    shakeOnError()
+    return
+  }
+  creatingAccount.value = false
+  password.value = ''
+  confirmPassword.value = ''
+}
+
+async function submitUnlockOrSetup(): Promise<void> {
+  if (loading.value || vaultNeedsRebuild.value) return
+
+  if (asksForAccountName.value) {
+    const ok = await createAccount(accountName.value, password.value, confirmPassword.value)
+    if (!ok) {
+      shakeOnError()
+      focusPasswordField()
+      return
+    }
+    accountName.value = ''
+    password.value = ''
+    confirmPassword.value = ''
+    creatingAccount.value = false
+    generatedRecoveryKey.value = ''
+    lockMode.value = 'setup-recovery'
+    return
+  }
 
   if (password.value.length < 4) {
     shakeOnError()
@@ -133,7 +194,7 @@ async function submitUnlockOrSetup(): Promise<void> {
     return
   }
 
-  if (isSetupMode.value) {
+  if (accountMode.value === 'setup-password') {
     const ok = await setupVault(password.value, confirmPassword.value)
     if (!ok) {
       shakeOnError()
@@ -203,7 +264,7 @@ async function handleRecoveryReset(newPassword: string, confirmPasswordValue: st
   showProgress.value = false
   if (ok) {
     verifiedRecoveryKey.value = ''
-    lockMode.value = 'unlock'
+    lockMode.value = 'credentials'
     return
   }
 }
@@ -211,7 +272,7 @@ async function handleRecoveryReset(newPassword: string, confirmPasswordValue: st
 async function handleWipeConfirm(): Promise<void> {
   const ok = await resetVaultFromLock()
   if (ok) {
-    lockMode.value = 'setup'
+    lockMode.value = 'credentials'
     password.value = ''
     confirmPassword.value = ''
   }
@@ -259,89 +320,165 @@ async function handleCopyRecoveryKey(): Promise<void> {
 
       <UiCard class="panel-glow lock-panel">
         <template v-if="showDefaultForm">
-          <label class="label">{{ t('lock.masterPassword') }}</label>
-          <div
-            ref="passwordWrapRef"
-            class="input-wrap"
-          >
-            <UiInput
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              class="lock-input"
-              :class="{ shake: hasError }"
-              placeholder="••••••••••••"
-              @keydown="onKeydown"
-            />
-            <button
-              type="button"
-              class="eye-btn titlebar-no-drag"
-              @click="showPassword = !showPassword"
-            >
-              <EyeOff
-                v-if="showPassword"
-                :size="16"
-                :stroke-width="1.5"
-              />
-              <Eye
-                v-else
-                :size="16"
-                :stroke-width="1.5"
-              />
-            </button>
-          </div>
-
-          <template v-if="isSetupMode">
-            <label class="label confirm-label">{{ t('lock.confirmMasterPassword') }}</label>
-            <UiInput
-              v-model="confirmPassword"
-              :type="showPassword ? 'text' : 'password'"
-              class="lock-input"
-              :placeholder="t('lock.confirmPlaceholder')"
-              @keydown="onKeydown"
-            />
-          </template>
-
-          <p
-            v-if="errorMessage"
-            class="error-text"
-          >
-            {{ errorMessage }}
-          </p>
-          <p
-            v-if="localMessage"
-            class="info-text"
-          >
-            {{ localMessage }}
-          </p>
-
-          <UiButton
-            variant="primary"
-            class="unlock-btn"
-            :disabled="loading"
-            block
-            @click="submitUnlockOrSetup"
-          >
-            {{ loading ? t('common.processing') : isSetupMode ? t('common.next') : submitLabel }}
-          </UiButton>
-
-          <template v-if="!isSetupMode">
-            <div class="recovery-links">
+          <template v-if="accountMode !== 'boot-empty' && accountMode !== 'create-account'">
+            <div class="account-list">
               <button
+                v-for="account in bootState.accounts"
+                :key="account.id"
                 type="button"
-                class="text-link"
-                @click="openRecoveryMenu"
+                class="account-btn"
+                :class="{ 'account-btn--selected': account.id === bootState.activeAccountId }"
+                :aria-pressed="account.id === bootState.activeAccountId"
+                @click="chooseAccount(account.id)"
               >
-                {{ t('lock.forgotPassword') }}
-              </button>
-              <button
-                type="button"
-                class="text-link accent"
-                @click="openRecoveryMenu"
-              >
-                {{ t('lock.useRecoveryKey') }}
+                {{ account.name }}
               </button>
             </div>
+            <button
+              v-if="accountMode === 'unlock' && !vaultNeedsRebuild"
+              type="button"
+              class="text-link account-create-link"
+              @click="startCreateAccount"
+            >
+              {{ t('account.newAccount') }}
+            </button>
           </template>
+
+          <template v-if="vaultNeedsRebuild">
+            <p class="error-text">
+              {{ t('account.vaultDamaged') }}
+            </p>
+            <p
+              v-if="bootState.quarantinedPath"
+              class="info-text"
+            >
+              {{ bootState.quarantinedPath }}
+            </p>
+            <UiButton
+              variant="primary"
+              class="unlock-btn"
+              :disabled="loading"
+              block
+              @click="submitRebuild"
+            >
+              {{ loading ? t('common.processing') : t('account.rebuildEmpty') }}
+            </UiButton>
+          </template>
+
+          <template v-else>
+            <template v-if="asksForAccountName">
+              <label class="label">{{ t('account.name') }}</label>
+              <UiInput
+                v-model="accountName"
+                class="lock-input"
+                :placeholder="t('account.name')"
+                @keydown="onKeydown"
+              />
+            </template>
+
+            <label
+              class="label"
+              :class="{ 'confirm-label': asksForAccountName }"
+            >{{ t('lock.masterPassword') }}</label>
+            <div
+              ref="passwordWrapRef"
+              class="input-wrap"
+            >
+              <UiInput
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                class="lock-input"
+                :class="{ shake: hasError }"
+                placeholder="••••••••••••"
+                @keydown="onKeydown"
+              />
+              <button
+                type="button"
+                class="eye-btn titlebar-no-drag"
+                @click="showPassword = !showPassword"
+              >
+                <EyeOff
+                  v-if="showPassword"
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+                <Eye
+                  v-else
+                  :size="16"
+                  :stroke-width="1.5"
+                />
+              </button>
+            </div>
+
+            <template v-if="asksForConfirm">
+              <label class="label confirm-label">{{ t('lock.confirmMasterPassword') }}</label>
+              <UiInput
+                v-model="confirmPassword"
+                :type="showPassword ? 'text' : 'password'"
+                class="lock-input"
+                :placeholder="t('lock.confirmPlaceholder')"
+                @keydown="onKeydown"
+              />
+            </template>
+
+            <p
+              v-if="errorMessage"
+              class="error-text"
+            >
+              {{ errorMessage }}
+            </p>
+            <p
+              v-if="localMessage"
+              class="info-text"
+            >
+              {{ localMessage }}
+            </p>
+
+            <UiButton
+              variant="primary"
+              class="unlock-btn"
+              :disabled="loading"
+              block
+              @click="submitUnlockOrSetup"
+            >
+              {{ loading ? t('common.processing') : asksForConfirm ? t('common.next') : submitLabel }}
+            </UiButton>
+
+            <template v-if="accountMode === 'unlock'">
+              <div class="recovery-links">
+                <button
+                  type="button"
+                  class="text-link"
+                  @click="openRecoveryMenu"
+                >
+                  {{ t('lock.forgotPassword') }}
+                </button>
+                <button
+                  type="button"
+                  class="text-link accent"
+                  @click="openRecoveryMenu"
+                >
+                  {{ t('lock.useRecoveryKey') }}
+                </button>
+              </div>
+            </template>
+
+            <button
+              v-if="accountMode === 'create-account'"
+              type="button"
+              class="text-link account-create-link"
+              @click="cancelCreateAccount"
+            >
+              {{ t('common.back') }}
+            </button>
+          </template>
+
+          <p
+            v-if="bootState.warning === 'delete-incomplete'"
+            class="info-text"
+          >
+            {{ t('account.deleteIncomplete') }}
+          </p>
         </template>
 
         <RecoveryKeySetup
@@ -357,7 +494,7 @@ async function handleCopyRecoveryKey(): Promise<void> {
         <RecoveryMenu
           v-else-if="lockMode === 'recovery-menu'"
           :entry-count="vaultStatus.entryCount"
-          @back="lockMode = 'unlock'"
+          @back="lockMode = 'credentials'"
           @recovery-key="lockMode = 'recovery-key'"
           @wipe="lockMode = 'recovery-wipe'"
         />
@@ -453,6 +590,39 @@ h1 {
   padding: 24px;
 }
 
+.account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.account-btn:hover {
+  background: var(--bg-hover);
+}
+
+.account-btn--selected {
+  border-color: var(--accent-primary);
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+.account-create-link {
+  display: inline-block;
+  margin: 8px 0 16px;
+}
+
 .label {
   display: block;
   font-size: 12px;
@@ -510,6 +680,7 @@ h1 {
   margin: 12px 0 0;
   font-size: 12px;
   color: var(--text-secondary);
+  word-break: break-all;
 }
 
 .recovery-links {

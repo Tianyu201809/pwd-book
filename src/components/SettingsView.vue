@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import packageJson from '../../package.json'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
@@ -30,7 +30,8 @@ import QuickBarSettingsPanel from '@/components/QuickBarSettingsPanel.vue'
 import TrashSettingsPanel from '@/components/TrashSettingsPanel.vue'
 import IconBadge from '@/components/IconBadge.vue'
 import { NAV_ICON_STYLES } from '@/shared/navIconStyles'
-import { UiSelect, UiSwitch, UiCard, UiButton } from '@/components/ui'
+import { UiSelect, UiSwitch, UiCard, UiButton, UiInput } from '@/components/ui'
+import MasterPasswordConfirmModal from '@/components/MasterPasswordConfirmModal.vue'
 import { Footer } from 'animal-island-vue'
 import { useTheme } from '@/composables/useTheme'
 import RecoverySettingsPanel from '@/components/RecoverySettingsPanel.vue'
@@ -55,11 +56,29 @@ const {
   openEmailBackup,
   errorMessage,
   clearError,
+  bootState,
+  lock,
+  loading,
+  renameAccount,
+  deleteAccount,
 } = useAppState()
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
 const { showToast } = useToast()
+
+const nextAccountName = ref('')
+const deleteAccountOpen = ref(false)
+const accountError = ref('')
+const canDeleteAccount = computed(() => bootState.value.accounts.length >= 2)
+
+watch(
+  () => bootState.value.activeAccountName,
+  (name) => {
+    nextAccountName.value = name ?? ''
+  },
+  { immediate: true },
+)
 
 const statusMessage = ref('')
 const importModalOpen = ref(false)
@@ -250,6 +269,23 @@ function onExportCompleted(formatId: ExportDestinationId): void {
   statusMessage.value = t('export.exportedCsv')
 }
 
+async function submitRename(): Promise<void> {
+  accountError.value = ''
+  const ok = await renameAccount(nextAccountName.value)
+  if (!ok) accountError.value = errorMessage.value
+}
+
+async function confirmDeleteAccount(masterPassword: string): Promise<void> {
+  accountError.value = ''
+  const ok = await deleteAccount(masterPassword)
+  if (!ok) {
+    accountError.value = errorMessage.value
+    showToast(errorMessage.value, 'error')
+    return
+  }
+  deleteAccountOpen.value = false
+}
+
 async function handleReset(): Promise<void> {
   if (
     !window.confirm(t('settings.clearAllConfirm'))
@@ -309,6 +345,90 @@ async function handleReset(): Promise<void> {
           class="panel"
           data-tour="settings-security"
         >
+          <div class="account-section">
+            <h3>{{ t('account.title') }}</h3>
+            <p
+              v-if="bootState.warning === 'delete-incomplete'"
+              class="error-message"
+            >
+              {{ t('account.deleteIncomplete') }}
+            </p>
+            <p
+              v-if="accountError"
+              class="error-message"
+            >
+              {{ accountError }}
+            </p>
+            <UiCard class="settings-card">
+              <div class="row">
+                <div>
+                  <p class="row-title">
+                    {{ t('account.name') }}
+                  </p>
+                  <p class="row-desc">
+                    {{ bootState.activeAccountName }}
+                  </p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="account-rename">
+                  <UiInput
+                    v-model="nextAccountName"
+                    :placeholder="t('account.name')"
+                    @keydown.enter="submitRename"
+                  />
+                  <UiButton
+                    variant="default"
+                    :disabled="loading"
+                    @click="submitRename"
+                  >
+                    {{ t('common.save') }}
+                  </UiButton>
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <p class="row-title">
+                    {{ t('account.switch') }}
+                  </p>
+                </div>
+                <UiButton
+                  variant="default"
+                  @click="lock"
+                >
+                  {{ t('account.switch') }}
+                </UiButton>
+              </div>
+              <div class="row last">
+                <div>
+                  <p class="row-title">
+                    {{ t('account.delete') }}
+                  </p>
+                  <p
+                    v-if="!canDeleteAccount"
+                    class="row-desc"
+                  >
+                    {{ t('account.cannotDeleteLast') }}
+                  </p>
+                </div>
+                <UiButton
+                  variant="danger"
+                  :disabled="!canDeleteAccount || loading"
+                  @click="deleteAccountOpen = true"
+                >
+                  {{ t('account.delete') }}
+                </UiButton>
+              </div>
+            </UiCard>
+            <MasterPasswordConfirmModal
+              v-model:open="deleteAccountOpen"
+              :title="t('account.delete')"
+              :description="t('lock.enterCurrentPassword')"
+              :confirm-label="t('account.delete')"
+              :loading="loading"
+              @confirm="confirmDeleteAccount"
+            />
+          </div>
           <h3>{{ t('settings.security') }}</h3>
           <UiCard class="settings-card">
             <div class="row">
@@ -665,6 +785,22 @@ async function handleReset(): Promise<void> {
 
 .panel {
   max-width: 640px;
+}
+
+.account-section {
+  margin-bottom: 28px;
+}
+
+.account-rename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.account-rename > :first-child {
+  flex: 1;
+  min-width: 0;
 }
 
 h3 {

@@ -365,6 +365,110 @@ async function bootstrap(): Promise<void> {
   }
 }
 
+function emptyLockedStatus(): VaultStatus {
+  return {
+    initialized: false,
+    unlocked: false,
+    recoveryConfigured: false,
+    entryCount: 0,
+    trashCount: 0,
+  }
+}
+
+async function applyAccountBoot(next: BootState): Promise<void> {
+  bootState.value = next
+  if (next.blocked !== null || next.vaultFile !== 'ready') {
+    vaultStatus.value = emptyLockedStatus()
+    entries.value = []
+    vaultCategories.value = []
+    vaultTags.value = []
+    return
+  }
+  vaultStatus.value = await vaultApi.getVaultStatus()
+}
+
+async function createAccount(name: string, masterPassword: string, confirmPassword: string): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    const next = await vaultApi.createAccount({ name, masterPassword, confirmPassword })
+    await applyAccountBoot(next)
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function selectAccount(accountId: string): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    const next = await vaultApi.selectAccount(accountId)
+    await applyAccountBoot(next)
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function renameAccount(name: string): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    bootState.value = await vaultApi.renameAccount(name)
+    touchActivity()
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function deleteAccount(masterPassword: string): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    const next = await vaultApi.deleteAccount(masterPassword)
+    await applyAccountBoot(next)
+    entries.value = []
+    vaultCategories.value = []
+    vaultTags.value = []
+    selectedEntryId.value = null
+    isCreating.value = false
+    screen.value = next.blocked !== null ? 'boot-error' : 'lock'
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+async function rebuildVault(): Promise<boolean> {
+  loading.value = true
+  clearError()
+  try {
+    const next = await vaultApi.rebuildVault()
+    await applyAccountBoot(next)
+    return true
+  } catch (error) {
+    setError(error)
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
 async function setupVault(masterPassword: string, confirmPassword: string): Promise<boolean> {
   loading.value = true
   clearError()
@@ -1382,6 +1486,11 @@ export function useAppState() {
     bootstrap,
     refreshVaultData,
     setupVault,
+    createAccount,
+    selectAccount,
+    renameAccount,
+    deleteAccount,
+    rebuildVault,
     unlock,
     lock,
     enterVault,

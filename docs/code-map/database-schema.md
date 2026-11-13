@@ -1,6 +1,6 @@
 # 数据库结构
 
-数据库文件：`{userData}/pwdbook.db`（sql.js 内存库 + `persistDatabase()` 刷盘）。
+数据库文件：`{userData}/accounts/{accountId}/pwdbook.db`（sql.js 内存库 + `persistDatabase()` 刷盘）。本机设置位于 `{userData}/machine.json`。
 
 初始化：`src/main/db/database.ts` → `initDatabase()`。
 

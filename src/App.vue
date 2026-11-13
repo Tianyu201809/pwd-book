@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Cursor } from 'animal-island-vue'
 import { bindSystemThemeListener, unbindSystemThemeListener, useTheme } from '@/composables/useTheme'
@@ -29,6 +29,7 @@ const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
 const {
   screen,
+  bootState,
   bootstrap,
   scheduledBackupPromptOpen,
   openScheduledBackupPrompt,
@@ -42,6 +43,14 @@ const {
 } = useAppState()
 
 useAutoLock()
+
+const bootErrorMessage = computed(() => {
+  const reason = bootState.value.blocked
+  if (reason === 'registry-corrupt') return t('account.bootRegistryCorrupt')
+  if (reason === 'registry-inconsistent') return t('account.bootRegistryInconsistent')
+  if (reason === 'ambiguous-accounts') return t('account.bootAmbiguousAccounts')
+  return ''
+})
 
 let removeAlreadyRunningListener: (() => void) | undefined
 let removeScheduledBackupListener: (() => void) | undefined
@@ -119,7 +128,24 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
       <AnimalBackdrop />
       <TitleBar class="app-chrome" />
       <main class="app-main app-chrome">
-        <LockScreen v-if="screen === 'lock'" />
+        <div
+          v-if="screen === 'boot-error'"
+          class="boot-error"
+        >
+          <h1 class="font-display">
+            {{ t('common.appName') }}
+          </h1>
+          <p
+            v-if="bootState.blocked === 'registry-corrupt'"
+            class="boot-error-title"
+          >
+            {{ t('account.listFileDamaged') }}
+          </p>
+          <p class="boot-error-message">
+            {{ bootErrorMessage }}
+          </p>
+        </div>
+        <LockScreen v-else-if="screen === 'lock'" />
         <VaultView v-else-if="screen === 'vault'" />
         <SettingsView v-else-if="screen === 'settings'" />
         <EmailBackupView v-else-if="screen === 'email-backup'" />
@@ -151,7 +177,24 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
   >
     <TitleBar />
     <main class="app-main">
-      <LockScreen v-if="screen === 'lock'" />
+      <div
+        v-if="screen === 'boot-error'"
+        class="boot-error"
+      >
+        <h1 class="font-display">
+          {{ t('common.appName') }}
+        </h1>
+        <p
+          v-if="bootState.blocked === 'registry-corrupt'"
+          class="boot-error-title"
+        >
+          {{ t('account.listFileDamaged') }}
+        </p>
+        <p class="boot-error-message">
+          {{ bootErrorMessage }}
+        </p>
+      </div>
+      <LockScreen v-else-if="screen === 'lock'" />
       <VaultView v-else-if="screen === 'vault'" />
       <SettingsView v-else-if="screen === 'settings'" />
       <EmailBackupView v-else-if="screen === 'email-backup'" />
@@ -207,5 +250,34 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+}
+
+.boot-error {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px;
+  text-align: center;
+}
+
+.boot-error h1 {
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.boot-error-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--status-danger);
+}
+
+.boot-error-message {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 </style>
