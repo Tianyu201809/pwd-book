@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.50.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.52.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -17,7 +17,7 @@
 ---
 
 > [!IMPORTANT]
-> **本地优先，默认不上网。** 保险库数据仅存本机 `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录；无遥测、无厂商托管云同步。
+> **本地优先，默认不上网。** 每个账号的保险库存在本机 `{userData}/accounts/{accountId}/pwdbook.db`（Windows 上 `userData` 为 `%APPDATA%/PwdBook`）。账号名单在同级 `machine.json`。无遥测、无厂商托管云同步。
 >
 > **可选同步（v1.9.0 局域网 / v1.19.0 文件夹）** — Wi-Fi 同步仅在同一局域网内传输**主密码加密的同步包**；文件夹同步将相同格式的 `vault.pwdbook` 写入本地或云盘目录（Dropbox、OneDrive 等），由云盘传播、本机加解密。均不经 PwdBook 厂商云。见 [同步](#同步-v1190)。
 >
@@ -49,7 +49,7 @@ npm run dev
 
 | 维度 | 说明 |
 |------|------|
-| 数据位置 | `%APPDATA%/PwdBook/pwdbook.db`（Windows）或 Electron `userData` 目录 |
+| 数据位置 | `{userData}/accounts/{accountId}/pwdbook.db`；名单在 `{userData}/machine.json`（Windows 的 `userData` 为 `%APPDATA%/PwdBook`） |
 | 加密 | 主密码 scrypt 校验；条目密码 AES-256-GCM |
 | 进程模型 | 主进程（业务与加密）+ Preload 桥 + Vue 渲染进程 |
 | 官方打包 | **Windows**（NSIS）· **macOS**（DMG）· **Linux**（AppImage）；CI：tag `v*` → GitHub Release |
@@ -433,10 +433,10 @@ npm run dev
 
 ### 首次使用
 
-1. **首次启动**：在锁定页创建主密码并初始化保险库。
+1. **首次启动**：在锁定页创建主密码并初始化第一个账号。已有旧库会自动成为「默认账号」。
 2. 按引导**保存恢复密钥**（仅展示一次，请抄写到安全位置）。
 3. 解锁后即可添加分类与密码条目。
-4. **再次启动**（已有本地库）：锁定页显示解锁表单，输入主密码后进入保险库。
+4. **再次启动**：锁定页显示当前账号的头像和名称，输入该账号的主密码后进入保险库。点击头像可切换账号。
 
 > [!WARNING]
 > 未配置恢复密钥且忘记主密码时，只能通过「清除保险库」重置，**所有条目将不可恢复**。请务必在设置中完成恢复密钥配置。
@@ -447,7 +447,7 @@ npm run dev
 主密码 ──scrypt──► 校验哈希（仅存 salt + hash）
        └──scrypt──► 会话密钥（内存，锁定后清除）
                          └── AES-256-GCM ──► 各条目 password_encrypted / totp_secret_encrypted
-                         └── AES-256-GCM ──► 附件文件（{userData}/attachments/*.enc，v1.22.0）
+                         └── AES-256-GCM ──► 附件文件（{userData}/accounts/{accountId}/attachments/*.enc，v1.22.0；v1.52.0 起按账号分目录）
 ```
 
 - **本地存储**：默认无厂商云同步；安全与界面偏好写入 `app_settings` 表。
@@ -462,7 +462,19 @@ npm run dev
 
 ## 版本更新
 
-### v1.50.0（当前）
+### v1.52.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1520---2026-11-13)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 本地账号 | 多个命名保险库，各自主密码；旧库启动时成为「默认账号」 |
+| 数据位置 | 账号库在 `accounts/{accountId}/`，名单和本机设置在 `machine.json` |
+| 锁定页 | 圆形头像代表当前账号；点击头像切换，新建账号单独进入 |
+| 设置 | 可改名；切换前先锁定；删除需再输入主密码，且不能删除最后一个账号 |
+| 技术说明 | [数据库结构](./docs/code-map/database-schema.md) · [本地多账号设计](./docs/superpowers/specs/2026-11-13-local-accounts-design.md) |
+
+### v1.50.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1500---2026-10-23)**。摘要：
 

@@ -4,7 +4,7 @@
 
 初始化：`src/main/db/database.ts` → `initDatabase()`。
 
-**损坏文件隔离（v1.23.0）**：若磁盘上的 `pwdbook.db` 缺少 SQLite 魔数，启动时重命名为同目录 `pwdbook.db.corrupt-{timestamp}` 并创建新空库；原文件保留供手动恢复。初始化抛错时主进程弹窗后退出，避免无响应卡死。
+**损坏文件隔离（v1.23.0，v1.52.0 起不再自动建替身空库）**：`initDatabase()` 只打开已有的合法库。文件缺失时抛出 `VaultFileDamagedError`。文件头不是 SQLite 时，先把该文件改名为同目录 `pwdbook.db.corrupt-{timestamp}`，再抛出同样的错误。新的空库只由 `createEmptyDatabase()` 创建，例如新建账号或用户确认重建。
 
 ## 表：password_entries
 
@@ -44,7 +44,7 @@
 | `created_at` | INTEGER | Unix ms |
 | `updated_at` | INTEGER | Unix ms |
 
-文件内容 AES 加密存于 `{userData}/attachments/{id}.enc`，不入 SQLite BLOB。
+文件内容 AES 加密存于 `{userData}/accounts/{accountId}/attachments/{id}.enc`，不入 SQLite BLOB。
 
 ## 表：note_books / notes（**v1.38.0**）
 
@@ -148,15 +148,23 @@
 
 当前采用 **启动时检测 + ALTER**（如 `display_icon`），无独立 migration 版本表。新增列时在 `database.ts` 或专用 migrate 函数中添加 PRAGMA 检测。
 
+## 账号与本机文件（v1.52.0，非全部入 SQLite）
+
+| 路径 | 说明 |
+|------|------|
+| `{userData}/machine.json` | 账号名单、当前账号和本机设置 |
+| `{userData}/accounts/{accountId}/pwdbook.db` | 该账号的 SQLite 库（sql.js 内存 + 刷盘） |
+| `{userData}/accounts/{accountId}/pwdbook.db.corrupt-*` | 该账号损坏库备份（v1.23.0 起隔离，v1.52.0 起位于账号目录） |
+| `{userData}/accounts/{accountId}/attachments/{id}.enc` | 该账号的条目附件密文（v1.22.0） |
+| `{userData}/accounts/{accountId}/sync-server/` | 该账号的 Wi-Fi 同步包 |
+| `{userData}/accounts/{accountId}/wifi-sync-certs/` | 该账号的自签 TLS 证书 |
+
 ## 浏览器桥接运行时文件（非 SQLite）
 
 | 路径 | 说明 |
 |------|------|
-| `{userData}/pwdbook.db` | 主 SQLite 库（sql.js 内存 + 刷盘） |
-| `{userData}/pwdbook.db.corrupt-*` | 损坏库备份（v1.23.0 自动隔离） |
-| `{userData}/attachments/{id}.enc` | 条目附件密文（v1.22.0） |
-| `{userData}/native-bridge.json` | Bridge 监听端口与 `token`（`browserFillEnabled` 时生成） |
-| `{userData}/native-host/com.pwdbook.app.json` | Chrome Native Messaging 清单（设置页注册后） |
+| `{userData}/native-bridge.json` | Bridge 监听端口与 `token`（`browserFillEnabled` 时生成）；整机一份 |
+| `{userData}/native-host/com.pwdbook.app.json` | Chrome Native Messaging 清单（设置页注册后）；整机一份 |
 
 详见 [browser-autofill.md](./browser-autofill.md)。
 
@@ -164,9 +172,9 @@
 
 | 路径 | 说明 |
 |------|------|
-| `{userData}/sync-server/vault.pwdbook` | Server 对外加密 SyncBundle |
-| `{userData}/sync-server/attachments/*.pwdattach` | Wi-Fi 同步附件密文（v1.22.0） |
-| `{userData}/wifi-sync-certs/` | 自签 TLS 证书与私钥 |
+| `{userData}/accounts/{accountId}/sync-server/vault.pwdbook` | 该账号对外提供的加密 SyncBundle（v1.52.0 起按账号分开） |
+| `{userData}/accounts/{accountId}/sync-server/attachments/*.pwdattach` | 该账号的 Wi-Fi 同步附件密文（v1.22.0） |
+| `{userData}/accounts/{accountId}/wifi-sync-certs/` | 该账号的自签 TLS 证书与私钥 |
 
 详见 [wifi-sync.md](./wifi-sync.md)。
 

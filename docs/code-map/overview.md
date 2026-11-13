@@ -6,7 +6,7 @@ PwdBook 是一款 **Electron 35 + Vue 3 + TypeScript** 本地密码管理桌面�
 
 | 指标 | 值 |
 |------|-----|
-| 版本 | 1.50.0（`package.json`） |
+| 版本 | 1.52.0（`package.json`） |
 | 源码文件 | ~75+ 个 `.ts` / `.vue`（`src/`）+ `extension/` + `native-host/` |
 | IPC 通道 | 50+ 个（`src/shared/types.ts` → `IPC` + 快捷条 / 详情小窗口事件） |
 | 测试 | Vitest：`syncMerge`、`syncBundleCrypto`、`totp`、`passwordHealth`、`recoveryKey`、`entrySearch`、`quickBarLimits`、`launchEntry`、`presetIcons`、`noteBlocks` 等 |
@@ -136,7 +136,7 @@ src/
 
 | 来源 | 说明 |
 |------|------|
-| `app.getPath('userData')/pwdbook.db` | 数据库文件（Windows: `%APPDATA%/pwd-book/`；macOS: `~/Library/Application Support/pwd-book/`） |
+| `app.getPath('userData')/accounts/{accountId}/pwdbook.db` | 当前账号的数据库（Windows: `%APPDATA%/PwdBook/`；macOS: `~/Library/Application Support/PwdBook/`）。名单在同级 `machine.json`（v1.52.0） |
 | `app_settings` 表 | 主密码哈希、恢复密钥元数据、安全设置、侧边栏排序 |
 | 无 `.env` | 应用不读取环境变量配置 |
 
