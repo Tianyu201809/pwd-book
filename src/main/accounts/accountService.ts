@@ -83,13 +83,8 @@ function defaultAccountDeps(): AccountDeps {
     },
     async openDatabase(file: string): Promise<'ready' | 'missing'> {
       database.setDatabaseFile(file)
-      try {
-        await database.initDatabase()
-        return 'ready'
-      } catch (error) {
-        if (error instanceof database.VaultFileDamagedError) return 'missing'
-        throw error
-      }
+      await database.initDatabase()
+      return 'ready'
     },
     async createEmpty(file: string): Promise<void> {
       database.setDatabaseFile(file)
@@ -181,8 +176,8 @@ export async function selectAccount(accountId: string, deps?: AccountDeps): Prom
   if (resolved.isUnlocked()) throw new Error(ErrorCode.VAULT_UNLOCK_REQUIRED)
   writeMachineDocument(resolved.userData, { ...document, activeAccountId: accountId })
   resolved.closeDatabase()
-  const status = await resolved.openDatabase(accountDataPaths(resolved.userData, accountId).database)
   setActiveAccountId(accountId)
+  const status = await resolved.openDatabase(accountDataPaths(resolved.userData, accountId).database)
   if (status === 'missing') throw new Error(ErrorCode.VAULT_FILE_DAMAGED)
 }
 

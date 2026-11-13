@@ -73,6 +73,7 @@ export type AppScreen =
   | 'password-gen'
   | 'password-health'
   | 'trash'
+  | 'boot-error'
 
 export type BackupFrequency = 'manual' | 'weekly' | 'monthly'
 
@@ -302,6 +303,16 @@ export interface VaultStatus {
   trashCount: number
 }
 
+export interface BootState {
+  blocked: null | 'registry-corrupt' | 'registry-inconsistent' | 'ambiguous-accounts'
+  warning: null | 'delete-incomplete'
+  accounts: { id: string; name: string }[]
+  activeAccountId: string | null
+  activeAccountName: string | null
+  vaultFile: 'ready' | 'missing' | 'corrupt'
+  quarantinedPath: string | null
+}
+
 export interface RecoveryResetPayload {
   recoveryKey: string
   newMasterPassword: string
@@ -418,6 +429,12 @@ export const IPC = {
   vaultUnlock: 'vault:unlock',
   vaultLock: 'vault:lock',
   vaultReset: 'vault:reset',
+  accountsCreate: 'accounts:create',
+  accountsSelect: 'accounts:select',
+  accountsRename: 'accounts:rename',
+  accountsDelete: 'accounts:delete',
+  accountsRebuild: 'accounts:rebuild',
+  accountsBoot: 'accounts:boot',
   recoveryStatus: 'recovery:status',
   recoveryVerify: 'recovery:verify',
   recoveryCreate: 'recovery:create',

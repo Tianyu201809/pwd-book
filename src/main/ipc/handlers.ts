@@ -1,6 +1,14 @@
 import { app, clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
 import { getActiveAccountId } from '../accounts/activeAccount'
-import { updateMachineSettings } from '../accounts/machineStore'
+import {
+  createAccount,
+  deleteAccount,
+  rebuildEmptyVault,
+  renameAccount,
+  selectAccount,
+} from '../accounts/accountService'
+import { bootStateFromDocument, getBootState, setBootState } from '../accounts/bootState'
+import { readMachineDocument, updateMachineSettings } from '../accounts/machineStore'
 import { rebuildTrayMenu } from '../tray'
 import { type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock } from '../quickBar'
@@ -35,9 +43,10 @@ import type {
   EmailBackupSendPayload,
   NoteFilter,
   StickyNoteInput,
+  BootState,
 } from '../../shared/types'
-import { appError, ErrorCode } from '../../shared/errors'
-import { initDatabase } from '../db/database'
+import { appError, ErrorCode, type ErrorCodeKey } from '../../shared/errors'
+import { consumeQuarantinedDatabasePath, createEmptyDatabase } from '../db/database'
 import { commitImport, previewImport } from '../services/importService'
 import { buildExportCsv } from '../services/exportCsvService'
 import { openBrowserExtensionsPage } from '../services/browserLaunchService'
@@ -207,6 +216,44 @@ function wrap<T>(handler: () => T): T {
   }
 }
 
+function throwAccountError(error: unknown): never {
+  const message = error instanceof Error ? error.message : ErrorCode.OPERATION_FAILED
+  if ((Object.values(ErrorCode) as string[]).includes(message)) {
+    const wrapped = appError(message as ErrorCodeKey)
+    throw new Error(wrapped.message, { cause: error })
+  }
+  throw new Error(message, { cause: error })
+}
+
+async function runAccount<T>(handler: () => Promise<T>): Promise<T> {
+  try {
+    return await handler()
+  } catch (error) {
+    throwAccountError(error)
+  }
+}
+
+function quarantinedVaultPath(error: unknown): string | null | undefined {
+  if (!(error instanceof Error) || error.name !== 'VaultFileDamagedError') return undefined
+  const quarantinedPath = (error as Error & { quarantinedPath?: unknown }).quarantinedPath
+  return typeof quarantinedPath === 'string' ? quarantinedPath : null
+}
+
+function publishAccountBoot(
+  vaultFile: BootState['vaultFile'],
+  quarantinedPath: string | null,
+): BootState {
+  const document = readMachineDocument(app.getPath('userData'))
+  if (!document) return getBootState()
+  setBootState(bootStateFromDocument(
+    document,
+    vaultFile,
+    getBootState().warning,
+    quarantinedPath,
+  ))
+  return getBootState()
+}
+
 function copySecret(text: string, clearAfterMs: number): void {
   clipboard.writeText(text)
   lastCopiedSecret = text
@@ -292,7 +339,9 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultReset, async () => {
     try {
       resetVault()
-      await initDatabase()
+      await createEmptyDatabase()
+      const state = getBootState()
+      setBootState({ ...state, vaultFile: 'ready', quarantinedPath: null })
       hideClipboardWindowOnLock()
       syncClipboardWindowMonitoring()
       return getVaultStatus()
@@ -301,6 +350,64 @@ export function registerIpcHandlers(): void {
       throw new Error(message, { cause: error })
     }
   })
+
+  ipcMain.handle(IPC.accountsBoot, () => getBootState())
+
+  ipcMain.handle(IPC.accountsCreate, (_event, input: {
+    name: string
+    masterPassword: string
+    confirmPassword: string
+  }) => runAccount(async () => {
+    await createAccount(input)
+    return publishAccountBoot('ready', null)
+  }))
+
+  ipcMain.handle(IPC.accountsSelect, async (_event, accountId: string) => {
+    try {
+      await selectAccount(accountId)
+      return publishAccountBoot('ready', null)
+    } catch (error) {
+      const quarantinedPath = quarantinedVaultPath(error)
+      if (quarantinedPath !== undefined) {
+        consumeQuarantinedDatabasePath()
+        return publishAccountBoot(
+          quarantinedPath !== null ? 'corrupt' : 'missing',
+          quarantinedPath,
+        )
+      }
+      throwAccountError(error)
+    }
+  })
+
+  ipcMain.handle(IPC.accountsRename, (_event, name: string) => runAccount(async () => {
+    ensureUnlocked()
+    await renameAccount(name)
+    const state = getBootState()
+    return publishAccountBoot(state.vaultFile, state.quarantinedPath)
+  }))
+
+  ipcMain.handle(IPC.accountsDelete, (_event, masterPassword: string) => runAccount(async () => {
+    ensureUnlocked()
+    try {
+      await deleteAccount(masterPassword)
+      return publishAccountBoot('ready', null)
+    } catch (error) {
+      const quarantinedPath = quarantinedVaultPath(error)
+      if (quarantinedPath === undefined) throw error
+      consumeQuarantinedDatabasePath()
+      return publishAccountBoot(
+        quarantinedPath !== null ? 'corrupt' : 'missing',
+        quarantinedPath,
+      )
+    }
+  }))
+
+  ipcMain.handle(IPC.accountsRebuild, () => runAccount(async () => {
+    if (isUnlocked()) throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
+    if (getBootState().vaultFile === 'ready') throw appError(ErrorCode.OPERATION_FAILED)
+    await rebuildEmptyVault()
+    return publishAccountBoot('ready', null)
+  }))
 
   ipcMain.handle(IPC.recoveryStatus, () => wrap(() => getRecoveryStatus()))
 

@@ -1,7 +1,11 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
-import { consumeQuarantinedDatabasePath, initDatabase } from './db/database'
+import { setActiveAccountId } from './accounts/activeAccount'
+import { accountDataPaths } from './accounts/accountPaths'
+import { bootStateFromDocument, bootStateFromResult, getBootState, setBootState } from './accounts/bootState'
+import { bootAccounts } from './accounts/startup'
+import { consumeQuarantinedDatabasePath, initDatabase, setDatabaseFile, VaultFileDamagedError } from './db/database'
 import { registerIpcHandlers } from './ipc/handlers'
 import {
   destroyTray,
@@ -42,6 +46,7 @@ import {
 import {
   isScreenshotMode,
   prepareScreenshotEnvironment,
+  prepareScreenshotVault,
   runAnimalScreenshotCapture,
   setupScreenshotFixture,
 } from './screenshotMode'
@@ -139,26 +144,57 @@ function notifyAlreadyRunning(): void {
   }
 }
 
+async function openBootDatabase(): Promise<void> {
+  const userData = app.getPath('userData')
+  const result = await bootAccounts(userData)
+  if (result.kind === 'fresh') {
+    if (!isScreenshotMode()) {
+      setBootState(bootStateFromResult(result))
+      return
+    }
+    const account = await prepareScreenshotVault(userData)
+    setBootState({
+      blocked: null,
+      warning: null,
+      accounts: [account],
+      activeAccountId: account.id,
+      activeAccountName: account.name,
+      vaultFile: 'ready',
+      quarantinedPath: null,
+    })
+    return
+  }
+  if (result.kind === 'blocked') {
+    setBootState(bootStateFromResult(result))
+    return
+  }
+
+  setActiveAccountId(result.document.activeAccountId)
+  setDatabaseFile(accountDataPaths(userData, result.document.activeAccountId).database)
+  try {
+    await initDatabase()
+    setBootState(bootStateFromDocument(result.document, 'ready', result.warning, null))
+  } catch (error) {
+    if (!(error instanceof VaultFileDamagedError)) throw error
+    consumeQuarantinedDatabasePath()
+    const quarantinedPath = error.quarantinedPath
+    setBootState(bootStateFromDocument(
+      result.document,
+      quarantinedPath !== null ? 'corrupt' : 'missing',
+      result.warning,
+      quarantinedPath,
+    ))
+  }
+}
+
 if (gotSingleInstanceLock) {
   app.on('second-instance', () => {
     notifyAlreadyRunning()
   })
 
   app.whenReady().then(async () => {
-    await initDatabase()
-    const quarantinedDbPath = consumeQuarantinedDatabasePath()
-    if (quarantinedDbPath) {
-      void dialog.showMessageBox({
-        type: 'warning',
-        title: 'PwdBook',
-        message: '本地数据库文件已损坏',
-        detail:
-          `检测到 pwdbook.db 不是有效的 SQLite 文件，已备份至：\n${quarantinedDbPath}\n\n` +
-          '应用已创建新的空数据库。若您有文件夹同步备份（vault.pwdbook）或导出文件，可在解锁后通过导入/同步恢复数据。',
-        buttons: ['我知道了'],
-      })
-    }
-    if (isScreenshotMode()) {
+    await openBootDatabase()
+    if (isScreenshotMode() && getBootState().vaultFile === 'ready') {
       setupScreenshotFixture()
     }
     registerIpcHandlers()

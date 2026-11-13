@@ -1,8 +1,14 @@
 import { app, type BrowserWindow } from 'electron'
 import fs from 'fs'
 import path from 'path'
+import { setActiveAccountId } from './accounts/activeAccount'
+import { writeMachineDocument } from './accounts/machineStore'
+import { createEmptyDatabase, setDatabaseFile } from './db/database'
 import { createEntry, lockVault, setupVault, unlockVault } from './services/vaultService'
+import { defaultMachineSettings } from '../shared/machineDocument'
 import type { PasswordEntryInput } from '../shared/types'
+
+const SCREENSHOT_ACCOUNT_ID = 'screenshot'
 
 const SCREENSHOT_PASSWORD = 'screenshot-demo'
 
@@ -55,6 +61,25 @@ export function prepareScreenshotEnvironment(): void {
   const tempDir = path.join(process.cwd(), '.screenshot-temp')
   fs.mkdirSync(tempDir, { recursive: true })
   app.setPath('userData', tempDir)
+}
+
+export async function prepareScreenshotVault(userData: string): Promise<{ id: string; name: string }> {
+  const dir = path.join(userData, 'accounts', SCREENSHOT_ACCOUNT_ID)
+  fs.mkdirSync(dir, { recursive: true })
+  writeMachineDocument(userData, {
+    version: 1,
+    activeAccountId: SCREENSHOT_ACCOUNT_ID,
+    accounts: [{
+      id: SCREENSHOT_ACCOUNT_ID,
+      name: SCREENSHOT_ACCOUNT_ID,
+      createdAt: Date.now(),
+    }],
+    settings: defaultMachineSettings(),
+  })
+  setActiveAccountId(SCREENSHOT_ACCOUNT_ID)
+  setDatabaseFile(path.join(dir, 'pwdbook.db'))
+  await createEmptyDatabase()
+  return { id: SCREENSHOT_ACCOUNT_ID, name: SCREENSHOT_ACCOUNT_ID }
 }
 
 export function setupScreenshotFixture(): void {

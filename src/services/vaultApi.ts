@@ -12,6 +12,7 @@ import type {
   VaultCategory,
   VaultTag,
   TagInput,
+  BootState,
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
@@ -51,6 +52,16 @@ export const vaultApi = {
   unlockVault: (payload: VaultUnlockPayload): Promise<VaultStatus> => getApi().unlockVault(payload),
   lockVault: (): Promise<VaultStatus> => getApi().lockVault(),
   resetVault: (): Promise<VaultStatus> => getApi().resetVault(),
+  createAccount: (input: {
+    name: string
+    masterPassword: string
+    confirmPassword: string
+  }): Promise<BootState> => getApi().createAccount(input),
+  selectAccount: (accountId: string): Promise<BootState> => getApi().selectAccount(accountId),
+  renameAccount: (name: string): Promise<BootState> => getApi().renameAccount(name),
+  deleteAccount: (masterPassword: string): Promise<BootState> => getApi().deleteAccount(masterPassword),
+  rebuildVault: (): Promise<BootState> => getApi().rebuildVault(),
+  getBootState: (): Promise<BootState> => getApi().getBootState(),
 
   verifyRecoveryKey: (recoveryKey: string): Promise<RecoveryVerifyResult> =>
     getApi().verifyRecoveryKey(recoveryKey),

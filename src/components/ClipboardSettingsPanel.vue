@@ -7,14 +7,13 @@ import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { UiButton, UiCard, UiSelect, UiSwitch } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { CLIPBOARD_HISTORY_LIMITS } from '@/shared/clipboardHistoryLimit'
+import { clipboardStorageKeys } from '@/shared/clipboardStorageKeys'
 import { DEFAULT_ACCELERATORS, otherAccelerators } from '@/shared/globalAccelerator'
 
-const CLIPBOARD_SESSION_STORAGE_KEY = 'pwdbook-clipboard-session'
-const CLIPBOARD_PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
 const clipboardExpiryOptions = [30, 300, 900, 1800, 0] as const
 
 const { t } = useI18n()
-const { securitySettings, updateSecuritySettings, openClipboard } = useAppState()
+const { securitySettings, updateSecuritySettings, openClipboard, bootState } = useAppState()
 
 const clipboardGuideOpen = ref(false)
 const historyEnabled = computed(() => securitySettings.value.clipboardEnabled)
@@ -75,11 +74,14 @@ async function onClipboardHistoryLimitChange(value: string): Promise<void> {
 
 async function onClipboardPersistenceChange(enabled: boolean): Promise<void> {
   await updateSecuritySettings({ clipboardPersistence: enabled })
+  const accountId = bootState.value.activeAccountId
+  if (!accountId) return
+  const keys = clipboardStorageKeys(accountId)
   if (enabled) {
-    const sessionHistory = sessionStorage.getItem(CLIPBOARD_SESSION_STORAGE_KEY)
-    if (sessionHistory) localStorage.setItem(CLIPBOARD_PERSISTENT_STORAGE_KEY, sessionHistory)
+    const sessionHistory = sessionStorage.getItem(keys.session)
+    if (sessionHistory) localStorage.setItem(keys.persistent, sessionHistory)
   } else {
-    localStorage.removeItem(CLIPBOARD_PERSISTENT_STORAGE_KEY)
+    localStorage.removeItem(keys.persistent)
   }
 }
 </script>

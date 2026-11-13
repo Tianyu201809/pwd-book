@@ -37,6 +37,7 @@ import type {
   VaultCategory,
   VaultTag,
   TagInput,
+  BootState,
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
@@ -101,6 +102,16 @@ export const electronAPI = {
   unlockVault: (payload: VaultUnlockPayload): Promise<VaultStatus> => invoke(IPC.vaultUnlock, payload),
   lockVault: (): Promise<VaultStatus> => invoke(IPC.vaultLock),
   resetVault: (): Promise<VaultStatus> => invoke(IPC.vaultReset),
+  createAccount: (input: {
+    name: string
+    masterPassword: string
+    confirmPassword: string
+  }): Promise<BootState> => invoke(IPC.accountsCreate, input),
+  selectAccount: (accountId: string): Promise<BootState> => invoke(IPC.accountsSelect, accountId),
+  renameAccount: (name: string): Promise<BootState> => invoke(IPC.accountsRename, name),
+  deleteAccount: (masterPassword: string): Promise<BootState> => invoke(IPC.accountsDelete, masterPassword),
+  rebuildVault: (): Promise<BootState> => invoke(IPC.accountsRebuild),
+  getBootState: (): Promise<BootState> => invoke(IPC.accountsBoot),
 
   getRecoveryStatus: (): Promise<{ configured: boolean }> => invoke(IPC.recoveryStatus),
   verifyRecoveryKey: (recoveryKey: string): Promise<RecoveryVerifyResult> =>

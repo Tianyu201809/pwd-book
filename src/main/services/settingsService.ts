@@ -33,35 +33,46 @@ function currentMachineSettings(): MachineSettings {
   return document.settings
 }
 
+function readAccountSetting(key: string): string | null {
+  try {
+    return getSetting(key)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes(ErrorCode.DATABASE_NOT_INITIALIZED)) {
+      return null
+    }
+    throw error
+  }
+}
+
 export function getSecuritySettings(): SecuritySettings {
   const defaults = getDefaultSettings()
   const machine = currentMachineSettings()
   return {
-    autoLockMinutes: Number(getSetting(SETTINGS_KEYS.autoLockMinutes) ?? defaults.autoLockMinutes),
+    autoLockMinutes: Number(readAccountSetting(SETTINGS_KEYS.autoLockMinutes) ?? defaults.autoLockMinutes),
     clipboardClearEnabled:
-      (getSetting(SETTINGS_KEYS.clipboardClearEnabled) ?? String(defaults.clipboardClearEnabled)) ===
+      (readAccountSetting(SETTINGS_KEYS.clipboardClearEnabled) ?? String(defaults.clipboardClearEnabled)) ===
       'true',
     clipboardEnabled:
-      (getSetting(SETTINGS_KEYS.clipboardEnabled) ?? String(defaults.clipboardEnabled)) === 'true',
+      (readAccountSetting(SETTINGS_KEYS.clipboardEnabled) ?? String(defaults.clipboardEnabled)) === 'true',
     clipboardDefaultExpiry: parseClipboardDefaultExpiry(
-      getSetting(SETTINGS_KEYS.clipboardDefaultExpiry) ?? String(defaults.clipboardDefaultExpiry),
+      readAccountSetting(SETTINGS_KEYS.clipboardDefaultExpiry) ?? String(defaults.clipboardDefaultExpiry),
       defaults.clipboardDefaultExpiry,
     ),
     clipboardPersistence:
-      (getSetting(SETTINGS_KEYS.clipboardPersistence) ?? String(defaults.clipboardPersistence)) ===
+      (readAccountSetting(SETTINGS_KEYS.clipboardPersistence) ?? String(defaults.clipboardPersistence)) ===
       'true',
     clipboardHistoryLimit: clampClipboardHistoryLimit(
-      getSetting(SETTINGS_KEYS.clipboardHistoryLimit) ?? defaults.clipboardHistoryLimit,
+      readAccountSetting(SETTINGS_KEYS.clipboardHistoryLimit) ?? defaults.clipboardHistoryLimit,
     ),
     clipboardQuickMode:
-      (getSetting(SETTINGS_KEYS.clipboardQuickMode) ?? String(defaults.clipboardQuickMode)) ===
+      (readAccountSetting(SETTINGS_KEYS.clipboardQuickMode) ?? String(defaults.clipboardQuickMode)) ===
       'true',
     clipboardAccelerator: readStoredAccelerator(
       machine.clipboardAccelerator,
       defaults.clipboardAccelerator,
     ),
     clipboardClearSeconds: Number(
-      getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
+      readAccountSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
     ),
     closeWindowAction: machine.closeWindowAction,
     quickBarEnabled: machine.quickBarEnabled,
@@ -70,7 +81,7 @@ export function getSecuritySettings(): SecuritySettings {
       defaults.quickBarAccelerator,
     ),
     quickBarRecentLimit: clampQuickBarRecentLimit(
-      getSetting(SETTINGS_KEYS.quickBarRecentLimit) ?? defaults.quickBarRecentLimit,
+      readAccountSetting(SETTINGS_KEYS.quickBarRecentLimit) ?? defaults.quickBarRecentLimit,
     ),
     mainWindowShortcutEnabled: machine.mainWindowShortcutEnabled,
     mainWindowShortcutAccelerator: readStoredAccelerator(
@@ -83,10 +94,10 @@ export function getSecuritySettings(): SecuritySettings {
       defaults.notesManagerAccelerator,
     ),
     browserFillEnabled:
-      (getSetting(SETTINGS_KEYS.browserFillEnabled) ?? String(defaults.browserFillEnabled)) ===
+      (readAccountSetting(SETTINGS_KEYS.browserFillEnabled) ?? String(defaults.browserFillEnabled)) ===
       'true',
     trashRetentionDays: Number(
-      getSetting(SETTINGS_KEYS.trashRetentionDays) ?? defaults.trashRetentionDays,
+      readAccountSetting(SETTINGS_KEYS.trashRetentionDays) ?? defaults.trashRetentionDays,
     ),
     launchAtLoginEnabled: machine.launchAtLoginEnabled,
   }

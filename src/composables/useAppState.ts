@@ -46,9 +46,18 @@ import type {
   FolderSyncSettings,
   FolderSyncStatus,
 } from '@/shared/syncTypes'
-import type { ExportAttachment } from '@/shared/types'
+import type { BootState, ExportAttachment } from '@/shared/types'
 
 const screen = ref<AppScreen>('lock')
+const bootState = ref<BootState>({
+  blocked: null,
+  warning: null,
+  accounts: [],
+  activeAccountId: null,
+  activeAccountName: null,
+  vaultFile: 'missing',
+  quarantinedPath: null,
+})
 const pendingScreenAfterUnlock = ref<AppScreen | null>(null)
 const settingsTab = ref<SettingsTab>('security')
 const vaultStatus = ref<VaultStatus>({
@@ -331,6 +340,15 @@ async function refreshVaultData(): Promise<void> {
 async function bootstrap(): Promise<void> {
   loading.value = true
   try {
+    bootState.value = await vaultApi.getBootState()
+    if (bootState.value.blocked !== null) {
+      screen.value = 'boot-error'
+      return
+    }
+    if (bootState.value.vaultFile !== 'ready') {
+      screen.value = 'lock'
+      return
+    }
     vaultStatus.value = await vaultApi.getVaultStatus()
     securitySettings.value = await vaultApi.getSettings()
     if (vaultStatus.value.unlocked) {
@@ -496,7 +514,8 @@ async function lock(): Promise<void> {
   vaultTags.value = []
   selectedEntryId.value = null
   isCreating.value = false
-  screen.value = 'lock'
+  bootState.value = await vaultApi.getBootState()
+  screen.value = bootState.value.blocked !== null ? 'boot-error' : 'lock'
 }
 
 function navigateTo(next: AppScreen, tab: SettingsTab = 'security'): void {
@@ -1326,6 +1345,7 @@ export function useAppState() {
   return {
     screen,
     settingsTab,
+    bootState,
     vaultStatus,
     securitySettings,
     selectedCategory,

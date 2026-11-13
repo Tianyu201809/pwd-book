@@ -11,6 +11,7 @@ import type {
   VaultCategory,
   VaultTag,
   TagInput,
+  BootState,
   VaultSetupPayload,
   VaultStatus,
   VaultUnlockPayload,
@@ -56,6 +57,16 @@ declare global {
       unlockVault: (payload: VaultUnlockPayload) => Promise<VaultStatus>
       lockVault: () => Promise<VaultStatus>
       resetVault: () => Promise<VaultStatus>
+      createAccount: (input: {
+        name: string
+        masterPassword: string
+        confirmPassword: string
+      }) => Promise<BootState>
+      selectAccount: (accountId: string) => Promise<BootState>
+      renameAccount: (name: string) => Promise<BootState>
+      deleteAccount: (masterPassword: string) => Promise<BootState>
+      rebuildVault: () => Promise<BootState>
+      getBootState: () => Promise<BootState>
       verifyRecoveryKey: (recoveryKey: string) => Promise<RecoveryVerifyResult>
       createRecoveryKey: () => Promise<{ recoveryKey: string }>
       resetMasterPasswordWithRecovery: (payload: RecoveryResetPayload) => Promise<VaultStatus>
