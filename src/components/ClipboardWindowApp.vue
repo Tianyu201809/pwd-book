@@ -21,6 +21,7 @@ import {
 import { showToast } from '@/composables/useToast'
 import SearchHighlightText from '@/components/SearchHighlightText.vue'
 import ToastHost from '@/components/ToastHost.vue'
+import { clipboardStorageKeys } from '@/shared/clipboardStorageKeys'
 import { formatClipboardTimestamp } from '@/shared/clipboardTimestamp'
 import {
   CLIPBOARD_HISTORY_LIMIT_DEFAULT,
@@ -57,9 +58,7 @@ interface ClipboardItem {
 }
 
 const { locale, t } = useI18n()
-const STORAGE_KEY = 'pwdbook-clipboard-session'
-const PERSISTENT_STORAGE_KEY = 'pwdbook-clipboard-history'
-const FAVORITES_STORAGE_KEY = 'pwdbook-clipboard-favorites'
+const accountId = ref('')
 const items = ref<ClipboardItem[]>([])
 const favoriteItems = ref<ClipboardItem[]>([])
 const selectedId = ref<string | null>(null)
@@ -157,12 +156,20 @@ function normalizeItems(source: unknown): ClipboardItem[] {
   })
 }
 
+function accountIdFromSettings(settings: object | null | undefined): string {
+  if (!settings || !('activeAccountId' in settings)) return ''
+  const value = (settings as { activeAccountId: unknown }).activeAccountId
+  return typeof value === 'string' ? value : ''
+}
+
 function readStoredFavorites(): ClipboardItem[] {
+  if (!accountId.value) return []
+  const keys = clipboardStorageKeys(accountId.value)
   try {
-    const stored = localStorage.getItem(FAVORITES_STORAGE_KEY)
+    const stored = localStorage.getItem(keys.favorites)
     return stored ? normalizeItems(JSON.parse(stored)).map((item) => ({ ...item, favorite: true })) : []
   } catch {
-    try { localStorage.removeItem(FAVORITES_STORAGE_KEY) } catch { /* storage may be unavailable */ }
+    try { localStorage.removeItem(keys.favorites) } catch { /* storage may be unavailable */ }
     return []
   }
 }
@@ -182,18 +189,40 @@ function broadcastState(): void {
 }
 
 function persistHistory(): void {
+  if (!accountId.value) return
+  const keys = clipboardStorageKeys(accountId.value)
   let serialized: string
   try {
     serialized = JSON.stringify(snapshot(items.value))
   } catch {
     return
   }
-  try { sessionStorage.setItem(STORAGE_KEY, serialized) } catch { /* keep the live state usable */ }
+  try { sessionStorage.setItem(keys.session, serialized) } catch { /* keep the live state usable */ }
   if (!settingsLoaded.value) return
   try {
-    if (clipboardPersistence.value) localStorage.setItem(PERSISTENT_STORAGE_KEY, serialized)
-    else localStorage.removeItem(PERSISTENT_STORAGE_KEY)
+    if (clipboardPersistence.value) localStorage.setItem(keys.persistent, serialized)
+    else localStorage.removeItem(keys.persistent)
   } catch { /* storage quota or privacy mode must not block the window */ }
+}
+
+function persistFavorites(list: ClipboardItem[]): void {
+  if (!accountId.value) return
+  const keys = clipboardStorageKeys(accountId.value)
+  try {
+    if (list.length) localStorage.setItem(keys.favorites, JSON.stringify(snapshot(list)))
+    else localStorage.removeItem(keys.favorites)
+  } catch { /* storage quota or privacy mode must not block the window */ }
+}
+
+function adoptAccount(nextAccountId: string): void {
+  if (nextAccountId === accountId.value) return
+  if (accountId.value) {
+    persistHistory()
+    persistFavorites(favoriteItems.value)
+  }
+  accountId.value = nextAccountId
+  items.value = []
+  favoriteItems.value = []
 }
 
 function sync(next: ClipboardItem[], announce = false): void {
@@ -220,10 +249,7 @@ function syncFavorites(next: ClipboardItem[], announce = false): void {
   const favoriteIds = new Set(normalized.map((item) => item.id))
   items.value = items.value.map((item) => ({ ...item, favorite: favoriteIds.has(item.id) }))
   persistHistory()
-  try {
-    if (normalized.length) localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(snapshot(normalized)))
-    else localStorage.removeItem(FAVORITES_STORAGE_KEY)
-  } catch { /* storage quota or privacy mode must not block the window */ }
+  persistFavorites(normalized)
   if (!selectedId.value || !visibleSource.value.some((item) => item.id === selectedId.value)) {
     selectedId.value = visibleItems.value[0]?.id ?? null
   }
@@ -326,6 +352,7 @@ async function refreshInternal(): Promise<void> {
     settleWithTimeout(() => window.electronAPI?.getVaultStatus?.(), null),
     settleWithTimeout(() => window.electronAPI?.getSettings?.(), null),
   ])
+  if (settings) adoptAccount(accountIdFromSettings(settings))
   unlocked.value = Boolean(status?.unlocked)
   clipboardEnabled.value = Boolean(settings?.clipboardEnabled)
   clipboardAccelerator.value = settings?.clipboardAccelerator || DEFAULT_ACCELERATORS.clipboard
@@ -335,13 +362,19 @@ async function refreshInternal(): Promise<void> {
   defaultExpiry = settings?.clipboardDefaultExpiry ?? 300
   settingsLoaded.value = true
   try {
-    const stored = clipboardPersistence.value
-      ? localStorage.getItem(PERSISTENT_STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY)
-      : sessionStorage.getItem(STORAGE_KEY)
-    const history = stored ? normalizeItems(JSON.parse(stored)) : []
-    const favorites = readStoredFavorites()
-    sync(applyClipboardFavoriteFlags(history, favorites))
-    syncFavorites(favorites)
+    if (!accountId.value) {
+      sync([])
+      syncFavorites([])
+    } else {
+      const keys = clipboardStorageKeys(accountId.value)
+      const stored = clipboardPersistence.value
+        ? localStorage.getItem(keys.persistent) ?? sessionStorage.getItem(keys.session)
+        : sessionStorage.getItem(keys.session)
+      const history = stored ? normalizeItems(JSON.parse(stored)) : []
+      const favorites = readStoredFavorites()
+      sync(applyClipboardFavoriteFlags(history, favorites))
+      syncFavorites(favorites)
+    }
   } catch {
     sync([])
     syncFavorites(readStoredFavorites())

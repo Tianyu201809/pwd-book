@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS: SecuritySettings = {
 
 let sessionKey: Buffer | null = null
 let syncTransportKey: Buffer | null = null
+let sessionAccountId: string | null = null
 
 export function isUnlocked(): boolean {
   return sessionKey !== null
@@ -46,14 +47,20 @@ export function getSyncTransportKey(): Buffer {
   return syncTransportKey
 }
 
-export function unlockSession(key: Buffer, transportKey?: Buffer): void {
+export function unlockSession(key: Buffer, transportKey: Buffer | undefined, accountId: string): void {
   sessionKey = key
   syncTransportKey = transportKey ?? null
+  sessionAccountId = accountId
+}
+
+export function getSessionAccountId(): string | null {
+  return sessionAccountId
 }
 
 export function lockSession(): void {
   sessionKey = null
   syncTransportKey = null
+  sessionAccountId = null
 }
 
 export function getDefaultSettings(): SecuritySettings {

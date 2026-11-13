@@ -1,4 +1,5 @@
 import { app, clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
+import { getActiveAccountId } from '../accounts/activeAccount'
 import { updateMachineSettings } from '../accounts/machineStore'
 import { rebuildTrayMenu } from '../tray'
 import { type TrayLocale } from '../../shared/trayLabels'
@@ -13,8 +14,11 @@ import {
   broadcastNotesChanged,
   closeNoteWindowForDeletion,
   hideNoteWindowsOnLock,
+  openNoteWindow,
+  rememberLockedAccount,
   requestNoteDraftFlush,
   restoreNoteWindowsAfterUnlock,
+  shouldRestoreLockedWindows,
 } from '../noteWindows'
 import { reregisterGlobalShortcuts } from '../shortcutRegistration'
 import { isLaunchAtLoginAvailable, syncLaunchAtLogin } from '../launchAtLogin'
@@ -102,7 +106,7 @@ import {
   resetScheduledBackupNotification,
   startBackupScheduler,
 } from '../services/backupScheduler'
-import { isUnlocked } from '../services/sessionService'
+import { getSessionAccountId, isUnlocked } from '../services/sessionService'
 import { buildExportPayload } from '../services/exportPayloadService'
 import { buildExcelBuffer } from '../services/exportExcelService'
 import {
@@ -136,6 +140,7 @@ import { getClientVerificationCode } from '../services/syncClientService'
 import type { WifiSyncClientPullPayload, WifiSyncSettings, FolderSyncSettings } from '../../shared/syncTypes'
 import { deriveSyncTransportKey } from '../crypto/vaultCrypto'
 import {
+  cancelPendingFolderSync,
   connectFolderSync,
   disconnectFolderSync,
   getFolderSyncSettings,
@@ -159,6 +164,7 @@ import {
   deleteNote,
   deleteNoteBook,
   getNote,
+  listDesktopVisibleNoteIds,
   listNoteBooks,
   listNotes,
   permanentlyDeleteNote,
@@ -169,6 +175,21 @@ import {
 } from '../services/noteService'
 
 let clipboardTimer: NodeJS.Timeout | null = null
+let lastCopiedSecret: string | null = null
+
+function activeAccountIdOrEmpty(): string {
+  try {
+    return getActiveAccountId()
+  } catch {
+    return ''
+  }
+}
+
+function lockedAccountIdForSession(): string {
+  const sessionAccountId = getSessionAccountId()
+  if (sessionAccountId !== null) return sessionAccountId
+  return activeAccountIdOrEmpty()
+}
 
 function ensureUnlocked(): void {
   if (!isUnlocked()) {
@@ -187,6 +208,7 @@ function wrap<T>(handler: () => T): T {
 
 function copySecret(text: string, clearAfterMs: number): void {
   clipboard.writeText(text)
+  lastCopiedSecret = text
   if (clipboardTimer) {
     clearTimeout(clipboardTimer)
   }
@@ -197,6 +219,27 @@ function copySecret(text: string, clearAfterMs: number): void {
       }
     }, clearAfterMs)
   }
+}
+
+export function clearCopiedSecretIfPresent(): void {
+  if (lastCopiedSecret !== null && clipboard.readText() === lastCopiedSecret) clipboard.clear()
+  lastCopiedSecret = null
+  if (clipboardTimer) clearTimeout(clipboardTimer)
+  clipboardTimer = null
+}
+
+function restoreNotesForUnlockedAccount(): void {
+  let unlockAccountId: string
+  try {
+    unlockAccountId = getActiveAccountId()
+  } catch {
+    return
+  }
+  if (shouldRestoreLockedWindows(unlockAccountId)) {
+    restoreNoteWindowsAfterUnlock()
+    return
+  }
+  for (const noteId of listDesktopVisibleNoteIds()) openNoteWindow(noteId)
 }
 
 export function registerIpcHandlers(): void {
@@ -218,7 +261,7 @@ export function registerIpcHandlers(): void {
       checkScheduledBackupDue(true)
       void restoreWifiSyncServerIfNeeded()
       restoreFolderSyncOnUnlock()
-      restoreNoteWindowsAfterUnlock()
+      restoreNotesForUnlockedAccount()
       syncClipboardWindowMonitoring()
       return getVaultStatus()
     }),
@@ -227,10 +270,14 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.vaultLock, async () => {
     try {
       await requestNoteDraftFlush()
+      rememberLockedAccount(lockedAccountIdForSession())
       hideQuickBarOnLock()
       hideClipboardWindowOnLock()
       hideDetailWindowOnLock()
       hideNoteWindowsOnLock()
+      clearCopiedSecretIfPresent()
+      cancelPendingFolderSync()
+      await stopWifiSyncServer()
       lockVault()
       syncClipboardWindowMonitoring()
       resetScheduledBackupNotification()
@@ -578,7 +625,10 @@ export function registerIpcHandlers(): void {
     }),
   )
 
-  ipcMain.handle(IPC.settingsGet, () => getSecuritySettings())
+  ipcMain.handle(IPC.settingsGet, () => ({
+    ...getSecuritySettings(),
+    activeAccountId: activeAccountIdOrEmpty(),
+  }))
 
   ipcMain.handle(IPC.updateGetStatus, () => getUpdateStatus())
   ipcMain.handle(IPC.updateCheck, () => checkForUpdates())

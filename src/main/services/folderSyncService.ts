@@ -167,11 +167,13 @@ export function connectFolderSync(folderPath: string, masterPassword: string): S
   return result
 }
 
+export function cancelPendingFolderSync(): void {
+  if (publishTimer) clearTimeout(publishTimer)
+  publishTimer = null
+}
+
 export function disconnectFolderSync(): FolderSyncSettings {
-  if (publishTimer) {
-    clearTimeout(publishTimer)
-    publishTimer = null
-  }
+  cancelPendingFolderSync()
   lastPublishedAt = null
   lastPublishedRevision = 0
   return updateFolderSyncSettings({

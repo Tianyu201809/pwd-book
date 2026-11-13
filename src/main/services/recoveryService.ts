@@ -22,6 +22,7 @@ import {
   readTrashedEntryRows,
   setSetting,
 } from '../db/helpers'
+import { getActiveAccountId } from '../accounts/activeAccount'
 import { getSessionKey, isUnlocked, unlockSession } from './sessionService'
 import { appError, ErrorCode } from '../../shared/errors'
 
@@ -172,7 +173,13 @@ export function resetMasterPasswordWithRecovery(
   persistDatabase()
 
   wrapSessionKey(newKey, recoveryKey)
-  unlockSession(newKey, deriveSyncTransportKey(newMasterPassword))
+  let accountId = ''
+  try {
+    accountId = getActiveAccountId()
+  } catch {
+    accountId = ''
+  }
+  unlockSession(newKey, deriveSyncTransportKey(newMasterPassword), accountId)
 }
 
 export function getLockedEntryCount(): number {

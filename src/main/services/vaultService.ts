@@ -9,6 +9,7 @@ import {
 } from '../crypto/vaultCrypto'
 import { resetDatabaseFile } from '../db/database'
 import { getSetting, readActiveEntryRow, readActiveEntryRows, readEntryRow, setSetting } from '../db/helpers'
+import { getActiveAccountId } from '../accounts/activeAccount'
 import { getSessionKey, isUnlocked, lockSession, unlockSession } from './sessionService'
 import type { PasswordEntry, PasswordEntryInput, VaultStatus } from '../../shared/types'
 import { serializeCustomFields, parseCustomFields } from '../../shared/customFields'
@@ -27,6 +28,14 @@ import { importNotesFromPayload } from './noteService'
 
 const MASTER_SALT_KEY = 'master_salt'
 const MASTER_HASH_KEY = 'master_hash'
+
+function unlockAccountId(): string {
+  try {
+    return getActiveAccountId()
+  } catch {
+    return ''
+  }
+}
 
 export function getVaultStatus(): VaultStatus {
   return {
@@ -54,6 +63,7 @@ export function setupVault(masterPassword: string, confirmPassword: string): voi
   unlockSession(
     deriveSessionKey(masterPassword, salt),
     deriveSyncTransportKey(masterPassword),
+    unlockAccountId(),
   )
 }
 
@@ -69,6 +79,7 @@ export function unlockVault(masterPassword: string): void {
   unlockSession(
     deriveSessionKey(masterPassword, salt),
     deriveSyncTransportKey(masterPassword),
+    unlockAccountId(),
   )
 }
 

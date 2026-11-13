@@ -14,6 +14,21 @@ const noteWindows = new Map<string, BrowserWindow>()
 const visibleBeforeLock = new Set<string>()
 const closingForLock = new Set<string>()
 let managerVisibleBeforeLock = false
+let lockedAccountId: string | null = null
+
+export function rememberLockedAccount(accountId: string): void {
+  lockedAccountId = accountId
+}
+
+export function shouldRestoreLockedWindows(unlockAccountId: string): boolean {
+  const restore = Boolean(lockedAccountId) && lockedAccountId === unlockAccountId
+  if (!restore) {
+    visibleBeforeLock.clear()
+    managerVisibleBeforeLock = false
+    lockedAccountId = null
+  }
+  return restore
+}
 
 function rendererUrl(page: string, query = ''): string {
   if (process.env.ELECTRON_RENDERER_URL) return `${process.env.ELECTRON_RENDERER_URL}/${page}${query}`
