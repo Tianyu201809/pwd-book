@@ -147,6 +147,7 @@ export async function createAccount(
   try {
     fs.mkdirSync(created.dir, { recursive: true })
     await resolved.createEmpty(created.database)
+    setActiveAccountId(id)
     await resolved.setup(input.masterPassword, input.confirmPassword)
     const next: MachineDocument = {
       version: 1,
@@ -159,7 +160,6 @@ export async function createAccount(
     }
     writeMachineDocument(resolved.userData, next)
     wroteRegistry = true
-    setActiveAccountId(id)
     return next
   } catch (error) {
     fs.rmSync(created.dir, { recursive: true, force: true })

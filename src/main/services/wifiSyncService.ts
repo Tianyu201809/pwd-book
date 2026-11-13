@@ -448,7 +448,7 @@ export async function restoreWifiSyncServerIfNeeded(): Promise<void> {
   await startWifiSyncServer()
 }
 
-export async function stopWifiSyncServer(): Promise<WifiSyncServerStatus> {
+export async function stopWifiSyncRuntime(): Promise<void> {
   if (publishTimer) {
     clearTimeout(publishTimer)
     publishTimer = null
@@ -469,7 +469,10 @@ export async function stopWifiSyncServer(): Promise<WifiSyncServerStatus> {
     })
     httpServer = null
   }
+}
 
+export async function stopWifiSyncServer(): Promise<WifiSyncServerStatus> {
+  await stopWifiSyncRuntime()
   updateWifiSyncSettings({ serverEnabled: false })
   return getWifiSyncServerStatus()
 }

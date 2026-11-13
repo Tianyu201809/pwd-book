@@ -133,6 +133,7 @@ import {
   regenerateAccessPassword,
   restoreWifiSyncServerIfNeeded,
   startWifiSyncServer,
+  stopWifiSyncRuntime,
   stopWifiSyncServer,
   updateWifiSyncSettings,
 } from '../services/wifiSyncService'
@@ -277,7 +278,7 @@ export function registerIpcHandlers(): void {
       hideNoteWindowsOnLock()
       clearCopiedSecretIfPresent()
       cancelPendingFolderSync()
-      await stopWifiSyncServer()
+      await stopWifiSyncRuntime()
       lockVault()
       syncClipboardWindowMonitoring()
       resetScheduledBackupNotification()
