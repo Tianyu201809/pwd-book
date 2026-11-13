@@ -71,6 +71,11 @@ const nextAccountName = ref('')
 const deleteAccountOpen = ref(false)
 const accountError = ref('')
 const canDeleteAccount = computed(() => bootState.value.accounts.length >= 2)
+const canSaveAccountName = computed(() => {
+  const next = nextAccountName.value.trim()
+  const current = (bootState.value.activeAccountName ?? '').trim()
+  return next.length > 0 && next !== current
+})
 
 watch(
   () => bootState.value.activeAccountName,
@@ -270,6 +275,7 @@ function onExportCompleted(formatId: ExportDestinationId): void {
 }
 
 async function submitRename(): Promise<void> {
+  if (!canSaveAccountName.value || loading.value) return
   accountError.value = ''
   const ok = await renameAccount(nextAccountName.value)
   if (!ok) accountError.value = errorMessage.value
@@ -346,7 +352,7 @@ async function handleReset(): Promise<void> {
           data-tour="settings-security"
         >
           <div class="account-section">
-            <h3>{{ t('account.title') }}</h3>
+            <h3>{{ t('account.current') }}</h3>
             <p
               v-if="bootState.warning === 'delete-incomplete'"
               class="error-message"
@@ -360,17 +366,7 @@ async function handleReset(): Promise<void> {
               {{ accountError }}
             </p>
             <UiCard class="settings-card">
-              <div class="row">
-                <div>
-                  <p class="row-title">
-                    {{ t('account.name') }}
-                  </p>
-                  <p class="row-desc">
-                    {{ bootState.activeAccountName }}
-                  </p>
-                </div>
-              </div>
-              <div class="row">
+              <div class="row last">
                 <div class="account-rename">
                   <UiInput
                     v-model="nextAccountName"
@@ -379,52 +375,56 @@ async function handleReset(): Promise<void> {
                   />
                   <UiButton
                     variant="default"
-                    :disabled="loading"
+                    :disabled="!canSaveAccountName || loading"
                     @click="submitRename"
                   >
                     {{ t('common.save') }}
                   </UiButton>
                 </div>
               </div>
-              <div class="row">
+            </UiCard>
+            <UiCard class="settings-card account-follow">
+              <div class="row last">
                 <div>
                   <p class="row-title">
                     {{ t('account.switch') }}
+                  </p>
+                  <p class="row-desc">
+                    {{ t('account.switchHint') }}
                   </p>
                 </div>
                 <UiButton
                   variant="default"
                   @click="lock"
                 >
-                  {{ t('account.switch') }}
-                </UiButton>
-              </div>
-              <div class="row last">
-                <div>
-                  <p class="row-title">
-                    {{ t('account.delete') }}
-                  </p>
-                  <p
-                    v-if="!canDeleteAccount"
-                    class="row-desc"
-                  >
-                    {{ t('account.cannotDeleteLast') }}
-                  </p>
-                </div>
-                <UiButton
-                  variant="danger"
-                  :disabled="!canDeleteAccount || loading"
-                  @click="deleteAccountOpen = true"
-                >
-                  {{ t('account.delete') }}
+                  {{ t('account.switchAction') }}
                 </UiButton>
               </div>
             </UiCard>
+            <div class="account-danger">
+              <div>
+                <p class="row-title">
+                  {{ t('account.delete') }}
+                </p>
+                <p class="row-desc">
+                  {{ canDeleteAccount ? t('account.deleteWarning') : t('account.cannotDeleteLast') }}
+                </p>
+              </div>
+              <UiButton
+                class="account-danger-btn"
+                variant="danger"
+                :disabled="!canDeleteAccount || loading"
+                @click="deleteAccountOpen = true"
+              >
+                {{ t('account.delete') }}
+              </UiButton>
+            </div>
             <MasterPasswordConfirmModal
               v-model:open="deleteAccountOpen"
-              :title="t('account.delete')"
-              :description="t('lock.enterCurrentPassword')"
+              :title="t('account.deleteNamed', { name: bootState.activeAccountName ?? '' })"
+              :description="t('account.deleteWarning')"
               :confirm-label="t('account.delete')"
+              confirm-variant="danger"
               :loading="loading"
               @confirm="confirmDeleteAccount"
             />
@@ -789,6 +789,34 @@ async function handleReset(): Promise<void> {
 
 .account-section {
   margin-bottom: 28px;
+}
+
+.account-follow {
+  margin-top: 12px;
+}
+
+.account-danger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 16px 20px;
+  border: 1px solid color-mix(in srgb, var(--status-danger) 45%, var(--border-default));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--status-danger) 8%, transparent);
+}
+
+.account-danger > :first-child {
+  min-width: 0;
+}
+
+.account-danger-btn {
+  flex-shrink: 0;
+}
+
+.account-danger .row-title {
+  color: var(--status-danger);
 }
 
 .account-rename {

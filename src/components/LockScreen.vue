@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Eye, EyeOff } from 'lucide-vue-next'
+import { Eye, EyeOff, X } from 'lucide-vue-next'
 import appIcon from '@/assets/images/brand/app-icon.png'
 import RecoveryMenu from '@/components/recovery/RecoveryMenu.vue'
 import RecoveryKeyInput from '@/components/recovery/RecoveryKeyInput.vue'
@@ -9,10 +9,11 @@ import RecoveryResetPassword from '@/components/recovery/RecoveryResetPassword.v
 import RecoveryWipe from '@/components/recovery/RecoveryWipe.vue'
 import RecoveryKeySetup from '@/components/recovery/RecoveryKeySetup.vue'
 import RecoveryProgressOverlay from '@/components/recovery/RecoveryProgressOverlay.vue'
-import { UiCard, UiInput, UiButton } from '@/components/ui'
+import { UiCard, UiInput, UiButton, UiModal } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { vaultApi } from '@/services/vaultApi'
 import { lockScreenMode } from '@/components/lockScreenMode'
+import { accountMonogram } from '@/shared/accountName'
 
 type LockMode =
   | 'credentials'
@@ -48,6 +49,7 @@ const { t } = useI18n()
 const lockMode = ref<LockMode>('credentials')
 const creatingAccount = ref(false)
 const accountName = ref('')
+const accountPickerOpen = ref(false)
 const passwordWrapRef = ref<HTMLElement | null>(null)
 const password = ref('')
 const confirmPassword = ref('')
@@ -80,6 +82,7 @@ const title = computed(() => {
   if (vaultNeedsRebuild.value) return t('account.vaultDamaged')
   if (asksForAccountName.value) return t('account.newAccount')
   if (accountMode.value === 'setup-password') return t('lock.createMasterPassword')
+  if (bootState.value.activeAccountName) return ''
   return t('lock.unlockVault')
 })
 const submitLabel = computed(() =>
@@ -151,10 +154,16 @@ function cancelCreateAccount(): void {
 }
 
 async function chooseAccount(accountId: string): Promise<void> {
-  if (loading.value || accountId === bootState.value.activeAccountId) return
-  await selectAccount(accountId)
+  accountPickerOpen.value = false
+  if (loading.value) return
+  if (accountId === bootState.value.activeAccountId) {
+    focusPasswordField()
+    return
+  }
   password.value = ''
   confirmPassword.value = ''
+  const ok = await selectAccount(accountId)
+  if (ok) focusPasswordField()
 }
 
 async function submitRebuild(): Promise<void> {
@@ -313,44 +322,56 @@ async function handleCopyRecoveryKey(): Promise<void> {
         <h1 class="font-display">
           {{ t('common.appName') }}
         </h1>
-        <p class="subtitle">
+        <p
+          v-if="title"
+          class="subtitle"
+        >
           {{ title }}
         </p>
       </div>
 
+      <button
+        v-if="showDefaultForm && accountMode === 'create-account'"
+        type="button"
+        class="text-link lock-back"
+        @click="cancelCreateAccount"
+      >
+        {{ t('account.backToAccounts') }}
+      </button>
+
       <UiCard class="panel-glow lock-panel">
         <template v-if="showDefaultForm">
           <template v-if="accountMode !== 'boot-empty' && accountMode !== 'create-account'">
-            <div class="account-list">
+            <div class="account-identity">
               <button
-                v-for="account in bootState.accounts"
-                :key="account.id"
                 type="button"
-                class="account-btn"
-                :class="{ 'account-btn--selected': account.id === bootState.activeAccountId }"
-                :aria-pressed="account.id === bootState.activeAccountId"
-                @click="chooseAccount(account.id)"
+                class="account-avatar"
+                :aria-label="t('account.switch')"
+                @click="accountPickerOpen = true"
               >
-                {{ account.name }}
+                {{ accountMonogram(bootState.activeAccountName ?? '') }}
+              </button>
+              <p class="account-identity-name font-display">
+                {{ bootState.activeAccountName }}
+              </p>
+              <button
+                v-if="accountMode === 'unlock' && !vaultNeedsRebuild"
+                type="button"
+                class="text-link accent account-create-link"
+                @click="startCreateAccount"
+              >
+                {{ t('account.newAccount') }}
               </button>
             </div>
-            <button
-              v-if="accountMode === 'unlock' && !vaultNeedsRebuild"
-              type="button"
-              class="text-link account-create-link"
-              @click="startCreateAccount"
-            >
-              {{ t('account.newAccount') }}
-            </button>
           </template>
 
           <template v-if="vaultNeedsRebuild">
-            <p class="error-text">
-              {{ t('account.vaultDamaged') }}
+            <p class="info-text">
+              {{ t('account.vaultDamagedDetail') }}
             </p>
             <p
               v-if="bootState.quarantinedPath"
-              class="info-text"
+              class="quarantine-path"
             >
               {{ bootState.quarantinedPath }}
             </p>
@@ -462,15 +483,6 @@ async function handleCopyRecoveryKey(): Promise<void> {
                 </button>
               </div>
             </template>
-
-            <button
-              v-if="accountMode === 'create-account'"
-              type="button"
-              class="text-link account-create-link"
-              @click="cancelCreateAccount"
-            >
-              {{ t('common.back') }}
-            </button>
           </template>
 
           <p
@@ -541,6 +553,34 @@ async function handleCopyRecoveryKey(): Promise<void> {
         {{ t('lock.footerNote') }}
       </p>
     </div>
+
+    <UiModal
+      v-model:open="accountPickerOpen"
+      :title="t('account.switch')"
+      :width="360"
+      :show-footer="false"
+    >
+      <template #close-icon>
+        <X
+          :size="16"
+          :stroke-width="1.5"
+        />
+      </template>
+      <div class="account-modal-list">
+        <button
+          v-for="account in bootState.accounts"
+          :key="account.id"
+          type="button"
+          class="account-modal-item"
+          :class="{ 'account-modal-item--selected': account.id === bootState.activeAccountId }"
+          :aria-pressed="account.id === bootState.activeAccountId"
+          @click="chooseAccount(account.id)"
+        >
+          <span class="account-modal-avatar">{{ accountMonogram(account.name) }}</span>
+          <span class="account-modal-name font-display">{{ account.name }}</span>
+        </button>
+      </div>
+    </UiModal>
   </div>
 </template>
 
@@ -590,37 +630,100 @@ h1 {
   padding: 24px;
 }
 
-.account-list {
+.account-identity {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.account-btn {
-  width: 100%;
-  text-align: left;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-default);
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 14px;
+.account-avatar {
+  width: 76px;
+  height: 76px;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent-primary);
+  color: var(--btn-primary-text);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 10px 24px rgba(var(--accent-rgb), 0.28);
 }
 
-.account-btn:hover {
-  background: var(--bg-hover);
+.account-avatar:hover {
+  transform: translateY(-1px);
 }
 
-.account-btn--selected {
-  border-color: var(--accent-primary);
-  background: var(--accent-subtle);
-  color: var(--accent-primary);
+.account-identity-name {
+  margin: 14px 0 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .account-create-link {
-  display: inline-block;
-  margin: 8px 0 16px;
+  margin-top: 10px;
+}
+
+.account-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.account-modal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-modal-item:hover {
+  background: var(--bg-hover);
+}
+
+.account-modal-item--selected {
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+.account-modal-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--accent-primary);
+  color: var(--btn-primary-text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.account-modal-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .label {
@@ -680,6 +783,14 @@ h1 {
   margin: 12px 0 0;
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.quarantine-path {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
   word-break: break-all;
 }
 
@@ -698,6 +809,12 @@ h1 {
   color: var(--text-muted);
   cursor: pointer;
   padding: 0;
+}
+
+.lock-back {
+  display: block;
+  margin: -24px 0 12px;
+  text-align: left;
 }
 
 .text-link:hover {

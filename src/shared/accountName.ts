@@ -4,6 +4,12 @@ export function normalizeAccountName(name: string): string {
   return name.trim()
 }
 
+export function accountMonogram(name: string): string {
+  const first = [...normalizeAccountName(name)][0]
+  if (!first) return ''
+  return first.toLocaleUpperCase()
+}
+
 export function validateAccountName(
   name: string,
   existingNames: readonly string[],

@@ -6,12 +6,16 @@ import { UiModal, UiInput, UiButton, UiCheckbox } from '@/components/ui'
 
 const open = defineModel<boolean>('open', { default: false })
 
-defineProps<{
+const props = withDefaults(defineProps<{
   title: string
   description: string
   confirmLabel: string
   loading?: boolean
-}>()
+  confirmVariant?: 'primary' | 'danger'
+}>(), {
+  loading: false,
+  confirmVariant: 'primary',
+})
 
 const emit = defineEmits<{
   close: []
@@ -85,7 +89,7 @@ defineExpose({ resetPassword })
         {{ t('common.cancel') }}
       </UiButton>
       <UiButton
-        variant="primary"
+        :variant="props.confirmVariant"
         class="modal-btn"
         :disabled="loading || !password.trim()"
         :loading="loading"

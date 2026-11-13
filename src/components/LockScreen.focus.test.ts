@@ -34,6 +34,7 @@ vi.mock('@/components/ui', () => {
   })
   return {
     UiCard: passthrough('div'),
+    UiModal: passthrough('div'),
     UiButton: passthrough('button'),
     UiCheckbox: passthrough('checkbox'),
     UiLoading: passthrough('div'),

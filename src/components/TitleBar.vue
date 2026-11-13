@@ -11,6 +11,7 @@ import { showToast } from '@/composables/useToast'
 import { parseErrorMessage } from '@/shared/utils'
 import type { CloseWindowAction } from '@/shared/types'
 import type { ThemeSkin } from '@/types'
+import { accountMonogram } from '@/shared/accountName'
 
 const props = withDefaults(
   defineProps<{
@@ -42,6 +43,9 @@ const showActiveAccount = computed(() =>
   && vaultStatus.value.unlocked
   && screen.value !== 'lock'
   && Boolean(bootState.value.activeAccountName),
+)
+const activeAccountLockLabel = computed(() =>
+  t('account.lockNamed', { name: bootState.value.activeAccountName ?? '' }),
 )
 const canOpenLearn = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
 const canOpenClipboard = computed(() => vaultStatus.value.unlocked && screen.value !== 'lock' && !props.detailWindow)
@@ -244,9 +248,16 @@ onUnmounted(() => {
         v-if="showActiveAccount"
         type="button"
         class="account-lock-btn titlebar-no-drag"
+        :aria-label="activeAccountLockLabel"
+        :title="activeAccountLockLabel"
         @click="lock"
       >
-        {{ bootState.activeAccountName }}
+        <span class="account-seal">{{ accountMonogram(bootState.activeAccountName ?? '') }}</span>
+        <span class="account-lock-name">{{ bootState.activeAccountName }}</span>
+        <Lock
+          :size="12"
+          :stroke-width="1.75"
+        />
       </button>
     </div>
     <div
@@ -582,23 +593,46 @@ onUnmounted(() => {
 }
 
 .account-lock-btn {
-  max-width: 160px;
-  height: 28px;
-  padding: 0 8px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 180px;
+  height: 24px;
+  padding: 0 8px 0 3px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .account-lock-btn:hover {
-  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  background: var(--accent-subtle);
   color: var(--text-primary);
+}
+
+.account-seal {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  color: var(--accent-primary);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.account-lock-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
 }
 
 .titlebar-actions {

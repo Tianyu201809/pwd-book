@@ -51,6 +51,13 @@ const bootErrorMessage = computed(() => {
   if (reason === 'ambiguous-accounts') return t('account.bootAmbiguousAccounts')
   return ''
 })
+const bootErrorHint = computed(() => {
+  const reason = bootState.value.blocked
+  if (reason === 'registry-corrupt') return t('account.bootRegistryCorruptHint')
+  if (reason === 'registry-inconsistent') return t('account.bootRegistryInconsistentHint')
+  if (reason === 'ambiguous-accounts') return t('account.bootAmbiguousAccountsHint')
+  return ''
+})
 
 let removeAlreadyRunningListener: (() => void) | undefined
 let removeScheduledBackupListener: (() => void) | undefined
@@ -144,6 +151,12 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
           <p class="boot-error-message">
             {{ bootErrorMessage }}
           </p>
+          <p
+            v-if="bootErrorHint"
+            class="boot-error-hint"
+          >
+            {{ bootErrorHint }}
+          </p>
         </div>
         <LockScreen v-else-if="screen === 'lock'" />
         <VaultView v-else-if="screen === 'vault'" />
@@ -192,6 +205,12 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
         </p>
         <p class="boot-error-message">
           {{ bootErrorMessage }}
+        </p>
+        <p
+          v-if="bootErrorHint"
+          class="boot-error-hint"
+        >
+          {{ bootErrorHint }}
         </p>
       </div>
       <LockScreen v-else-if="screen === 'lock'" />
@@ -274,10 +293,16 @@ async function confirmScheduledBackup(masterPassword: string): Promise<void> {
   color: var(--status-danger);
 }
 
-.boot-error-message {
+.boot-error-message,
+.boot-error-hint {
   margin: 0;
   max-width: 420px;
   font-size: 14px;
+  line-height: 1.5;
   color: var(--text-secondary);
+}
+
+.boot-error-hint {
+  margin-top: 8px;
 }
 </style>
