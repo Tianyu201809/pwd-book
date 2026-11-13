@@ -20,9 +20,9 @@ export interface AccountDeps {
   isUnlocked(): boolean
   lockSession(): void
   verifyPassword(password: string): boolean
-  openDatabase(file: string): 'ready' | 'missing'
-  createEmpty(file: string): void
-  setup(masterPassword: string, confirmPassword: string): void
+  openDatabase(file: string): Promise<'ready' | 'missing'>
+  createEmpty(file: string): Promise<void>
+  setup(masterPassword: string, confirmPassword: string): Promise<void>
   closeDatabase(): void
   resetAccountFiles(accountDir: string): void
 }
@@ -81,35 +81,22 @@ function defaultAccountDeps(): AccountDeps {
         return false
       }
     },
-    openDatabase(file: string): 'ready' | 'missing' {
+    async openDatabase(file: string): Promise<'ready' | 'missing'> {
       database.setDatabaseFile(file)
-      const existed = fs.existsSync(file)
-      let pending: Promise<unknown>
       try {
-        pending = database.initDatabase()
+        await database.initDatabase()
+        return 'ready'
       } catch (error) {
         if (error instanceof database.VaultFileDamagedError) return 'missing'
         throw error
       }
-      void Promise.resolve(pending).catch((error: unknown) => {
-        if (error instanceof database.VaultFileDamagedError) return
-        setImmediate(() => {
-          throw error
-        })
-      })
-      if (!existed || !fs.existsSync(file)) return 'missing'
-      return 'ready'
     },
-    createEmpty(file: string): void {
+    async createEmpty(file: string): Promise<void> {
       database.setDatabaseFile(file)
-      void Promise.resolve(database.createEmptyDatabase()).catch((error: unknown) => {
-        setImmediate(() => {
-          throw error
-        })
-      })
+      await database.createEmptyDatabase()
     },
-    setup(masterPassword: string, confirmPassword: string): void {
-      vault.setupVault(masterPassword, confirmPassword)
+    async setup(masterPassword: string, confirmPassword: string): Promise<void> {
+      await vault.setupVault(masterPassword, confirmPassword)
     },
     closeDatabase(): void {
       database.closeDatabase()
@@ -140,16 +127,16 @@ function requireActiveAccount(userData: string): { document: MachineDocument; ac
   return { document, account }
 }
 
-function restorePreviousAccount(deps: AccountDeps, previousId: string): void {
+async function restorePreviousAccount(deps: AccountDeps, previousId: string): Promise<void> {
   if (!previousId) return
   setActiveAccountId(previousId)
-  deps.openDatabase(accountDataPaths(deps.userData, previousId).database)
+  await deps.openDatabase(accountDataPaths(deps.userData, previousId).database)
 }
 
-export function createAccount(
+export async function createAccount(
   input: { name: string; masterPassword: string; confirmPassword: string },
   deps?: AccountDeps,
-): MachineDocument {
+): Promise<MachineDocument> {
   const resolved = useDeps(deps)
   const document = readMachineDocument(resolved.userData)
   const normalized = validatedName(input.name, document?.accounts.map((account) => account.name) ?? [])
@@ -159,8 +146,8 @@ export function createAccount(
   let wroteRegistry = false
   try {
     fs.mkdirSync(created.dir, { recursive: true })
-    resolved.createEmpty(created.database)
-    resolved.setup(input.masterPassword, input.confirmPassword)
+    await resolved.createEmpty(created.database)
+    await resolved.setup(input.masterPassword, input.confirmPassword)
     const next: MachineDocument = {
       version: 1,
       activeAccountId: id,
@@ -180,12 +167,12 @@ export function createAccount(
       if (document) writeMachineDocument(resolved.userData, document)
       else fs.rmSync(path.join(resolved.userData, 'machine.json'), { force: true })
     }
-    restorePreviousAccount(resolved, previousId)
+    await restorePreviousAccount(resolved, previousId)
     throw error
   }
 }
 
-export function selectAccount(accountId: string, deps?: AccountDeps): void {
+export async function selectAccount(accountId: string, deps?: AccountDeps): Promise<void> {
   const resolved = useDeps(deps)
   const document = readMachineDocument(resolved.userData)
   if (!document || !document.accounts.some((account) => account.id === accountId)) {
@@ -194,12 +181,12 @@ export function selectAccount(accountId: string, deps?: AccountDeps): void {
   if (resolved.isUnlocked()) throw new Error(ErrorCode.VAULT_UNLOCK_REQUIRED)
   writeMachineDocument(resolved.userData, { ...document, activeAccountId: accountId })
   resolved.closeDatabase()
-  const status = resolved.openDatabase(accountDataPaths(resolved.userData, accountId).database)
+  const status = await resolved.openDatabase(accountDataPaths(resolved.userData, accountId).database)
   setActiveAccountId(accountId)
   if (status === 'missing') throw new Error(ErrorCode.VAULT_FILE_DAMAGED)
 }
 
-export function renameAccount(name: string, deps?: AccountDeps): AccountRecord {
+export async function renameAccount(name: string, deps?: AccountDeps): Promise<AccountRecord> {
   const resolved = useDeps(deps)
   const { document, account } = requireActiveAccount(resolved.userData)
   const others = document.accounts
@@ -213,7 +200,7 @@ export function renameAccount(name: string, deps?: AccountDeps): AccountRecord {
   return updated
 }
 
-export function deleteAccount(masterPassword: string, deps?: AccountDeps): MachineDocument {
+export async function deleteAccount(masterPassword: string, deps?: AccountDeps): Promise<MachineDocument> {
   const resolved = useDeps(deps)
   const document = readMachineDocument(resolved.userData)
   if (!document || document.accounts.length < 2) throw new Error(ErrorCode.ACCOUNT_DELETE_LAST)
@@ -236,15 +223,15 @@ export function deleteAccount(masterPassword: string, deps?: AccountDeps): Machi
   writeMachineDocument(resolved.userData, next)
   fs.rmSync(deleting, { recursive: true, force: true })
   setActiveAccountId(next.activeAccountId)
-  resolved.openDatabase(accountDataPaths(resolved.userData, next.activeAccountId).database)
+  await resolved.openDatabase(accountDataPaths(resolved.userData, next.activeAccountId).database)
   return next
 }
 
-export function rebuildEmptyVault(deps?: AccountDeps): void {
+export async function rebuildEmptyVault(deps?: AccountDeps): Promise<void> {
   const resolved = useDeps(deps)
   if (resolved.isUnlocked()) throw new Error(ErrorCode.VAULT_UNLOCK_REQUIRED)
   const { account } = requireActiveAccount(resolved.userData)
   const paths = accountDataPaths(resolved.userData, account.id)
   resolved.resetAccountFiles(paths.dir)
-  resolved.createEmpty(paths.database)
+  await resolved.createEmpty(paths.database)
 }

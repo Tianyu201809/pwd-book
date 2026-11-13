@@ -52,9 +52,9 @@ function depsFor(userData: string, partial: Partial<AccountDeps> = {}): AccountD
     isUnlocked: () => false,
     lockSession: () => {},
     verifyPassword: () => false,
-    openDatabase: () => 'ready',
-    createEmpty: () => {},
-    setup: () => {},
+    openDatabase: () => Promise.resolve('ready'),
+    createEmpty: () => Promise.resolve(),
+    setup: () => Promise.resolve(),
     closeDatabase: () => {},
     resetAccountFiles: () => {},
     ...partial,
@@ -70,18 +70,24 @@ describe('accountService', () => {
     expect(head).not.toMatch(/electron|sql\.js|database|vaultService/)
   })
 
-  it('does not create an accounts directory when the name is blank', () => {
+  it('does not create an accounts directory when the name is blank', async () => {
     const userData = tempUserData()
     const calls: string[] = []
     setActiveAccountId('stale')
 
-    expect(() => createAccount(
+    await expect(createAccount(
       { name: '   ', masterPassword: 'secret', confirmPassword: 'secret' },
       depsFor(userData, {
-        createEmpty: () => calls.push('create'),
-        setup: () => calls.push('setup'),
+        createEmpty: () => {
+          calls.push('create')
+          return Promise.resolve()
+        },
+        setup: () => {
+          calls.push('setup')
+          return Promise.resolve()
+        },
       }),
-    )).toThrow(/^ACCOUNT_NAME_EMPTY$/)
+    )).rejects.toThrow(/^ACCOUNT_NAME_EMPTY$/)
 
     expect(fs.existsSync(path.join(userData, 'accounts'))).toBe(false)
     expect(fs.existsSync(machineFile(userData))).toBe(false)
@@ -89,32 +95,32 @@ describe('accountService', () => {
     expect(getActiveAccountId()).toBe('stale')
   })
 
-  it('rejects an overlong name before creating a directory', () => {
+  it('rejects an overlong name before creating a directory', async () => {
     const userData = tempUserData()
 
-    expect(() => createAccount(
+    await expect(createAccount(
       { name: 'a'.repeat(33), masterPassword: 'secret', confirmPassword: 'secret' },
       depsFor(userData),
-    )).toThrow(/^ACCOUNT_NAME_TOO_LONG$/)
+    )).rejects.toThrow(/^ACCOUNT_NAME_TOO_LONG$/)
 
     expect(fs.existsSync(path.join(userData, 'accounts'))).toBe(false)
   })
 
-  it('rejects a duplicate name before creating a directory', () => {
+  it('rejects a duplicate name before creating a directory', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'keep', [accountRecord('keep', '工作', 1)])
     const original = fs.readFileSync(machineFile(userData), 'utf8')
 
-    expect(() => createAccount(
+    await expect(createAccount(
       { name: ' 工作 ', masterPassword: 'secret', confirmPassword: 'secret' },
       depsFor(userData),
-    )).toThrow(/^ACCOUNT_NAME_EXISTS$/)
+    )).rejects.toThrow(/^ACCOUNT_NAME_EXISTS$/)
 
     expect(fs.existsSync(path.join(userData, 'accounts'))).toBe(false)
     expect(fs.readFileSync(machineFile(userData), 'utf8')).toBe(original)
   })
 
-  it('removes the new directory and keeps the original active account when setup throws', () => {
+  it('removes the new directory and keeps the original active account when setup throws', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'keep', [accountRecord('keep', '工作', 1)])
     const original = fs.readFileSync(machineFile(userData), 'utf8')
@@ -123,25 +129,26 @@ describe('accountService', () => {
     setActiveAccountId('stale')
     const opened: string[] = []
 
-    expect(() => createAccount(
+    await expect(createAccount(
       { name: '家庭', masterPassword: 'secret', confirmPassword: 'secret' },
       depsFor(userData, {
         createEmpty: (file) => {
           expect(fs.existsSync(path.dirname(file))).toBe(true)
           fs.writeFileSync(file, 'new-db')
+          return Promise.resolve()
         },
         setup: () => {
           const names = fs.readdirSync(path.join(userData, 'accounts'))
           expect(names).toContain('keep')
           expect(names).toHaveLength(2)
-          throw new Error('setup-failed')
+          return Promise.reject(new Error('setup-failed'))
         },
         openDatabase: (file) => {
           opened.push(file)
-          return 'ready'
+          return Promise.resolve('ready')
         },
       }),
-    )).toThrow('setup-failed')
+    )).rejects.toThrow('setup-failed')
 
     expect(fs.readdirSync(path.join(userData, 'accounts'))).toEqual(['keep'])
     expect(fs.readFileSync(path.join(userData, 'accounts', 'keep', 'pwdbook.db'), 'utf8')).toBe('keep-db')
@@ -150,7 +157,7 @@ describe('accountService', () => {
     expect(getActiveAccountId()).toBe('keep')
   })
 
-  it('creates an account, writes it last, and makes it active', () => {
+  it('creates an account, writes it last, and makes it active', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'keep', [accountRecord('keep', '工作', 1)])
     fs.mkdirSync(path.join(userData, 'accounts', 'keep'), { recursive: true })
@@ -158,15 +165,17 @@ describe('accountService', () => {
     const setups: Array<[string, string]> = []
     const before = Date.now()
 
-    const document = createAccount(
+    const document = await createAccount(
       { name: '  家庭 ', masterPassword: 'secret', confirmPassword: 'again' },
       depsFor(userData, {
         createEmpty: (file) => {
           createdFiles.push(file)
           fs.writeFileSync(file, 'new-db')
+          return Promise.resolve()
         },
         setup: (masterPassword, confirmPassword) => {
           setups.push([masterPassword, confirmPassword])
+          return Promise.resolve()
         },
       }),
     )
@@ -190,7 +199,7 @@ describe('accountService', () => {
     expect(getActiveAccountId()).toBe(created?.id)
   })
 
-  it('writes the target id, closes the current database, and opens the target', () => {
+  it('writes the target id, closes the current database, and opens the target', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'alpha', [
       accountRecord('alpha', '甲', 1),
@@ -199,7 +208,7 @@ describe('accountService', () => {
     setActiveAccountId('stale')
     const events: string[] = []
 
-    selectAccount('beta', depsFor(userData, {
+    await selectAccount('beta', depsFor(userData, {
       closeDatabase: () => {
         const saved = JSON.parse(fs.readFileSync(machineFile(userData), 'utf8')) as { activeAccountId: string }
         expect(saved.activeAccountId).toBe('beta')
@@ -208,7 +217,7 @@ describe('accountService', () => {
       openDatabase: (file) => {
         expect(events).toEqual(['close'])
         events.push(file)
-        return 'ready'
+        return Promise.resolve('ready')
       },
     }))
 
@@ -216,7 +225,7 @@ describe('accountService', () => {
     expect(getActiveAccountId()).toBe('beta')
   })
 
-  it('throws VAULT_FILE_DAMAGED and leaves the target active when the database is missing', () => {
+  it('throws VAULT_FILE_DAMAGED and leaves the target active when the database is missing', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'alpha', [
       accountRecord('alpha', '甲', 1),
@@ -224,16 +233,16 @@ describe('accountService', () => {
     ])
     setActiveAccountId('stale')
 
-    expect(() => selectAccount('beta', depsFor(userData, {
-      openDatabase: () => 'missing',
-    }))).toThrow(/^VAULT_FILE_DAMAGED$/)
+    await expect(selectAccount('beta', depsFor(userData, {
+      openDatabase: () => Promise.resolve('missing'),
+    }))).rejects.toThrow(/^VAULT_FILE_DAMAGED$/)
 
     const saved = JSON.parse(fs.readFileSync(machineFile(userData), 'utf8')) as { activeAccountId: string }
     expect(saved.activeAccountId).toBe('beta')
     expect(getActiveAccountId()).toBe('beta')
   })
 
-  it('refuses to select an account while the vault is unlocked', () => {
+  it('refuses to select an account while the vault is unlocked', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'alpha', [
       accountRecord('alpha', '甲', 1),
@@ -242,20 +251,20 @@ describe('accountService', () => {
     const original = fs.readFileSync(machineFile(userData), 'utf8')
     const events: string[] = []
 
-    expect(() => selectAccount('beta', depsFor(userData, {
+    await expect(selectAccount('beta', depsFor(userData, {
       isUnlocked: () => true,
       closeDatabase: () => events.push('close'),
       openDatabase: () => {
         events.push('open')
-        return 'ready'
+        return Promise.resolve('ready')
       },
-    }))).toThrow(/^VAULT_UNLOCK_REQUIRED$/)
+    }))).rejects.toThrow(/^VAULT_UNLOCK_REQUIRED$/)
 
     expect(fs.readFileSync(machineFile(userData), 'utf8')).toBe(original)
     expect(events).toEqual([])
   })
 
-  it('rejects a duplicate rename without asking for a password', () => {
+  it('rejects a duplicate rename without asking for a password', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'beta', [
       accountRecord('alpha', '工作', 1),
@@ -263,16 +272,16 @@ describe('accountService', () => {
     ])
     const original = fs.readFileSync(machineFile(userData), 'utf8')
 
-    expect(() => renameAccount(' 工作 ', depsFor(userData, {
+    await expect(renameAccount(' 工作 ', depsFor(userData, {
       verifyPassword: () => {
         throw new Error('password-checked')
       },
-    }))).toThrow(/^ACCOUNT_NAME_EXISTS$/)
+    }))).rejects.toThrow(/^ACCOUNT_NAME_EXISTS$/)
 
     expect(fs.readFileSync(machineFile(userData), 'utf8')).toBe(original)
   })
 
-  it('refuses to delete the only account and leaves its directory', () => {
+  it('refuses to delete the only account and leaves its directory', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'only', [accountRecord('only', '工作', 1)])
     const original = fs.readFileSync(machineFile(userData), 'utf8')
@@ -280,9 +289,9 @@ describe('accountService', () => {
     fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(path.join(dir, 'pwdbook.db'), 'only-db')
 
-    expect(() => deleteAccount('secret', depsFor(userData, {
+    await expect(deleteAccount('secret', depsFor(userData, {
       verifyPassword: () => true,
-    }))).toThrow(/^ACCOUNT_DELETE_LAST$/)
+    }))).rejects.toThrow(/^ACCOUNT_DELETE_LAST$/)
 
     expect(fs.existsSync(dir)).toBe(true)
     expect(fs.readFileSync(path.join(dir, 'pwdbook.db'), 'utf8')).toBe('only-db')
@@ -290,7 +299,7 @@ describe('accountService', () => {
     expect(fs.existsSync(`${dir}.deleting`)).toBe(false)
   })
 
-  it('deletes the active account and activates the first remaining account', () => {
+  it('deletes the active account and activates the first remaining account', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'alpha', [
       accountRecord('alpha', '甲', 1),
@@ -305,7 +314,7 @@ describe('accountService', () => {
     setActiveAccountId('stale')
     const events: string[] = []
 
-    const document = deleteAccount('secret', depsFor(userData, {
+    const document = await deleteAccount('secret', depsFor(userData, {
       verifyPassword: (password) => password === 'secret',
       lockSession: () => {
         expect(fs.existsSync(alphaDir)).toBe(true)
@@ -320,7 +329,7 @@ describe('accountService', () => {
         expect(fs.existsSync(alphaDir)).toBe(false)
         expect(fs.existsSync(`${alphaDir}.deleting`)).toBe(false)
         events.push(file)
-        return 'ready'
+        return Promise.resolve('ready')
       },
     }))
 
@@ -338,7 +347,7 @@ describe('accountService', () => {
     expect(getActiveAccountId()).toBe('beta')
   })
 
-  it('changes nothing when the password is wrong', () => {
+  it('changes nothing when the password is wrong', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'alpha', [
       accountRecord('alpha', '甲', 1),
@@ -353,11 +362,11 @@ describe('accountService', () => {
     setActiveAccountId('stale')
     const events: string[] = []
 
-    expect(() => deleteAccount('nope', depsFor(userData, {
+    await expect(deleteAccount('nope', depsFor(userData, {
       verifyPassword: () => false,
       lockSession: () => events.push('lock'),
       closeDatabase: () => events.push('close'),
-    }))).toThrow(/^WRONG_MASTER_PASSWORD$/)
+    }))).rejects.toThrow(/^WRONG_MASTER_PASSWORD$/)
 
     expect(events).toEqual([])
     expect(fs.readFileSync(machineFile(userData), 'utf8')).toBe(original)
@@ -367,7 +376,7 @@ describe('accountService', () => {
     expect(getActiveAccountId()).toBe('stale')
   })
 
-  it('rebuilds an empty database for the active account while the session is locked', () => {
+  it('rebuilds an empty database for the active account while the session is locked', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'keep', [accountRecord('keep', '工作', 1)])
     const original = fs.readFileSync(machineFile(userData), 'utf8')
@@ -375,9 +384,12 @@ describe('accountService', () => {
     fs.mkdirSync(dir, { recursive: true })
     const calls: string[] = []
 
-    rebuildEmptyVault(depsFor(userData, {
+    await rebuildEmptyVault(depsFor(userData, {
       resetAccountFiles: (accountDir) => calls.push(`reset:${accountDir}`),
-      createEmpty: (file) => calls.push(`empty:${file}`),
+      createEmpty: (file) => {
+        calls.push(`empty:${file}`)
+        return Promise.resolve()
+      },
     }))
 
     expect(calls).toEqual([
@@ -388,17 +400,20 @@ describe('accountService', () => {
     expect(fs.existsSync(dir)).toBe(true)
   })
 
-  it('refuses to rebuild an empty vault while the session is unlocked', () => {
+  it('refuses to rebuild an empty vault while the session is unlocked', async () => {
     const userData = tempUserData()
     writeDocument(userData, 'keep', [accountRecord('keep', '工作', 1)])
     const original = fs.readFileSync(machineFile(userData), 'utf8')
     const calls: string[] = []
 
-    expect(() => rebuildEmptyVault(depsFor(userData, {
+    await expect(rebuildEmptyVault(depsFor(userData, {
       isUnlocked: () => true,
       resetAccountFiles: () => calls.push('reset'),
-      createEmpty: () => calls.push('empty'),
-    }))).toThrow(/^VAULT_UNLOCK_REQUIRED$/)
+      createEmpty: () => {
+        calls.push('empty')
+        return Promise.resolve()
+      },
+    }))).rejects.toThrow(/^VAULT_UNLOCK_REQUIRED$/)
 
     expect(calls).toEqual([])
     expect(fs.readFileSync(machineFile(userData), 'utf8')).toBe(original)
