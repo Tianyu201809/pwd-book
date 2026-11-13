@@ -1,4 +1,6 @@
+import { app } from 'electron'
 import { getDefaultSettings } from './sessionService'
+import { readMachineDocument, updateMachineSettings } from '../accounts/machineStore'
 import { getSetting, setSetting } from '../db/helpers'
 import { clampClipboardHistoryLimit } from '../../shared/clipboardHistoryLimit'
 import { appError, ErrorCode } from '../../shared/errors'
@@ -6,8 +8,9 @@ import {
   readStoredAccelerator,
   resolveAccelerators,
 } from '../../shared/globalAccelerator'
+import { defaultMachineSettings, type MachineSettings } from '../../shared/machineDocument'
 import { clampQuickBarRecentLimit } from '../../shared/quickBarLimits'
-import type { CloseWindowAction, SecuritySettings } from '../../shared/types'
+import type { SecuritySettings } from '../../shared/types'
 import { truncateQuickBarRecentToLimit } from './quickBarRecentService'
 
 const SETTINGS_KEYS = {
@@ -18,28 +21,21 @@ const SETTINGS_KEYS = {
   clipboardPersistence: 'clipboard_persistence',
   clipboardHistoryLimit: 'clipboard_history_limit',
   clipboardQuickMode: 'clipboard_quick_mode',
-  clipboardAccelerator: 'clipboard_accelerator',
   clipboardClearSeconds: 'clipboard_clear_seconds',
-  closeWindowAction: 'close_window_action',
-  quickBarEnabled: 'quick_bar_enabled',
-  quickBarAccelerator: 'quick_bar_accelerator',
   quickBarRecentLimit: 'quick_bar_recent_limit',
-  mainWindowShortcutEnabled: 'main_window_shortcut_enabled',
-  mainWindowShortcutAccelerator: 'main_window_shortcut_accelerator',
-  notesManagerShortcutEnabled: 'notes_manager_shortcut_enabled',
-  notesManagerAccelerator: 'notes_manager_accelerator',
   browserFillEnabled: 'browser_fill_enabled',
   trashRetentionDays: 'trash_retention_days',
-  launchAtLoginEnabled: 'launch_at_login_enabled',
 } as const
 
-function parseCloseWindowAction(raw: string | null | undefined): CloseWindowAction {
-  if (raw === 'tray' || raw === 'quit') return raw
-  return 'ask'
+function currentMachineSettings(): MachineSettings {
+  const document = readMachineDocument(app.getPath('userData'))
+  if (document === null) return defaultMachineSettings()
+  return document.settings
 }
 
 export function getSecuritySettings(): SecuritySettings {
   const defaults = getDefaultSettings()
+  const machine = currentMachineSettings()
   return {
     autoLockMinutes: Number(getSetting(SETTINGS_KEYS.autoLockMinutes) ?? defaults.autoLockMinutes),
     clipboardClearEnabled:
@@ -61,36 +57,29 @@ export function getSecuritySettings(): SecuritySettings {
       (getSetting(SETTINGS_KEYS.clipboardQuickMode) ?? String(defaults.clipboardQuickMode)) ===
       'true',
     clipboardAccelerator: readStoredAccelerator(
-      getSetting(SETTINGS_KEYS.clipboardAccelerator),
+      machine.clipboardAccelerator,
       defaults.clipboardAccelerator,
     ),
     clipboardClearSeconds: Number(
       getSetting(SETTINGS_KEYS.clipboardClearSeconds) ?? defaults.clipboardClearSeconds,
     ),
-    closeWindowAction: parseCloseWindowAction(
-      getSetting(SETTINGS_KEYS.closeWindowAction) ?? defaults.closeWindowAction,
-    ),
-    quickBarEnabled:
-      (getSetting(SETTINGS_KEYS.quickBarEnabled) ?? String(defaults.quickBarEnabled)) === 'true',
+    closeWindowAction: machine.closeWindowAction,
+    quickBarEnabled: machine.quickBarEnabled,
     quickBarAccelerator: readStoredAccelerator(
-      getSetting(SETTINGS_KEYS.quickBarAccelerator),
+      machine.quickBarAccelerator,
       defaults.quickBarAccelerator,
     ),
     quickBarRecentLimit: clampQuickBarRecentLimit(
       getSetting(SETTINGS_KEYS.quickBarRecentLimit) ?? defaults.quickBarRecentLimit,
     ),
-    mainWindowShortcutEnabled:
-      (getSetting(SETTINGS_KEYS.mainWindowShortcutEnabled) ??
-        String(defaults.mainWindowShortcutEnabled)) === 'true',
+    mainWindowShortcutEnabled: machine.mainWindowShortcutEnabled,
     mainWindowShortcutAccelerator: readStoredAccelerator(
-      getSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator),
+      machine.mainWindowShortcutAccelerator,
       defaults.mainWindowShortcutAccelerator,
     ),
-    notesManagerShortcutEnabled:
-      (getSetting(SETTINGS_KEYS.notesManagerShortcutEnabled) ??
-        String(defaults.notesManagerShortcutEnabled)) === 'true',
+    notesManagerShortcutEnabled: machine.notesManagerShortcutEnabled,
     notesManagerAccelerator: readStoredAccelerator(
-      getSetting(SETTINGS_KEYS.notesManagerAccelerator),
+      machine.notesManagerAccelerator,
       defaults.notesManagerAccelerator,
     ),
     browserFillEnabled:
@@ -99,9 +88,7 @@ export function getSecuritySettings(): SecuritySettings {
     trashRetentionDays: Number(
       getSetting(SETTINGS_KEYS.trashRetentionDays) ?? defaults.trashRetentionDays,
     ),
-    launchAtLoginEnabled:
-      (getSetting(SETTINGS_KEYS.launchAtLoginEnabled) ??
-        String(defaults.launchAtLoginEnabled)) === 'true',
+    launchAtLoginEnabled: machine.launchAtLoginEnabled,
   }
 }
 
@@ -150,19 +137,21 @@ export function updateSecuritySettings(partial: Partial<SecuritySettings>): Secu
   setSetting(SETTINGS_KEYS.clipboardPersistence, String(next.clipboardPersistence))
   setSetting(SETTINGS_KEYS.clipboardHistoryLimit, String(next.clipboardHistoryLimit))
   setSetting(SETTINGS_KEYS.clipboardQuickMode, String(next.clipboardQuickMode))
-  setSetting(SETTINGS_KEYS.clipboardAccelerator, next.clipboardAccelerator)
   setSetting(SETTINGS_KEYS.clipboardClearSeconds, String(next.clipboardClearSeconds))
-  setSetting(SETTINGS_KEYS.closeWindowAction, next.closeWindowAction)
-  setSetting(SETTINGS_KEYS.quickBarEnabled, String(next.quickBarEnabled))
-  setSetting(SETTINGS_KEYS.quickBarAccelerator, next.quickBarAccelerator)
   setSetting(SETTINGS_KEYS.quickBarRecentLimit, String(next.quickBarRecentLimit))
-  setSetting(SETTINGS_KEYS.mainWindowShortcutEnabled, String(next.mainWindowShortcutEnabled))
-  setSetting(SETTINGS_KEYS.mainWindowShortcutAccelerator, next.mainWindowShortcutAccelerator)
-  setSetting(SETTINGS_KEYS.notesManagerShortcutEnabled, String(next.notesManagerShortcutEnabled))
-  setSetting(SETTINGS_KEYS.notesManagerAccelerator, next.notesManagerAccelerator)
   setSetting(SETTINGS_KEYS.browserFillEnabled, String(next.browserFillEnabled))
   setSetting(SETTINGS_KEYS.trashRetentionDays, String(next.trashRetentionDays))
-  setSetting(SETTINGS_KEYS.launchAtLoginEnabled, String(next.launchAtLoginEnabled))
+  updateMachineSettings(app.getPath('userData'), {
+    launchAtLoginEnabled: next.launchAtLoginEnabled,
+    closeWindowAction: next.closeWindowAction,
+    quickBarEnabled: next.quickBarEnabled,
+    quickBarAccelerator: next.quickBarAccelerator,
+    mainWindowShortcutEnabled: next.mainWindowShortcutEnabled,
+    mainWindowShortcutAccelerator: next.mainWindowShortcutAccelerator,
+    notesManagerShortcutEnabled: next.notesManagerShortcutEnabled,
+    notesManagerAccelerator: next.notesManagerAccelerator,
+    clipboardAccelerator: next.clipboardAccelerator,
+  })
   if (next.quickBarRecentLimit !== current.quickBarRecentLimit) {
     truncateQuickBarRecentToLimit()
   }

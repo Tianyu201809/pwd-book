@@ -1,7 +1,7 @@
-import { clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
+import { app, clipboard, dialog, ipcMain, nativeImage, shell } from 'electron'
+import { updateMachineSettings } from '../accounts/machineStore'
 import { rebuildTrayMenu } from '../tray'
-import { setSetting } from '../db/helpers'
-import { UI_LOCALE_SETTING_KEY, type TrayLocale } from '../../shared/trayLabels'
+import { type TrayLocale } from '../../shared/trayLabels'
 import { hideQuickBarOnLock } from '../quickBar'
 import {
   hideClipboardWindow,
@@ -611,7 +611,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC.settingsSetUiLocale, (_event, locale: TrayLocale) => {
     const next = locale === 'en' ? 'en' : 'zh-CN'
-    setSetting(UI_LOCALE_SETTING_KEY, next)
+    updateMachineSettings(app.getPath('userData'), { uiLocale: next })
     rebuildTrayMenu()
     return next
   })

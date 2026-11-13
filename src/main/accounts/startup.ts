@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
 import { isValidSqliteHeader } from './accountPaths'
+import { writeMachineDocument } from './machineStore'
 import {
   DEFAULT_ACCOUNT_NAME,
   MACHINE_DB_KEYS,
@@ -196,10 +197,6 @@ function accountDocument(id: string, createdAt: number, settings: MachineSetting
     accounts: [{ id, name: DEFAULT_ACCOUNT_NAME, createdAt }],
     settings,
   }
-}
-
-function writeMachineDocument(userData: string, document: MachineDocument): void {
-  fs.writeFileSync(path.join(userData, 'machine.json'), JSON.stringify(document))
 }
 
 async function migrateLegacy(

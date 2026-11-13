@@ -1,7 +1,7 @@
 import { app, type BrowserWindow, Menu, Tray, nativeImage } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
-import { getSetting } from './db/helpers'
+import { readMachineDocument } from './accounts/machineStore'
 import { getSecuritySettings } from './services/settingsService'
 import { showClipboardWindow } from './clipboardWindow'
 import { openNotesManager } from './noteWindows'
@@ -9,7 +9,6 @@ import { showQuickBar } from './quickBar'
 import {
   getTrayLabels,
   trayMenuActions,
-  UI_LOCALE_SETTING_KEY,
   type TrayLocale,
   type TrayMenuAction,
 } from '../shared/trayLabels'
@@ -43,7 +42,7 @@ export function requestQuit(): void {
 }
 
 function readTrayLocale(): TrayLocale {
-  const stored = getSetting(UI_LOCALE_SETTING_KEY)
+  const stored = readMachineDocument(app.getPath('userData'))?.settings.uiLocale
   return stored === 'en' ? 'en' : 'zh-CN'
 }
 

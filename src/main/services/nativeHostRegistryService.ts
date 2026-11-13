@@ -3,16 +3,16 @@ import fs from 'fs'
 import path from 'path'
 import { app, shell } from 'electron'
 import { appError, ErrorCode } from '../../shared/errors'
-import { getSetting, setSetting } from '../db/helpers'
+import { readMachineDocument, updateMachineSettings } from '../accounts/machineStore'
 import type { NativeHostRegistrationInfo } from '../../shared/browserBridgeProtocol'
 
-const SETTINGS_KEY_EXTENSION_ID = 'browser_extension_id'
 const HOST_NAME = 'com.pwdbook.app'
 
 const EXTENSION_ID_RE = /^[a-p]{32}$/
 
 export function getSavedExtensionId(): string {
-  return getSetting(SETTINGS_KEY_EXTENSION_ID)?.trim().toLowerCase() ?? ''
+  const stored = readMachineDocument(app.getPath('userData'))?.settings.browserExtensionId
+  return stored?.trim().toLowerCase() ?? ''
 }
 
 function resolveBundledNativeHostDir(): string {
@@ -185,6 +185,6 @@ export function registerNativeHost(extensionId: string): NativeHostRegistrationI
     registerNativeHostMac(id, hostEntryPath, manifestPath)
   }
 
-  setSetting(SETTINGS_KEY_EXTENSION_ID, id)
+  updateMachineSettings(app.getPath('userData'), { browserExtensionId: id })
   return getNativeHostRegistrationInfo()
 }
