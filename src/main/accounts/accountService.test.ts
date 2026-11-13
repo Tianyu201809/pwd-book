@@ -62,12 +62,14 @@ function depsFor(userData: string, partial: Partial<AccountDeps> = {}): AccountD
 }
 
 describe('accountService', () => {
-  it('does not import electron, sql.js, database, or vaultService at the top level', () => {
+  it('loads live dependencies through a bundled module instead of a relative require', () => {
     const source = fs.readFileSync(new URL('./accountService.ts', import.meta.url), 'utf8')
-    const factoryAt = source.indexOf('function defaultAccountDeps')
-    expect(factoryAt).toBeGreaterThan(0)
-    const head = source.slice(0, factoryAt)
-    expect(head).not.toMatch(/electron|sql\.js|database|vaultService/)
+    const runtime = fs.readFileSync(new URL('./accountRuntime.ts', import.meta.url), 'utf8')
+    expect(source).not.toMatch(/createRequire|require\(/)
+    expect(source).toContain("import('./accountRuntime')")
+    expect(runtime).toContain("from '../services/sessionService'")
+    expect(runtime).toContain("from '../services/vaultService'")
+    expect(runtime).toContain("from '../db/database'")
   })
 
   it('does not create an accounts directory when the name is blank', async () => {

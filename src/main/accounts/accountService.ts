@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto'
 import fs from 'fs'
-import { createRequire } from 'module'
 import path from 'path'
 import { normalizeAccountName, validateAccountName } from '../../shared/accountName'
 import { ErrorCode } from '../../shared/errors'
@@ -12,8 +11,6 @@ import {
 import { setActiveAccountId } from './activeAccount'
 import { accountDataPaths } from './accountPaths'
 import { readMachineDocument, writeMachineDocument } from './machineStore'
-
-const require = createRequire(import.meta.url)
 
 export interface AccountDeps {
   userData: string
@@ -27,84 +24,10 @@ export interface AccountDeps {
   resetAccountFiles(accountDir: string): void
 }
 
-interface ElectronModule {
-  app: { getPath(name: 'userData'): string }
-}
-
-interface SessionModule {
-  isUnlocked(): boolean
-  lockSession(): void
-}
-
-interface SettingsModule {
-  getSetting(key: string): string | null
-}
-
-interface VaultCryptoModule {
-  verifyMasterPassword(password: string, saltHex: string, hashHex: string): boolean
-}
-
-interface DatabaseModule {
-  setDatabaseFile(filePath: string): void
-  initDatabase(): Promise<unknown>
-  createEmptyDatabase(): Promise<unknown>
-  closeDatabase(): void
-  resetDatabaseFile(): void
-  VaultFileDamagedError: new (quarantinedPath: string | null) => Error
-}
-
-interface VaultModule {
-  setupVault(masterPassword: string, confirmPassword: string): void
-}
-
-function defaultAccountDeps(): AccountDeps {
-  const electron = require('electron') as ElectronModule
-  const session = require('../services/sessionService') as SessionModule
-  const settings = require('../db/helpers') as SettingsModule
-  const vaultCrypto = require('../crypto/vaultCrypto') as VaultCryptoModule
-  const database = require('../db/database') as DatabaseModule
-  const vault = require('../services/vaultService') as VaultModule
-
-  return {
-    get userData(): string {
-      return electron.app.getPath('userData')
-    },
-    isUnlocked: () => session.isUnlocked(),
-    lockSession: () => session.lockSession(),
-    verifyPassword(password: string): boolean {
-      const salt = settings.getSetting('master_salt')
-      const hash = settings.getSetting('master_hash')
-      if (!salt || !hash) return false
-      try {
-        return vaultCrypto.verifyMasterPassword(password, salt, hash)
-      } catch {
-        return false
-      }
-    },
-    async openDatabase(file: string): Promise<'ready' | 'missing'> {
-      database.setDatabaseFile(file)
-      await database.initDatabase()
-      return 'ready'
-    },
-    async createEmpty(file: string): Promise<void> {
-      database.setDatabaseFile(file)
-      await database.createEmptyDatabase()
-    },
-    async setup(masterPassword: string, confirmPassword: string): Promise<void> {
-      await vault.setupVault(masterPassword, confirmPassword)
-    },
-    closeDatabase(): void {
-      database.closeDatabase()
-    },
-    resetAccountFiles(accountDir: string): void {
-      database.setDatabaseFile(path.join(accountDir, 'pwdbook.db'))
-      database.resetDatabaseFile()
-    },
-  }
-}
-
-function useDeps(deps?: AccountDeps): AccountDeps {
-  return deps ?? defaultAccountDeps()
+async function useDeps(deps?: AccountDeps): Promise<AccountDeps> {
+  if (deps) return deps
+  const { liveAccountDeps } = await import('./accountRuntime')
+  return liveAccountDeps()
 }
 
 function validatedName(name: string, existingNames: readonly string[]): string {
@@ -132,7 +55,7 @@ export async function createAccount(
   input: { name: string; masterPassword: string; confirmPassword: string },
   deps?: AccountDeps,
 ): Promise<MachineDocument> {
-  const resolved = useDeps(deps)
+  const resolved = await useDeps(deps)
   const document = readMachineDocument(resolved.userData)
   const normalized = validatedName(input.name, document?.accounts.map((account) => account.name) ?? [])
   const previousId = document?.activeAccountId ?? ''
@@ -168,7 +91,7 @@ export async function createAccount(
 }
 
 export async function selectAccount(accountId: string, deps?: AccountDeps): Promise<void> {
-  const resolved = useDeps(deps)
+  const resolved = await useDeps(deps)
   const document = readMachineDocument(resolved.userData)
   if (!document || !document.accounts.some((account) => account.id === accountId)) {
     throw new Error(ErrorCode.ACCOUNT_NOT_FOUND)
@@ -182,7 +105,7 @@ export async function selectAccount(accountId: string, deps?: AccountDeps): Prom
 }
 
 export async function renameAccount(name: string, deps?: AccountDeps): Promise<AccountRecord> {
-  const resolved = useDeps(deps)
+  const resolved = await useDeps(deps)
   const { document, account } = requireActiveAccount(resolved.userData)
   const others = document.accounts
     .filter((item) => item.id !== account.id)
@@ -196,7 +119,7 @@ export async function renameAccount(name: string, deps?: AccountDeps): Promise<A
 }
 
 export async function deleteAccount(masterPassword: string, deps?: AccountDeps): Promise<MachineDocument> {
-  const resolved = useDeps(deps)
+  const resolved = await useDeps(deps)
   const document = readMachineDocument(resolved.userData)
   if (!document || document.accounts.length < 2) throw new Error(ErrorCode.ACCOUNT_DELETE_LAST)
   const current = document.accounts.find((account) => account.id === document.activeAccountId)
@@ -223,7 +146,7 @@ export async function deleteAccount(masterPassword: string, deps?: AccountDeps):
 }
 
 export async function rebuildEmptyVault(deps?: AccountDeps): Promise<void> {
-  const resolved = useDeps(deps)
+  const resolved = await useDeps(deps)
   if (resolved.isUnlocked()) throw new Error(ErrorCode.VAULT_UNLOCK_REQUIRED)
   const { account } = requireActiveAccount(resolved.userData)
   const paths = accountDataPaths(resolved.userData, account.id)
