@@ -23,6 +23,7 @@ import {
 } from 'lucide-vue-next'
 import AppearancePanel from '@/components/AppearancePanel.vue'
 import BrowserSettingsPanel from '@/components/BrowserSettingsPanel.vue'
+import EmailBackupView from '@/components/EmailBackupView.vue'
 import appIcon from '@/assets/images/brand/app-icon.png'
 import ClipboardSettingsPanel from '@/components/ClipboardSettingsPanel.vue'
 import NotesSettingsPanel from '@/components/NotesSettingsPanel.vue'
@@ -53,7 +54,6 @@ const {
   updateSecuritySettings,
   resetAllData,
   openSync,
-  openEmailBackup,
   errorMessage,
   clearError,
   bootState,
@@ -161,6 +161,7 @@ const sanitizedReleaseNotes = computed(() => (
 
 const tabs = computed(() => [
   { id: 'security' as SettingsTab, label: t('settings.security'), icon: Shield, iconStyle: NAV_ICON_STYLES.shield },
+  { id: 'email-backup' as SettingsTab, label: t('tools.emailBackupTitle'), icon: MailCheck, iconStyle: NAV_ICON_STYLES.mailCheck },
   { id: 'clipboard' as SettingsTab, label: t('settings.clipboardTab'), icon: Clipboard, iconStyle: NAV_ICON_STYLES.clipboard },
   { id: 'notes' as SettingsTab, label: t('settings.notesTab'), icon: StickyNote, iconStyle: NAV_ICON_STYLES.notes },
   { id: 'browser' as SettingsTab, label: t('settings.browserTab'), icon: Globe, iconStyle: NAV_ICON_STYLES.browser },
@@ -498,32 +499,15 @@ async function handleReset(): Promise<void> {
                 @update:model-value="onCloseWindowChange"
               />
             </div>
-            <div class="row email-backup-row last">
-              <div>
-                <p class="row-title">
-                  {{ t('tools.emailBackupTitle') }}
-                </p>
-                <p class="row-desc">
-                  {{ t('tools.emailBackupDesc') }}
-                </p>
-                <UiButton
-                  variant="default"
-                  size="small"
-                  class="email-backup-open-btn"
-                  @click="openEmailBackup"
-                >
-                  <MailCheck
-                    :size="14"
-                    :stroke-width="1.75"
-                  />
-                  {{ t('settings.emailBackupOpen') }}
-                </UiButton>
-              </div>
-            </div>
           </UiCard>
 
           <RecoverySettingsPanel />
         </div>
+
+        <EmailBackupView
+          v-else-if="activeTab === 'email-backup'"
+          embedded
+        />
 
         <ClipboardSettingsPanel v-else-if="activeTab === 'clipboard'" />
 
@@ -882,10 +866,6 @@ h3 {
 .row-desc--hint {
   margin-top: 6px;
   color: var(--status-warning, #c99700);
-}
-
-.email-backup-open-btn {
-  margin-top: 10px;
 }
 
 .select {

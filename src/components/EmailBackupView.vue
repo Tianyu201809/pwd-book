@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
@@ -18,7 +18,12 @@ import { UiInput, UiButton, UiCheckbox } from '@/components/ui'
 import { useAppState } from '@/composables/useAppState'
 import { showToast } from '@/composables/useToast'
 import { parseErrorMessage } from '@/shared/utils'
+import type { EmailBackupSettingsUpdate } from '@/shared/types'
 import type { BackupFrequency } from '@/types'
+
+const props = withDefaults(defineProps<{ embedded?: boolean }>(), {
+  embedded: false,
+})
 
 const {
   navigateTo,
@@ -62,12 +67,21 @@ const smtpPasswordModel = computed({
   },
 })
 
-const saving = ref(false)
+const settingsLoaded = ref(false)
+const autosaveStatus = ref<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle')
+const autosaveError = ref('')
 const testing = ref(false)
 const backingUp = ref(false)
 const backupSuccess = ref(false)
 const showMasterModal = ref(false)
 const masterModalRef = ref<InstanceType<typeof MasterPasswordConfirmModal> | null>(null)
+const AUTO_SAVE_DELAY_MS = 600
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null
+let saveInFlight: Promise<boolean> | null = null
+let syncingSettings = false
+let passwordFocused = false
+let changeVersion = 0
+let savedVersion = 0
 
 const frequencyOptions = computed(() => [
   { id: 'manual' as BackupFrequency, label: t('tools.emailBackup.frequencyManual') },
@@ -108,6 +122,7 @@ function syncFromSettings(): void {
 }
 
 function onSmtpPasswordFocus(): void {
+  passwordFocused = true
   if (!smtpPasswordEdited.value && emailBackupSettings.value.smtp.hasPassword) {
     smtpPasswordEdited.value = true
     smtpPassword.value = ''
@@ -115,41 +130,100 @@ function onSmtpPasswordFocus(): void {
 }
 
 function onSmtpPasswordBlur(): void {
+  passwordFocused = false
   if (!smtpPassword.value) smtpPasswordEdited.value = false
 }
 
-watch(emailBackupSettings, syncFromSettings, { deep: true })
-
 onMounted(async () => {
+  syncingSettings = true
   await loadEmailBackupSettings()
   syncFromSettings()
+  await nextTick()
+  syncingSettings = false
+  settingsLoaded.value = true
+})
+
+function clearAutosaveTimer(): void {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  autosaveTimer = null
+}
+
+function queueAutosave(): void {
+  clearAutosaveTimer()
+  autosaveStatus.value = 'pending'
+  autosaveError.value = ''
+  autosaveTimer = setTimeout(() => {
+    autosaveTimer = null
+    void saveSettings()
+  }, AUTO_SAVE_DELAY_MS)
+}
+
+function scheduleAutosave(): void {
+  if (!settingsLoaded.value || syncingSettings) return
+  changeVersion += 1
+  queueAutosave()
+}
+
+function buildSettingsUpdate(): EmailBackupSettingsUpdate {
+  return {
+    recipientEmail: recipientEmail.value,
+    frequency: frequency.value,
+    smtp: {
+      host: smtpHost.value,
+      port: Number(smtpPort.value),
+      secure: smtpSecure.value,
+      username: smtpUsername.value,
+      password: smtpPassword.value || undefined,
+    },
+  }
+}
+
+watch(
+  [recipientEmail, frequency, smtpHost, smtpPort, smtpSecure, smtpUsername],
+  scheduleAutosave,
+)
+
+watch(smtpPassword, () => {
+  if (smtpPasswordEdited.value && smtpPassword.value) scheduleAutosave()
 })
 
 async function saveSettings(): Promise<boolean> {
-  saving.value = true
-  try {
-    await updateEmailBackupSettings({
-      recipientEmail: recipientEmail.value,
-      frequency: frequency.value,
-      smtp: {
-        host: smtpHost.value,
-        port: Number(smtpPort.value),
-        secure: smtpSecure.value,
-        username: smtpUsername.value,
-        password: smtpPassword.value || undefined,
-      },
-    })
-    smtpPassword.value = ''
-    smtpPasswordEdited.value = false
-    showSmtpPassword.value = false
-    showToast(t('tools.emailBackup.settingsSaved'), 'success')
-    return true
-  } catch {
-    return false
-  } finally {
-    saving.value = false
-  }
+  clearAutosaveTimer()
+  if (saveInFlight && !(await saveInFlight)) return false
+  if (changeVersion === savedVersion) return true
+
+  const version = changeVersion
+  autosaveStatus.value = 'saving'
+  autosaveError.value = ''
+  const request = (async () => {
+    try {
+      await updateEmailBackupSettings(buildSettingsUpdate())
+      savedVersion = version
+      const latestValuesSaved = changeVersion === version
+      autosaveStatus.value = latestValuesSaved ? 'saved' : 'pending'
+      if (latestValuesSaved && !passwordFocused && smtpPasswordEdited.value) {
+        smtpPassword.value = ''
+        smtpPasswordEdited.value = false
+        showSmtpPassword.value = false
+      }
+      return true
+    } catch (error) {
+      autosaveStatus.value = 'error'
+      autosaveError.value = parseErrorMessage(error)
+      return false
+    }
+  })()
+  saveInFlight = request
+  const saved = await request
+  if (saveInFlight === request) saveInFlight = null
+  return saved
 }
+
+onBeforeUnmount(() => {
+  if (!autosaveTimer) return
+  clearAutosaveTimer()
+  void saveSettings()
+})
 
 async function handleTestConnection(): Promise<void> {
   const saved = await saveSettings()
@@ -194,9 +268,15 @@ function goBack(): void {
 </script>
 
 <template>
-  <div class="tool-page-view">
+  <div
+    class="tool-page-view"
+    :class="{ 'tool-page-view--embedded': props.embedded }"
+  >
     <div class="tool-page-body">
-      <aside class="tool-page-sidebar">
+      <aside
+        v-if="!props.embedded"
+        class="tool-page-sidebar"
+      >
         <button
           type="button"
           class="tool-back-btn"
@@ -224,8 +304,18 @@ function goBack(): void {
         </div>
       </aside>
 
-      <main class="tool-page-main">
+      <component
+        :is="props.embedded ? 'section' : 'main'"
+        class="tool-page-main"
+      >
         <div class="tool-page-content">
+          <header
+            v-if="props.embedded"
+            class="email-backup-heading"
+          >
+            <h3>{{ t('tools.emailBackup.title') }}</h3>
+            <p>{{ t('tools.emailBackup.subtitle') }}</p>
+          </header>
           <section class="panel-glow surface-card backup-panel">
             <div class="field">
               <label>{{ t('tools.emailBackup.recipientEmail') }}</label>
@@ -342,15 +432,18 @@ function goBack(): void {
               </div>
             </div>
 
-            <UiButton
-              variant="ghost"
-              class="save-btn"
-              :disabled="saving"
-              :loading="saving"
-              @click="saveSettings"
+            <p
+              v-if="autosaveStatus !== 'idle'"
+              class="autosave-status"
+              :class="{
+                'autosave-status--saved': autosaveStatus === 'saved',
+                'autosave-status--error': autosaveStatus === 'error',
+              }"
+              role="status"
+              aria-live="polite"
             >
-              {{ t('tools.emailBackup.saveSettings') }}
-            </UiButton>
+              {{ autosaveStatus === 'error' ? autosaveError : t(autosaveStatus === 'saved' ? 'tools.emailBackup.settingsSaved' : 'tools.emailBackup.settingsSaving') }}
+            </p>
 
             <div class="info-card">
               <Shield
@@ -439,7 +532,7 @@ function goBack(): void {
             </UiButton>
           </div>
         </div>
-      </main>
+      </component>
     </div>
 
     <MasterPasswordConfirmModal
@@ -456,6 +549,56 @@ function goBack(): void {
 </template>
 
 <style scoped>
+.tool-page-view--embedded {
+  height: auto;
+}
+
+.tool-page-view--embedded .tool-page-body {
+  display: block;
+  overflow: visible;
+}
+
+.tool-page-view--embedded .tool-page-main {
+  overflow: visible;
+  padding: 0;
+}
+
+.tool-page-view--embedded .tool-page-content {
+  max-width: 760px;
+}
+
+.email-backup-heading {
+  margin-bottom: 20px;
+}
+
+.email-backup-heading h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.email-backup-heading p {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.autosave-status {
+  min-height: 16px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.autosave-status--saved {
+  color: var(--status-success);
+}
+
+.autosave-status--error {
+  color: var(--status-danger);
+}
+
 .tool-sidebar-hero {
   padding: 0 8px;
 }
@@ -566,12 +709,6 @@ function goBack(): void {
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.5;
-}
-
-.save-btn {
-  align-self: flex-start;
-  padding: 8px 16px;
-  font-size: 13px;
 }
 
 .info-card {

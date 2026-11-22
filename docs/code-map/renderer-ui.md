@@ -16,7 +16,7 @@ App.vue
 │   ├── VaultSidebar.vue      # 分类导航、按住拖动排序、分类右键菜单、标签筛选（v1.12.0；v1.14.0 可收缩；v1.17.0 PanelEdge；v1.18.0 pointerdown 立即切换分类）
 │   ├── PasswordList.vue      # 搜索、排序、列表操作；**v1.22.0** 列表/方块布局
 │   └── PasswordDetail.vue    # 条目编辑、图标选择、TOTP（v1.12.0）；附件与自定义字段（**v1.22.0**）；v1.14.0 弹出小窗口；v1.17.0 PanelEdge
-├── SettingsView.vue          # 设置页 Tab 容器（安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 版本更新）
+├── SettingsView.vue          # 设置页 Tab 容器（安全 / 邮箱备份 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 版本更新）
 │   ├── ClipboardSettingsPanel.vue
 │   ├── clipboard/ClipboardGuideModal.vue   # v1.33.0 使用向导
 │   ├── NotesSettingsPanel.vue              # v1.39.0 便签管理快捷键
@@ -26,7 +26,7 @@ App.vue
 │   ├── TrashSettingsPanel.vue
 │   ├── RecoverySettingsPanel.vue
 │   └── AppearancePanel.vue
-├── EmailBackupView.vue       # 邮箱备份（返回 → 设置 → 安全；v1.13.0 SMTP 密码占位/显隐）
+├── EmailBackupView.vue       # 邮箱备份设置页与独立备份视图（v1.13.0 SMTP 密码占位/显隐）
 ├── SyncHubView.vue           # 同步方式选择（v1.19.0，设置 → 数据 → 同步）
 ├── FolderSyncView.vue        # 文件夹同步（v1.19.0，Enpass 式目录 + vault.pwdbook）
 ├── PasswordGenView.vue       # 随机密码（侧栏工具区入口）
@@ -120,8 +120,9 @@ App.vue
 
 ### SettingsView.vue
 
-- **v1.33.0** 起分区 Tab；现为安全 / 剪切板 / **便签** / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 版本更新；Tab 图标使用 `IconBadge`（v1.11.0）；侧栏 `overflow-y: auto`。
-- **安全** Tab：开机启动、自动锁定、**复制密码后清除系统剪贴板**、关闭窗口、邮箱备份、恢复密钥；`EmailBackupView` 返回时 `navigateTo('settings', 'security')`。
+- **设置分区**：安全 / 邮箱备份 / 剪切板 / **便签** / 浏览器 / 悬浮条 / 回收站 / 外观 / 数据 / 版本更新；Tab 图标使用 `IconBadge`（v1.11.0）；侧栏 `overflow-y: auto`。
+- **安全** Tab：开机启动、自动锁定、**复制密码后清除系统剪贴板**、关闭窗口、恢复密钥。
+- **邮箱备份** Tab：`EmailBackupView` 以嵌入设置页模式展示 SMTP 配置和加密 ZIP 发送；直接备份视图保留独立返回入口。
 - **剪切板** Tab：`ClipboardSettingsPanel` — 历史开关、默认清理周期、条数上限、持久化、**使用向导**（`ClipboardGuideModal`）、**v1.43.0** `ShortcutRecorder`（默认 `Alt+Shift+O`）。
 - **便签** Tab（**v1.39.0**）：`NotesSettingsPanel` — 管理窗全局快捷键开关；**v1.43.0** 可录制更换，默认 `Alt+Shift+N`。
 - **浏览器** Tab：`BrowserSettingsPanel` — 自动填充、Native Host、**安装向导**（`BrowserExtensionGuideModal` + `BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page`。

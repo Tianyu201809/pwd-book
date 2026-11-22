@@ -657,7 +657,7 @@ function focusEntryFromQuickBar(entryId: string): void {
 }
 
 function openEmailBackup(): void {
-  navigateTo('email-backup')
+  navigateTo('settings', 'email-backup')
   void loadEmailBackupSettings()
 }
 

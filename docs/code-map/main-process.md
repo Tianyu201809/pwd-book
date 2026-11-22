@@ -49,7 +49,7 @@
 
 ### settingsService (`src/main/services/settingsService.ts`)
 
-读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**便签管理快捷键**、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**、**自动更新开关**（**v1.44.0**）等）。界面分区见 **设置 → 安全 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 版本更新**（**v1.33.0**；便签 Tab 为 **v1.39.0**）。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
+读写 `SecuritySettings`（**开机自动启动**、自动锁定、剪贴板自动清除、**剪切板历史**（**v1.32.0**，含 **v1.33.0** `clipboardHistoryLimit`、**v1.34.0** `clipboardQuickMode`）、关闭行为、快捷条与主窗口全局快捷键、**便签管理快捷键**、**快捷条显示条数**（**v1.26.0**）、**浏览器自动填充**、**自动更新开关**（**v1.44.0**）等）。界面分区见 **设置 → 安全 / 邮箱备份 / 剪切板 / 便签 / 浏览器 / 悬浮条 / 回收站 / 版本更新**。各字段仍存于 `app_settings` 独立键（见 [database-schema.md](./database-schema.md)）。
 
 ### updateService（**v1.44.0**）
 

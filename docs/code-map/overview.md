@@ -69,7 +69,7 @@ lock ──unlock──► vault ◄──► settings / email-backup / sync / w
 
 - **lock**：`LockScreen.vue` — 创建/解锁/恢复密钥/清除保险库
 - **vault**：`VaultView.vue` — 侧边栏 + 列表 + 详情
-- **settings**：`SettingsView.vue` — 安全、剪切板、浏览器、悬浮条、回收站、外观、数据、版本更新（**v1.33.0** 分区）
+- **settings**：`SettingsView.vue` — 安全、邮箱备份、剪切板、便签、浏览器、悬浮条、回收站、外观、数据、版本更新
 - **sync**：`SyncHubView.vue` — 同步方式选择（v1.19.0，入口：设置 → 数据 → 同步）
 - **wifi-sync**：`WifiSyncView.vue` — 局域网同步（v1.9.0，经 Sync Hub 进入）
 - **folder-sync**：`FolderSyncView.vue` — 文件夹同步（v1.19.0，经 Sync Hub 进入）

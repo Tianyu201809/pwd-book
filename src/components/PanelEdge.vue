@@ -165,6 +165,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   align-self: stretch;
   width: var(--edge-width);
+  transition: width var(--panel-motion-duration, 280ms) cubic-bezier(0.22, 1, 0.36, 1);
   cursor: col-resize;
   touch-action: none;
 }
@@ -285,8 +286,14 @@ onUnmounted(() => {
 }
 
 .panel-edge.collapsed {
-  width: 100%;
+  width: var(--panel-collapsed-width, 100%);
   cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-edge {
+    transition: none;
+  }
 }
 
 .panel-edge.collapsed::before {

@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, Plus, Pencil, Trash2, Box, Layers, FolderOpen, Settings, Sparkles, ShieldAlert, Hash, ArchiveRestore, Clipboard, StickyNote } from 'lucide-vue-next'
 import PanelEdge from '@/components/PanelEdge.vue'
+import PanelContentMotion from '@/components/PanelContentMotion.vue'
 import CategoryManagePanel from '@/components/CategoryManagePanel.vue'
 import TagManagePanel from '@/components/TagManagePanel.vue'
 import CategoryIconView from '@/components/CategoryIconView.vue'
@@ -70,8 +71,9 @@ function loadSidebarWidth(): number {
 function getMaxSidebarWidth(): number {
   const body = document.querySelector('.vault-body')
   if (!body) return readSidebarMaxWidth()
-  const detail = document.querySelector('.detail-shell')
-  const detailWidth = detail?.getBoundingClientRect().width ?? 0
+  const detail = document.querySelector<HTMLElement>('.detail-shell')
+  // Reserve the destination width even while the other panel is moving.
+  const detailWidth = detail ? Number.parseFloat(detail.style.width) || detail.offsetWidth : 0
   const reserved = readListColumnMinWidth() + detailWidth
   const available = body.getBoundingClientRect().width - reserved
   return Math.min(readSidebarMaxWidth(), Math.max(0, Math.floor(available)))
@@ -155,8 +157,8 @@ const shellWidth = computed(() =>
 
 const shellStyle = computed(() => ({
   width: shellWidth.value,
-  maxWidth: shellWidth.value,
-  flexBasis: shellWidth.value,
+  '--panel-collapsed-width': `${SIDEBAR_COLLAPSED_WIDTH}px`,
+  '--panel-expanded-width': `${panelWidth.value}px`,
 }))
 
 function toggleSidebarCollapse(): void {
@@ -564,268 +566,279 @@ onBeforeUnmount(() => {
     }"
     :style="shellStyle"
   >
-    <div
-      v-if="!sidebarCollapsed"
-      class="sidebar-main"
+    <PanelContentMotion
+      side="left"
+      :collapsed="sidebarCollapsed"
     >
-      <div class="sidebar-top">
-        <VaultClock />
-      </div>
-
-      <div class="category-search-wrap">
-        <div class="category-search-row">
-          <div class="search-field-wrap">
-            <Search
-              v-if="!isAnimalIsland"
-              class="search-field-icon"
-              :size="14"
-              :stroke-width="1.5"
-            />
-            <UiInput
-              v-model="categorySearchQuery"
-              class="search-field-input"
-              :class="{ 'search-field-input--animal': isAnimalIsland }"
-              :placeholder="t('vault.categorySearchPlaceholder')"
-              allow-clear
-            >
-              <template
-                v-if="isAnimalIsland"
-                #prefix
-              >
-                <Search
-                  :size="14"
-                  :stroke-width="1.5"
-                />
-              </template>
-            </UiInput>
-          </div>
-          <button
-            type="button"
-            class="category-add-btn"
-            data-tour="sidebar-new-category"
-            :title="t('category.newCategory')"
-            :aria-label="t('category.newCategory')"
-            @click="openCreateCategory"
-          >
-            <Plus
-              :size="16"
-              :stroke-width="1.5"
-            />
-          </button>
-        </div>
-      </div>
-
-      <nav
-        ref="sidebarNavRef"
-        class="sidebar-nav"
-        data-tour="sidebar-categories"
+      <div
+        v-if="!sidebarCollapsed"
+        class="sidebar-main"
       >
-        <TransitionGroup
-          name="sort"
-          tag="div"
-          class="sort-list"
+        <div class="sidebar-top">
+          <VaultClock />
+        </div>
+
+        <div class="category-search-wrap">
+          <div class="category-search-row">
+            <div class="search-field-wrap">
+              <Search
+                v-if="!isAnimalIsland"
+                class="search-field-icon"
+                :size="14"
+                :stroke-width="1.5"
+              />
+              <UiInput
+                v-model="categorySearchQuery"
+                class="search-field-input"
+                :class="{ 'search-field-input--animal': isAnimalIsland }"
+                :placeholder="t('vault.categorySearchPlaceholder')"
+                allow-clear
+              >
+                <template
+                  v-if="isAnimalIsland"
+                  #prefix
+                >
+                  <Search
+                    :size="14"
+                    :stroke-width="1.5"
+                  />
+                </template>
+              </UiInput>
+            </div>
+            <button
+              type="button"
+              class="category-add-btn"
+              data-tour="sidebar-new-category"
+              :title="t('category.newCategory')"
+              :aria-label="t('category.newCategory')"
+              @click="openCreateCategory"
+            >
+              <Plus
+                :size="16"
+                :stroke-width="1.5"
+              />
+            </button>
+          </div>
+        </div>
+
+        <nav
+          ref="sidebarNavRef"
+          class="sidebar-nav"
+          data-tour="sidebar-categories"
         >
-          <div
-            v-for="cat in displayCategories"
-            :key="cat.id"
-            class="nav-item sortable sortable-row"
-            :class="{
-              active: selectedCategory === cat.id,
-              'is-dragging': draggingId === cat.id && dragMoved,
-            }"
-            role="button"
-            tabindex="0"
-            :title="!isCategorySearchActive ? t('vault.dragSort') : undefined"
-            @selectstart.prevent
-            @pointerdown="onItemPointerDown(cat.id as FilterCategory, $event)"
-            @click="onNavClick(cat.id as FilterCategory, $event)"
-            @keydown.enter="selectCategory(cat.id as FilterCategory)"
-            @contextmenu="handleCategoryContextMenu(cat, $event)"
+          <TransitionGroup
+            name="sort"
+            tag="div"
+            class="sort-list"
           >
-            <CategoryIconView
-              :name="cat.icon"
-              :badge-size="24"
-              :size="14"
-            />
-            <span class="nav-label">{{ cat.label }}</span>
-            <span
-              class="count"
-              :class="{ active: selectedCategory === cat.id }"
-            >{{ cat.count }}</span>
-          </div>
-        </TransitionGroup>
-      </nav>
-
-      <footer
-        class="sidebar-footer"
-        data-tour="sidebar-utilities"
-      >
-        <div class="sidebar-footer-rail">
-          <div class="sidebar-footer-slot">
-            <button
-              type="button"
-              class="sidebar-icon-btn sidebar-icon-btn--toolbox"
-              :class="{ 'sidebar-icon-btn--active': showToolboxMenu }"
-              data-tour="sidebar-toolbox"
-              :data-tip="t('tools.toolbox')"
-              :aria-label="t('tools.toolbox')"
-              :aria-expanded="showToolboxMenu"
-              @click="toggleToolboxMenu"
+            <div
+              v-for="cat in displayCategories"
+              :key="cat.id"
+              class="nav-item sortable sortable-row"
+              :class="{
+                active: selectedCategory === cat.id,
+                'is-dragging': draggingId === cat.id && dragMoved,
+              }"
+              role="button"
+              tabindex="0"
+              :title="!isCategorySearchActive ? t('vault.dragSort') : undefined"
+              @selectstart.prevent
+              @pointerdown="onItemPointerDown(cat.id as FilterCategory, $event)"
+              @click="onNavClick(cat.id as FilterCategory, $event)"
+              @keydown.enter="selectCategory(cat.id as FilterCategory)"
+              @contextmenu="handleCategoryContextMenu(cat, $event)"
             >
-              <Box
-                :size="16"
-                :stroke-width="1.75"
+              <CategoryIconView
+                :name="cat.icon"
+                :badge-size="24"
+                :size="14"
               />
-            </button>
-            <Transition name="sidebar-footer-popover">
-              <div
-                v-if="showToolboxMenu"
-                class="sidebar-footer-popover sidebar-footer-popover--menu"
-                data-tour="sidebar-toolbox-panel"
-                @click.stop
-              >
-                <button
-                  type="button"
-                  class="sidebar-menu-item sidebar-menu-item--gen"
-                  data-tour="tool-password-gen"
-                  @click="handleToolPasswordGen"
-                >
-                  <Sparkles
-                    :size="14"
-                    :stroke-width="1.75"
-                  />
-                  <span class="sidebar-menu-item-label">{{ t('tools.passwordGenTitle') }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="sidebar-menu-item sidebar-menu-item--health"
-                  data-tour="tool-password-health"
-                  @click="handleToolPasswordHealth"
-                >
-                  <ShieldAlert
-                    :size="14"
-                    :stroke-width="1.75"
-                  />
-                  <span class="sidebar-menu-item-label">{{ t('tools.passwordHealth.title') }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="sidebar-menu-item sidebar-menu-item--clipboard"
-                  data-tour="tool-clipboard"
-                  @click="handleToolClipboard"
-                >
-                  <Clipboard :size="14" :stroke-width="1.75" />
-                  <span class="sidebar-menu-item-label">{{ t('tools.clipboardTitle') }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="sidebar-menu-item sidebar-menu-item--notes"
-                  data-tour="tool-notes"
-                  @click="handleToolNotes"
-                >
-                  <StickyNote :size="14" :stroke-width="1.75" />
-                  <span class="sidebar-menu-item-label">{{ t('notes.title') }}</span>
-                </button>
-              </div>
-            </Transition>
-          </div>
-
-          <div class="sidebar-footer-slot">
-            <button
-              type="button"
-              class="sidebar-icon-btn sidebar-icon-btn--manage"
-              :class="{ 'sidebar-icon-btn--active': showManageMenu }"
-              data-tour="sidebar-manage"
-              :data-tip="t('tools.manageGroup')"
-              :aria-label="t('tools.manageGroup')"
-              :aria-expanded="showManageMenu"
-              @click="toggleManageMenu"
-            >
-              <Layers
-                :size="16"
-                :stroke-width="1.75"
-              />
-            </button>
-            <Transition name="sidebar-footer-popover">
-              <div
-                v-if="showManageMenu"
-                class="sidebar-footer-popover sidebar-footer-popover--menu"
-                data-tour="sidebar-manage-panel"
-                @click.stop
-              >
-                <button
-                  type="button"
-                  class="sidebar-menu-item sidebar-menu-item--category"
-                  @click="openCategoryManage"
-                >
-                  <FolderOpen
-                    :size="14"
-                    :stroke-width="1.75"
-                  />
-                  <span class="sidebar-menu-item-label">{{ t('category.manage') }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="sidebar-menu-item sidebar-menu-item--tag"
-                  @click="openTagManage"
-                >
-                  <Hash
-                    :size="14"
-                    :stroke-width="1.75"
-                  />
-                  <span class="sidebar-menu-item-label">{{ t('tag.manage') }}</span>
-                </button>
-              </div>
-            </Transition>
-          </div>
-
-          <div class="sidebar-footer-slot">
-            <button
-              type="button"
-              class="sidebar-icon-btn sidebar-icon-btn--trash"
-              :data-tip="t('vault.trash')"
-              :aria-label="t('vault.trash')"
-              data-tour="tool-trash"
-              @click="handleToolTrash"
-            >
-              <ArchiveRestore
-                :size="16"
-                :stroke-width="1.75"
-              />
+              <span class="nav-label">{{ cat.label }}</span>
               <span
-                v-if="vaultStatus.trashCount > 0"
-                class="sidebar-icon-btn-badge"
-              >{{ vaultStatus.trashCount > 99 ? '99+' : vaultStatus.trashCount }}</span>
-            </button>
-          </div>
+                class="count"
+                :class="{ active: selectedCategory === cat.id }"
+              >{{ cat.count }}</span>
+            </div>
+          </TransitionGroup>
+        </nav>
 
-          <div class="sidebar-footer-slot">
-            <button
-              type="button"
-              class="sidebar-icon-btn sidebar-icon-btn--settings"
-              :data-tip="t('vault.settings')"
-              :aria-label="t('titlebar.openSettings')"
-              data-tour="sidebar-settings"
-              @click="openSettings"
-            >
-              <Settings
-                :size="16"
-                :stroke-width="1.75"
-              />
-            </button>
-          </div>
-        </div>
-      </footer>
+        <footer
+          class="sidebar-footer"
+          data-tour="sidebar-utilities"
+        >
+          <div class="sidebar-footer-rail">
+            <div class="sidebar-footer-slot">
+              <button
+                type="button"
+                class="sidebar-icon-btn sidebar-icon-btn--toolbox"
+                :class="{ 'sidebar-icon-btn--active': showToolboxMenu }"
+                data-tour="sidebar-toolbox"
+                :data-tip="t('tools.toolbox')"
+                :aria-label="t('tools.toolbox')"
+                :aria-expanded="showToolboxMenu"
+                @click="toggleToolboxMenu"
+              >
+                <Box
+                  :size="16"
+                  :stroke-width="1.75"
+                />
+              </button>
+              <Transition name="sidebar-footer-popover">
+                <div
+                  v-if="showToolboxMenu"
+                  class="sidebar-footer-popover sidebar-footer-popover--menu"
+                  data-tour="sidebar-toolbox-panel"
+                  @click.stop
+                >
+                  <button
+                    type="button"
+                    class="sidebar-menu-item sidebar-menu-item--gen"
+                    data-tour="tool-password-gen"
+                    @click="handleToolPasswordGen"
+                  >
+                    <Sparkles
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
+                    <span class="sidebar-menu-item-label">{{ t('tools.passwordGenTitle') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="sidebar-menu-item sidebar-menu-item--health"
+                    data-tour="tool-password-health"
+                    @click="handleToolPasswordHealth"
+                  >
+                    <ShieldAlert
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
+                    <span class="sidebar-menu-item-label">{{ t('tools.passwordHealth.title') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="sidebar-menu-item sidebar-menu-item--clipboard"
+                    data-tour="tool-clipboard"
+                    @click="handleToolClipboard"
+                  >
+                    <Clipboard
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
+                    <span class="sidebar-menu-item-label">{{ t('tools.clipboardTitle') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="sidebar-menu-item sidebar-menu-item--notes"
+                    data-tour="tool-notes"
+                    @click="handleToolNotes"
+                  >
+                    <StickyNote
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
+                    <span class="sidebar-menu-item-label">{{ t('notes.title') }}</span>
+                  </button>
+                </div>
+              </Transition>
+            </div>
 
-      <CategoryManagePanel
-        ref="categoryManagePanelRef"
-        :show-trigger="false"
-      />
-      <TagManagePanel
-        ref="tagManagePanelRef"
-        :show-trigger="false"
-      />
-    </div>
+            <div class="sidebar-footer-slot">
+              <button
+                type="button"
+                class="sidebar-icon-btn sidebar-icon-btn--manage"
+                :class="{ 'sidebar-icon-btn--active': showManageMenu }"
+                data-tour="sidebar-manage"
+                :data-tip="t('tools.manageGroup')"
+                :aria-label="t('tools.manageGroup')"
+                :aria-expanded="showManageMenu"
+                @click="toggleManageMenu"
+              >
+                <Layers
+                  :size="16"
+                  :stroke-width="1.75"
+                />
+              </button>
+              <Transition name="sidebar-footer-popover">
+                <div
+                  v-if="showManageMenu"
+                  class="sidebar-footer-popover sidebar-footer-popover--menu"
+                  data-tour="sidebar-manage-panel"
+                  @click.stop
+                >
+                  <button
+                    type="button"
+                    class="sidebar-menu-item sidebar-menu-item--category"
+                    @click="openCategoryManage"
+                  >
+                    <FolderOpen
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
+                    <span class="sidebar-menu-item-label">{{ t('category.manage') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="sidebar-menu-item sidebar-menu-item--tag"
+                    @click="openTagManage"
+                  >
+                    <Hash
+                      :size="14"
+                      :stroke-width="1.75"
+                    />
+                    <span class="sidebar-menu-item-label">{{ t('tag.manage') }}</span>
+                  </button>
+                </div>
+              </Transition>
+            </div>
+
+            <div class="sidebar-footer-slot">
+              <button
+                type="button"
+                class="sidebar-icon-btn sidebar-icon-btn--trash"
+                :data-tip="t('vault.trash')"
+                :aria-label="t('vault.trash')"
+                data-tour="tool-trash"
+                @click="handleToolTrash"
+              >
+                <ArchiveRestore
+                  :size="16"
+                  :stroke-width="1.75"
+                />
+                <span
+                  v-if="vaultStatus.trashCount > 0"
+                  class="sidebar-icon-btn-badge"
+                >{{ vaultStatus.trashCount > 99 ? '99+' : vaultStatus.trashCount }}</span>
+              </button>
+            </div>
+
+            <div class="sidebar-footer-slot">
+              <button
+                type="button"
+                class="sidebar-icon-btn sidebar-icon-btn--settings"
+                :data-tip="t('vault.settings')"
+                :aria-label="t('titlebar.openSettings')"
+                data-tour="sidebar-settings"
+                @click="openSettings"
+              >
+                <Settings
+                  :size="16"
+                  :stroke-width="1.75"
+                />
+              </button>
+            </div>
+          </div>
+        </footer>
+
+        <CategoryManagePanel
+          ref="categoryManagePanelRef"
+          :show-trigger="false"
+        />
+        <TagManagePanel
+          ref="tagManagePanelRef"
+          :show-trigger="false"
+        />
+      </div>
+    </PanelContentMotion>
 
     <PanelEdge
       placement="after"
@@ -919,12 +932,14 @@ onBeforeUnmount(() => {
   flex-direction: row;
   min-width: 0;
   overflow: visible;
-  transition: width 0.2s ease;
+  transition: width var(--panel-motion-duration, 280ms) cubic-bezier(0.22, 1, 0.36, 1);
   background: var(--bg-surface);
 }
 
-.sidebar-shell:not(.collapsed) {
-  min-width: min(calc(var(--sidebar-min-width) + var(--panel-edge-width, 4px)), 100%);
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-shell {
+    transition: none;
+  }
 }
 
 .sidebar-shell.resizing {

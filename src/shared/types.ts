@@ -134,6 +134,7 @@ export interface PasswordStrengthResult {
 
 export type SettingsTab =
   | 'security'
+  | 'email-backup'
   | 'clipboard'
   | 'notes'
   | 'browser'
