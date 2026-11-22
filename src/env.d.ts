@@ -123,6 +123,7 @@ declare global {
       previewImport: (request: ImportPreviewRequest) => Promise<ImportPreviewResult>
       commitImport: (request: ImportCommitRequest) => Promise<number>
       getEmailBackupSettings: () => Promise<EmailBackupSettings>
+      getEmailBackupPassword: () => Promise<string>
       updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate) => Promise<EmailBackupSettings>
       testEmailBackupConnection: () => Promise<void>
       sendEmailBackup: (payload: EmailBackupSendPayload) => Promise<EmailBackupSettings>

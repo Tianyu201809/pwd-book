@@ -123,10 +123,6 @@ function onTourPrepare(event: Event): void {
   }
 }
 
-function isProductTourActive(): boolean {
-  return document.documentElement.classList.contains('product-tour-active')
-}
-
 function handleDeleteRequest(entry: PasswordEntry): void {
   closeMenus()
   deleteConfirmEntry.value = entry

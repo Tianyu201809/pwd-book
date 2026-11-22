@@ -5,7 +5,7 @@ export interface ClipboardFavoriteEntry {
 
 export function applyClipboardFavoriteFlags<T extends ClipboardFavoriteEntry>(
   history: readonly T[],
-  favorites: readonly Pick<T, 'id'>[],
+  favorites: readonly Pick<ClipboardFavoriteEntry, 'id'>[],
 ): T[] {
   const favoriteIds = new Set(favorites.map((item) => item.id))
   return history.map((item) => ({ ...item, favorite: favoriteIds.has(item.id) }))

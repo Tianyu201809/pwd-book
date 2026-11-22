@@ -105,6 +105,7 @@ import {
   installUpdate,
 } from '../services/updateService'
 import {
+  getEmailBackupPassword,
   getEmailBackupSettings,
   sendBackupNow,
   testEmailConnection,
@@ -897,6 +898,13 @@ export function registerIpcHandlers(): void {
     wrap(() => {
       ensureUnlocked()
       return getEmailBackupSettings()
+    }),
+  )
+
+  ipcMain.handle(IPC.emailBackupGetPassword, () =>
+    wrap(() => {
+      ensureUnlocked()
+      return getEmailBackupPassword()
     }),
   )
 

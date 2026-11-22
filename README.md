@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.53.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.53.1-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -284,7 +284,7 @@ npm run dev
 
 从 **设置 → 邮箱备份** 进入（**v1.11.0** 起；须已解锁）。SMTP 配置与加密 ZIP 发送均在此页管理。
 
-- 配置收件邮箱、SMTP（主机/端口/TLS/用户名/密码）；SMTP 密码经会话密钥加密存本地；**v1.13.0** 起已保存密码显示 `********` 占位，聚焦后可重新输入，并支持显示/隐藏切换
+- 配置收件邮箱、SMTP（主机/端口/TLS/用户名/密码）；SMTP 密码经会话密钥加密存本地；已保存密码默认显示 `********`，点击眼睛按需读取并显示真实授权码，再次点击隐藏并清除临时明文（**v1.53.1**）；聚焦后可直接输入新值替换
 - **立即发送** 或 **测试连接**；备份包为 **AES-256 密码 ZIP**（解压密码 = 主密码），内含同日的 `pwdbook-backup-YYYY-MM-DD.json`（可导入）与 `.xlsx`（只读查看）
 - 定时频率：**手动** / **每周** / **每月**；到期且应用运行时弹出提醒（须已解锁才能发送）
 - 记录上次备份时间、条目数、文件大小与状态
@@ -461,7 +461,15 @@ npm run dev
 
 ## 版本更新
 
-### v1.53.0（当前）
+### v1.53.1（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1531---2026-11-22)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 邮箱备份 | 眼睛按钮按需显示已保存授权码；隐藏时清除临时明文；点击输入框不再清空已保存状态 |
+
+### v1.53.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1530---2026-11-22)**。摘要：
 

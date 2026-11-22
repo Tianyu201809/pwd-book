@@ -2,7 +2,7 @@
 
 本目录是 PwdBook 的架构与代码导航文档，供贡献者与 AI 助手快速定位模块职责与数据流。
 
-**当前版本：v1.52.0**（`package.json`）— 一台电脑可维护多个本地账号，每个账号是独立主密码的保险库；数据在 `accounts/{accountId}/`，名单与本机设置在 `machine.json`。锁定页用圆形头像表示当前账号，点击头像切换。v1.50.0 主列表排序支持正序与倒序；剪切板小窗按 Tab 不再抢走回车，快捷模式在定位条目后仍能复制并关闭；勾选标签不再自动选中条目或打开详情。v1.49.1 修复浏览器扩展在登录表单「已存在于 DOM、仅靠切换 `style`/`class` 显隐」的页面上不显示填充条、不自动填充的问题（扩展版本 1.1.1）；`localStorage` 不可用的页面不再中断填充。v1.49.0 浏览器扩展弹窗可快捷添加当前网页：预填标题和网址，补充分类、用户名、密码、备注后写入保险库。v1.46.2 修复管理窗新建便签：工具栏「+」不再把点击事件当成便签本 ID。v1.46.0 产品图标全量替换（桌面快捷方式 / 任务栏与窗口 / 系统托盘 / 安装与卸载程序 / macOS 与 Linux 打包图标 / 应用内品牌标识 / 浏览器扩展），图标母版改为 `icon/source.png`，托盘图标按平台尺寸缩放。v1.45.0 CSV / Excel 导出前可预览并选择条目，默认全选；JSON 保持完整备份。v1.44.0 加入 GitHub Releases 自动更新与版本更新设置；四组全局快捷键可录制更换；托盘可打开剪切板和便签；桌面便签可最小化；便签本右键可新建。
+**当前版本：v1.53.1**（`package.json`）— 邮箱备份眼睛按钮按需从主进程取回已保存授权码，仅在保险库解锁时可读；隐藏时清理界面临时明文。v1.53.0 增加按分类选择导出条目、侧栏和详情栏折叠过渡、邮箱备份独立设置分区与 SMTP 自动保存。v1.52.0 一台电脑可维护多个本地账号，每个账号是独立主密码的保险库；数据在 `accounts/{accountId}/`，名单与本机设置在 `machine.json`。锁定页用圆形头像表示当前账号，点击头像切换。v1.50.0 主列表排序支持正序与倒序；剪切板小窗按 Tab 不再抢走回车，快捷模式在定位条目后仍能复制并关闭；勾选标签不再自动选中条目或打开详情。v1.49.1 修复浏览器扩展在登录表单「已存在于 DOM、仅靠切换 `style`/`class` 显隐」的页面上不显示填充条、不自动填充的问题（扩展版本 1.1.1）；`localStorage` 不可用的页面不再中断填充。v1.49.0 浏览器扩展弹窗可快捷添加当前网页：预填标题和网址，补充分类、用户名、密码、备注后写入保险库。v1.46.2 修复管理窗新建便签：工具栏「+」不再把点击事件当成便签本 ID。v1.46.0 产品图标全量替换（桌面快捷方式 / 任务栏与窗口 / 系统托盘 / 安装与卸载程序 / macOS 与 Linux 打包图标 / 应用内品牌标识 / 浏览器扩展），图标母版改为 `icon/source.png`，托盘图标按平台尺寸缩放。v1.45.0 CSV / Excel 导出前可预览并选择条目，默认全选；JSON 保持完整备份。v1.44.0 加入 GitHub Releases 自动更新与版本更新设置；四组全局快捷键可录制更换；托盘可打开剪切板和便签；桌面窗可最小化；便签本右键可新建。
 
 ## 文档索引
 
@@ -60,7 +60,7 @@
 | 改自定义字段 | `shared/customFields.ts`、`PasswordDetail.vue`、`importNormalize.ts`；`password_entries.custom_fields`（**v1.22.0**） |
 | 改列表布局 | `PasswordList.vue`、`useAppState.ts`；`pwdbook-entry-list-layout`（**v1.22.0**） |
 | 改 TOTP / 密码健康 / 标签筛选 | `shared/totp.ts`、`shared/passwordHealth.ts`、`PasswordDetail.vue`、`PasswordHealthView.vue`、`TagFilterPanel.vue`、`VaultSidebar.vue`、`useAppState.ts` |
-| 改邮箱备份 SMTP 密码 UX | `EmailBackupView.vue`（`smtpPasswordModel`、显隐按钮） |
+| 改邮箱备份 SMTP 密码 UX | `EmailBackupView.vue`（`smtpPasswordModel`、显隐按钮）、`email-backup:get-password` IPC（v1.53.1） |
 | 改经典输入框布局 | `components/ui/UiInput.vue`（`ui-input-classic-wrap` 承载 class/style） |
 | 改详情小窗口 / 置顶 / 主窗同步 | `main/detailWindow.ts`、`DetailWindowApp.vue`、`renderer/detail.ts`、`TitleBar.vue`（`detail-window`）、`useAppState.ts`（`openDetachedDetail`、`detachedDetailOpen`）；**v1.20.0** 主窗亦用 `getWindowAlwaysOnTop` |
 | 改侧栏收缩 | `VaultSidebar.vue`（`pwdbook-sidebar-collapsed`） |

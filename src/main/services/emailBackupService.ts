@@ -176,6 +176,19 @@ export function getEmailBackupSettings(): EmailBackupSettings {
   return toPublicSettings(readStoredSettings())
 }
 
+export function getEmailBackupPassword(): string {
+  if (!isUnlocked()) {
+    throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)
+  }
+
+  const encrypted = readStoredSettings().smtp.passwordEncrypted
+  if (!encrypted) {
+    throw appError(ErrorCode.EMAIL_BACKUP_PASSWORD_REQUIRED)
+  }
+
+  return decryptSmtpPassword(encrypted)
+}
+
 export function updateEmailBackupSettings(partial: EmailBackupSettingsUpdate): EmailBackupSettings {
   if (!isUnlocked()) {
     throw appError(ErrorCode.VAULT_UNLOCK_REQUIRED)

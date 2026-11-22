@@ -137,6 +137,7 @@ export const vaultApi = {
   commitImport: (request: ImportCommitRequest): Promise<number> => getApi().commitImport(request),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => getApi().getEmailBackupSettings(),
+  getEmailBackupPassword: (): Promise<string> => getApi().getEmailBackupPassword(),
   updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>
     getApi().updateEmailBackupSettings(partial),
   testEmailBackupConnection: (): Promise<void> => getApi().testEmailBackupConnection(),

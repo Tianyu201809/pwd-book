@@ -27,6 +27,12 @@
 - `getSessionKey()` — vaultService 加解密时使用
 - **锁定即清零** — 不持久化会话密钥
 
+### emailBackupService (`src/main/services/emailBackupService.ts`)
+
+- SMTP 授权码以会话密钥加密后保存在 `app_settings.email_backup_settings`；普通设置读取只返回 `hasPassword`。
+- `getEmailBackupPassword` 仅在保险库解锁时解密返回已保存授权码，由 `email-backup:get-password` IPC 按用户显式的显隐操作调用（v1.53.1）；锁定状态拒绝读取。
+- `testEmailConnection` 用 Nodemailer `verify()` 测试 SMTP；`sendBackupNow` 生成 AES-256 密码 ZIP 并发送邮件。
+
 ### recoveryService (`src/main/services/recoveryService.ts`)
 
 恢复密钥（20 位 Base32 风格字符，格式 `XXXX-XXXX-…`）。

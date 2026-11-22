@@ -173,7 +173,7 @@ export function resetMasterPasswordWithRecovery(
   persistDatabase()
 
   wrapSessionKey(newKey, recoveryKey)
-  let accountId = ''
+  let accountId: string
   try {
     accountId = getActiveAccountId()
   } catch {

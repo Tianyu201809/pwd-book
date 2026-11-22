@@ -29,6 +29,7 @@ const {
   navigateTo,
   emailBackupSettings,
   loadEmailBackupSettings,
+  getEmailBackupPassword,
   updateEmailBackupSettings,
   testEmailBackupConnection,
   sendEmailBackup,
@@ -43,6 +44,7 @@ const smtpPort = ref(465)
 const smtpSecure = ref(true)
 const smtpUsername = ref('')
 const smtpPassword = ref('')
+const revealedSmtpPassword = ref('')
 const smtpPasswordEdited = ref(false)
 const showSmtpPassword = ref(false)
 const SAVED_SMTP_PASSWORD_MASK = '********'
@@ -51,6 +53,7 @@ const smtpExpanded = ref(true)
 const smtpPasswordModel = computed({
   get() {
     if (smtpPasswordEdited.value || smtpPassword.value) return smtpPassword.value
+    if (showSmtpPassword.value && revealedSmtpPassword.value) return revealedSmtpPassword.value
     if (emailBackupSettings.value.smtp.hasPassword) return SAVED_SMTP_PASSWORD_MASK
     return ''
   },
@@ -63,6 +66,7 @@ const smtpPasswordModel = computed({
       return
     }
     smtpPasswordEdited.value = true
+    revealedSmtpPassword.value = ''
     smtpPassword.value = value
   },
 })
@@ -121,17 +125,34 @@ function syncFromSettings(): void {
   showSmtpPassword.value = false
 }
 
-function onSmtpPasswordFocus(): void {
+function onSmtpPasswordFocus(event: FocusEvent): void {
   passwordFocused = true
   if (!smtpPasswordEdited.value && emailBackupSettings.value.smtp.hasPassword) {
-    smtpPasswordEdited.value = true
-    smtpPassword.value = ''
+    ;(event.target as HTMLInputElement | null)?.select()
   }
 }
 
 function onSmtpPasswordBlur(): void {
   passwordFocused = false
   if (!smtpPassword.value) smtpPasswordEdited.value = false
+}
+
+async function toggleSmtpPasswordVisibility(): Promise<void> {
+  if (showSmtpPassword.value) {
+    showSmtpPassword.value = false
+    revealedSmtpPassword.value = ''
+    return
+  }
+
+  if (emailBackupSettings.value.smtp.hasPassword && !smtpPasswordEdited.value) {
+    try {
+      revealedSmtpPassword.value = await getEmailBackupPassword()
+    } catch (error) {
+      showToast(parseErrorMessage(error), 'error')
+      return
+    }
+  }
+  showSmtpPassword.value = true
 }
 
 onMounted(async () => {
@@ -220,6 +241,7 @@ async function saveSettings(): Promise<boolean> {
 }
 
 onBeforeUnmount(() => {
+  revealedSmtpPassword.value = ''
   if (!autosaveTimer) return
   clearAutosaveTimer()
   void saveSettings()
@@ -411,7 +433,7 @@ function goBack(): void {
                       class="eye-btn"
                       :title="showSmtpPassword ? t('common.hide') : t('common.show')"
                       :aria-label="showSmtpPassword ? t('common.hide') : t('common.show')"
-                      @click="showSmtpPassword = !showSmtpPassword"
+                      @click="toggleSmtpPasswordVisibility"
                     >
                       <EyeOff
                         v-if="showSmtpPassword"

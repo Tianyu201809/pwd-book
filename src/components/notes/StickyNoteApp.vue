@@ -43,9 +43,11 @@ async function togglePin(): Promise<void> {
 async function setColor(color: NoteColor): Promise<void> {
   if (!note.value || note.value.contentInvalid) return
   await editorRef.value?.flush()
-  const current = await window.electronAPI?.getNote(noteId)
+  const api = window.electronAPI
+  if (!api) return
+  const current = await api.getNote(noteId)
   if (!current) return
-  note.value = await window.electronAPI.updateNote(noteId, {
+  note.value = await api.updateNote(noteId, {
     title: current.title,
     content: current.content,
     bookId: current.bookId,

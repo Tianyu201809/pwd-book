@@ -1,6 +1,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRenderer, h, nextTick, ref, type App } from 'vue'
+import { createRenderer, h, nextTick, ref, type App, type Ref } from 'vue'
+import type { EmailBackupSettings } from '@/shared/types'
 
 const mocks = vi.hoisted(() => ({
   state: null as object | null,
@@ -115,14 +116,16 @@ const settle = async (): Promise<void> => {
 
 let app: App
 let root: TestNode
+let emailBackupSettings: Ref<EmailBackupSettings>
 let updateSettings: ReturnType<typeof vi.fn>
+let getEmailBackupPassword: ReturnType<typeof vi.fn>
 let testConnection: ReturnType<typeof vi.fn>
 
 beforeEach(async () => {
   mocks.showToast.mockReset()
   vi.stubGlobal('localStorage', { getItem: () => null, setItem: vi.fn() })
 
-  const emailBackupSettings = ref({
+  emailBackupSettings = ref({
     recipientEmail: '',
     frequency: 'manual' as const,
     smtp: {
@@ -147,10 +150,12 @@ beforeEach(async () => {
     }
   })
   testConnection = vi.fn(async () => { throw new Error('请先完成 SMTP 发信设置') })
+  getEmailBackupPassword = vi.fn(async () => 'app-secret')
   mocks.state = {
     emailBackupSettings,
     loadEmailBackupSettings: vi.fn(async () => undefined),
     updateEmailBackupSettings: updateSettings,
+    getEmailBackupPassword,
     testEmailBackupConnection: testConnection,
     sendEmailBackup: vi.fn(async () => undefined),
     navigateTo: vi.fn(),
@@ -174,6 +179,51 @@ afterEach(() => {
 })
 
 describe('email backup settings', () => {
+  it('reveals a saved password on demand and clears it when hidden', async () => {
+    emailBackupSettings.value.smtp.hasPassword = true
+    await settle()
+
+    const passwordInput = flatten(root).find((node) => node.type === 'input' && node.props.placeholder === '邮箱 SMTP 授权码')
+    const revealButton = flatten(root).find((node) => node.type === 'button' && node.props.class === 'eye-btn')
+    expect(passwordInput).toBeDefined()
+    expect(revealButton).toBeDefined()
+
+    await (revealButton!.props.onClick as () => Promise<void>)()
+    await settle()
+
+    expect(getEmailBackupPassword).toHaveBeenCalledOnce()
+    expect(passwordInput!.props.type).toBe('text')
+    expect(passwordInput!.props.value).toBe('app-secret')
+
+    await (revealButton!.props.onClick as () => Promise<void>)()
+    await settle()
+
+    expect(passwordInput!.props.type).toBe('password')
+    expect(passwordInput!.props.value).toBe('********')
+  })
+
+  it('keeps the saved password mask when the field receives focus', async () => {
+    emailBackupSettings.value.smtp.hasPassword = true
+    await settle()
+
+    const passwordInput = flatten(root).find((node) => node.type === 'input' && node.props.placeholder === '邮箱 SMTP 授权码')
+    expect(passwordInput).toBeDefined()
+    expect(passwordInput!.props.value).toBe('********')
+
+    let passwordField = passwordInput!.parent
+    while (passwordField && typeof passwordField.props.onFocusin !== 'function') {
+      passwordField = passwordField.parent
+    }
+    expect(passwordField).toBeDefined()
+    const select = vi.fn()
+    ;(passwordField!.props.onFocusin as (event: unknown) => void)({ target: { select } })
+    await settle()
+
+    expect(passwordInput!.props.value).toBe('********')
+    expect(select).toHaveBeenCalledOnce()
+    expect(updateSettings).not.toHaveBeenCalled()
+  })
+
   it('automatically saves changed SMTP fields', async () => {
     vi.useFakeTimers()
     const hostInput = flatten(root).find((node) => node.type === 'input' && node.props.placeholder === 'smtp.example.com')

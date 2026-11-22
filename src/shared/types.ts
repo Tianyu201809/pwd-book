@@ -482,6 +482,7 @@ export const IPC = {
   dataImportPreview: 'data:import-preview',
   dataImportCommit: 'data:import-commit',
   emailBackupGet: 'email-backup:get',
+  emailBackupGetPassword: 'email-backup:get-password',
   emailBackupUpdate: 'email-backup:update',
   emailBackupTest: 'email-backup:test',
   emailBackupSend: 'email-backup:send',

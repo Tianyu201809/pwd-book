@@ -33,15 +33,21 @@ function base32Decode(secret: string): Uint8Array {
   return Uint8Array.from(bytes)
 }
 
+function copyToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+  return buffer
+}
+
 async function hmacSha1(key: Uint8Array, message: Uint8Array): Promise<Uint8Array> {
   const cryptoKey = await globalThis.crypto.subtle.importKey(
     'raw',
-    key,
+    copyToArrayBuffer(key),
     { name: 'HMAC', hash: 'SHA-1' },
     false,
     ['sign'],
   )
-  const signature = await globalThis.crypto.subtle.sign('HMAC', cryptoKey, message)
+  const signature = await globalThis.crypto.subtle.sign('HMAC', cryptoKey, copyToArrayBuffer(message))
   return new Uint8Array(signature)
 }
 

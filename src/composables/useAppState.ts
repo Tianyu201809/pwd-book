@@ -1335,6 +1335,12 @@ async function loadEmailBackupSettings(): Promise<void> {
   }
 }
 
+async function getEmailBackupPassword(): Promise<string> {
+  const password = await vaultApi.getEmailBackupPassword()
+  touchActivity()
+  return password
+}
+
 async function updateEmailBackupSettings(partial: EmailBackupSettingsUpdate): Promise<void> {
   try {
     emailBackupSettings.value = await vaultApi.updateEmailBackupSettings(partial)
@@ -1569,6 +1575,7 @@ export function useAppState() {
     consumePendingApplyPassword,
     emailBackupSettings,
     loadEmailBackupSettings,
+    getEmailBackupPassword,
     updateEmailBackupSettings,
     testEmailBackupConnection,
     sendEmailBackup,

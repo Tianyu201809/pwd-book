@@ -207,6 +207,7 @@ export const electronAPI = {
     invoke(IPC.dataImportCommit, request),
 
   getEmailBackupSettings: (): Promise<EmailBackupSettings> => invoke(IPC.emailBackupGet),
+  getEmailBackupPassword: (): Promise<string> => invoke(IPC.emailBackupGetPassword),
   updateEmailBackupSettings: (partial: EmailBackupSettingsUpdate): Promise<EmailBackupSettings> =>
     invoke(IPC.emailBackupUpdate, partial),
   testEmailBackupConnection: (): Promise<void> => invoke(IPC.emailBackupTest),
