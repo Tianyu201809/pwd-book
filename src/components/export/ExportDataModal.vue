@@ -13,6 +13,10 @@ import { UiModal, UiButton, UiCard } from '@/components/ui'
 import { useTheme } from '@/composables/useTheme'
 import { useAppState } from '@/composables/useAppState'
 import { countExportableForFormat } from '@/shared/exportParsers'
+import {
+  getCategoryEntrySelectionState,
+  toggleCategoryEntrySelection,
+} from '@/shared/exportSelection'
 import type { PasswordEntry } from '@/shared/types'
 import {
   EXPORT_DESTINATIONS,
@@ -30,7 +34,13 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { isAnimalIsland } = useTheme()
-const { entries, exportData, exportDataAsExcel, exportDataAsCsv } = useAppState()
+const {
+  entries,
+  vaultCategories,
+  exportData,
+  exportDataAsExcel,
+  exportDataAsCsv,
+} = useAppState()
 
 const EXPORT_MODAL_WIDTH = 760
 
@@ -62,6 +72,18 @@ const selectedEntries = computed(() => {
   const selected = new Set(selectedEntryIds.value)
   return entries.value.filter((entry) => selected.has(entry.id))
 })
+
+const categoryOptions = computed(() =>
+  vaultCategories.value.map((category) => ({
+    ...category,
+    entryCount: entries.value.filter((entry) => entry.categoryId === category.id).length,
+    selectionState: getCategoryEntrySelectionState(
+      entries.value,
+      selectedEntryIds.value,
+      category.id,
+    ),
+  })),
+)
 
 const filteredEntries = computed(() => {
   const query = entrySearch.value.trim().toLowerCase()
@@ -185,6 +207,14 @@ function toggleEntry(id: string): void {
 
 function toggleAllEntries(): void {
   selectedEntryIds.value = allEntriesSelected.value ? [] : entries.value.map((entry) => entry.id)
+}
+
+function toggleCategory(categoryId: string): void {
+  selectedEntryIds.value = toggleCategoryEntrySelection(
+    entries.value,
+    selectedEntryIds.value,
+    categoryId,
+  )
 }
 
 function isEntryExportable(entry: PasswordEntry): boolean {
@@ -392,6 +422,41 @@ async function executeExport(): Promise<void> {
           <span class="selection-count">
             {{ t('export.selection.selectedCount', { selected: selectedEntryIds.length, total: entries.length }) }}
           </span>
+        </div>
+
+        <div class="category-selection">
+          <div class="category-selection-heading">
+            <h5>{{ t('export.selection.categoriesTitle') }}</h5>
+            <p>{{ t('export.selection.categoriesLead') }}</p>
+          </div>
+          <div
+            class="category-selection-list"
+            role="group"
+            :aria-label="t('export.selection.categoriesTitle')"
+          >
+            <label
+              v-for="category in categoryOptions"
+              :key="category.id"
+              class="category-option"
+              :class="{
+                'category-option--selected': category.selectionState === 'all',
+                'category-option--partial': category.selectionState === 'partial',
+                'category-option--disabled': category.entryCount === 0,
+              }"
+            >
+              <input
+                type="checkbox"
+                :checked="category.selectionState === 'all'"
+                :indeterminate="category.selectionState === 'partial'"
+                :disabled="category.entryCount === 0"
+                @change="toggleCategory(category.id)"
+              >
+              <span class="category-option-name">{{ category.name }}</span>
+              <span class="category-option-count">
+                {{ t('export.selection.categoryEntryCount', { count: category.entryCount }) }}
+              </span>
+            </label>
+          </div>
         </div>
 
         <div class="selection-toolbar">
@@ -842,6 +907,80 @@ async function executeExport(): Promise<void> {
   margin: 4px 0 0;
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.category-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-selection-heading h5 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.category-selection-heading p {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.category-selection-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 104px;
+  overflow-y: auto;
+}
+
+.category-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  cursor: pointer;
+}
+
+.category-option--selected,
+.category-option--partial {
+  border-color: var(--border-accent);
+  background: var(--accent-subtle);
+}
+
+.category-option--disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.category-option input {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--accent-primary);
+}
+
+.category-option-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-option-count {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 10px;
 }
 
 .selection-count {

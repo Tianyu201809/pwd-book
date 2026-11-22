@@ -1238,6 +1238,9 @@ export default {
     selection: {
       title: 'Choose entries to export',
       lead: 'All entries are selected by default. Passwords are hidden from this preview.',
+      categoriesTitle: 'Choose by category',
+      categoriesLead: 'Select a category to include all its entries, then adjust individual entries below.',
+      categoryEntryCount: '{count} entries',
       selectedCount: '{selected} of {total} selected',
       searchPlaceholder: 'Search title, account, URL, or category…',
       selectAll: 'Select all',

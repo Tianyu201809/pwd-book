@@ -1233,6 +1233,9 @@ export default {
     selection: {
       title: '选择要导出的条目',
       lead: '默认已选择全部条目。这里仅展示用于识别条目的信息，不会显示密码。',
+      categoriesTitle: '按分类选择',
+      categoriesLead: '勾选分类可选择其中全部条目，之后仍可逐条调整。',
+      categoryEntryCount: '{count} 条',
       selectedCount: '已选 {selected} / {total} 条',
       searchPlaceholder: '搜索标题、账号、网址或分类…',
       selectAll: '全选',

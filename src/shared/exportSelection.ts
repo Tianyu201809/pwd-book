@@ -9,6 +9,49 @@ export function selectEntriesForExport(
   return entries.filter((entry) => selectedIds.has(entry.id))
 }
 
+export type CategoryEntrySelectionState = 'none' | 'partial' | 'all'
+
+export function getCategoryEntrySelectionState(
+  entries: PasswordEntry[],
+  selectedEntryIds: readonly string[],
+  categoryId: string,
+): CategoryEntrySelectionState {
+  const categoryEntries = entries.filter((entry) => entry.categoryId === categoryId)
+  if (categoryEntries.length === 0) return 'none'
+
+  const selectedIds = new Set(selectedEntryIds)
+  const selectedCount = categoryEntries.filter((entry) => selectedIds.has(entry.id)).length
+  if (selectedCount === 0) return 'none'
+  return selectedCount === categoryEntries.length ? 'all' : 'partial'
+}
+
+export function toggleCategoryEntrySelection(
+  entries: PasswordEntry[],
+  selectedEntryIds: readonly string[],
+  categoryId: string,
+): string[] {
+  const categoryEntryIds = entries
+    .filter((entry) => entry.categoryId === categoryId)
+    .map((entry) => entry.id)
+  if (categoryEntryIds.length === 0) return [...selectedEntryIds]
+
+  const selectedIds = new Set(selectedEntryIds)
+  const categoryIsFullySelected = categoryEntryIds.every((id) => selectedIds.has(id))
+  if (categoryIsFullySelected) {
+    const categoryIds = new Set(categoryEntryIds)
+    return selectedEntryIds.filter((id) => !categoryIds.has(id))
+  }
+
+  const nextSelection = [...selectedEntryIds]
+  for (const id of categoryEntryIds) {
+    if (!selectedIds.has(id)) {
+      selectedIds.add(id)
+      nextSelection.push(id)
+    }
+  }
+  return nextSelection
+}
+
 export function selectCategoriesForExport(
   categories: VaultCategory[],
   entries: PasswordEntry[],
