@@ -4,7 +4,7 @@
 
 ### 密码散落各处、记不住主密码、又不愿把数据交给云端？PwdBook 把保险库留在你的电脑上。
 
-![Version](https://img.shields.io/badge/version-1.52.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.53.0-blue?style=flat-square)
 ![Node](https://img.shields.io/badge/Node.js-%3E%3D20-3c873a?style=flat-square&logo=node.js)
 ![Electron](https://img.shields.io/badge/Electron-35-47848F?style=flat-square&logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs)
@@ -461,7 +461,18 @@ npm run dev
 
 ## 版本更新
 
-### v1.52.0（当前）
+### v1.53.0（当前）
+
+完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1530---2026-11-22)**。摘要：
+
+| 类别 | 内容 |
+|------|------|
+| 导出 | CSV、Excel 与第三方 CSV 可按分类批量选择条目，也可继续逐项调整；JSON 仍为完整备份 |
+| 面板交互 | 左侧分类栏与右侧详情栏统一展开、收起过渡，并支持系统减少动态效果偏好 |
+| 标题栏 | 账号名称仅作状态展示，锁定操作由专用锁定按钮承担 |
+| 邮箱备份 | 设置独立分区；SMTP 配置自动保存，测试连接只显示测试结果 |
+
+### v1.52.0
 
 完整变更列表见 **[CHANGELOG.md](./CHANGELOG.md#1520---2026-11-13)**。摘要：
 
