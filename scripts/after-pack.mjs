@@ -7,6 +7,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
 
 export default async function afterPack(context) {
+  if (context.electronPlatformName === 'darwin') {
+    const hostPath = path.join(
+      context.appOutDir,
+      `${context.packager.appInfo.productFilename}.app`,
+      'Contents',
+      'Resources',
+      'native-host',
+      'pwdbook-native-host.sh',
+    )
+    if (fs.existsSync(hostPath)) {
+      fs.chmodSync(hostPath, 0o755)
+      console.log(`Made native messaging host executable: ${hostPath}`)
+    }
+    return
+  }
   if (context.electronPlatformName !== 'win32') return
 
   const productFilename = context.packager.appInfo.productFilename

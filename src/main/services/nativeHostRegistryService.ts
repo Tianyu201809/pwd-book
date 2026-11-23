@@ -126,12 +126,6 @@ function registerNativeHostWindows(id: string, hostEntryPath: string, manifestPa
 }
 
 function registerNativeHostMac(id: string, hostEntryPath: string, manifestPath: string): void {
-  try {
-    fs.chmodSync(hostEntryPath, 0o755)
-  } catch {
-    /* ignore chmod errors on dev FS */
-  }
-
   const manifest = {
     name: HOST_NAME,
     description: 'PwdBook Native Messaging Host',
