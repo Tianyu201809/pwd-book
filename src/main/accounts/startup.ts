@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
+import { getSqlWasmPath } from '../db/sqlWasm'
 import { isValidSqliteHeader } from './accountPaths'
 import { writeMachineDocument } from './machineStore'
 import {
@@ -41,7 +42,7 @@ let sqlPromise: Promise<SqlJsStatic> | null = null
 function getSql(): Promise<SqlJsStatic> {
   if (!sqlPromise) {
     sqlPromise = initSqlJs({
-      locateFile: () => path.join(process.cwd(), 'node_modules/sql.js/dist/sql-wasm.wasm'),
+      locateFile: getSqlWasmPath,
     })
   }
   return sqlPromise

@@ -2,6 +2,7 @@ import { app } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js'
+import { getSqlWasmPath } from './sqlWasm'
 import { isValidSqliteHeader } from '../accounts/accountPaths'
 import { seedAndMigrateCategories } from './categories'
 import { appError, ErrorCode } from '../../shared/errors'
@@ -44,17 +45,10 @@ export function consumeQuarantinedDatabasePath(): string | null {
   return path
 }
 
-function getWasmDirectory(): string {
-  if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'sql.js', 'dist')
-  }
-  return path.join(app.getAppPath(), 'node_modules', 'sql.js', 'dist')
-}
-
 async function getSql(): Promise<SqlJsStatic> {
   if (!sqlPromise) {
     sqlPromise = initSqlJs({
-      locateFile: (file) => path.join(getWasmDirectory(), file),
+      locateFile: getSqlWasmPath,
     })
   }
   return sqlPromise
