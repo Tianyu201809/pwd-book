@@ -53,6 +53,9 @@
     "asarUnpack": [
       "node_modules/sql.js/**/*"
     ],
+    "electronFuses": {
+      "runAsNode": true
+    },
     "extraResources": [
       {
         "from": "icon/icon.png",
