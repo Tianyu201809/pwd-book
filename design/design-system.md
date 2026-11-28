@@ -15,9 +15,9 @@
 
 | 角色 | 字体 | 用途 |
 |------|------|------|
-| Display | **Fraunces** | 品牌名、解锁页标题、空状态标题 |
-| Body | **DM Sans** | 正文、按钮、表单标签 |
-| Mono | **IBM Plex Mono** | 密码、密钥、复制字段 |
+| Display | **微软雅黑**（Microsoft YaHei） | 品牌名、解锁页标题、空状态标题 |
+| Body | **微软雅黑**（Microsoft YaHei） | 正文、按钮、表单标签 |
+| Mono | **Consolas** | 密码、密钥、复制字段 |
 
 字重规则：标题比常规少一档（Bold → Semibold）。
 

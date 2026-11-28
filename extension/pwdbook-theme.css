@@ -1,9 +1,9 @@
 /* PwdBook 经典主题（与 src/assets/styles/tokens.css 暗色 + 黄铜强调色一致） */
-/* 字体：与桌面端一致；无网络时使用 Georgia / system-ui 回退 */
+/* 字体：使用系统微软雅黑，等宽字段使用系统等宽字体 */
 #pwdbook-fill-root,
 .pwdbook-popup {
-  --pb-font-display: "Fraunces", Georgia, "Times New Roman", serif;
-  --pb-font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --pb-font-display: "Microsoft YaHei", "微软雅黑", sans-serif;
+  --pb-font-body: "Microsoft YaHei", "微软雅黑", sans-serif;
 
   --pb-accent-500: #c9a227;
   --pb-accent-400: #d4b44a;
