@@ -126,7 +126,7 @@ App.vue
 - **剪切板** Tab：`ClipboardSettingsPanel` — 历史开关、默认清理周期、条数上限、持久化、**使用向导**（`ClipboardGuideModal`）、**v1.43.0** `ShortcutRecorder`（默认 `Alt+Shift+O`）。
 - **便签** Tab（**v1.39.0**）：`NotesSettingsPanel` — 管理窗全局快捷键开关；**v1.43.0** 可录制更换，默认 `Alt+Shift+N`。
 - **浏览器** Tab：`BrowserSettingsPanel` — 自动填充、Native Host、**安装向导**（`BrowserExtensionGuideModal` + `BrowserExtensionGuideVisual`）；`openExtensionsPage` → IPC `shell:open-extensions-page`。
-- **悬浮条** Tab：`QuickBarSettingsPanel` — 快捷搜索开关、其下独立的唤起主窗口开关、**v1.43.0**「启动快捷键」里的悬浮窗与主窗口录制、显示条数（5–20 → `quickBarRecentLimit`，悬浮条关闭时休眠）。
+- **悬浮条** Tab：`QuickBarSettingsPanel` — 快捷搜索开关、其下独立的唤起主窗口开关、**v1.43.0**「启动快捷键」里的悬浮窗与主窗口录制、显示条数（5–20 → `quickBarRecentLimit`，悬浮条关闭时休眠）；**v1.56.0** 动物森友会主题的规则卡片允许下拉菜单溢出显示。
 - **回收站** Tab：`TrashSettingsPanel` — 保留期限 + 打开回收站。
 - **版本更新** Tab（**v1.44.0**）：当前版本、GitHub Releases 发布列表、自动更新开关、检查/下载进度、重启安装与错误重试；状态由 `update:status-changed` 事件实时同步。
 
