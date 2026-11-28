@@ -9,12 +9,12 @@ Chrome / Edge 扩展 + Native Messaging Host + 主进程本地桥接。全程本
 | 浏览器扩展 | [`extension/`](../../extension/) | MV3：检测登录表单、填充 UI、`connectNative('com.pwdbook.app')` |
 | Native Host | [`native-host/`](../../native-host/) | Chrome 子进程：stdio ↔ `127.0.0.1` 桥接（`index.mjs` + `pwdbook-native-host.cmd`） |
 | 桥接服务 | [`browserBridgeService.ts`](../../src/main/services/browserBridgeService.ts) | `127.0.0.1` TCP，校验 token / 解锁 / URL |
-| URL 匹配 | [`browserMatchService.ts`](../../src/main/services/browserMatchService.ts) | 按页面 hostname 匹配条目 |
+| URL 匹配 | [`browserMatchService.ts`](../../src/main/services/browserMatchService.ts) | 按页面 hostname 提供候选，并标记完整页面地址是否匹配 |
 | 注册 | [`nativeHostRegistryService.ts`](../../src/main/services/nativeHostRegistryService.ts) | 写清单 + Windows 注册表 / macOS NativeMessagingHosts（v1.12.0） |
 | 扩展管理页 | [`browserLaunchService.ts`](../../src/main/services/browserLaunchService.ts) | **v1.17.0** 检测 Chrome/Edge，复制 `chrome://extensions` 或 `edge://extensions` 到剪贴板 |
 | 安装向导 UI | [`BrowserExtensionGuideModal.vue`](../../src/components/browser/BrowserExtensionGuideModal.vue) | **v1.17.0** 6 步引导 + 示意图 |
 | 协议类型 | [`browserBridgeProtocol.ts`](../../src/shared/browserBridgeProtocol.ts) | Bridge 请求/响应、注册状态 |
-| URL 工具 | [`urlMatch.ts`](../../src/shared/urlMatch.ts) | `entryUrlMatchesPage`、`normalizeUrl` |
+| URL 工具 | [`urlMatch.ts`](../../src/shared/urlMatch.ts) | `entryUrlMatchesPage`、`entryUrlExactlyMatchesPage`、`normalizeUrl` |
 
 打包：`package.json` → `extraResources` 复制 `native-host/`、`extension/`；NSIS 见 [`deps/installer.nsh`](../../deps/installer.nsh)。
 
@@ -51,7 +51,7 @@ sequenceDiagram
 |--------|--------|------|
 | `ping` | 否 | 版本探测 |
 | `status` | 否 | `{ unlocked, entryCount }` |
-| `matchLogins` | 是 | `{ pageUrl }` → `[{ id, title, username }]`，不含密码 |
+| `matchLogins` | 是 | `{ pageUrl }` → `[{ id, title, username, exactPageMatch }]`，按 hostname 提供候选，不含密码；`exactPageMatch` 比较完整页面地址 |
 | `getCredential` | 是 | `{ entryId, pageUrl }` → 校验 hostname 后返回密码；`touchEntry` |
 | `listCategories` | 是 | **v1.49.0** `{ categories: [{ id, name }] }`，供弹窗快捷添加 |
 | `createEntry` | 是 | **v1.49.0** `{ entry: { title, url, username, password, note, categoryId } }` → `{ id, title }`；成功后 `notifyVaultDataChanged()` |
@@ -111,7 +111,7 @@ sequenceDiagram
 | **拖拽** | 按住标题栏（`.pwdbook-header`，含品牌图标与标题）拖动；松手后写入 `localStorage` 键 `pwdbook-ui-x` / `pwdbook-ui-y`；位置限制在视口内 |
 | **收起** | 标题栏右侧按钮（`.pwdbook-collapse-btn`）切换 `is-collapsed`；收起后隐藏标题文字与填充操作区，仅保留图标与展开按钮 |
 | **持久化** | 同站点 `localStorage`：`pwdbook-ui-collapsed`（`'1'` / `'0'`）；重建 UI（如匹配条目变化）时 `applyUiPreferences` 恢复状态。**v1.49.1** 起经 `storageGet` / `storageSet` 容错读写，存储不可用（沙箱 / opaque origin）时仅跳过偏好，不影响填充 |
-| **自动填充** | 填充条首次出现（匹配签名变化，或条被拆掉后重建）时，用当前选中项（默认 `matches[0]`，即 `last_used_at` 最新）调用 `getCredential` 并覆盖写入用户名/密码 |
+| **自动填充** | v1.54.0 起仅当条目完整地址（协议、主机、路径、查询参数和哈希路由）与当前页面一致时自动填充；同主机的其他条目仍列在填充条中供手动选择。哈希路由变化会重建填充条并重新判断 |
 | **切换账号** | 下拉选中另一条目后立刻填充并覆盖；不必再点「填充」 |
 | **填充按钮** | 保留为补救：自动填失败或密码框晚出现时可再点；成功后条留在页面 |
 
