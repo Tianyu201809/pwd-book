@@ -268,8 +268,8 @@ export default {
           body: 'Tap + to create a category without opening settings. New entries can be assigned to it immediately.',
         },
         utilities: {
-          title: 'Sidebar footer',
-          body: 'Four icons at the bottom: Toolbox, Manage (categories/tags), Trash, and Settings. Hover for labels; some open a popover menu.',
+          title: 'Left toolbar',
+          body: 'The far-left vertical rail has Toolbox and Manage (categories/tags) at the top, with Trash and Settings at the bottom. Hover for labels. Toolbox and Manage open menus to the right.',
         },
       },
       entries: {
@@ -293,7 +293,7 @@ export default {
       tools: {
         utilities: {
           title: 'Toolbox',
-          body: 'Tap the toolbox icon at the bottom for password generator, health check, clipboard, and other utilities. Hover icons for labels.',
+          body: 'Open Toolbox near the top of the far-left rail for the password generator, health check, clipboard, and other utilities. Its menu opens to the right.',
         },
         passwordGen: {
           title: 'Password generator',
@@ -337,7 +337,7 @@ export default {
       settings: {
         open: {
           title: 'Open settings',
-          body: 'Settings at the bottom of the sidebar opens the full page; the tray menu also has a shortcut.',
+          body: 'The Settings button at the bottom of the far-left toolbar opens the full page; the tray menu also has a shortcut.',
         },
         nav: {
           title: 'Settings sections',
