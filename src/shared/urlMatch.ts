@@ -31,3 +31,21 @@ export function entryUrlMatchesPage(entryUrl: string, pageUrl: string): boolean 
   if (!entryHost || !pageHost) return false
   return entryHost === pageHost
 }
+
+/** 条目 URL 是否与当前页面地址完全一致（包含路径、查询参数和哈希路由） */
+export function entryUrlExactlyMatchesPage(entryUrl: string, pageUrl: string): boolean {
+  const entry = parsePageUrl(entryUrl)
+  const page = parsePageUrl(pageUrl)
+  if (!entry || !page) return false
+  return entry.href === page.href
+}
+
+function parsePageUrl(value: string): URL | null {
+  const raw = value.trim()
+  if (!raw) return null
+  try {
+    return new URL(raw.includes('://') ? raw : `https://${raw}`)
+  } catch {
+    return null
+  }
+}

@@ -18,6 +18,7 @@ export interface BridgeLoginMatch {
   id: string
   title: string
   username: string
+  exactPageMatch: boolean
 }
 
 export interface BridgeResponse {

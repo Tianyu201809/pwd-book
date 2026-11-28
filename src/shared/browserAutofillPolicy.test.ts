@@ -8,6 +8,7 @@ describe('shouldAutoFill', () => {
         signature: 'entry-a',
         lastAutoFilledSignature: '',
         uiExists: true,
+        exactPageMatch: true,
       }),
     ).toBe(true)
   })
@@ -18,6 +19,7 @@ describe('shouldAutoFill', () => {
         signature: 'entry-a',
         lastAutoFilledSignature: 'entry-a',
         uiExists: true,
+        exactPageMatch: true,
       }),
     ).toBe(false)
   })
@@ -28,6 +30,7 @@ describe('shouldAutoFill', () => {
         signature: 'entry-a',
         lastAutoFilledSignature: 'entry-a',
         uiExists: false,
+        exactPageMatch: true,
       }),
     ).toBe(true)
   })
@@ -38,6 +41,18 @@ describe('shouldAutoFill', () => {
         signature: '',
         lastAutoFilledSignature: '',
         uiExists: false,
+        exactPageMatch: true,
+      }),
+    ).toBe(false)
+  })
+
+  it('does not auto-fill when only the host matches', () => {
+    expect(
+      shouldAutoFill({
+        signature: 'entry-a',
+        lastAutoFilledSignature: '',
+        uiExists: false,
+        exactPageMatch: false,
       }),
     ).toBe(false)
   })

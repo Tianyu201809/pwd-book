@@ -166,7 +166,8 @@ let scanTimer = null
 let lastMatchSignature = ''
 let lastAutoFilledSignature = ''
 
-function shouldAutoFill({ signature, lastAutoFilledSignature, uiExists }) {
+function shouldAutoFill({ signature, lastAutoFilledSignature, uiExists, exactPageMatch }) {
+  if (!exactPageMatch) return false
   if (!signature) return false
   if (!uiExists) return true
   return signature !== lastAutoFilledSignature
@@ -228,8 +229,8 @@ function removeUi() {
   lastAutoFilledSignature = ''
 }
 
-function matchSignature(matches) {
-  return matches.map((m) => m.id).join('\u0001')
+function matchSignature(matches, pageUrl) {
+  return `${pageUrl}\u0000${matches.map((m) => m.id).join('\u0001')}`
 }
 
 function isOurUiNode(node) {
@@ -254,7 +255,7 @@ function shouldIgnoreMutation(record) {
 }
 
 function createUi(matches, pageUrl) {
-  const signature = matchSignature(matches)
+  const signature = matchSignature(matches, pageUrl)
   if (!matches.length) {
     removeUi()
     return
@@ -294,7 +295,8 @@ function createUi(matches, pageUrl) {
     fillInput(pwd, res.data.password)
   }
 
-  let selectedId = matches[0].id
+  const exactPageMatch = matches.find((match) => match.exactPageMatch)
+  let selectedId = exactPageMatch?.id || matches[0].id
 
   if (matches.length === 1) {
     const label = matches[0].title || matches[0].username || '登录'
@@ -377,6 +379,7 @@ function createUi(matches, pageUrl) {
       signature,
       lastAutoFilledSignature,
       uiExists: Boolean(document.getElementById(ROOT_ID)),
+      exactPageMatch: Boolean(exactPageMatch),
     })
   ) {
     lastAutoFilledSignature = signature
