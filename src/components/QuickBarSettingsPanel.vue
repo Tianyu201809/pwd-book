@@ -207,7 +207,7 @@ function openQuickBar(): void {
 
     <section :class="{ dormant: !enabled }">
       <h4>{{ t('settings.quickBarRulesTitle') }}</h4>
-      <UiCard class="settings-card">
+      <UiCard class="settings-card quickbar-rules-card">
         <div class="row last">
           <div>
             <p class="row-title">
@@ -377,6 +377,10 @@ h4 {
 
 .settings-card {
   overflow: hidden;
+}
+
+.quickbar-rules-card {
+  overflow: visible;
 }
 
 .row {
